@@ -65,7 +65,35 @@ Read this before deciding the target user, product behaviour, demo script or pit
   simple layer that works with a vague description; power users can tune it.
 - B's advice: pick an investor type the team understands. Ticket (PE) vs volume (hobby):
   the same engine can serve both at different depths.
-- Decision pending: see `decisions.md` and challenge.md "Who the user is".
+- Decided 2026-11-14: the user is defined by a constraint, not by a fund type: an investor
+  with neither the time nor the means to build automated research systems, who needs to get
+  the most out of their time. Small private equity firms, search funds and individual
+  investors are examples. Both interviewees fit: A has the skills but not the time, B's fund
+  builds by hand because most cannot. See `decisions.md` and challenge.md "Who the user is".
+
+## Cala coverage (probed 2026-11-14 on the entity endpoints, 56 calls)
+Findings come from name search, introspection and entity retrieval, not from the
+LLM-processed methods. Sample sizes are small: treat them as a first look.
+- Private SMEs exist as entities in the UK, France, Spain and Finland.
+- UK (source Companies House, 6 operating companies checked): balance sheet and headcount by
+  year; revenue and operating profit only where full accounts are filed (seen on 2 mid-sized
+  firms); owners with control band and dates, chains through holding companies, owner birth
+  month and year. No activity code, no directors.
+- France (source INPI, 2 checked): full profit and loss even for a small firm, activity code
+  on the industry link, manager name. No shareholders, no birth date.
+- Spain (2 checked) and Finland (1 checked): registry basics only (name, address, founding
+  date, LEI). No accounts, no people.
+- Listed companies (1 checked, US): about 1,000 filing metrics plus curated ones (EBITDA,
+  revenue, net debt), executives, board, investors, corporate events.
+- Fund holdings: a private equity manager lists portfolio companies, without dates or
+  amounts. Transactions: no corporate-event entity found by name search, but dated ownership
+  changes in the UK show acquisitions.
+- Regulation: no Law entity matched the subsector probed. Treat regulatory tailwinds as web,
+  unverified.
+- The graph cannot list all companies of a subsector: discovery comes from the web,
+  verification from Cala (lookup by registry number works).
+- Against B's checklist (finding 7): EBITDA yes (UK mid-sized, France), fragmentation
+  partial, regulation no, owner profile yes (UK), succession risk yes (UK).
 
 ## Product ideas gathered
 - Onboarding by conversation, then tuning by chat ("stop sending me construction").
@@ -73,6 +101,9 @@ Read this before deciding the target user, product behaviour, demo script or pit
   interface ready for Telegram or WhatsApp and say so in the pitch.
 - Pitch metric: more companies analysed in the same time, with wider context than a person
   juggling browser tabs.
+- Context.dev role (team, 2026-11-14): soft signals only, such as social trends, fund
+  commentary and social media activity. They are hints, not facts: shown apart from Cala
+  data, labelled "web, unverified", and used to suggest a new question to the investor.
 
 ## Business model ideas (for the pitch, B)
 - Commission only on analyses that end in a purchase.
@@ -83,13 +114,18 @@ Read this before deciding the target user, product behaviour, demo script or pit
 ## Pitch and video notes (team)
 - Opening scene: a stressed investor lost in browser tabs and charts asks a generic chatbot
   "which startup should I invest in?" and gets a useless answer.
+- Hook (team, 2026-11-14): these investors cannot afford automated systems and spend their
+  time and energy on research. With Grabbit they spend it on deciding and on refining the
+  search.
 - Message: the tool does not stop you being wrong; it helps you decide better.
 - State in the README and pitch that the product was shaped by interviews with real
   investors (pseudonymised).
 
 ## Open questions
-- Does Cala's graph cover private mid-market companies, fund holdings and transactions, or
-  mostly startups and funding rounds? This decides the user and the "big fish" feature.
+- What share of UK companies with GBP 10-50M revenue has revenue and operating profit in
+  Cala? Only two were checked. Ask Cala; also ask for UK activity codes and directors.
+- Does Cala hold funds' public-equity holdings (the "big fish" feature, finding 11)? Not
+  probed yet.
 - Will Cala object to Context.dev as a second source? Ask them. Context.dev also has its own
   challenge, so using it well may qualify for a second prize.
 - More interviews requested via a community post; add new findings here.
