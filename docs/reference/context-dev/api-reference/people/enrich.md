@@ -1,0 +1,1051 @@
+# Enrich a person
+
+> Find a person from identity clues and return their profile with a match score. Available on all plans; free or disposable email addresses return 422.
+
+20 credits per matchAll plansBeta
+
+See the [guide](https://docs.context.dev/people/enrich.md) for examples and usage.
+
+
+## OpenAPI
+
+````yaml POST /people/enrich
+openapi: 3.1.0
+info:
+  title: Context.dev API
+  description: >-
+    Scrape, crawl, search, and monitor websites, and retrieve brand, people, and
+    news data.
+  version: 1.0.0
+servers:
+  - url: https://api.context.dev/v1
+security: []
+tags:
+  - name: Webhooks
+    description: Inspect and retry batch and monitor webhook deliveries.
+  - name: Logs
+    description: Read your organization's API request logs.
+  - name: Usage
+    description: Read your organization's credit balance and usage history.
+  - name: Browser Profiles
+    description: See the authenticated browser profiles your organization created.
+  - name: Agent Feedback
+    description: Report API issues and documentation mismatches.
+  - name: Batches
+    description: Scrape many pages or crawl a site asynchronously.
+  - name: Monitors
+    description: Watch websites for exact or meaningful changes.
+  - name: Access Policies
+    description: Control which websites your requests can access.
+  - name: News
+    description: Search live and historical news about a company.
+  - name: Answers
+    description: Answer a research task from the live web in the JSON shape you ask for.
+paths:
+  /people/enrich:
+    post:
+      tags:
+        - People
+      summary: Enrich a person
+      description: >-
+        Find a person from identity clues and return their profile with a match
+        score. Available on all plans; free or disposable email addresses return
+        422.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonEnrichmentRequest'
+            example:
+              social_urls:
+                - https://www.linkedin.com/in/ada-lovelace/
+              name:
+                first: Ada
+                last: Lovelace
+              company:
+                name: Analytical Engines
+                domain: analyticalengines.example
+      responses:
+        '200':
+          description: >-
+            The highest-scoring candidate, including weak matches, or a
+            not-found result when no usable candidate exists.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+            X-Context-ZDR:
+              description: >-
+                Present with the value true when zero data retention was
+                requested and honored.
+              schema:
+                type: string
+                enum:
+                  - 'true'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonEnrichmentResponse'
+        '400':
+          description: Bad request - Insufficient or invalid identity clues
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - Invalid or missing API key
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
+          description: >-
+            Insufficient credits (`USAGE_EXCEEDED`); authentication is valid.
+            Retry once funded. Legacy deployments may return 401.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: >-
+            API key permissions or organization settings do not allow this
+            request.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '408':
+          description: Request timeout
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Free or disposable email domain.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Human-readable error message.
+                  status:
+                    type: string
+                    description: Status of the response, e.g., 'error'
+                  error_code:
+                    type: string
+                    enum:
+                      - FREE_EMAIL_DETECTED
+                      - DISPOSABLE_EMAIL_DETECTED
+                    description: >-
+                      Error code indicating whether a free email provider or
+                      disposable email was detected
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+                  request_id:
+                    $ref: '#/components/schemas/RequestId'
+                required:
+                  - request_id
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          description: Internal server error
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - bearerAuth: []
+components:
+  schemas:
+    PersonEnrichmentRequest:
+      type: object
+      properties:
+        social_urls:
+          type: array
+          items:
+            type: string
+            format: uri
+          minItems: 1
+          maxItems: 20
+          description: >-
+            Public profile URLs for the person. A person-profile URL can
+            identify the person without a name.
+        name:
+          type: object
+          properties:
+            first:
+              type: string
+              minLength: 1
+              maxLength: 100
+              description: First or given name.
+            last:
+              type: string
+              minLength: 1
+              maxLength: 100
+              description: Last or family name.
+          additionalProperties: false
+          description: >-
+            Person name. Without an email or person-profile URL, provide both
+            first and last name plus company, education, or location.
+        email:
+          type: string
+          maxLength: 320
+          format: email
+          description: Email address of the person to find.
+        company:
+          type: object
+          properties:
+            name:
+              type: string
+              minLength: 1
+              maxLength: 200
+              description: Name of a company associated with the person.
+            domain:
+              type: string
+              minLength: 1
+              maxLength: 253
+              description: Website domain of a company associated with the person.
+          additionalProperties: false
+          description: >-
+            Company context to help identify the person. Provide a name or
+            domain.
+        education:
+          type: array
+          items:
+            type: object
+            properties:
+              institution:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    minLength: 1
+                    maxLength: 200
+                    description: Name of the school or university.
+                  domain:
+                    type: string
+                    minLength: 1
+                    maxLength: 253
+                    description: Website domain of the school or university.
+                additionalProperties: false
+                description: School or university, identified by name or domain.
+              degree:
+                type: string
+                minLength: 1
+                maxLength: 200
+                description: Degree or qualification earned.
+              field_of_study:
+                type: string
+                minLength: 1
+                maxLength: 200
+                description: Subject or major studied.
+              graduation_year:
+                type: integer
+                minimum: 1900
+                maximum: 2200
+                description: Four-digit graduation year.
+            additionalProperties: false
+          minItems: 1
+          maxItems: 10
+          description: Education history to help distinguish people with similar names.
+        location:
+          type: object
+          properties:
+            city:
+              type: string
+              minLength: 1
+              maxLength: 200
+              description: City associated with the person.
+            region:
+              type: string
+              minLength: 1
+              maxLength: 200
+              description: State, province, or region associated with the person.
+            country:
+              type: string
+              minLength: 1
+              maxLength: 200
+              description: Country associated with the person.
+          additionalProperties: false
+          description: >-
+            Location context to help identify the person. Provide a city,
+            region, or country.
+        timeoutOpts:
+          $ref: '#/components/schemas/PartialTimeout'
+        zdr:
+          type: string
+          enum:
+            - enabled
+            - disabled
+          description: >-
+            `enabled` turns on zero data retention. Returns 403
+            `ZDR_NOT_ENABLED` unless your organization has ZDR.
+        tags:
+          $ref: '#/components/schemas/RequestTags'
+      additionalProperties: false
+      description: >-
+        Identity clues for one person. Provide a person email, a person-profile
+        social URL, or both first and last name with company, education, or
+        location. All supplied clues are considered together.
+    PersonEnrichmentResponse:
+      type: object
+      properties:
+        partial:
+          type: boolean
+          description: >-
+            True when the timeout ended processing and this response contains
+            the usable data completed so far. Unfinished fields are omitted.
+        match:
+          $ref: '#/components/schemas/PersonEnrichmentMatch'
+        key_metadata:
+          $ref: '#/components/schemas/KeyMetadata'
+        request_id:
+          $ref: '#/components/schemas/RequestId'
+      required:
+        - match
+        - request_id
+      additionalProperties: false
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Human-readable error message.
+        error_code:
+          type: string
+          enum:
+            - PROFILE_NOT_FOUND
+            - PROFILE_BUSY
+            - PROFILE_SESSION_EXPIRED
+            - PROFILE_REAUTHENTICATION_REQUIRED
+            - PROFILE_INVALID_CREDENTIALS
+            - PROFILE_MISSING_CREDENTIALS
+            - PROFILE_INTERACTION_REQUIRED
+            - PROFILE_AUTHENTICATION_UNKNOWN
+            - PROFILE_ORIGIN_BLOCKED
+            - PROFILE_INVALID_SESSION
+            - PROFILE_SESSION_TOO_LARGE
+            - INTERNAL_ERROR
+            - VALID
+            - NOT_FOUND
+            - FORBIDDEN
+            - ACCESS_POLICY_DENIED
+            - ACCESS_POLICIES_NOT_ENABLED
+            - USAGE_EXCEEDED
+            - RATE_LIMITED
+            - UNAUTHORIZED
+            - DISABLED
+            - PAID_PLAN_REQUIRED
+            - INSUFFICIENT_PERMISSIONS
+            - TIMEOUT_EXCEEDS_MAXIMUM
+            - TIMEOUT_TOO_SHORT_FOR_WAIT
+            - WEBSITE_ACCESS_ERROR
+            - WEBSITE_BLOCKED
+            - WEBSITE_NOT_FOUND
+            - PDF_SKIPPED
+            - PDF_IMAGES_ONLY
+            - NO_PUBLISHED_MARKDOWN
+            - INPUT_VALIDATION_ERROR
+            - ZDR_NOT_SUPPORTED
+            - ZDR_NOT_ENABLED
+            - FREE_EMAIL_DETECTED
+            - DISPOSABLE_EMAIL_DETECTED
+            - REQUEST_TIMEOUT
+            - COLD_DOMAIN_TIMEOUT_TOO_LOW
+            - UNSUPPORTED_CONTENT
+            - CONTENT_TOO_LARGE
+            - MONITOR_PAUSED
+            - MONITOR_NO_WEBHOOK
+            - COLLECTION_PAUSED
+            - MONITOR_LIMIT_EXCEEDED
+            - SEARCH_UNAVAILABLE
+            - BATCH_LIMIT_EXCEEDED
+            - BATCH_NOT_CANCELLABLE
+            - BATCH_NOT_COMPLETED
+            - IDEMPOTENCY_KEY_CONFLICT
+            - DELIVERY_IN_PROGRESS
+            - DELIVERY_ALREADY_DELIVERED
+            - DELIVERY_EXPIRED
+            - DELIVERY_CANCELLED
+          description: Machine-readable error code.
+        error_data:
+          anyOf:
+            - $ref: '#/components/schemas/BillingErrorData'
+            - $ref: '#/components/schemas/ConcurrencyErrorData'
+            - $ref: '#/components/schemas/AccessPolicyErrorData'
+        required_permission:
+          type: string
+          enum:
+            - logs:read
+            - data:execute
+            - monitors:read
+            - monitors:write
+            - batches:read
+            - batches:write
+            - access_policies:read
+            - access_policies:write
+          description: >-
+            Permission required for this request when error_code is
+            INSUFFICIENT_PERMISSIONS. Manage (write) also grants read access to
+            the same resource group.
+        key_metadata:
+          $ref: '#/components/schemas/KeyMetadata'
+        request_id:
+          $ref: '#/components/schemas/RequestId'
+      required:
+        - request_id
+    KeyMetadata:
+      type: object
+      properties:
+        credits_consumed:
+          type: integer
+          description: Credits charged for this request.
+        credits_remaining:
+          type: integer
+          description: Credits remaining for your organization.
+      required:
+        - credits_consumed
+        - credits_remaining
+      description: Credits this request used and your remaining balance.
+    RequestId:
+      type: string
+      format: uuid
+      description: >-
+        Unique ID of this request, also in `X-Request-Id`. Include it when
+        contacting support.
+      example: 3f1c2a6e-8b4d-4c1e-9f0a-2d7b5e6c8a91
+    PartialTimeout:
+      type: object
+      properties:
+        milliseconds:
+          type: integer
+          minimum: 1000
+          maximum: 300000
+          description: Deadline in milliseconds.
+        behavior:
+          type: string
+          enum:
+            - fail
+            - return-partial
+          default: fail
+          description: >-
+            "fail" returns 408 at the deadline. "return-partial" returns
+            available results; inspect the response’s partial flag.
+      required:
+        - milliseconds
+      additionalProperties: false
+      description: Request deadline and what to return when it passes.
+    RequestTags:
+      type: array
+      items:
+        type: string
+        minLength: 1
+        maxLength: 50
+      maxItems: 20
+      description: Labels for filtering usage in the dashboard.
+      example:
+        - production
+        - team-alpha
+    PersonEnrichmentMatch:
+      oneOf:
+        - $ref: '#/components/schemas/PersonEnrichmentCandidateMatch'
+        - $ref: '#/components/schemas/PersonEnrichmentNotFoundMatch'
+      discriminator:
+        propertyName: status
+        mapping:
+          candidate: '#/components/schemas/PersonEnrichmentCandidateMatch'
+          not_found: '#/components/schemas/PersonEnrichmentNotFoundMatch'
+    BillingErrorData:
+      type: object
+      properties:
+        is_authenticated:
+          type: boolean
+          enum:
+            - true
+        credits_remaining:
+          type: number
+          minimum: 0
+        credits_required:
+          type: number
+          minimum: 0
+        is_credits_required_estimated:
+          type: boolean
+        credits_charged:
+          type: number
+          minimum: 0
+        should_retry:
+          type: boolean
+          enum:
+            - false
+        retry_condition:
+          type: string
+          enum:
+            - sufficient_credits
+        next_refill_at:
+          type: string
+          format: date-time
+        next_refill_credits:
+          type: number
+          exclusiveMinimum: 0
+        info_url:
+          type: string
+          enum:
+            - https://context.dev/dashboard/subscription
+      required:
+        - is_authenticated
+        - should_retry
+        - retry_condition
+        - info_url
+      description: >-
+        Credit admission or reservation failure details. credits_required is an
+        admission estimate, not a final charge. should_retry is false for an
+        unchanged request immediately; retry_condition requires sufficient
+        account credits. Unknown balances, costs, and refill details are
+        omitted. next_refill_at is an ISO 8601 UTC timestamp. Existing
+        request_id and key_metadata remain on the error envelope.
+    ConcurrencyErrorData:
+      type: object
+      properties:
+        is_authenticated:
+          type: boolean
+          enum:
+            - true
+        limit_type:
+          type: string
+          enum:
+            - concurrency
+        limit:
+          type: number
+          minimum: 0
+        remaining:
+          type: number
+          minimum: 0
+        retry_after_seconds:
+          type: number
+          minimum: 0
+        credits_remaining:
+          type: number
+          minimum: 0
+        credits_charged:
+          type: number
+          enum:
+            - 0
+        should_retry:
+          type: boolean
+          enum:
+            - false
+        retry_condition:
+          type: string
+          enum:
+            - available_concurrency
+        recovery_options:
+          type: array
+          items:
+            type: string
+            enum:
+              - wait_for_in_flight_requests
+              - increase_concurrency_limit
+        info_url:
+          type: string
+          enum:
+            - https://context.dev/dashboard/subscription
+      required:
+        - is_authenticated
+        - limit_type
+        - limit
+        - remaining
+        - retry_after_seconds
+        - credits_charged
+        - should_retry
+        - retry_condition
+        - recovery_options
+        - info_url
+      description: >-
+        Organization concurrency rejection details. Authentication is valid and
+        no credits were charged. should_retry is false immediately; respect
+        retry_after_seconds and wait for an in-flight request to finish or for
+        the effective concurrency limit to increase. info_url opens subscription
+        settings; no higher allowance is guaranteed for a particular account.
+    AccessPolicyErrorData:
+      type: object
+      properties:
+        url:
+          type: string
+          description: The URL that was blocked.
+        denied_by:
+          type: array
+          items:
+            type: string
+          description: IDs of the access policies that blocked it.
+      required:
+        - url
+        - denied_by
+      description: Sent with `ACCESS_POLICY_DENIED`.
+    PersonEnrichmentCandidateMatch:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - candidate
+        score:
+          type: integer
+          minimum: 0
+          maximum: 100
+        person:
+          type: object
+          properties:
+            name:
+              type: object
+              properties:
+                full:
+                  type: string
+                first:
+                  type: string
+                last:
+                  type: string
+              additionalProperties: false
+            email:
+              type: string
+              format: email
+            avatar_url:
+              type: string
+              pattern: ^https:\/\/media\.brand\.dev\/pfp\/[0-9a-f-]{36}(?:\.png)?$
+            bio:
+              type: string
+            location:
+              type: object
+              properties:
+                display:
+                  type: string
+                city:
+                  type: string
+                region:
+                  type: string
+                country:
+                  type: string
+                country_code:
+                  type: string
+              additionalProperties: false
+            social_urls:
+              type: array
+              items:
+                type: string
+                format: uri
+            website_urls:
+              type: array
+              items:
+                type: string
+                format: uri
+            current_role:
+              type: object
+              properties:
+                title:
+                  type: string
+                organization:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    domain:
+                      type: string
+                  required:
+                    - name
+                  additionalProperties: false
+                location:
+                  type: string
+                description:
+                  type: string
+                start_date:
+                  type: object
+                  properties:
+                    year:
+                      type: integer
+                    month:
+                      type: integer
+                      minimum: 1
+                      maximum: 12
+                    day:
+                      type: integer
+                      minimum: 1
+                      maximum: 31
+                  required:
+                    - year
+                  additionalProperties: false
+                end_date:
+                  type: object
+                  properties:
+                    year:
+                      type: integer
+                    month:
+                      type: integer
+                      minimum: 1
+                      maximum: 12
+                    day:
+                      type: integer
+                      minimum: 1
+                      maximum: 31
+                  required:
+                    - year
+                  additionalProperties: false
+                is_current:
+                  type: boolean
+              required:
+                - title
+                - organization
+              additionalProperties: false
+            current_role_status:
+              type: string
+              enum:
+                - present
+                - none
+                - unknown
+              description: >-
+                Whether the person's current role is known. `present` —
+                current_role is populated. `none` — the work history explicitly
+                shows every role has ended. `unknown` — our data sources could
+                not confirm either way; treat a missing current_role as
+                unverified rather than vacant.
+            experience:
+              type: array
+              items:
+                type: object
+                properties:
+                  title:
+                    type: string
+                  organization:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      domain:
+                        type: string
+                    required:
+                      - name
+                    additionalProperties: false
+                  location:
+                    type: string
+                  description:
+                    type: string
+                  start_date:
+                    type: object
+                    properties:
+                      year:
+                        type: integer
+                      month:
+                        type: integer
+                        minimum: 1
+                        maximum: 12
+                      day:
+                        type: integer
+                        minimum: 1
+                        maximum: 31
+                    required:
+                      - year
+                    additionalProperties: false
+                  end_date:
+                    type: object
+                    properties:
+                      year:
+                        type: integer
+                      month:
+                        type: integer
+                        minimum: 1
+                        maximum: 12
+                      day:
+                        type: integer
+                        minimum: 1
+                        maximum: 31
+                    required:
+                      - year
+                    additionalProperties: false
+                  is_current:
+                    type: boolean
+                required:
+                  - title
+                  - organization
+                additionalProperties: false
+            education:
+              type: array
+              items:
+                type: object
+                properties:
+                  institution:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      domain:
+                        type: string
+                    required:
+                      - name
+                    additionalProperties: false
+                  degree:
+                    type: string
+                  field_of_study:
+                    type: string
+                  description:
+                    type: string
+                  start_date:
+                    type: object
+                    properties:
+                      year:
+                        type: integer
+                      month:
+                        type: integer
+                        minimum: 1
+                        maximum: 12
+                      day:
+                        type: integer
+                        minimum: 1
+                        maximum: 31
+                    required:
+                      - year
+                    additionalProperties: false
+                  end_date:
+                    type: object
+                    properties:
+                      year:
+                        type: integer
+                      month:
+                        type: integer
+                        minimum: 1
+                        maximum: 12
+                      day:
+                        type: integer
+                        minimum: 1
+                        maximum: 31
+                    required:
+                      - year
+                    additionalProperties: false
+                required:
+                  - institution
+                additionalProperties: false
+            skills:
+              type: array
+              items:
+                type: string
+            last_updated:
+              type: string
+              description: >-
+                When the underlying profile data last changed in our data
+                sources (ISO 8601). Omitted when unknown.
+            checked_at:
+              type: string
+              description: >-
+                When we last refreshed this profile from our data sources (ISO
+                8601).
+          required:
+            - social_urls
+            - website_urls
+            - current_role_status
+            - experience
+            - education
+            - skills
+          additionalProperties: false
+      required:
+        - status
+        - score
+        - person
+      additionalProperties: false
+      title: Candidate match
+      description: The highest-scoring person candidate.
+    PersonEnrichmentNotFoundMatch:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - not_found
+        score:
+          type: 'null'
+        person:
+          type: 'null'
+      required:
+        - status
+        - score
+        - person
+      additionalProperties: false
+      title: No match
+      description: No usable person candidate was found.
+  headers:
+    RequestId:
+      description: Unique ID of this request; also `request_id` in JSON bodies.
+      schema:
+        type: string
+        format: uuid
+    RateLimitLimit:
+      description: >-
+        Maximum request units per minute, or maximum concurrent requests when
+        X-RateLimit-Mode is concurrency.
+      schema:
+        type: integer
+        minimum: 1
+    RateLimitRemaining:
+      description: >-
+        Request units remaining in the current minute, or concurrent requests
+        still available when X-RateLimit-Mode is concurrency.
+      schema:
+        type: integer
+        minimum: 0
+    RateLimitReset:
+      description: >-
+        Unix timestamp in seconds when the per-minute rate limit resets. Omitted
+        for concurrency limits.
+      schema:
+        type: integer
+    RateLimitMode:
+      description: >-
+        Set to concurrency when these headers report concurrent requests. When a
+        per-minute limit also applies, its rejections report per-minute headers
+        without this header. New Free accounts have 2 concurrent requests and 10
+        requests per minute; paid plans have no per-minute limit by default.
+        Existing and custom allowances can differ.
+      schema:
+        type: string
+        enum:
+          - concurrency
+  responses:
+    RateLimited:
+      description: >-
+        Rate limit exceeded. Organization concurrency rejections include
+        structured error_data and subscription settings; follow Retry-After
+        before retrying.
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/RequestId'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+        X-RateLimit-Mode:
+          $ref: '#/components/headers/RateLimitMode'
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 60
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: Human-readable error message.
+              error_code:
+                type: string
+                enum:
+                  - RATE_LIMITED
+                description: Error code indicating the rate limit was exceeded
+              error_data:
+                $ref: '#/components/schemas/ConcurrencyErrorData'
+              key_metadata:
+                $ref: '#/components/schemas/KeyMetadata'
+              request_id:
+                $ref: '#/components/schemas/RequestId'
+            required:
+              - message
+              - error_code
+              - request_id
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: >-
+        Send `Authorization: Bearer <API_KEY>`. Keys have full access unless
+        restricted to scopes.
+
+````
+
+This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.
