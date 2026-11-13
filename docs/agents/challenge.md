@@ -1,10 +1,10 @@
 # Challenge
 
-Distilled from the raw material in `material/` (local, not versioned). Agents read this
+Distilled from the raw briefs in `docs/reference/` and `material/` (local, not versioned). Agents read this
 file, not the raw PDFs or slides. Keep it under 100 lines. All times Europe/Helsinki (UTC+2).
 
 ## Track
-- Challenge and partner: "Make Unicorns Real" by Cala. Raw brief: `material/cala-track-brief.md`.
+- Challenge and partner: "Make Unicorns Real" by Cala. Raw brief: `docs/reference/cala-track-brief.md`.
 - Problem: founders and investors decide on scattered, stale information (tabs, old
   databases, gut feeling). Build a product on Cala's structured, sourced data (companies,
   people, funding rounds, investors and the links between them) that solves one real need
@@ -64,6 +64,8 @@ pitch deck PDF, team phone numbers and Discord usernames. README.md mirrors the 
 Google DeepMind (Gemini), NVIDIA, Verda, Modal (GPU/compute), Exa (search API), Cala
 (company/investor data, "Make Unicorns Real"), Hostinger (hosting), Arduino and Intel
 (hardware lab), MLH x GitHub.
+Hackerpack we may use: Context.dev web data API (companies, people, news, scrape), 50k
+credits per team; see `context-dev.md`.
 
 ## Scope
 - MVP (must demo): TODO

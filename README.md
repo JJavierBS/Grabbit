@@ -27,6 +27,8 @@ make dev
 ## Contributing
 After cloning, run `bash scripts/setup.sh` once (hooks, local exclusions, `.env`).
 Then follow `AGENTS.md`: one issue, one branch, one PR; never push to `main`.
+Raw briefs and partner docs live in `docs/reference/`; refresh a docs mirror with
+`bash scripts/fetch-docs.sh [base_url] [dest]` (default: Context.dev).
 How we manage issues, the board, labels and milestones: `docs/agents/workflow.md`.
 
 Commit messages and PR titles: `[<github-user>] [<TYPE>] (#<issue>) <Summary>`, e.g.

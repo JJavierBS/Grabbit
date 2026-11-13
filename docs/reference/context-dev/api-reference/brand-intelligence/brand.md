@@ -1,0 +1,2037 @@
+# Retrieve a brand
+
+> Retrieve logos, colors, company details, and social links using one lookup identifier. A direct URL limits extraction to that page.
+
+10 credits
+
+See the [guide](https://docs.context.dev/brand/overview) for examples and usage.
+
+
+## OpenAPI
+
+````yaml POST /brand/retrieve
+openapi: 3.1.0
+info:
+  title: Context.dev API
+  description: >-
+    Scrape, crawl, search, and monitor websites, and retrieve brand, people, and
+    news data.
+  version: 1.0.0
+servers:
+  - url: https://api.context.dev/v1
+security: []
+tags:
+  - name: Webhooks
+    description: Inspect and retry batch and monitor webhook deliveries.
+  - name: Logs
+    description: Read your organization's API request logs.
+  - name: Usage
+    description: Read your organization's credit balance and usage history.
+  - name: Browser Profiles
+    description: See the authenticated browser profiles your organization created.
+  - name: Agent Feedback
+    description: Report API issues and documentation mismatches.
+  - name: Batches
+    description: Scrape many pages or crawl a site asynchronously.
+  - name: Monitors
+    description: Watch websites for exact or meaningful changes.
+  - name: Access Policies
+    description: Control which websites your requests can access.
+  - name: News
+    description: Search live and historical news about a company.
+  - name: Answers
+    description: Answer a research task from the live web in the JSON shape you ask for.
+paths:
+  /brand/retrieve:
+    post:
+      tags:
+        - Brand Intelligence
+      summary: Retrieve a brand
+      description: >-
+        Retrieve logos, colors, company details, and social links using one
+        lookup identifier. A direct URL limits extraction to that page.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BrandRetrieveRequest'
+            examples:
+              domain:
+                summary: By domain
+                value:
+                  type: by_domain
+                  domain: stripe.com
+              name:
+                summary: By name
+                value:
+                  type: by_name
+                  name: Stripe
+              email:
+                summary: By email
+                value:
+                  type: by_email
+                  email: jane@stripe.com
+              ticker:
+                summary: By stock
+                value:
+                  type: by_ticker
+                  ticker: AAPL
+                  ticker_exchange: NASDAQ
+              direct_url:
+                summary: By direct URL
+                value:
+                  type: by_direct_url
+                  direct_url: https://stripe.com/enterprise
+              transaction:
+                summary: By transaction
+                value:
+                  type: by_transaction
+                  transaction_info: SQ *COFFEE SHOP
+                  country_gl: us
+                  mcc: 5814
+                  high_confidence_only: true
+      responses:
+        '200':
+          description: Successful response
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+            X-Context-ZDR:
+              description: >-
+                Present with the value true when zdr=enabled suppressed logs and
+                traces. Brand data and hosted assets may still be stored.
+              schema:
+                type: string
+                enum:
+                  - 'true'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BrandResponse'
+        '400':
+          description: >-
+            Invalid input, brand or company not found (`NOT_FOUND`), or the
+            website could not be read.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid API key.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
+          description: >-
+            Insufficient credits (`USAGE_EXCEEDED`); authentication is valid.
+            Retry once funded. Legacy deployments may return 401.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: >-
+            API key permissions or organization settings do not allow this
+            request. An access policy can also block the website
+            (`ACCESS_POLICY_DENIED`).
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '408':
+          description: Request Timeout
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Free or disposable email domain.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+      security:
+        - bearerAuth: []
+components:
+  schemas:
+    BrandRetrieveRequest:
+      oneOf:
+        - $ref: '#/components/schemas/BrandRetrieveByDomainRequest'
+        - $ref: '#/components/schemas/BrandRetrieveByNameRequest'
+        - $ref: '#/components/schemas/BrandRetrieveByEmailRequest'
+        - $ref: '#/components/schemas/BrandRetrieveByTickerRequest'
+        - $ref: '#/components/schemas/BrandRetrieveByDirectUrlRequest'
+        - $ref: '#/components/schemas/BrandRetrieveFromTransactionRequest'
+      discriminator:
+        propertyName: type
+        mapping:
+          by_domain: '#/components/schemas/BrandRetrieveByDomainRequest'
+          by_name: '#/components/schemas/BrandRetrieveByNameRequest'
+          by_email: '#/components/schemas/BrandRetrieveByEmailRequest'
+          by_ticker: '#/components/schemas/BrandRetrieveByTickerRequest'
+          by_direct_url: '#/components/schemas/BrandRetrieveByDirectUrlRequest'
+          by_transaction: '#/components/schemas/BrandRetrieveFromTransactionRequest'
+      description: One lookup, chosen by `type`.
+    BrandResponse:
+      type: object
+      properties:
+        partial:
+          type: boolean
+          description: >-
+            True when the timeout ended processing and this response contains
+            the usable data completed so far. Unfinished fields are omitted.
+        status:
+          type: string
+          description: Always `ok` on success.
+        brand:
+          type: object
+          properties:
+            domain:
+              type: string
+              description: The domain name of the brand
+            title:
+              type: string
+              description: The title or name of the brand
+            description:
+              type: string
+              description: A brief description of the brand
+            slogan:
+              type: string
+              description: The brand's slogan
+            colors:
+              type: array
+              items:
+                type: object
+                properties:
+                  hex:
+                    type: string
+                    description: Color in hexadecimal format
+                  name:
+                    type: string
+                    description: Name of the color
+                  source:
+                    type: string
+                    enum:
+                      - site
+                      - logo
+                    description: >-
+                      Where the color was observed: 'site' colors come from the
+                      website's own theme signals (rendered page colors,
+                      manifest, theme-color meta), 'logo' colors from logo image
+                      pixels.
+              description: An array of brand colors
+            logos:
+              type: array
+              items:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    description: Hosted logo URL.
+                  mode:
+                    type: string
+                    enum:
+                      - light
+                      - dark
+                      - has_opaque_background
+                    description: >-
+                      Indicates when this logo is best used: 'light' = best for
+                      light mode, 'dark' = best for dark mode,
+                      'has_opaque_background' = can be used for either as image
+                      has its own background
+                  colors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        hex:
+                          type: string
+                          description: Color in hexadecimal format
+                        name:
+                          type: string
+                          description: Name of the color
+                    description: Array of colors in the logo
+                  resolution:
+                    type: object
+                    properties:
+                      width:
+                        type: integer
+                        description: Width of the image in pixels
+                      height:
+                        type: integer
+                        description: Height of the image in pixels
+                      aspect_ratio:
+                        type: number
+                        description: Aspect ratio of the image (width/height)
+                    description: Resolution of the logo image
+                  type:
+                    type: string
+                    enum:
+                      - icon
+                      - logo
+                    description: >-
+                      Type of the logo based on resolution (e.g., 'icon',
+                      'logo')
+              description: >-
+                An array of logos associated with the brand. When a similarly
+                shaped SVG variant exists, it is returned ahead of its raster
+                equivalent; otherwise relevance order is preserved
+            backdrops:
+              type: array
+              items:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    description: URL of the backdrop image
+                  colors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        hex:
+                          type: string
+                          description: Color in hexadecimal format
+                        name:
+                          type: string
+                          description: Name of the color
+                    description: Array of colors in the backdrop image
+                  resolution:
+                    type: object
+                    properties:
+                      width:
+                        type: integer
+                        description: Width of the image in pixels
+                      height:
+                        type: integer
+                        description: Height of the image in pixels
+                      aspect_ratio:
+                        type: number
+                        description: Aspect ratio of the image (width/height)
+                    description: Resolution of the backdrop image
+              description: An array of backdrop images for the brand
+            socials:
+              type: array
+              items:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    enum:
+                      - x
+                      - facebook
+                      - instagram
+                      - linkedin
+                      - youtube
+                      - pinterest
+                      - tiktok
+                      - dribbble
+                      - github
+                      - behance
+                      - snapchat
+                      - whatsapp
+                      - telegram
+                      - line
+                      - discord
+                      - twitch
+                      - vimeo
+                      - imdb
+                      - tumblr
+                      - flickr
+                      - giphy
+                      - medium
+                      - spotify
+                      - soundcloud
+                      - tripadvisor
+                      - yelp
+                      - producthunt
+                      - reddit
+                      - crunchbase
+                      - appstore
+                      - playstore
+                    description: Type of social media platform
+                  url:
+                    type: string
+                    description: URL of the social media page
+              description: An array of social media links for the brand
+            address:
+              type: object
+              properties:
+                street:
+                  type: string
+                  description: Street address
+                city:
+                  type: string
+                  description: City name
+                country:
+                  type: string
+                  description: Country name
+                country_code:
+                  type: string
+                  description: Country code
+                state_province:
+                  type: string
+                  description: State or province name
+                state_code:
+                  type: string
+                  description: State or province code
+                postal_code:
+                  type: string
+                  description: Postal or ZIP code
+              description: Physical address of the brand
+            stock:
+              type: object
+              properties:
+                ticker:
+                  type: string
+                  description: Stock ticker symbol
+                exchange:
+                  type: string
+                  description: Stock exchange name
+              description: >-
+                Stock market information for this brand (will be null if not a
+                publicly traded company)
+            employees:
+              type: object
+              properties:
+                range:
+                  type: string
+                  enum:
+                    - 1 to 10
+                    - 11 to 50
+                    - 51 to 200
+                    - 201 to 500
+                    - 501 to 1000
+                    - 1001 to 5000
+                    - 5001 to 10000
+                    - 10001+
+                  description: Employee count range for the brand (e.g. '11 to 50')
+                exact:
+                  type: integer
+                  description: Exact employee count when a precise headcount is known
+              description: >-
+                Employee headcount information for the brand (will be null if
+                unknown)
+            is_nsfw:
+              type: boolean
+              description: Indicates whether the brand content is not safe for work (NSFW)
+            email:
+              type: string
+              description: Company email address
+            phone:
+              type: string
+              description: Company phone number
+            industries:
+              type: object
+              properties:
+                eic:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      industry:
+                        $ref: '#/components/schemas/Industry'
+                      subindustry:
+                        $ref: '#/components/schemas/Subindustry'
+                    required:
+                      - industry
+                      - subindustry
+                  description: >-
+                    Easy Industry Classification - array of industry and
+                    subindustry pairs
+              description: Industry classification information for the brand
+            links:
+              type: object
+              properties:
+                careers:
+                  type:
+                    - string
+                    - 'null'
+                  description: URL to the brand's careers or job opportunities page
+                privacy:
+                  type:
+                    - string
+                    - 'null'
+                  description: URL to the brand's privacy policy page
+                terms:
+                  type:
+                    - string
+                    - 'null'
+                  description: >-
+                    URL to the brand's terms of service or terms and conditions
+                    page
+                contact:
+                  type:
+                    - string
+                    - 'null'
+                  description: URL to the brand's contact or contact us page
+                blog:
+                  type:
+                    - string
+                    - 'null'
+                  description: URL to the brand's blog or news page
+                pricing:
+                  type:
+                    - string
+                    - 'null'
+                  description: URL to the brand's pricing or plans page
+              description: Important website links for the brand
+            primary_language:
+              anyOf:
+                - allOf:
+                    - $ref: '#/components/schemas/SupportedLanguage'
+                - type: 'null'
+              description: >-
+                The primary language of the brand's website content. Detected
+                from the HTML lang tag, page content analysis, or social media
+                descriptions.
+          description: Detailed brand information
+        code:
+          type: integer
+          description: HTTP status code
+        cache_metadata:
+          $ref: '#/components/schemas/CacheMetadata'
+        key_metadata:
+          $ref: '#/components/schemas/KeyMetadata'
+        request_id:
+          $ref: '#/components/schemas/RequestId'
+      required:
+        - status
+        - brand
+        - code
+        - cache_metadata
+        - request_id
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Human-readable error message.
+        error_code:
+          type: string
+          enum:
+            - PROFILE_NOT_FOUND
+            - PROFILE_BUSY
+            - PROFILE_SESSION_EXPIRED
+            - PROFILE_REAUTHENTICATION_REQUIRED
+            - PROFILE_INVALID_CREDENTIALS
+            - PROFILE_MISSING_CREDENTIALS
+            - PROFILE_INTERACTION_REQUIRED
+            - PROFILE_AUTHENTICATION_UNKNOWN
+            - PROFILE_ORIGIN_BLOCKED
+            - PROFILE_INVALID_SESSION
+            - PROFILE_SESSION_TOO_LARGE
+            - INTERNAL_ERROR
+            - VALID
+            - NOT_FOUND
+            - FORBIDDEN
+            - ACCESS_POLICY_DENIED
+            - ACCESS_POLICIES_NOT_ENABLED
+            - USAGE_EXCEEDED
+            - RATE_LIMITED
+            - UNAUTHORIZED
+            - DISABLED
+            - PAID_PLAN_REQUIRED
+            - INSUFFICIENT_PERMISSIONS
+            - TIMEOUT_EXCEEDS_MAXIMUM
+            - TIMEOUT_TOO_SHORT_FOR_WAIT
+            - WEBSITE_ACCESS_ERROR
+            - WEBSITE_BLOCKED
+            - WEBSITE_NOT_FOUND
+            - PDF_SKIPPED
+            - PDF_IMAGES_ONLY
+            - NO_PUBLISHED_MARKDOWN
+            - INPUT_VALIDATION_ERROR
+            - ZDR_NOT_SUPPORTED
+            - ZDR_NOT_ENABLED
+            - FREE_EMAIL_DETECTED
+            - DISPOSABLE_EMAIL_DETECTED
+            - REQUEST_TIMEOUT
+            - COLD_DOMAIN_TIMEOUT_TOO_LOW
+            - UNSUPPORTED_CONTENT
+            - CONTENT_TOO_LARGE
+            - MONITOR_PAUSED
+            - MONITOR_NO_WEBHOOK
+            - COLLECTION_PAUSED
+            - MONITOR_LIMIT_EXCEEDED
+            - SEARCH_UNAVAILABLE
+            - BATCH_LIMIT_EXCEEDED
+            - BATCH_NOT_CANCELLABLE
+            - BATCH_NOT_COMPLETED
+            - IDEMPOTENCY_KEY_CONFLICT
+            - DELIVERY_IN_PROGRESS
+            - DELIVERY_ALREADY_DELIVERED
+            - DELIVERY_EXPIRED
+            - DELIVERY_CANCELLED
+          description: Machine-readable error code.
+        error_data:
+          anyOf:
+            - $ref: '#/components/schemas/BillingErrorData'
+            - $ref: '#/components/schemas/ConcurrencyErrorData'
+            - $ref: '#/components/schemas/AccessPolicyErrorData'
+        required_permission:
+          type: string
+          enum:
+            - logs:read
+            - data:execute
+            - monitors:read
+            - monitors:write
+            - batches:read
+            - batches:write
+            - access_policies:read
+            - access_policies:write
+          description: >-
+            Permission required for this request when error_code is
+            INSUFFICIENT_PERMISSIONS. Manage (write) also grants read access to
+            the same resource group.
+        key_metadata:
+          $ref: '#/components/schemas/KeyMetadata'
+        request_id:
+          $ref: '#/components/schemas/RequestId'
+      required:
+        - request_id
+    BrandRetrieveByDomainRequest:
+      type: object
+      properties:
+        force_language:
+          allOf:
+            - $ref: '#/components/schemas/SupportedLanguage'
+            - type:
+                - string
+                - 'null'
+        maxSpeed:
+          type: boolean
+          description: >-
+            Optional parameter to optimize the API call for maximum speed. When
+            set to true, the API will skip time-consuming operations for faster
+            response at the cost of less comprehensive data.
+        maxAgeMs:
+          type: integer
+          description: >-
+            Maximum age of cached brand data in ms. Defaults to 3 months;
+            clamped to 0–1 year. `0` refreshes.
+        timeoutOpts:
+          $ref: '#/components/schemas/PartialTimeout'
+        type:
+          type: string
+          enum:
+            - by_domain
+          description: Discriminator for domain-based brand retrieval.
+        domain:
+          type: string
+          minLength: 3
+          description: Domain name to retrieve brand data for (e.g., 'stripe.com').
+        zdr:
+          type: string
+          enum:
+            - enabled
+            - disabled
+          description: >-
+            `enabled` disables request logs and traces and omits request and
+            response content from usage logs. Brand data and hosted assets may
+            still be stored. Returns 403 `ZDR_NOT_ENABLED` unless your
+            organization has ZDR.
+        tags:
+          $ref: '#/components/schemas/RequestTags'
+        policies:
+          type: array
+          items:
+            type: string
+          description: Access policy IDs to apply. A URL must pass every policy.
+          example:
+            - pol_3f9c2a7e5b8d4c1f9a6e0b2d7c4f8a1e
+      required:
+        - type
+        - domain
+      additionalProperties: false
+      title: By domain
+      description: >-
+        Retrieve brand data by domain. Cannot be combined with name, email, or
+        ticker.
+    BrandRetrieveByNameRequest:
+      type: object
+      properties:
+        force_language:
+          allOf:
+            - $ref: '#/components/schemas/SupportedLanguage'
+            - type:
+                - string
+                - 'null'
+        maxSpeed:
+          type: boolean
+          description: >-
+            Optional parameter to optimize the API call for maximum speed. When
+            set to true, the API will skip time-consuming operations for faster
+            response at the cost of less comprehensive data.
+        maxAgeMs:
+          type: integer
+          description: >-
+            Maximum age of cached brand data in ms. Defaults to 3 months;
+            clamped to 0–1 year. `0` refreshes.
+        timeoutOpts:
+          $ref: '#/components/schemas/PartialTimeout'
+        type:
+          type: string
+          enum:
+            - by_name
+          description: Discriminator for name-based brand retrieval.
+        name:
+          type: string
+          minLength: 3
+          maxLength: 30
+          description: Company name to retrieve brand data for (e.g., 'Apple Inc').
+        country_gl:
+          allOf:
+            - $ref: '#/components/schemas/CountryGL'
+            - description: >-
+                Optional country code hint (GL parameter) to specify the country
+                when looking up by company name.
+        zdr:
+          type: string
+          enum:
+            - enabled
+            - disabled
+          description: >-
+            `enabled` disables request logs and traces and omits request and
+            response content from usage logs. Brand data and hosted assets may
+            still be stored. Returns 403 `ZDR_NOT_ENABLED` unless your
+            organization has ZDR.
+        tags:
+          $ref: '#/components/schemas/RequestTags'
+        policies:
+          type: array
+          items:
+            type: string
+          description: Access policy IDs to apply. A URL must pass every policy.
+          example:
+            - pol_3f9c2a7e5b8d4c1f9a6e0b2d7c4f8a1e
+      required:
+        - type
+        - name
+      additionalProperties: false
+      title: By name
+      description: >-
+        Retrieve brand data by company name. Cannot be combined with domain,
+        email, or ticker.
+    BrandRetrieveByEmailRequest:
+      type: object
+      properties:
+        force_language:
+          allOf:
+            - $ref: '#/components/schemas/SupportedLanguage'
+            - type:
+                - string
+                - 'null'
+        maxSpeed:
+          type: boolean
+          description: >-
+            Optional parameter to optimize the API call for maximum speed. When
+            set to true, the API will skip time-consuming operations for faster
+            response at the cost of less comprehensive data.
+        maxAgeMs:
+          type: integer
+          description: >-
+            Maximum age of cached brand data in ms. Defaults to 3 months;
+            clamped to 0–1 year. `0` refreshes.
+        timeoutOpts:
+          $ref: '#/components/schemas/PartialTimeout'
+        type:
+          type: string
+          enum:
+            - by_email
+          description: Discriminator for email-based brand retrieval.
+        email:
+          type: string
+          minLength: 1
+          format: email
+          description: Email address to retrieve brand data for (e.g., 'jane@stripe.com').
+        zdr:
+          type: string
+          enum:
+            - enabled
+            - disabled
+          description: >-
+            `enabled` disables request logs and traces and omits request and
+            response content from usage logs. Brand data and hosted assets may
+            still be stored. Returns 403 `ZDR_NOT_ENABLED` unless your
+            organization has ZDR.
+        tags:
+          $ref: '#/components/schemas/RequestTags'
+        policies:
+          type: array
+          items:
+            type: string
+          description: Access policy IDs to apply. A URL must pass every policy.
+          example:
+            - pol_3f9c2a7e5b8d4c1f9a6e0b2d7c4f8a1e
+      required:
+        - type
+        - email
+      additionalProperties: false
+      title: By email
+      description: >-
+        Retrieve brand data by email address. The domain is extracted from the
+        email. Free and disposable email providers are rejected with 422. Cannot
+        be combined with domain, name, or ticker.
+    BrandRetrieveByTickerRequest:
+      type: object
+      properties:
+        force_language:
+          allOf:
+            - $ref: '#/components/schemas/SupportedLanguage'
+            - type:
+                - string
+                - 'null'
+        maxSpeed:
+          type: boolean
+          description: >-
+            Optional parameter to optimize the API call for maximum speed. When
+            set to true, the API will skip time-consuming operations for faster
+            response at the cost of less comprehensive data.
+        maxAgeMs:
+          type: integer
+          description: >-
+            Maximum age of cached brand data in ms. Defaults to 3 months;
+            clamped to 0–1 year. `0` refreshes.
+        timeoutOpts:
+          $ref: '#/components/schemas/PartialTimeout'
+        type:
+          type: string
+          enum:
+            - by_ticker
+          description: Discriminator for ticker-based brand retrieval.
+        ticker:
+          type: string
+          minLength: 1
+          maxLength: 15
+          pattern: ^[A-Za-z0-9.]+$
+          description: Stock ticker symbol to retrieve brand data for (e.g., 'AAPL').
+        ticker_exchange:
+          allOf:
+            - $ref: '#/components/schemas/StockExchange'
+            - description: >-
+                Optional stock exchange for the ticker. Defaults to NASDAQ if
+                not specified.
+        zdr:
+          type: string
+          enum:
+            - enabled
+            - disabled
+          description: >-
+            `enabled` disables request logs and traces and omits request and
+            response content from usage logs. Brand data and hosted assets may
+            still be stored. Returns 403 `ZDR_NOT_ENABLED` unless your
+            organization has ZDR.
+        tags:
+          $ref: '#/components/schemas/RequestTags'
+        policies:
+          type: array
+          items:
+            type: string
+          description: Access policy IDs to apply. A URL must pass every policy.
+          example:
+            - pol_3f9c2a7e5b8d4c1f9a6e0b2d7c4f8a1e
+      required:
+        - type
+        - ticker
+      additionalProperties: false
+      title: By stock
+      description: >-
+        Retrieve brand data by stock ticker. Cannot be combined with domain,
+        name, or email.
+    BrandRetrieveByDirectUrlRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - by_direct_url
+          description: Discriminator for direct-URL-based brand retrieval.
+        direct_url:
+          type: string
+          format: uri
+          description: >-
+            Full http(s) URL to fetch brand data from (e.g.,
+            'https://stripe.com/enterprise'). Only this URL is fetched — not the
+            entire internet.
+        timeoutOpts:
+          $ref: '#/components/schemas/PartialTimeout'
+        zdr:
+          type: string
+          enum:
+            - enabled
+            - disabled
+          description: >-
+            `enabled` disables request logs and traces and omits request and
+            response content from usage logs. Brand data and hosted assets may
+            still be stored. Returns 403 `ZDR_NOT_ENABLED` unless your
+            organization has ZDR.
+        tags:
+          $ref: '#/components/schemas/RequestTags'
+        policies:
+          type: array
+          items:
+            type: string
+          description: Access policy IDs to apply. A URL must pass every policy.
+          example:
+            - pol_3f9c2a7e5b8d4c1f9a6e0b2d7c4f8a1e
+      required:
+        - type
+        - direct_url
+      additionalProperties: false
+      title: By direct URL
+      description: >-
+        Retrieve brand data from this exact URL. Cross-site enrichment and other
+        lookup identifiers are excluded.
+    BrandRetrieveFromTransactionRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - by_transaction
+          description: Discriminator for transaction-based brand retrieval.
+        transaction_info:
+          type: string
+          minLength: 3
+          maxLength: 500
+          description: Transaction information to identify the brand.
+        force_language:
+          allOf:
+            - $ref: '#/components/schemas/SupportedLanguage'
+            - type:
+                - string
+                - 'null'
+        maxSpeed:
+          type: boolean
+          description: >-
+            Optional parameter to optimize the API call for maximum speed. When
+            set to true, the API will skip time-consuming operations for faster
+            response at the cost of less comprehensive data.
+        timeoutOpts:
+          $ref: '#/components/schemas/PartialTimeout'
+        country_gl:
+          allOf:
+            - $ref: '#/components/schemas/CountryGL'
+            - description: >-
+                Optional country code hint (GL parameter) to specify the country
+                when identifying a transaction.
+        city:
+          type: string
+          description: Optional city name to prioritize when searching for the brand.
+        mcc:
+          anyOf:
+            - type: string
+            - type: number
+          description: >-
+            Optional Merchant Category Code (MCC) to help identify the business
+            category or industry.
+        phone:
+          anyOf:
+            - type: string
+            - type: number
+          description: >-
+            Optional phone number from the transaction to help verify brand
+            match.
+        high_confidence_only:
+          type: boolean
+          description: >-
+            When set to true, the API performs additional verification to ensure
+            the identified brand matches the transaction with high confidence.
+        zdr:
+          type: string
+          enum:
+            - enabled
+            - disabled
+          description: >-
+            `enabled` disables request logs and traces and omits request and
+            response content from usage logs. Brand data and hosted assets may
+            still be stored. Returns 403 `ZDR_NOT_ENABLED` unless your
+            organization has ZDR.
+        tags:
+          $ref: '#/components/schemas/RequestTags'
+        policies:
+          type: array
+          items:
+            type: string
+          description: Access policy IDs to apply. A URL must pass every policy.
+          example:
+            - pol_3f9c2a7e5b8d4c1f9a6e0b2d7c4f8a1e
+      required:
+        - type
+        - transaction_info
+      additionalProperties: false
+      title: By transaction
+      description: >-
+        Identify brand data from a transaction descriptor. Cannot be combined
+        with domain, name, email, or ticker.
+    Industry:
+      type: string
+      enum:
+        - Aerospace & Defense
+        - Technology
+        - Finance
+        - Healthcare
+        - Retail & E-commerce
+        - Entertainment
+        - Education
+        - Government & Nonprofit
+        - Industrial & Energy
+        - Automotive & Transportation
+        - Lifestyle & Leisure
+        - Luxury & Fashion
+        - News & Media
+        - Sports
+        - Real Estate & PropTech
+        - Legal & Compliance
+        - Telecommunications
+        - Agriculture & Food
+        - Professional Services & Agencies
+        - Chemicals & Materials
+        - Logistics & Supply Chain
+        - Hospitality & Tourism
+        - Construction & Built Environment
+        - Consumer Packaged Goods (CPG)
+      description: Industry classification enum
+    Subindustry:
+      type: string
+      enum:
+        - Defense Systems & Military Hardware
+        - Aerospace Manufacturing
+        - Avionics & Navigation Technology
+        - Subsea & Naval Defense Systems
+        - Space & Satellite Technology
+        - Defense IT & Systems Integration
+        - Software (B2B)
+        - Software (B2C)
+        - Cloud Infrastructure & DevOps
+        - Cybersecurity
+        - Artificial Intelligence & Machine Learning
+        - Data Infrastructure & Analytics
+        - Hardware & Semiconductors
+        - Fintech Infrastructure
+        - eCommerce & Marketplace Platforms
+        - Developer Tools & APIs
+        - Web3 & Blockchain
+        - XR & Spatial Computing
+        - Banking & Lending
+        - Investment Management & WealthTech
+        - Insurance & InsurTech
+        - Payments & Money Movement
+        - Accounting, Tax & Financial Planning Tools
+        - Capital Markets & Trading Platforms
+        - Financial Infrastructure & APIs
+        - Credit Scoring & Risk Management
+        - Cryptocurrency & Digital Assets
+        - BNPL & Alternative Financing
+        - Healthcare Providers & Services
+        - Pharmaceuticals & Drug Development
+        - Medical Devices & Diagnostics
+        - Biotechnology & Genomics
+        - Digital Health & Telemedicine
+        - Health Insurance & Benefits Tech
+        - Clinical Trials & Research Platforms
+        - Mental Health & Wellness
+        - Healthcare IT & EHR Systems
+        - Consumer Health & Wellness Products
+        - Online Marketplaces
+        - Direct-to-Consumer (DTC) Brands
+        - Retail Tech & Point-of-Sale Systems
+        - Omnichannel & In-Store Retail
+        - E-commerce Enablement & Infrastructure
+        - Subscription & Membership Commerce
+        - Social Commerce & Influencer Platforms
+        - Fashion & Apparel Retail
+        - Food, Beverage & Grocery E-commerce
+        - Streaming Platforms (Video, Music, Audio)
+        - Gaming & Interactive Entertainment
+        - Creator Economy & Influencer Platforms
+        - Film, TV & Production Studios
+        - Events, Venues & Live Entertainment
+        - Virtual Worlds & Metaverse Experiences
+        - K-12 Education Platforms & Tools
+        - Higher Education & University Tech
+        - Online Learning & MOOCs
+        - Test Prep & Certification
+        - Corporate Training & Upskilling
+        - Tutoring & Supplemental Learning
+        - Education Management Systems (LMS/SIS)
+        - Language Learning
+        - Creator-Led & Cohort-Based Courses
+        - Special Education & Accessibility Tools
+        - Government Technology & Digital Services
+        - Civic Engagement & Policy Platforms
+        - International Development & Humanitarian Aid
+        - Philanthropy & Grantmaking
+        - Nonprofit Operations & Fundraising Tools
+        - Public Health & Social Services
+        - Education & Youth Development Programs
+        - Environmental & Climate Action Organizations
+        - Legal Aid & Social Justice Advocacy
+        - Municipal & Infrastructure Services
+        - Manufacturing & Industrial Automation
+        - Energy Production (Oil, Gas, Nuclear)
+        - Renewable Energy & Cleantech
+        - Utilities & Grid Infrastructure
+        - Industrial IoT & Monitoring Systems
+        - Construction & Heavy Equipment
+        - Mining & Natural Resources
+        - Environmental Engineering & Sustainability
+        - Energy Storage & Battery Technology
+        - Automotive OEMs & Vehicle Manufacturing
+        - Electric Vehicles (EVs) & Charging Infrastructure
+        - Mobility-as-a-Service (MaaS)
+        - Fleet Management
+        - Public Transit & Urban Mobility
+        - Autonomous Vehicles & ADAS
+        - Aftermarket Parts & Services
+        - Telematics & Vehicle Connectivity
+        - Aviation & Aerospace Transport
+        - Maritime Shipping
+        - Fitness & Wellness
+        - Beauty & Personal Care
+        - Home & Living
+        - Dating & Relationships
+        - Hobbies, Crafts & DIY
+        - Outdoor & Recreational Gear
+        - Events, Experiences & Ticketing Platforms
+        - Designer & Luxury Apparel
+        - Accessories, Jewelry & Watches
+        - Footwear & Leather Goods
+        - Beauty, Fragrance & Skincare
+        - Fashion Marketplaces & Retail Platforms
+        - Sustainable & Ethical Fashion
+        - Resale, Vintage & Circular Fashion
+        - Fashion Tech & Virtual Try-Ons
+        - Streetwear & Emerging Luxury
+        - Couture & Made-to-Measure
+        - News Publishing & Journalism
+        - Advertising, Adtech & Media Buying
+        - Digital Media & Content Platforms
+        - Broadcasting (TV & Radio)
+        - Podcasting & Audio Media
+        - News Aggregators & Curation Tools
+        - Independent & Creator-Led Media
+        - Newsletters & Substack-Style Platforms
+        - Political & Investigative Media
+        - Trade & Niche Publications
+        - Media Monitoring & Analytics
+        - Professional Teams & Leagues
+        - Sports Media & Broadcasting
+        - Sports Betting & Fantasy Sports
+        - Fitness & Athletic Training Platforms
+        - Sportswear & Equipment
+        - Esports & Competitive Gaming
+        - Sports Venues & Event Management
+        - Athlete Management & Talent Agencies
+        - Sports Tech & Performance Analytics
+        - Youth, Amateur & Collegiate Sports
+        - Real Estate Marketplaces
+        - Property Management Software
+        - Rental Platforms
+        - Mortgage & Lending Tech
+        - Real Estate Investment Platforms
+        - Law Firms & Legal Services
+        - Legal Tech & Automation
+        - Regulatory Compliance
+        - E-Discovery & Litigation Tools
+        - Contract Management
+        - Governance, Risk & Compliance (GRC)
+        - IP & Trademark Management
+        - Legal Research & Intelligence
+        - Compliance Training & Certification
+        - Whistleblower & Ethics Reporting
+        - Mobile & Wireless Networks (3G/4G/5G)
+        - Broadband & Fiber Internet
+        - Satellite & Space-Based Communications
+        - Network Equipment & Infrastructure
+        - Telecom Billing & OSS/BSS Systems
+        - VoIP & Unified Communications
+        - Internet Service Providers (ISPs)
+        - Edge Computing & Network Virtualization
+        - IoT Connectivity Platforms
+        - Precision Agriculture & AgTech
+        - Crop & Livestock Production
+        - Food & Beverage Manufacturing & Processing
+        - Food Distribution
+        - Restaurants & Food Service
+        - Agricultural Inputs & Equipment
+        - Sustainable & Regenerative Agriculture
+        - Seafood & Aquaculture
+        - Management Consulting
+        - Marketing & Advertising Agencies
+        - Design, Branding & Creative Studios
+        - IT Services & Managed Services
+        - Staffing, Recruiting & Talent
+        - Accounting & Tax Firms
+        - Public Relations & Communications
+        - Business Process Outsourcing (BPO)
+        - Professional Training & Coaching
+        - Specialty Chemicals
+        - Commodity & Petrochemicals
+        - Polymers, Plastics & Rubber
+        - Coatings, Adhesives & Sealants
+        - Industrial Gases
+        - Advanced Materials & Composites
+        - Battery Materials & Energy Storage
+        - Electronic Materials & Semiconductor Chemicals
+        - Agrochemicals & Fertilizers
+        - Freight & Transportation Tech
+        - Last-Mile Delivery
+        - Warehouse Automation
+        - Supply Chain Visibility Platforms
+        - Logistics Marketplaces
+        - Shipping & Freight Forwarding
+        - Cold Chain Logistics
+        - Reverse Logistics & Returns
+        - Cross-Border Trade Tech
+        - Transportation Management Systems (TMS)
+        - Hotels & Accommodation
+        - Vacation Rentals & Short-Term Stays
+        - Restaurant Tech & Management
+        - Travel Booking Platforms
+        - Tourism Experiences & Activities
+        - Cruise Lines & Marine Tourism
+        - Hospitality Management Systems
+        - Event & Venue Management
+        - Corporate Travel Management
+        - Travel Insurance & Protection
+        - Construction Management Software
+        - BIM/CAD & Design Tools
+        - Construction Marketplaces
+        - Equipment Rental & Management
+        - Building Materials & Procurement
+        - Construction Workforce Management
+        - Project Estimation & Bidding
+        - Modular & Prefab Construction
+        - Construction Safety & Compliance
+        - Smart Building Technology
+        - Food & Beverage CPG
+        - Home & Personal Care CPG
+        - CPG Analytics & Insights
+        - Direct-to-Consumer CPG Brands
+        - CPG Supply Chain & Distribution
+        - Private Label Manufacturing
+        - CPG Retail Intelligence
+        - Sustainable CPG & Packaging
+        - Beauty & Cosmetics CPG
+        - Health & Wellness CPG
+      description: Subindustry classification enum
+    SupportedLanguage:
+      type: string
+      enum:
+        - afrikaans
+        - albanian
+        - amharic
+        - arabic
+        - armenian
+        - assamese
+        - aymara
+        - azeri
+        - basque
+        - belarusian
+        - bengali
+        - bosnian
+        - bulgarian
+        - burmese
+        - cantonese
+        - catalan
+        - cebuano
+        - chinese
+        - corsican
+        - croatian
+        - czech
+        - danish
+        - dutch
+        - english
+        - esperanto
+        - estonian
+        - farsi
+        - fijian
+        - finnish
+        - french
+        - galician
+        - georgian
+        - german
+        - greek
+        - guarani
+        - gujarati
+        - haitian-creole
+        - hausa
+        - hawaiian
+        - hebrew
+        - hindi
+        - hmong
+        - hungarian
+        - icelandic
+        - igbo
+        - indonesian
+        - irish
+        - italian
+        - japanese
+        - javanese
+        - kannada
+        - kazakh
+        - khmer
+        - kinyarwanda
+        - korean
+        - kurdish
+        - kyrgyz
+        - lao
+        - latin
+        - latvian
+        - lingala
+        - lithuanian
+        - luxembourgish
+        - macedonian
+        - malagasy
+        - malay
+        - malayalam
+        - maltese
+        - maori
+        - marathi
+        - mongolian
+        - nepali
+        - norwegian
+        - odia
+        - oromo
+        - pashto
+        - pidgin
+        - polish
+        - portuguese
+        - punjabi
+        - quechua
+        - romanian
+        - russian
+        - samoan
+        - scottish-gaelic
+        - serbian
+        - sesotho
+        - shona
+        - sindhi
+        - sinhala
+        - slovak
+        - slovene
+        - somali
+        - spanish
+        - sundanese
+        - swahili
+        - swedish
+        - tagalog
+        - tajik
+        - tamil
+        - tatar
+        - telugu
+        - thai
+        - tibetan
+        - tigrinya
+        - tongan
+        - tswana
+        - turkish
+        - turkmen
+        - ukrainian
+        - urdu
+        - uyghur
+        - uzbek
+        - vietnamese
+        - welsh
+        - wolof
+        - xhosa
+        - yiddish
+        - yoruba
+        - zulu
+      description: Language, e.g. `english`.
+    CacheMetadata:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - hit
+            - miss
+            - zdr
+          description: >-
+            Whether the response was served from cache, required fresh work, or
+            honored zero-data-retention cache bypass.
+        age_ms:
+          type: integer
+          minimum: 0
+          description: >-
+            Age of the cached data in milliseconds. Zero for miss and zdr
+            responses.
+      required:
+        - status
+        - age_ms
+      additionalProperties: false
+      description: Whether this response came from cache.
+    KeyMetadata:
+      type: object
+      properties:
+        credits_consumed:
+          type: integer
+          description: Credits charged for this request.
+        credits_remaining:
+          type: integer
+          description: Credits remaining for your organization.
+      required:
+        - credits_consumed
+        - credits_remaining
+      description: Credits this request used and your remaining balance.
+    RequestId:
+      type: string
+      format: uuid
+      description: >-
+        Unique ID of this request, also in `X-Request-Id`. Include it when
+        contacting support.
+      example: 3f1c2a6e-8b4d-4c1e-9f0a-2d7b5e6c8a91
+    BillingErrorData:
+      type: object
+      properties:
+        is_authenticated:
+          type: boolean
+          enum:
+            - true
+        credits_remaining:
+          type: number
+          minimum: 0
+        credits_required:
+          type: number
+          minimum: 0
+        is_credits_required_estimated:
+          type: boolean
+        credits_charged:
+          type: number
+          minimum: 0
+        should_retry:
+          type: boolean
+          enum:
+            - false
+        retry_condition:
+          type: string
+          enum:
+            - sufficient_credits
+        next_refill_at:
+          type: string
+          format: date-time
+        next_refill_credits:
+          type: number
+          exclusiveMinimum: 0
+        info_url:
+          type: string
+          enum:
+            - https://context.dev/dashboard/subscription
+      required:
+        - is_authenticated
+        - should_retry
+        - retry_condition
+        - info_url
+      description: >-
+        Credit admission or reservation failure details. credits_required is an
+        admission estimate, not a final charge. should_retry is false for an
+        unchanged request immediately; retry_condition requires sufficient
+        account credits. Unknown balances, costs, and refill details are
+        omitted. next_refill_at is an ISO 8601 UTC timestamp. Existing
+        request_id and key_metadata remain on the error envelope.
+    ConcurrencyErrorData:
+      type: object
+      properties:
+        is_authenticated:
+          type: boolean
+          enum:
+            - true
+        limit_type:
+          type: string
+          enum:
+            - concurrency
+        limit:
+          type: number
+          minimum: 0
+        remaining:
+          type: number
+          minimum: 0
+        retry_after_seconds:
+          type: number
+          minimum: 0
+        credits_remaining:
+          type: number
+          minimum: 0
+        credits_charged:
+          type: number
+          enum:
+            - 0
+        should_retry:
+          type: boolean
+          enum:
+            - false
+        retry_condition:
+          type: string
+          enum:
+            - available_concurrency
+        recovery_options:
+          type: array
+          items:
+            type: string
+            enum:
+              - wait_for_in_flight_requests
+              - increase_concurrency_limit
+        info_url:
+          type: string
+          enum:
+            - https://context.dev/dashboard/subscription
+      required:
+        - is_authenticated
+        - limit_type
+        - limit
+        - remaining
+        - retry_after_seconds
+        - credits_charged
+        - should_retry
+        - retry_condition
+        - recovery_options
+        - info_url
+      description: >-
+        Organization concurrency rejection details. Authentication is valid and
+        no credits were charged. should_retry is false immediately; respect
+        retry_after_seconds and wait for an in-flight request to finish or for
+        the effective concurrency limit to increase. info_url opens subscription
+        settings; no higher allowance is guaranteed for a particular account.
+    AccessPolicyErrorData:
+      type: object
+      properties:
+        url:
+          type: string
+          description: The URL that was blocked.
+        denied_by:
+          type: array
+          items:
+            type: string
+          description: IDs of the access policies that blocked it.
+      required:
+        - url
+        - denied_by
+      description: Sent with `ACCESS_POLICY_DENIED`.
+    PartialTimeout:
+      type: object
+      properties:
+        milliseconds:
+          type: integer
+          minimum: 1000
+          maximum: 300000
+          description: Deadline in milliseconds.
+        behavior:
+          type: string
+          enum:
+            - fail
+            - return-partial
+          default: fail
+          description: >-
+            "fail" returns 408 at the deadline. "return-partial" returns
+            available results; inspect the response’s partial flag.
+      required:
+        - milliseconds
+      additionalProperties: false
+      description: Request deadline and what to return when it passes.
+    RequestTags:
+      type: array
+      items:
+        type: string
+        minLength: 1
+        maxLength: 50
+      maxItems: 20
+      description: Labels for filtering usage in the dashboard.
+      example:
+        - production
+        - team-alpha
+    CountryGL:
+      type: string
+      enum:
+        - af
+        - al
+        - dz
+        - as
+        - ad
+        - ao
+        - ai
+        - aq
+        - ag
+        - ar
+        - am
+        - aw
+        - au
+        - at
+        - az
+        - bs
+        - bh
+        - bd
+        - bb
+        - by
+        - be
+        - bz
+        - bj
+        - bm
+        - bt
+        - bo
+        - ba
+        - bw
+        - bv
+        - br
+        - io
+        - bn
+        - bg
+        - bf
+        - bi
+        - kh
+        - cm
+        - ca
+        - cv
+        - ky
+        - cf
+        - td
+        - cl
+        - cn
+        - cx
+        - cc
+        - co
+        - km
+        - cg
+        - cd
+        - ck
+        - cr
+        - ci
+        - hr
+        - cu
+        - cy
+        - cz
+        - dk
+        - dj
+        - dm
+        - do
+        - ec
+        - eg
+        - sv
+        - gq
+        - er
+        - ee
+        - et
+        - fk
+        - fo
+        - fj
+        - fi
+        - fr
+        - gf
+        - pf
+        - tf
+        - ga
+        - gm
+        - ge
+        - de
+        - gh
+        - gi
+        - gr
+        - gl
+        - gd
+        - gp
+        - gu
+        - gt
+        - gn
+        - gw
+        - gy
+        - ht
+        - hm
+        - va
+        - hn
+        - hk
+        - hu
+        - is
+        - in
+        - id
+        - ir
+        - iq
+        - ie
+        - il
+        - it
+        - jm
+        - jp
+        - jo
+        - kz
+        - ke
+        - ki
+        - kp
+        - kr
+        - kw
+        - kg
+        - la
+        - lv
+        - lb
+        - ls
+        - lr
+        - ly
+        - li
+        - lt
+        - lu
+        - mo
+        - mk
+        - mg
+        - mw
+        - my
+        - mv
+        - ml
+        - mt
+        - mh
+        - mq
+        - mr
+        - mu
+        - yt
+        - mx
+        - fm
+        - md
+        - mc
+        - mn
+        - ms
+        - ma
+        - mz
+        - mm
+        - na
+        - nr
+        - np
+        - nl
+        - an
+        - nc
+        - nz
+        - ni
+        - ne
+        - ng
+        - nu
+        - nf
+        - mp
+        - 'no'
+        - om
+        - pk
+        - pw
+        - ps
+        - pa
+        - pg
+        - py
+        - pe
+        - ph
+        - pn
+        - pl
+        - pt
+        - pr
+        - qa
+        - re
+        - ro
+        - ru
+        - rw
+        - sh
+        - kn
+        - lc
+        - pm
+        - vc
+        - ws
+        - sm
+        - st
+        - sa
+        - sn
+        - rs
+        - sc
+        - sl
+        - sg
+        - sk
+        - si
+        - sb
+        - so
+        - za
+        - gs
+        - es
+        - lk
+        - sd
+        - sr
+        - sj
+        - sz
+        - se
+        - ch
+        - sy
+        - tw
+        - tj
+        - tz
+        - th
+        - tl
+        - tg
+        - tk
+        - to
+        - tt
+        - tn
+        - tr
+        - tm
+        - tc
+        - tv
+        - ug
+        - ua
+        - ae
+        - gb
+        - us
+        - um
+        - uy
+        - uz
+        - vu
+        - ve
+        - vn
+        - vg
+        - vi
+        - wf
+        - eh
+        - ye
+        - zm
+        - zw
+      description: >-
+        Two-letter ISO 3166-1 alpha-2 country code (GL parameter) used to
+        localize search.
+    StockExchange:
+      type: string
+      enum:
+        - AMEX
+        - AMS
+        - AQS
+        - ASX
+        - ATH
+        - BER
+        - BME
+        - BRU
+        - BSE
+        - BUD
+        - BUE
+        - BVC
+        - CBOE
+        - CNQ
+        - CPH
+        - DFM
+        - DOH
+        - DUB
+        - DUS
+        - DXE
+        - EGX
+        - FSX
+        - HAM
+        - HEL
+        - HKSE
+        - HOSE
+        - ICE
+        - IOB
+        - IST
+        - JKT
+        - JNB
+        - JPX
+        - KLS
+        - KOE
+        - KSC
+        - KUW
+        - LIS
+        - LSE
+        - MCX
+        - MEX
+        - MIL
+        - MUN
+        - NASDAQ
+        - NEO
+        - NSE
+        - NYSE
+        - NZE
+        - OSL
+        - OTC
+        - PAR
+        - PNK
+        - PRA
+        - RIS
+        - SAO
+        - SAU
+        - SES
+        - SET
+        - SGO
+        - SHH
+        - SHZ
+        - SIX
+        - STO
+        - STU
+        - TAI
+        - TAL
+        - TLV
+        - TSX
+        - TSXV
+        - TWO
+        - VIE
+        - WSE
+        - XETRA
+      description: Stock exchange code.
+  headers:
+    RequestId:
+      description: Unique ID of this request; also `request_id` in JSON bodies.
+      schema:
+        type: string
+        format: uuid
+    RateLimitLimit:
+      description: >-
+        Maximum request units per minute, or maximum concurrent requests when
+        X-RateLimit-Mode is concurrency.
+      schema:
+        type: integer
+        minimum: 1
+    RateLimitRemaining:
+      description: >-
+        Request units remaining in the current minute, or concurrent requests
+        still available when X-RateLimit-Mode is concurrency.
+      schema:
+        type: integer
+        minimum: 0
+    RateLimitReset:
+      description: >-
+        Unix timestamp in seconds when the per-minute rate limit resets. Omitted
+        for concurrency limits.
+      schema:
+        type: integer
+    RateLimitMode:
+      description: >-
+        Set to concurrency when these headers report concurrent requests. When a
+        per-minute limit also applies, its rejections report per-minute headers
+        without this header. New Free accounts have 2 concurrent requests and 10
+        requests per minute; paid plans have no per-minute limit by default.
+        Existing and custom allowances can differ.
+      schema:
+        type: string
+        enum:
+          - concurrency
+  responses:
+    RateLimited:
+      description: >-
+        Rate limit exceeded. Organization concurrency rejections include
+        structured error_data and subscription settings; follow Retry-After
+        before retrying.
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/RequestId'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+        X-RateLimit-Mode:
+          $ref: '#/components/headers/RateLimitMode'
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 60
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: Human-readable error message.
+              error_code:
+                type: string
+                enum:
+                  - RATE_LIMITED
+                description: Error code indicating the rate limit was exceeded
+              error_data:
+                $ref: '#/components/schemas/ConcurrencyErrorData'
+              key_metadata:
+                $ref: '#/components/schemas/KeyMetadata'
+              request_id:
+                $ref: '#/components/schemas/RequestId'
+            required:
+              - message
+              - error_code
+              - request_id
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: >-
+        Send `Authorization: Bearer <API_KEY>`. Keys have full access unless
+        restricted to scopes.
+
+````
+
+This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.
