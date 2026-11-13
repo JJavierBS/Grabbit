@@ -1,0 +1,24 @@
+#!/bin/sh
+. "$(dirname "$0")/patterns.sh"
+st=0
+
+# The first commit of the repo is the only one allowed directly on main.
+if git rev-parse --verify -q HEAD >/dev/null &&
+   [ "$(git symbolic-ref --short -q HEAD)" = "$PROTECTED_BRANCH" ]; then
+  echo "pre-commit: no commits on $PROTECTED_BRANCH. Create a task branch (docs/agents/workflow.md)." >&2
+  st=1
+fi
+
+bad=$(git diff --cached --name-only --diff-filter=ACMR | grep -E "$LOCAL_PATHS")
+if [ -n "$bad" ]; then
+  echo "pre-commit: local or secret files staged:" >&2
+  printf '%s\n' "$bad" | sed 's/^/  /' >&2
+  st=1
+fi
+
+hits=$(git diff --cached -U0 --diff-filter=ACMR | grep -E '^\+' | grep -v '^+++ ' | grep -cE "$SECRETS")
+if [ "$hits" -gt 0 ]; then
+  echo "pre-commit: $hits added line(s) look like API keys or private keys. Move them to .env." >&2
+  st=1
+fi
+exit $st

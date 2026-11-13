@@ -1,0 +1,20 @@
+#!/bin/sh
+. "$(dirname "$0")/patterns.sh"
+msg=$(grep -v '^#' "$1")
+if printf '%s\n' "$msg" | grep -qiE "$ATTRIB"; then
+  echo "commit-msg: remove tool attribution from the message (docs/agents/commits.md)." >&2
+  exit 1
+fi
+subject=$(printf '%s\n' "$msg" | sed -n '/[^[:space:]]/{p;q;}')
+if printf '%s\n' "$subject" | grep -qE "$GIT_GENERATED_SUBJECT"; then
+  exit 0
+fi
+if ! printf '%s\n' "$subject" | grep -qE "$COMMIT_SUBJECT"; then
+  echo "commit-msg: subject must be '[user] [TYPE] (#issue) Summary' (docs/agents/commits.md)." >&2
+  echo "  got: $subject" >&2
+  exit 1
+fi
+if [ "${#subject}" -gt 72 ]; then
+  echo "commit-msg: subject longer than 72 characters." >&2
+  exit 1
+fi

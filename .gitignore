@@ -1,0 +1,19 @@
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+.env.test
+node_modules/
+dist/
+build/
+coverage/
+.DS_Store
+
+# Shared agent context is versioned here, even if a personal global ignore hides it.
+!/AGENTS.md
+!/CLAUDE.md
+!/GEMINI.md
+!/.claude/
+/.claude/*
+!/.claude/settings.json

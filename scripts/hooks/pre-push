@@ -1,0 +1,25 @@
+#!/bin/sh
+# Last barrier: checks every commit about to be pushed, whoever or whatever made it.
+. "$(dirname "$0")/patterns.sh"
+zero() { [ -z "$(printf %s "$1" | tr -d 0)" ]; }
+st=0
+while read -r lref lsha rref rsha; do
+  zero "$lsha" && continue
+  # Pushing main is allowed only to create it (first push of the repo).
+  if [ "$rref" = "refs/heads/$PROTECTED_BRANCH" ] && ! zero "$rsha"; then
+    echo "pre-push: $PROTECTED_BRANCH only changes through PRs (gh pr create)." >&2
+    st=1
+    continue
+  fi
+  if zero "$rsha"; then range="$lsha --not --remotes"; else range="$rsha..$lsha"; fi
+  for c in $(git rev-list $range); do
+    d=$(git log -1 --format='%h %s' "$c")
+    if git log -1 --format=%B "$c" | grep -qiE "$ATTRIB"; then
+      echo "pre-push: $d -> tool attribution in message" >&2; st=1
+    fi
+    if git diff-tree --root --no-commit-id --name-only -r --diff-filter=ACMR "$c" | grep -qE "$LOCAL_PATHS"; then
+      echo "pre-push: $d -> adds local or secret files" >&2; st=1
+    fi
+  done
+done
+exit $st
