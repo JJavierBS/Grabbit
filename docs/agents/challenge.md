@@ -28,22 +28,14 @@ file, not the raw PDFs or slides. Keep it under 100 lines. All times Europe/Hels
 - Cala on site: CTO Issey Masuda and engineers as mentors; contact Elies Delgado,
   elies@cala.ai. Workshop "Tips & tricks to Make Unicorns Real", Sat 11:00 (judging hints).
 
-## Cala API (docs.cala.ai, checked 2026-11-13)
+## Cala API
+- Endpoints, response shapes, graph edges, quirks, rate limits and traversal flow:
+  `docs/agents/cala.md`. Coverage per country: research.md "Cala coverage".
 - Base `https://api.cala.ai`, header `X-API-KEY: $CALA_API_KEY` (keys: console.cala.ai/api-keys).
 - Credits: console.cala.ai, Billing > Extra credits > Add credits > promo code MAKEUNICORNSREAL.
-- `POST /v1/knowledge/search`: natural-language answer in markdown, with citations.
-- `POST /v1/knowledge/query` with `{"input": "..."}`: structured rows plus entities. Takes
-  natural language or Cala QL, e.g. `startups.location=Spain.funding>10M.funding<=50M`.
-- `/v1/entities` fuzzy name search; `/v1/entities/lookup` by identifier (LEI, CIK...);
-  `/v1/entities/{id}` full entity. Types include Company, Person, FundingRound.
-- `GET /v1/entities/{id}/introspection`: the properties, relationships and metric ids that
-  exist for that entity. Call it before `POST /v1/entities/{id}` with a projection body.
-  Coverage varies by country (probed 2026-11-14: UK and France have filed accounts, Spain
-  and Finland only registry basics).
-- Errors: 422 validation, 429 rate limit (hit with 4 parallel requests; serial calls were
-  fine). Cache responses: the demo must survive bad wifi.
-- MCP: `https://api.cala.ai/mcp/`, same header. Claude Code:
-  `claude mcp add --transport http cala https://api.cala.ai/mcp/ --header "X-API-KEY: <key>"`
+- Build on the entity endpoints (`/v1/entities...`), not on the LLM-processed
+  `/v1/knowledge/search` and `/v1/knowledge/query` (decisions.md).
+- 429 rate limit is easy to hit. Cache responses: the demo must survive bad wifi.
 
 ## Event-wide judging (peer review and final judges)
 - Innovation: new or different compared to the other projects.
@@ -54,7 +46,8 @@ Peer review happens at tables: a stranger must get the point and see it work in 
 ## Rules that affect the code
 - All project code is written during the event (from Fri 19:30). Open source libraries are fine.
 - Submission is MIT-licensed and the source must be accessible: the repo is public.
-- Partner APIs and data stay under the partner's terms; Cala usage limits: TODO (ask at the workshop).
+- Partner APIs and data stay under the partner's terms; Cala usage limits: undocumented, see
+  cala.md "Rate limits and latency" (ask at the workshop).
 
 ## Deadlines
 - Fri 23:59: pre-submission draft on Junction Platform with the chosen challenge.
