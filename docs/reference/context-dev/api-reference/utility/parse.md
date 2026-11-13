@@ -1,0 +1,876 @@
+# Parse a file
+
+> Convert uploaded file bytes into Markdown and optional HTML.
+
+From 1 credit
+
+See the [guide](https://docs.context.dev/parse/overview) for examples and usage.
+
+
+## OpenAPI
+
+````yaml POST /parse
+openapi: 3.1.0
+info:
+  title: Context.dev API
+  description: >-
+    Scrape, crawl, search, and monitor websites, and retrieve brand, people, and
+    news data.
+  version: 1.0.0
+servers:
+  - url: https://api.context.dev/v1
+security: []
+tags:
+  - name: Webhooks
+    description: Inspect and retry batch and monitor webhook deliveries.
+  - name: Logs
+    description: Read your organization's API request logs.
+  - name: Usage
+    description: Read your organization's credit balance and usage history.
+  - name: Browser Profiles
+    description: See the authenticated browser profiles your organization created.
+  - name: Agent Feedback
+    description: Report API issues and documentation mismatches.
+  - name: Batches
+    description: Scrape many pages or crawl a site asynchronously.
+  - name: Monitors
+    description: Watch websites for exact or meaningful changes.
+  - name: Access Policies
+    description: Control which websites your requests can access.
+  - name: News
+    description: Search live and historical news about a company.
+  - name: Answers
+    description: Answer a research task from the live web in the JSON shape you ask for.
+paths:
+  /parse:
+    post:
+      tags:
+        - Parsing
+      summary: Parse a file
+      description: >-
+        Convert uploaded file bytes into Markdown and optional HTML. WARC and
+        WARC.GZ archives combine HTTP response, resource, and conversion records
+        in archive order. Revisit and segmented records are skipped. Decoded
+        WARC content is limited to 50 MiB.
+      parameters:
+        - schema:
+            type: string
+            enum:
+              - warc
+              - warc.gz
+              - txt
+              - text
+              - md
+              - markdown
+              - html
+              - htm
+              - xhtml
+              - xml
+              - rss
+              - atom
+              - csv
+              - tsv
+              - yaml
+              - yml
+              - py
+              - java
+              - js
+              - jsx
+              - mjs
+              - cjs
+              - json
+              - jsonl
+              - ndjson
+              - php
+              - sh
+              - bash
+              - zsh
+              - fish
+              - rb
+              - ts
+              - tsx
+              - rtf
+              - srt
+              - css
+              - scss
+              - less
+              - styl
+              - sass
+              - svg
+              - pdf
+              - docx
+              - doc
+              - xlsx
+              - xlsm
+              - xlsb
+              - xltx
+              - xltm
+              - xls
+              - pptx
+              - pptm
+              - ppsx
+              - ppsm
+              - potx
+              - potm
+              - ppt
+              - pps
+              - pot
+              - jpg
+              - jpeg
+              - jpe
+              - png
+              - gif
+              - bmp
+              - tiff
+              - tif
+              - webp
+              - ppm
+              - pbm
+              - pgm
+              - pnm
+            description: >-
+              Optional file extension hint, such as pdf, docx, xlsx, pptx, html,
+              json, csv, md, py, rtf, jpg, png, txt, warc, or warc.gz.
+          required: false
+          description: >-
+            Optional file extension hint, such as pdf, docx, xlsx, pptx, html,
+            json, csv, md, py, rtf, jpg, png, txt, warc, or warc.gz.
+          name: extension
+          in: query
+        - schema:
+            type: boolean
+            default: true
+            description: Preserve hyperlinks in Markdown output
+          required: false
+          description: Preserve hyperlinks in Markdown output
+          name: includeLinks
+          in: query
+        - schema:
+            type: boolean
+            default: false
+            description: Include image references in Markdown output
+          required: false
+          description: Include image references in Markdown output
+          name: includeImages
+          in: query
+        - schema:
+            type: boolean
+            default: true
+            description: Shorten base64-encoded image data in the Markdown output
+          required: false
+          description: Shorten base64-encoded image data in the Markdown output
+          name: shortenBase64Images
+          in: query
+        - schema:
+            type: boolean
+            default: false
+            description: Extract only the main content from HTML-like inputs
+          required: false
+          description: Extract only the main content from HTML-like inputs
+          name: useMainContentOnly
+          in: query
+        - schema:
+            type: boolean
+            default: false
+            description: >-
+              Read text from images and scanned PDF pages. PDF page ranges still
+              apply.
+          required: false
+          description: >-
+            Read text from images and scanned PDF pages. PDF page ranges still
+            apply.
+          name: ocr
+          in: query
+        - schema:
+            type: boolean
+            default: false
+            description: >-
+              Start each PDF page in the Markdown with a `<!-- page N -->` line,
+              where N is the original 1-based page number.
+          required: false
+          description: >-
+            Start each PDF page in the Markdown with a `<!-- page N -->` line,
+            where N is the original 1-based page number.
+          name: includeNumberedPages
+          in: query
+        - schema:
+            type: object
+            properties:
+              start:
+                type: integer
+                minimum: 1
+                description: First 1-based PDF page to parse.
+              end:
+                type: integer
+                minimum: 1
+                description: >-
+                  Last PDF page to parse (1-based, inclusive). Defaults to the
+                  final page. Must be >= start.
+            additionalProperties: false
+            description: >-
+              PDF page-range options as a JSON object, e.g. {"start": 2, "end":
+              5}.
+          required: false
+          description: >-
+            PDF page-range options as a JSON object, e.g. {"start": 2, "end":
+            5}.
+          name: pdf
+          in: query
+        - schema:
+            type: string
+            minLength: 1
+            maxLength: 100
+            description: Optional client identifier used for usage attribution.
+          required: false
+          description: Optional client identifier used for usage attribution.
+          name: client
+          in: query
+        - schema:
+            type: string
+            enum:
+              - enabled
+              - disabled
+            default: disabled
+            description: >-
+              `enabled` turns on zero data retention. Returns 403
+              `ZDR_NOT_ENABLED` unless your organization has ZDR.
+          required: false
+          description: >-
+            `enabled` turns on zero data retention. Returns 403
+            `ZDR_NOT_ENABLED` unless your organization has ZDR.
+          name: zdr
+          in: query
+        - $ref: '#/components/parameters/RequestTags'
+      requestBody:
+        required: true
+        description: Raw file bytes, up to 50 MiB.
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+          application/pdf:
+            schema:
+              type: string
+              format: binary
+          '*/*':
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: Successful response
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+            X-Context-ZDR:
+              description: >-
+                Present with the value true when zero data retention was
+                requested and honored.
+              schema:
+                type: string
+                enum:
+                  - 'true'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    enum:
+                      - true
+                    description: Indicates success
+                  markdown:
+                    type: string
+                    description: Input bytes converted to GitHub Flavored Markdown
+                  type:
+                    type: string
+                    enum:
+                      - warc
+                      - html
+                      - xml
+                      - json
+                      - jsonl
+                      - text
+                      - csv
+                      - tsv
+                      - markdown
+                      - yaml
+                      - python
+                      - java
+                      - javascript
+                      - php
+                      - shell
+                      - ruby
+                      - typescript
+                      - rtf
+                      - srt
+                      - css
+                      - scss
+                      - less
+                      - stylus
+                      - sass
+                      - svg
+                      - pdf
+                      - docx
+                      - doc
+                      - xlsx
+                      - xls
+                      - pptx
+                      - ppt
+                      - jpg
+                      - png
+                      - gif
+                      - bmp
+                      - tiff
+                      - webp
+                      - ppm
+                      - pbm
+                      - pgm
+                      - pnm
+                    description: Detected content type used for parsing
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+                  request_id:
+                    $ref: '#/components/schemas/RequestId'
+                required:
+                  - success
+                  - markdown
+                  - type
+                  - request_id
+        '400':
+          description: Invalid input or no parseable content
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  error_code:
+                    type: string
+                    enum:
+                      - INPUT_VALIDATION_ERROR
+                      - PDF_IMAGES_ONLY
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+                  request_id:
+                    $ref: '#/components/schemas/RequestId'
+                required:
+                  - request_id
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          description: >-
+            Insufficient credits (`USAGE_EXCEEDED`); authentication is valid.
+            Retry once funded. Legacy deployments may return 401.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: >-
+            API key permissions or organization settings do not allow this
+            request.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '413':
+          description: Request body exceeds the 50 MiB upload limit
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  error_code:
+                    type: string
+                    enum:
+                      - INPUT_VALIDATION_ERROR
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+                  request_id:
+                    $ref: '#/components/schemas/RequestId'
+                required:
+                  - request_id
+        '415':
+          description: Unsupported content type
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  error_code:
+                    type: string
+                    enum:
+                      - UNSUPPORTED_CONTENT
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+                  request_id:
+                    $ref: '#/components/schemas/RequestId'
+                required:
+                  - request_id
+        '500':
+          description: Internal server error
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  error_code:
+                    type: string
+                    enum:
+                      - INTERNAL_ERROR
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+                  request_id:
+                    $ref: '#/components/schemas/RequestId'
+                required:
+                  - request_id
+        '503':
+          description: >-
+            Document parsing is at capacity. Retry after the delay in
+            Retry-After.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+            Retry-After:
+              description: Seconds to wait before retrying the upload
+              schema:
+                type: integer
+                minimum: 1
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  error_code:
+                    type: string
+                    enum:
+                      - INTERNAL_ERROR
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+                  request_id:
+                    $ref: '#/components/schemas/RequestId'
+                required:
+                  - request_id
+      security:
+        - bearerAuth: []
+components:
+  parameters:
+    RequestTags:
+      name: tags
+      in: query
+      required: false
+      style: form
+      explode: false
+      schema:
+        $ref: '#/components/schemas/RequestTags'
+      description: >-
+        Comma-separated labels for filtering usage, e.g.
+        `production,team-alpha`.
+      example: production,team-alpha
+  headers:
+    RequestId:
+      description: Unique ID of this request; also `request_id` in JSON bodies.
+      schema:
+        type: string
+        format: uuid
+    RateLimitLimit:
+      description: >-
+        Maximum request units per minute, or maximum concurrent requests when
+        X-RateLimit-Mode is concurrency.
+      schema:
+        type: integer
+        minimum: 1
+    RateLimitRemaining:
+      description: >-
+        Request units remaining in the current minute, or concurrent requests
+        still available when X-RateLimit-Mode is concurrency.
+      schema:
+        type: integer
+        minimum: 0
+    RateLimitReset:
+      description: >-
+        Unix timestamp in seconds when the per-minute rate limit resets. Omitted
+        for concurrency limits.
+      schema:
+        type: integer
+    RateLimitMode:
+      description: >-
+        Set to concurrency when these headers report concurrent requests. When a
+        per-minute limit also applies, its rejections report per-minute headers
+        without this header. New Free accounts have 2 concurrent requests and 10
+        requests per minute; paid plans have no per-minute limit by default.
+        Existing and custom allowances can differ.
+      schema:
+        type: string
+        enum:
+          - concurrency
+  schemas:
+    KeyMetadata:
+      type: object
+      properties:
+        credits_consumed:
+          type: integer
+          description: Credits charged for this request.
+        credits_remaining:
+          type: integer
+          description: Credits remaining for your organization.
+      required:
+        - credits_consumed
+        - credits_remaining
+      description: Credits this request used and your remaining balance.
+    RequestId:
+      type: string
+      format: uuid
+      description: >-
+        Unique ID of this request, also in `X-Request-Id`. Include it when
+        contacting support.
+      example: 3f1c2a6e-8b4d-4c1e-9f0a-2d7b5e6c8a91
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Human-readable error message.
+        error_code:
+          type: string
+          enum:
+            - PROFILE_NOT_FOUND
+            - PROFILE_BUSY
+            - PROFILE_SESSION_EXPIRED
+            - PROFILE_REAUTHENTICATION_REQUIRED
+            - PROFILE_INVALID_CREDENTIALS
+            - PROFILE_MISSING_CREDENTIALS
+            - PROFILE_INTERACTION_REQUIRED
+            - PROFILE_AUTHENTICATION_UNKNOWN
+            - PROFILE_ORIGIN_BLOCKED
+            - PROFILE_INVALID_SESSION
+            - PROFILE_SESSION_TOO_LARGE
+            - INTERNAL_ERROR
+            - VALID
+            - NOT_FOUND
+            - FORBIDDEN
+            - ACCESS_POLICY_DENIED
+            - ACCESS_POLICIES_NOT_ENABLED
+            - USAGE_EXCEEDED
+            - RATE_LIMITED
+            - UNAUTHORIZED
+            - DISABLED
+            - PAID_PLAN_REQUIRED
+            - INSUFFICIENT_PERMISSIONS
+            - TIMEOUT_EXCEEDS_MAXIMUM
+            - TIMEOUT_TOO_SHORT_FOR_WAIT
+            - WEBSITE_ACCESS_ERROR
+            - WEBSITE_BLOCKED
+            - WEBSITE_NOT_FOUND
+            - PDF_SKIPPED
+            - PDF_IMAGES_ONLY
+            - NO_PUBLISHED_MARKDOWN
+            - INPUT_VALIDATION_ERROR
+            - ZDR_NOT_SUPPORTED
+            - ZDR_NOT_ENABLED
+            - FREE_EMAIL_DETECTED
+            - DISPOSABLE_EMAIL_DETECTED
+            - REQUEST_TIMEOUT
+            - COLD_DOMAIN_TIMEOUT_TOO_LOW
+            - UNSUPPORTED_CONTENT
+            - CONTENT_TOO_LARGE
+            - MONITOR_PAUSED
+            - MONITOR_NO_WEBHOOK
+            - COLLECTION_PAUSED
+            - MONITOR_LIMIT_EXCEEDED
+            - SEARCH_UNAVAILABLE
+            - BATCH_LIMIT_EXCEEDED
+            - BATCH_NOT_CANCELLABLE
+            - BATCH_NOT_COMPLETED
+            - IDEMPOTENCY_KEY_CONFLICT
+            - DELIVERY_IN_PROGRESS
+            - DELIVERY_ALREADY_DELIVERED
+            - DELIVERY_EXPIRED
+            - DELIVERY_CANCELLED
+          description: Machine-readable error code.
+        error_data:
+          anyOf:
+            - $ref: '#/components/schemas/BillingErrorData'
+            - $ref: '#/components/schemas/ConcurrencyErrorData'
+            - $ref: '#/components/schemas/AccessPolicyErrorData'
+        required_permission:
+          type: string
+          enum:
+            - logs:read
+            - data:execute
+            - monitors:read
+            - monitors:write
+            - batches:read
+            - batches:write
+            - access_policies:read
+            - access_policies:write
+          description: >-
+            Permission required for this request when error_code is
+            INSUFFICIENT_PERMISSIONS. Manage (write) also grants read access to
+            the same resource group.
+        key_metadata:
+          $ref: '#/components/schemas/KeyMetadata'
+        request_id:
+          $ref: '#/components/schemas/RequestId'
+      required:
+        - request_id
+    RequestTags:
+      type: array
+      items:
+        type: string
+        minLength: 1
+        maxLength: 50
+      maxItems: 20
+      description: Labels for filtering usage in the dashboard.
+      example:
+        - production
+        - team-alpha
+    BillingErrorData:
+      type: object
+      properties:
+        is_authenticated:
+          type: boolean
+          enum:
+            - true
+        credits_remaining:
+          type: number
+          minimum: 0
+        credits_required:
+          type: number
+          minimum: 0
+        is_credits_required_estimated:
+          type: boolean
+        credits_charged:
+          type: number
+          minimum: 0
+        should_retry:
+          type: boolean
+          enum:
+            - false
+        retry_condition:
+          type: string
+          enum:
+            - sufficient_credits
+        next_refill_at:
+          type: string
+          format: date-time
+        next_refill_credits:
+          type: number
+          exclusiveMinimum: 0
+        info_url:
+          type: string
+          enum:
+            - https://context.dev/dashboard/subscription
+      required:
+        - is_authenticated
+        - should_retry
+        - retry_condition
+        - info_url
+      description: >-
+        Credit admission or reservation failure details. credits_required is an
+        admission estimate, not a final charge. should_retry is false for an
+        unchanged request immediately; retry_condition requires sufficient
+        account credits. Unknown balances, costs, and refill details are
+        omitted. next_refill_at is an ISO 8601 UTC timestamp. Existing
+        request_id and key_metadata remain on the error envelope.
+    ConcurrencyErrorData:
+      type: object
+      properties:
+        is_authenticated:
+          type: boolean
+          enum:
+            - true
+        limit_type:
+          type: string
+          enum:
+            - concurrency
+        limit:
+          type: number
+          minimum: 0
+        remaining:
+          type: number
+          minimum: 0
+        retry_after_seconds:
+          type: number
+          minimum: 0
+        credits_remaining:
+          type: number
+          minimum: 0
+        credits_charged:
+          type: number
+          enum:
+            - 0
+        should_retry:
+          type: boolean
+          enum:
+            - false
+        retry_condition:
+          type: string
+          enum:
+            - available_concurrency
+        recovery_options:
+          type: array
+          items:
+            type: string
+            enum:
+              - wait_for_in_flight_requests
+              - increase_concurrency_limit
+        info_url:
+          type: string
+          enum:
+            - https://context.dev/dashboard/subscription
+      required:
+        - is_authenticated
+        - limit_type
+        - limit
+        - remaining
+        - retry_after_seconds
+        - credits_charged
+        - should_retry
+        - retry_condition
+        - recovery_options
+        - info_url
+      description: >-
+        Organization concurrency rejection details. Authentication is valid and
+        no credits were charged. should_retry is false immediately; respect
+        retry_after_seconds and wait for an in-flight request to finish or for
+        the effective concurrency limit to increase. info_url opens subscription
+        settings; no higher allowance is guaranteed for a particular account.
+    AccessPolicyErrorData:
+      type: object
+      properties:
+        url:
+          type: string
+          description: The URL that was blocked.
+        denied_by:
+          type: array
+          items:
+            type: string
+          description: IDs of the access policies that blocked it.
+      required:
+        - url
+        - denied_by
+      description: Sent with `ACCESS_POLICY_DENIED`.
+  responses:
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/RequestId'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+        X-RateLimit-Mode:
+          $ref: '#/components/headers/RateLimitMode'
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: >-
+        Send `Authorization: Bearer <API_KEY>`. Keys have full access unless
+        restricted to scopes.
+
+````
+
+This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.

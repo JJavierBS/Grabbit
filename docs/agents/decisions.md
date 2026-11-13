@@ -7,3 +7,4 @@ Format: `YYYY-MM-DD HH:MM | area | decision | why`
 2026-11-13 22:30 | product | The agent never recommends what to buy; the investor decides | both investors want evidence, not decisions
 2026-11-13 22:30 | data | Cala is the verified source; web search (Context.dev) only adds unverified soft signals | Cala judges value data veracity; see research.md
 2026-11-13 22:30 | data | Use Cala's raw-graph method, not the LLM-processed ones being deprecated | Cala team request
+2026-11-13 23:55 | docs | Raw briefs and vendor docs are versioned in docs/reference/ (mirrors via scripts/fetch-docs.sh); agents read a distilled docs/agents/<vendor>.md first | whole team and every agent get the full source on clone without browsing

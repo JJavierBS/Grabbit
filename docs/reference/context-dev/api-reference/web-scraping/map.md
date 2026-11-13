@@ -1,0 +1,770 @@
+# Map URLs
+
+> Discover a site's URLs, with page titles, descriptions, keywords, and language when available. Metadata can be missing on newly discovered URLs.
+
+From 1 credit
+
+See the [guide](https://docs.context.dev/map/overview) for examples and usage.
+
+
+## OpenAPI
+
+````yaml GET /web/urls
+openapi: 3.1.0
+info:
+  title: Context.dev API
+  description: >-
+    Scrape, crawl, search, and monitor websites, and retrieve brand, people, and
+    news data.
+  version: 1.0.0
+servers:
+  - url: https://api.context.dev/v1
+security: []
+tags:
+  - name: Webhooks
+    description: Inspect and retry batch and monitor webhook deliveries.
+  - name: Logs
+    description: Read your organization's API request logs.
+  - name: Usage
+    description: Read your organization's credit balance and usage history.
+  - name: Browser Profiles
+    description: See the authenticated browser profiles your organization created.
+  - name: Agent Feedback
+    description: Report API issues and documentation mismatches.
+  - name: Batches
+    description: Scrape many pages or crawl a site asynchronously.
+  - name: Monitors
+    description: Watch websites for exact or meaningful changes.
+  - name: Access Policies
+    description: Control which websites your requests can access.
+  - name: News
+    description: Search live and historical news about a company.
+  - name: Answers
+    description: Answer a research task from the live web in the JSON shape you ask for.
+paths:
+  /web/urls:
+    get:
+      tags:
+        - Web Scraping
+      summary: Map URLs
+      description: >-
+        Discover a site's URLs, with page titles, descriptions, keywords, and
+        language when available. Metadata can be missing on newly discovered
+        URLs.
+      parameters:
+        - schema:
+            type: string
+            minLength: 3
+            description: Domain to map, e.g. `stripe.com`.
+            example: stripe.com
+          required: true
+          description: Domain to map, e.g. `stripe.com`.
+          name: domain
+          in: query
+        - schema:
+            type: boolean
+            default: false
+            description: Include URLs on subdomains.
+          required: false
+          description: Include URLs on subdomains.
+          name: includeSubdomains
+          in: query
+        - schema:
+            type: integer
+            minimum: 1
+            maximum: 100000
+            default: 10000
+            description: Maximum number of URLs to return.
+          required: false
+          description: Maximum number of URLs to return.
+          name: maxLinks
+          in: query
+        - schema:
+            type: string
+            format: uri
+            description: >-
+              Fetch this sitemap instead of discovering sitemaps. Must belong to
+              the domain or a subdomain.
+          required: false
+          description: >-
+            Fetch this sitemap instead of discovering sitemaps. Must belong to
+            the domain or a subdomain.
+          name: sitemapUrl
+          in: query
+        - schema:
+            type: string
+            maxLength: 256
+            description: >-
+              Regex pattern. Only URLs matching this pattern are returned and
+              counted against maxLinks.
+            example: ^https?://[^/]+/blog/
+          required: false
+          description: >-
+            Regex pattern. Only URLs matching this pattern are returned and
+            counted against maxLinks.
+          name: urlRegex
+          in: query
+        - schema:
+            type: string
+            maxLength: 256
+            description: >-
+              Regex pattern. URLs matching this pattern are not returned, even
+              when they match urlRegex.
+            example: /tag/|/author/
+          required: false
+          description: >-
+            Regex pattern. URLs matching this pattern are not returned, even
+            when they match urlRegex.
+          name: excludeUrlRegex
+          in: query
+        - schema:
+            type: string
+            minLength: 2
+            maxLength: 200
+            description: Filter URLs by a topic or phrase, most relevant first.
+            example: help center and troubleshooting articles
+          required: false
+          description: Filter URLs by a topic or phrase, most relevant first.
+          name: search
+          in: query
+        - schema:
+            type: object
+            additionalProperties:
+              type: string
+              maxLength: 8192
+              pattern: ^[^\r\n]*$
+            description: >-
+              HTTP headers for the target origin. Non-empty headers bypass
+              caching.
+          required: false
+          description: >-
+            HTTP headers for the target origin. Non-empty headers bypass
+            caching.
+          name: headers
+          in: query
+        - schema:
+            $ref: '#/components/schemas/LenientPartialTimeout'
+          required: false
+          description: Request deadline and what to return when it passes.
+          style: deepObject
+          explode: true
+          name: timeoutOpts
+          in: query
+        - schema:
+            type: string
+            enum:
+              - enabled
+              - disabled
+            default: disabled
+            description: >-
+              `enabled` turns on zero data retention. Returns 403
+              `ZDR_NOT_ENABLED` unless your organization has ZDR.
+          required: false
+          description: >-
+            `enabled` turns on zero data retention. Returns 403
+            `ZDR_NOT_ENABLED` unless your organization has ZDR.
+          name: zdr
+          in: query
+        - $ref: '#/components/parameters/AccessPolicies'
+        - $ref: '#/components/parameters/RequestTags'
+      responses:
+        '200':
+          description: Discovered URLs with available page metadata
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+            X-Context-ZDR:
+              description: >-
+                Present with the value true when zero data retention was
+                requested and honored.
+              schema:
+                type: string
+                enum:
+                  - 'true'
+            Cache-Control:
+              schema:
+                type: string
+                enum:
+                  - no-store
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    enum:
+                      - true
+                  domain:
+                    type: string
+                  urls:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        url:
+                          type: string
+                        title:
+                          type: string
+                        description:
+                          type: string
+                        keywords:
+                          type: array
+                          items:
+                            type: string
+                        language:
+                          type: string
+                      required:
+                        - url
+                  partial:
+                    type: boolean
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+                  request_id:
+                    $ref: '#/components/schemas/RequestId'
+                required:
+                  - success
+                  - domain
+                  - urls
+                  - request_id
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Missing, invalid, or disabled API key.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
+          description: >-
+            Insufficient credits (`USAGE_EXCEEDED`); authentication is valid.
+            Retry once funded. Legacy deployments may return 401.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: >-
+            API key permissions or organization settings do not allow this
+            request. An access policy can also block the website
+            (`ACCESS_POLICY_DENIED`).
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '408':
+          description: Request timeout
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Timeout error message
+                  error_code:
+                    type: string
+                    enum:
+                      - REQUEST_TIMEOUT
+                    description: Error code indicating request timeout
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+                  request_id:
+                    $ref: '#/components/schemas/RequestId'
+                required:
+                  - request_id
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          description: Internal server error
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Human-readable error message.
+                  error_code:
+                    type: string
+                    enum:
+                      - INTERNAL_ERROR
+                    description: Error code indicating internal server error
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+                  request_id:
+                    $ref: '#/components/schemas/RequestId'
+                required:
+                  - request_id
+      security:
+        - bearerAuth: []
+components:
+  schemas:
+    LenientPartialTimeout:
+      type: object
+      properties:
+        milliseconds:
+          type: integer
+          minimum: 1
+          maximum: 300000
+          description: Deadline in milliseconds.
+        behavior:
+          type: string
+          enum:
+            - fail
+            - return-partial
+          default: fail
+          description: >-
+            "fail" returns 408 at the deadline. "return-partial" returns
+            available results; inspect the response’s partial flag.
+      required:
+        - milliseconds
+      additionalProperties: false
+      description: Request deadline and what to return when it passes.
+    KeyMetadata:
+      type: object
+      properties:
+        credits_consumed:
+          type: integer
+          description: Credits charged for this request.
+        credits_remaining:
+          type: integer
+          description: Credits remaining for your organization.
+      required:
+        - credits_consumed
+        - credits_remaining
+      description: Credits this request used and your remaining balance.
+    RequestId:
+      type: string
+      format: uuid
+      description: >-
+        Unique ID of this request, also in `X-Request-Id`. Include it when
+        contacting support.
+      example: 3f1c2a6e-8b4d-4c1e-9f0a-2d7b5e6c8a91
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Human-readable error message.
+        error_code:
+          type: string
+          enum:
+            - PROFILE_NOT_FOUND
+            - PROFILE_BUSY
+            - PROFILE_SESSION_EXPIRED
+            - PROFILE_REAUTHENTICATION_REQUIRED
+            - PROFILE_INVALID_CREDENTIALS
+            - PROFILE_MISSING_CREDENTIALS
+            - PROFILE_INTERACTION_REQUIRED
+            - PROFILE_AUTHENTICATION_UNKNOWN
+            - PROFILE_ORIGIN_BLOCKED
+            - PROFILE_INVALID_SESSION
+            - PROFILE_SESSION_TOO_LARGE
+            - INTERNAL_ERROR
+            - VALID
+            - NOT_FOUND
+            - FORBIDDEN
+            - ACCESS_POLICY_DENIED
+            - ACCESS_POLICIES_NOT_ENABLED
+            - USAGE_EXCEEDED
+            - RATE_LIMITED
+            - UNAUTHORIZED
+            - DISABLED
+            - PAID_PLAN_REQUIRED
+            - INSUFFICIENT_PERMISSIONS
+            - TIMEOUT_EXCEEDS_MAXIMUM
+            - TIMEOUT_TOO_SHORT_FOR_WAIT
+            - WEBSITE_ACCESS_ERROR
+            - WEBSITE_BLOCKED
+            - WEBSITE_NOT_FOUND
+            - PDF_SKIPPED
+            - PDF_IMAGES_ONLY
+            - NO_PUBLISHED_MARKDOWN
+            - INPUT_VALIDATION_ERROR
+            - ZDR_NOT_SUPPORTED
+            - ZDR_NOT_ENABLED
+            - FREE_EMAIL_DETECTED
+            - DISPOSABLE_EMAIL_DETECTED
+            - REQUEST_TIMEOUT
+            - COLD_DOMAIN_TIMEOUT_TOO_LOW
+            - UNSUPPORTED_CONTENT
+            - CONTENT_TOO_LARGE
+            - MONITOR_PAUSED
+            - MONITOR_NO_WEBHOOK
+            - COLLECTION_PAUSED
+            - MONITOR_LIMIT_EXCEEDED
+            - SEARCH_UNAVAILABLE
+            - BATCH_LIMIT_EXCEEDED
+            - BATCH_NOT_CANCELLABLE
+            - BATCH_NOT_COMPLETED
+            - IDEMPOTENCY_KEY_CONFLICT
+            - DELIVERY_IN_PROGRESS
+            - DELIVERY_ALREADY_DELIVERED
+            - DELIVERY_EXPIRED
+            - DELIVERY_CANCELLED
+          description: Machine-readable error code.
+        error_data:
+          anyOf:
+            - $ref: '#/components/schemas/BillingErrorData'
+            - $ref: '#/components/schemas/ConcurrencyErrorData'
+            - $ref: '#/components/schemas/AccessPolicyErrorData'
+        required_permission:
+          type: string
+          enum:
+            - logs:read
+            - data:execute
+            - monitors:read
+            - monitors:write
+            - batches:read
+            - batches:write
+            - access_policies:read
+            - access_policies:write
+          description: >-
+            Permission required for this request when error_code is
+            INSUFFICIENT_PERMISSIONS. Manage (write) also grants read access to
+            the same resource group.
+        key_metadata:
+          $ref: '#/components/schemas/KeyMetadata'
+        request_id:
+          $ref: '#/components/schemas/RequestId'
+      required:
+        - request_id
+    RequestTags:
+      type: array
+      items:
+        type: string
+        minLength: 1
+        maxLength: 50
+      maxItems: 20
+      description: Labels for filtering usage in the dashboard.
+      example:
+        - production
+        - team-alpha
+    BillingErrorData:
+      type: object
+      properties:
+        is_authenticated:
+          type: boolean
+          enum:
+            - true
+        credits_remaining:
+          type: number
+          minimum: 0
+        credits_required:
+          type: number
+          minimum: 0
+        is_credits_required_estimated:
+          type: boolean
+        credits_charged:
+          type: number
+          minimum: 0
+        should_retry:
+          type: boolean
+          enum:
+            - false
+        retry_condition:
+          type: string
+          enum:
+            - sufficient_credits
+        next_refill_at:
+          type: string
+          format: date-time
+        next_refill_credits:
+          type: number
+          exclusiveMinimum: 0
+        info_url:
+          type: string
+          enum:
+            - https://context.dev/dashboard/subscription
+      required:
+        - is_authenticated
+        - should_retry
+        - retry_condition
+        - info_url
+      description: >-
+        Credit admission or reservation failure details. credits_required is an
+        admission estimate, not a final charge. should_retry is false for an
+        unchanged request immediately; retry_condition requires sufficient
+        account credits. Unknown balances, costs, and refill details are
+        omitted. next_refill_at is an ISO 8601 UTC timestamp. Existing
+        request_id and key_metadata remain on the error envelope.
+    ConcurrencyErrorData:
+      type: object
+      properties:
+        is_authenticated:
+          type: boolean
+          enum:
+            - true
+        limit_type:
+          type: string
+          enum:
+            - concurrency
+        limit:
+          type: number
+          minimum: 0
+        remaining:
+          type: number
+          minimum: 0
+        retry_after_seconds:
+          type: number
+          minimum: 0
+        credits_remaining:
+          type: number
+          minimum: 0
+        credits_charged:
+          type: number
+          enum:
+            - 0
+        should_retry:
+          type: boolean
+          enum:
+            - false
+        retry_condition:
+          type: string
+          enum:
+            - available_concurrency
+        recovery_options:
+          type: array
+          items:
+            type: string
+            enum:
+              - wait_for_in_flight_requests
+              - increase_concurrency_limit
+        info_url:
+          type: string
+          enum:
+            - https://context.dev/dashboard/subscription
+      required:
+        - is_authenticated
+        - limit_type
+        - limit
+        - remaining
+        - retry_after_seconds
+        - credits_charged
+        - should_retry
+        - retry_condition
+        - recovery_options
+        - info_url
+      description: >-
+        Organization concurrency rejection details. Authentication is valid and
+        no credits were charged. should_retry is false immediately; respect
+        retry_after_seconds and wait for an in-flight request to finish or for
+        the effective concurrency limit to increase. info_url opens subscription
+        settings; no higher allowance is guaranteed for a particular account.
+    AccessPolicyErrorData:
+      type: object
+      properties:
+        url:
+          type: string
+          description: The URL that was blocked.
+        denied_by:
+          type: array
+          items:
+            type: string
+          description: IDs of the access policies that blocked it.
+      required:
+        - url
+        - denied_by
+      description: Sent with `ACCESS_POLICY_DENIED`.
+  parameters:
+    AccessPolicies:
+      name: policies
+      in: query
+      required: false
+      style: form
+      explode: false
+      schema:
+        type: array
+        items:
+          type: string
+      description: >-
+        Comma-separated access policy IDs to apply. A URL must pass every
+        policy.
+      example: pol_3f9c2a7e5b8d4c1f9a6e0b2d7c4f8a1e
+    RequestTags:
+      name: tags
+      in: query
+      required: false
+      style: form
+      explode: false
+      schema:
+        $ref: '#/components/schemas/RequestTags'
+      description: >-
+        Comma-separated labels for filtering usage, e.g.
+        `production,team-alpha`.
+      example: production,team-alpha
+  headers:
+    RequestId:
+      description: Unique ID of this request; also `request_id` in JSON bodies.
+      schema:
+        type: string
+        format: uuid
+    RateLimitLimit:
+      description: >-
+        Maximum request units per minute, or maximum concurrent requests when
+        X-RateLimit-Mode is concurrency.
+      schema:
+        type: integer
+        minimum: 1
+    RateLimitRemaining:
+      description: >-
+        Request units remaining in the current minute, or concurrent requests
+        still available when X-RateLimit-Mode is concurrency.
+      schema:
+        type: integer
+        minimum: 0
+    RateLimitReset:
+      description: >-
+        Unix timestamp in seconds when the per-minute rate limit resets. Omitted
+        for concurrency limits.
+      schema:
+        type: integer
+    RateLimitMode:
+      description: >-
+        Set to concurrency when these headers report concurrent requests. When a
+        per-minute limit also applies, its rejections report per-minute headers
+        without this header. New Free accounts have 2 concurrent requests and 10
+        requests per minute; paid plans have no per-minute limit by default.
+        Existing and custom allowances can differ.
+      schema:
+        type: string
+        enum:
+          - concurrency
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/RequestId'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+        X-RateLimit-Mode:
+          $ref: '#/components/headers/RateLimitMode'
+    RateLimited:
+      description: >-
+        Rate limit exceeded. Organization concurrency rejections include
+        structured error_data and subscription settings; follow Retry-After
+        before retrying.
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/RequestId'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+        X-RateLimit-Mode:
+          $ref: '#/components/headers/RateLimitMode'
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 60
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: Human-readable error message.
+              error_code:
+                type: string
+                enum:
+                  - RATE_LIMITED
+                description: Error code indicating the rate limit was exceeded
+              error_data:
+                $ref: '#/components/schemas/ConcurrencyErrorData'
+              key_metadata:
+                $ref: '#/components/schemas/KeyMetadata'
+              request_id:
+                $ref: '#/components/schemas/RequestId'
+            required:
+              - message
+              - error_code
+              - request_id
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: >-
+        Send `Authorization: Bearer <API_KEY>`. Keys have full access unless
+        restricted to scopes.
+
+````
+
+This documentation is built and hosted on [Mintlify](https://mintlify.com), a developer documentation platform.
