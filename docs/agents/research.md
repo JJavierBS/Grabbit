@@ -4,6 +4,7 @@ Distilled from two investor interviews and a team debrief on Fri 2026-11-13. Int
 are pseudonymised: never add their names, employers or other identifying details to this
 repo (it is public). Raw recordings and transcripts stay outside the repo.
 Full meeting minutes (Spanish, pseudonymised): `docs/research/acta-2026-11-13.md`.
+Profile cards (Spanish): `docs/research/investor-a.md`, `docs/research/investor-b.md`.
 Read this before deciding the target user, product behaviour, demo script or pitch.
 
 ## Interviewees
