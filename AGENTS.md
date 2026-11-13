@@ -41,5 +41,6 @@ Read only what the current step needs. Do not preload these files.
 | add or change an endpoint or shared type | `docs/agents/api.md` |
 | write or fix tests | `docs/agents/testing.md` |
 | decide scope, product behaviour, README or submission text | `docs/agents/challenge.md` |
+| choose the target user, demo flow or pitch story | `docs/agents/research.md` |
 | turn the challenge into backlog issues | `docs/agents/planning.md` |
 | make a design choice (check first, log after) | `docs/agents/decisions.md` |

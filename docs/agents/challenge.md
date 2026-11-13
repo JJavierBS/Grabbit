@@ -9,7 +9,8 @@ file, not the raw PDFs or slides. Keep it under 100 lines. All times Europe/Hels
   databases, gut feeling). Build a product on Cala's structured, sourced data (companies,
   people, funding rounds, investors and the links between them) that solves one real need
   for founders, investors or both. Focus beats breadth. Target: usable at Slush, right after.
-- Who the user is: TODO (pick one concrete user, e.g. a first-time founder raising a seed).
+- Who the user is: TODO (pick one concrete user). Candidates and interview evidence:
+  `docs/agents/research.md`.
 - Partner judging, 25% each, in their words:
   - Real need: a clear user with a problem worth solving.
   - Execution: it works smoothly, end to end.
