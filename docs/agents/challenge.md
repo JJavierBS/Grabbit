@@ -9,8 +9,11 @@ file, not the raw PDFs or slides. Keep it under 100 lines. All times Europe/Hels
   databases, gut feeling). Build a product on Cala's structured, sourced data (companies,
   people, funding rounds, investors and the links between them) that solves one real need
   for founders, investors or both. Focus beats breadth. Target: usable at Slush, right after.
-- Who the user is: TODO (pick one concrete user). Candidates and interview evidence:
-  `docs/agents/research.md`.
+- Who the user is: an investor who makes their own decisions and has neither the time nor the
+  means to build automated research systems, so every hour spent researching is an hour not
+  spent deciding. They need to get the most out of their time. Ranges from small private
+  equity firms and search funds to individual investors; the demo follows one investor and
+  one thesis. Evidence: `docs/agents/research.md`.
 - Partner judging, 25% each, in their words:
   - Real need: a clear user with a problem worth solving.
   - Execution: it works smoothly, end to end.
@@ -33,7 +36,12 @@ file, not the raw PDFs or slides. Keep it under 100 lines. All times Europe/Hels
   natural language or Cala QL, e.g. `startups.location=Spain.funding>10M.funding<=50M`.
 - `/v1/entities` fuzzy name search; `/v1/entities/lookup` by identifier (LEI, CIK...);
   `/v1/entities/{id}` full entity. Types include Company, Person, FundingRound.
-- Errors: 422 validation, 429 rate limit. Cache responses: the demo must survive bad wifi.
+- `GET /v1/entities/{id}/introspection`: the properties, relationships and metric ids that
+  exist for that entity. Call it before `POST /v1/entities/{id}` with a projection body.
+  Coverage varies by country (probed 2026-11-14: UK and France have filed accounts, Spain
+  and Finland only registry basics).
+- Errors: 422 validation, 429 rate limit (hit with 4 parallel requests; serial calls were
+  fine). Cache responses: the demo must survive bad wifi.
 - MCP: `https://api.cala.ai/mcp/`, same header. Claude Code:
   `claude mcp add --transport http cala https://api.cala.ai/mcp/ --header "X-API-KEY: <key>"`
 
@@ -69,7 +77,11 @@ Hackerpack we may use: Context.dev web data API (companies, people, news, scrape
 credits per team; see `context-dev.md`.
 
 ## Scope
-- MVP (must demo): TODO
+- MVP (must demo): a proactive agent that turns a vague thesis into a short list of real
+  companies and a memo by asking data-backed questions; the investor keeps asking to refine
+  or broaden the report. Facts come from Cala's raw graph, labelled "verified by Cala";
+  Context.dev adds soft signals (social trends, fund commentary), labelled "web, unverified".
+  The agent reads Cala's introspection per entity, so its questions grow with Cala's coverage.
 - Nice to have: TODO
 - Explicitly out of scope: TODO
 
