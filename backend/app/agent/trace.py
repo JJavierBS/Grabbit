@@ -10,6 +10,7 @@ cache in milliseconds can still be followed on a projector.
 from __future__ import annotations
 
 import asyncio
+import re
 import time
 import uuid
 from collections.abc import Awaitable, Callable
@@ -19,6 +20,8 @@ from app.models import ExploredGraph, WalkStep, WalkStepKind, WalkTrace
 
 THOUGHT_CHARS = 280
 OPENUI_START = "root ="
+# Gemini opens each thought summary with a bold title, e.g. "**Expanding Funding Rounds**".
+_TITLE = re.compile(r"\*\*(.+?)\*\*")
 
 
 class Tracer:
@@ -69,7 +72,9 @@ class Tracer:
         self.publish()
 
     def thought(self, text: str) -> None:
-        text = " ".join(text.split())
+        """The model's own summary, shown by its title when it has one: short enough to read."""
+        titles = _TITLE.findall(text)
+        text = "; ".join(t.strip() for t in titles) if titles else " ".join(text.split())
         if text:
             cut = text if len(text) <= THOUGHT_CHARS else text[: THOUGHT_CHARS - 1] + "…"
             self.note("thought", cut)

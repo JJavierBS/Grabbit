@@ -16,8 +16,9 @@ export function budgetText(trace: WalkTrace): string {
 }
 
 /**
- * The agent's Cala walk while it happens (#134): each real tool call in plain words, the
- * subgraph growing from the entity it started at, then the answer streaming in. Every value
+ * The agent's Cala walk while it happens (#134): the subgraph growing from the entity it
+ * started at, each real tool call in plain words under it (the newest stays in view as the
+ * chat follows the end), then the answer streaming in. Every value
  * still comes from Cala; this only shows earlier what the finished answer shows.
  */
 export function LiveWalk({ trace }: { trace: WalkTrace }) {
@@ -32,6 +33,9 @@ export function LiveWalk({ trace }: { trace: WalkTrace }) {
         <span className={styles.title}>Walking Cala's graph</span>
         <span className={styles.budget}>{budgetText(trace)}</span>
       </header>
+      {trace.graph && trace.root_id && (
+        <ExploredGraphView graph={trace.graph} rootId={trace.root_id} trusted={trusted} live />
+      )}
       <ol className={styles.steps} aria-label="Steps" aria-live="polite">
         {hidden > 0 && (
           <li className={styles.earlier}>
@@ -42,9 +46,6 @@ export function LiveWalk({ trace }: { trace: WalkTrace }) {
           <Step key={s.id} step={s} />
         ))}
       </ol>
-      {trace.graph && trace.root_id && (
-        <ExploredGraphView graph={trace.graph} rootId={trace.root_id} trusted={trusted} live />
-      )}
       {trace.answer && (
         <div className={styles.answer}>
           <VisualAnswer ui={trace.answer} graph={trace.graph} streaming={trace.streaming} />

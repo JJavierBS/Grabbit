@@ -153,10 +153,16 @@ async def test_demo_pacing_holds_a_fast_step_on_screen_and_never_a_slow_one(publ
 
 async def test_thoughts_show_as_one_trimmed_step(published):
     tracer = Tracer(max_rounds=6, max_nodes=30)
-    tracer.thought("**Finding the fund**\n\n" + "word " * 200)
+    tracer.thought("I need the fund first.\n\n" + "word " * 200)
     step = traces(published)[-1].steps[0]
     assert step.kind == "thought" and step.done
     assert len(step.text) <= 280 and step.text.endswith("…") and "\n" not in step.text
+
+
+async def test_a_titled_thought_shows_only_its_titles(published):
+    tracer = Tracer(max_rounds=6, max_nodes=30)
+    tracer.thought("**Analyzing FIRSTPICK's Involvement**\n\nI'm trying to determine " + "x " * 99)
+    assert traces(published)[-1].steps[0].text == "Analyzing FIRSTPICK's Involvement"
 
 
 def test_the_graph_keeps_its_first_root():
