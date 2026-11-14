@@ -204,41 +204,50 @@ def attach_links(
 
 
 @dataclass
-class _Proof:
+class CoInvestment:
+    """A round outside the startup where one of its investors sat next to a trusted one."""
+
     round_id: str
     via_edge: dict[str, Any]
     other_edge: dict[str, Any]
+
+
+def co_investments(
+    candidate: Candidate, inv: Investor, graph: LinkGraph, trusted: Trusted
+) -> list[tuple[ReferenceInvestor, list[CoInvestment]]]:
+    """Per trusted investor, the other rounds in the walk this investor shared with it."""
+    own = {r.entity_id for r in candidate.rounds}
+    key = normalise_name(inv.name)
+    by_ref: dict[str, tuple[ReferenceInvestor, list[CoInvestment]]] = {}
+    for rid, node in graph.rounds.items():
+        if rid in own:
+            continue  # a trusted investor in its own rounds is the co-invest signal
+        funders = _funders(node)
+        via = next((e for e in funders if _same(e, inv.entity_id, key)), None)
+        if via is None:
+            continue
+        for edge in funders:
+            ref = (
+                None
+                if _same(edge, inv.entity_id, key)
+                else trusted.match(edge["id"], edge.get("name"))
+            )
+            if ref:
+                proofs = by_ref.setdefault(ref.entity_id, (ref, []))[1]
+                if all(p.round_id != rid for p in proofs):
+                    proofs.append(CoInvestment(rid, via, edge))
+    return list(by_ref.values())
 
 
 def trusted_co_investors(
     candidate: Candidate, graph: LinkGraph, trusted: Trusted
 ) -> list[HiddenLink]:
     """Rounds anywhere in the walk where one of its investors sat next to a trusted one."""
-    own = {r.entity_id for r in candidate.rounds}
     links: list[tuple[tuple[int, bool], HiddenLink]] = []
     for inv in walk_order(candidate):
         if trusted.match(inv.entity_id, inv.name):
             continue
-        key = normalise_name(inv.name)
-        by_ref: dict[str, tuple[ReferenceInvestor, list[_Proof]]] = {}
-        for rid, node in graph.rounds.items():
-            if rid in own:
-                continue  # a trusted investor in its own rounds is the co-invest signal
-            funders = _funders(node)
-            via = next((e for e in funders if _same(e, inv.entity_id, key)), None)
-            if via is None:
-                continue
-            for edge in funders:
-                ref = (
-                    None
-                    if _same(edge, inv.entity_id, key)
-                    else trusted.match(edge["id"], edge.get("name"))
-                )
-                if ref:
-                    proofs = by_ref.setdefault(ref.entity_id, (ref, []))[1]
-                    if all(p.round_id != rid for p in proofs):
-                        proofs.append(_Proof(rid, via, edge))
-        for ref, proofs in by_ref.values():
+        for ref, proofs in co_investments(candidate, inv, graph, trusted):
             link = _co_investor_link(candidate, inv, ref, proofs, graph)
             links.append(((len(proofs), inv.is_lead), link))
     links.sort(key=lambda pair: pair[0], reverse=True)
@@ -249,7 +258,7 @@ def _co_investor_link(
     candidate: Candidate,
     inv: Investor,
     ref: ReferenceInvestor,
-    proofs: list[_Proof],
+    proofs: list[CoInvestment],
     graph: LinkGraph,
 ) -> HiddenLink:
     start = _startup_branch(candidate, inv, graph)
@@ -502,6 +511,6 @@ def _weakest(trusts: list[TrustLevel]) -> TrustLevel:
     return max(trusts, key=STRENGTH.index)
 
 
-def _proof_fact(value: str, proof: _Proof) -> Fact:
+def _proof_fact(value: str, proof: CoInvestment) -> Fact:
     sources = _sources(proof.via_edge) + _sources(proof.other_edge)
     return Fact(value=value, trust=strongest(sources), sources=sources)

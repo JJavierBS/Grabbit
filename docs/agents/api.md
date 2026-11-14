@@ -44,8 +44,15 @@ work in parallel against mocks.
   precision in its source (`not_published` when Cala has none), no per-item source link.
 - `Candidate`: `entity_id, name, website?, description?, founding_date: Fact,
   funding_stage: Fact, headcount: Fact, total_funding: Fact, hq: Fact, industries: string[],
-  rounds: Round[], signals: Signal[], news: NewsItem[], links: HiddenLink[]`. `news`: newest
-  first, at most 5, cached only.
+  rounds: Round[], signals: Signal[], news: NewsItem[], links: HiddenLink[],
+  proximity?: Proximity`. `news`: newest first, at most 5, cached only.
+- `Proximity`: `score, paths: ProximityPath[]`. How close the startup is, through funding
+  rounds, to the profile's reference investors; `null` when the profile has none. `score` is
+  the sum of the `paths` listed (strongest first, at most 5) and orders the report.
+  `ProximityPath`: `ring (1|2), strength, explanation, facts: Fact[]`: ring 1 is a trusted
+  investor in the startup's own round, ring 2 an investor of the startup that shared another
+  round with one; `facts` hold one per round on the path with the edges' sources. Computed
+  in `app/discovery/proximity.py` (agent.md "Proximity"), never by the model.
 - `HiddenLink`: `kind (trusted_co_investor|shared_investor), label, explanation,
   via_entity_id, target: LinkNode, count, trust: TrustLevel, nodes: LinkNode[],
   edges: LinkEdge[], facts: Fact[]`. A second-degree relationship in Cala's graph: `via` is

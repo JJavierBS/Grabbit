@@ -199,6 +199,9 @@ async def test_pipeline_keeps_startups_with_rounds_and_signals(graph):
     assert signals["co_invest"].value == ["Aurora Ventures"]
     assert signals["lead_follow_on"].value == 0.33  # followed on in alpha, not beta or gamma
     assert signals["likely_to_raise"].value is True
+    assert northwind.proximity.paths[0].ring == 1
+    assert "Aurora Ventures" in northwind.proximity.paths[0].explanation
+    assert northwind.proximity.score > result.candidates[1].proximity.score
 
 
 async def test_pipeline_attaches_hidden_links_between_shortlisted_startups(graph):

@@ -322,6 +322,8 @@ export interface components {
       news: components["schemas"]["NewsItem"][];
       /** Links */
       links: components["schemas"]["HiddenLink"][];
+      /** @description None when the profile has no reference investors */
+      proximity: components["schemas"]["Proximity"] | null;
     };
     /** ChatMessage */
     ChatMessage: {
@@ -723,6 +725,40 @@ export interface components {
       language: string;
       /** Sections */
       sections: string[];
+    };
+    /**
+     * Proximity
+     * @description Closeness to the reference investors: always the sum of the paths it lists.
+     */
+    Proximity: {
+      /** Score */
+      score: number;
+      /**
+       * Paths
+       * @description Strongest first, at most 5
+       */
+      paths: components["schemas"]["ProximityPath"][];
+    };
+    /**
+     * ProximityPath
+     * @description One path through funding rounds from the startup to an investor the angel trusts.
+     */
+    ProximityPath: {
+      /**
+       * Ring
+       * @description 1: trusted investor in its rounds; 2: one further
+       * @enum {integer}
+       */
+      ring: 1 | 2;
+      /** Strength */
+      strength: number;
+      /** Explanation */
+      explanation: string;
+      /**
+       * Facts
+       * @description One per round on the path, with the edges' sources
+       */
+      facts: components["schemas"]["Fact"][];
     };
     /** QuestionOption */
     QuestionOption: {
