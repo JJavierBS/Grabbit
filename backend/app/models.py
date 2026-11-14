@@ -340,6 +340,12 @@ class ChatRequest(ApiModel):
     text: str = Field(min_length=1, max_length=4000)
 
 
+class Transcript(ApiModel):
+    """What the user said in a Talk recording; empty when nobody spoke."""
+
+    text: str
+
+
 class ReportRunRequest(ApiModel):
     kind: ReportKind
 

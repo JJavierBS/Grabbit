@@ -93,6 +93,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/transcribe": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Post Transcribe */
+    post: operations["post_transcribe_api_transcribe_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/reports": {
     parameters: {
       query?: never;
@@ -791,6 +808,14 @@ export interface components {
         | "not_published";
     };
     /**
+     * Transcript
+     * @description What the user said in a Talk recording; empty when nobody spoke.
+     */
+    Transcript: {
+      /** Text */
+      text: string;
+    };
+    /**
      * TurnProgress
      * @description What a chat turn is doing right now, sent as a `progress` event on /api/events.
      */
@@ -1118,6 +1143,48 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ChatMessage"];
+        };
+      };
+      /** @description Not Found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Unprocessable Entity */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  post_transcribe_api_transcribe_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "audio/*": string;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Transcript"];
         };
       };
       /** @description Not Found */

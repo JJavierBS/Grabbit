@@ -66,6 +66,11 @@ class FakeLLM:
             raise LLMError(f"FakeLLM has no script for task {task!r}")
         return schema.model_validate(script.output)
 
+    async def transcribe(self, *, audio: bytes, mime_type: str) -> str:
+        self.calls.append(("transcribe", mime_type))
+        script = self._find("transcribe", "")
+        return script.text if script else ""
+
     def _find(self, task: str, text: str) -> Script | None:
         lowered = text.lower()
         fallback = None
