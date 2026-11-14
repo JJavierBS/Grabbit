@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ApiError, api, unwrap } from "../client";
 import type { ChatMessage, Report, TurnProgress, WalkTrace } from "../types";
+import { nameResearch } from "../workspace";
 
 export const keys = {
   profile: ["profile"] as const,
@@ -85,6 +86,8 @@ export function useSendMessage() {
   return useMutation({
     mutationFn: (text: string) => unwrap(api.POST("/api/chat", { body: { text } })),
     onMutate: async (text) => {
+      // The first message names the research in the sidebar (#145).
+      nameResearch(text);
       // A new turn: forget the phase the previous one ended in.
       client.setQueryData(keys.progress, null);
       client.setQueryData(keys.trace, null);

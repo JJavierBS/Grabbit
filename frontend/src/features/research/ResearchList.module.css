@@ -1,0 +1,11 @@
+/* Above the reports: start a new thesis, or go back to an earlier one. */
+.new {
+  justify-self: stretch;
+  justify-content: flex-start;
+  margin-inline: var(--space-1);
+}
+
+.research {
+  display: grid;
+  gap: var(--space-1);
+}

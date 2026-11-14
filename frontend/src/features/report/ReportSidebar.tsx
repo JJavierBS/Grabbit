@@ -57,6 +57,8 @@ interface ReportSidebarProps {
   onClose: () => void;
   /** The logo, or nothing when the top bar already shows it. */
   brand: ReactNode;
+  /** Shown above the reports: the research switcher (#145). */
+  top?: ReactNode;
   className?: string;
 }
 
@@ -67,6 +69,7 @@ export function ReportSidebar({
   onOpen,
   onClose,
   brand,
+  top,
   className,
 }: ReportSidebarProps) {
   const reports = useReports();
@@ -93,64 +96,67 @@ export function ReportSidebar({
         />
       </div>
 
-      <nav className={styles.nav} aria-labelledby={`${id}-title`}>
-        <h2 id={`${id}-title`} className={styles.heading}>
-          Reports
-        </h2>
+      <div className={styles.body}>
+        {top}
+        <nav className={styles.nav} aria-labelledby={`${id}-title`}>
+          <h2 id={`${id}-title`} className={styles.heading}>
+            Reports
+          </h2>
 
-        {reports.isPending && <Skeleton lines={5} label="Loading your reports" />}
+          {reports.isPending && <Skeleton lines={5} label="Loading your reports" />}
 
-        {reports.isError && (
-          <div className={styles.error} role="alert">
-            <p>Your reports did not load.</p>
-            <Button
-              variant="secondary"
-              size="sm"
-              icon={<RefreshCw aria-hidden="true" />}
-              onClick={() => reports.refetch()}
-            >
-              Try again
-            </Button>
-          </div>
-        )}
+          {reports.isError && (
+            <div className={styles.error} role="alert">
+              <p>Your reports did not load.</p>
+              <Button
+                variant="secondary"
+                size="sm"
+                icon={<RefreshCw aria-hidden="true" />}
+                onClick={() => reports.refetch()}
+              >
+                Try again
+              </Button>
+            </div>
+          )}
 
-        {reports.isSuccess && reports.data.length === 0 && (
-          <p className={styles.empty}>
-            No reports yet. Tell Grabbit what you look for and the first one shows here.
-          </p>
-        )}
+          {reports.isSuccess && reports.data.length === 0 && (
+            <p className={styles.empty}>
+              No reports yet. Tell Grabbit what you look for and the first one shows here.
+            </p>
+          )}
 
-        {groups.map((g) => (
-          <section key={g.label} className={styles.group} aria-label={g.label}>
-            <h3 className={styles.day}>{g.label}</h3>
-            <ul className={styles.list}>
-              {g.items.map((r) => {
-                const key = reportKey(r);
-                const latest = key === latestKey;
-                const count = r.candidates.length;
-                return (
-                  <li key={key}>
-                    <button
-                      type="button"
-                      className={styles.item}
-                      aria-current={key === activeKey ? "true" : undefined}
-                      title={r.summary}
-                      onClick={() => onOpen(r, latest)}
-                    >
-                      <span className={styles.summary}>{shortTitle(r)}</span>
-                      <span className="visually-hidden">{KIND_TITLE[r.kind]}</span>
-                      <span className={styles.meta}>
-                        {latest && "Latest · "}
-                        {startups(count)} · {time(r.created_at)}
-                      </span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-        ))}
-      </nav>
+          {groups.map((g) => (
+            <section key={g.label} className={styles.group} aria-label={g.label}>
+              <h3 className={styles.day}>{g.label}</h3>
+              <ul className={styles.list}>
+                {g.items.map((r) => {
+                  const key = reportKey(r);
+                  const latest = key === latestKey;
+                  const count = r.candidates.length;
+                  return (
+                    <li key={key}>
+                      <button
+                        type="button"
+                        className={styles.item}
+                        aria-current={key === activeKey ? "true" : undefined}
+                        title={r.summary}
+                        onClick={() => onOpen(r, latest)}
+                      >
+                        <span className={styles.summary}>{shortTitle(r)}</span>
+                        <span className="visually-hidden">{KIND_TITLE[r.kind]}</span>
+                        <span className={styles.meta}>
+                          {latest && "Latest · "}
+                          {startups(count)} · {time(r.created_at)}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          ))}
+        </nav>
+      </div>
     </aside>
   );
 }

@@ -329,3 +329,11 @@
     min-height: var(--touch-target);
   }
 }
+
+/* "New research" sits at the top of the open sidebar on wide screens; the top bar keeps it
+   for the closed sidebar and for phones, where the sidebar is a drawer (#145). */
+@media (min-width: 64rem) {
+  .app[data-sidebar="open"] .newResearch {
+    display: none;
+  }
+}
