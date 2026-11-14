@@ -1,30 +1,48 @@
+import logging
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
-from app.api import chat, errors, profile, reports
-from app.config import get_settings
-from app.store import chat as _chat_tables  # noqa: F401  registers tables
-from app.store import db
-from app.store import profile as _profile_tables  # noqa: F401
-from app.store import reports as _report_tables  # noqa: F401
+from app.api import api_router
+from app.api.errors import install_error_handlers
+from app.config import REPO_ROOT
+from app.store.db import init_db
+
+FRONTEND_DIST = REPO_ROOT / "frontend" / "dist"
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 
 
 @asynccontextmanager
-async def lifespan(_: FastAPI):
-    db.init_db()
-    yield
-    db.close()
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    init_db()
+    # Single worker only: a second process would run every job twice (architecture.md).
+    scheduler = AsyncIOScheduler(timezone="UTC")
+    app.state.scheduler = scheduler
+    scheduler.start()
+    try:
+        yield
+    finally:
+        scheduler.shutdown(wait=False)
 
 
-app = FastAPI(title="Grabbit", lifespan=lifespan, openapi_url="/api/openapi.json")
-errors.install(app)
-app.include_router(profile.router)
-app.include_router(chat.router)
-app.include_router(reports.router)
+def create_app() -> FastAPI:
+    app = FastAPI(
+        title="Grabbit API",
+        version="0.1.0",
+        lifespan=lifespan,
+        openapi_url="/api/openapi.json",
+        docs_url="/api/docs",
+        redoc_url=None,
+    )
+    install_error_handlers(app)
+    app.include_router(api_router)
+    if FRONTEND_DIST.is_dir():
+        app.mount("/", StaticFiles(directory=FRONTEND_DIST, html=True), name="frontend")
+    return app
 
 
-@app.get("/api/health")
-async def health() -> dict[str, str]:
-    settings = get_settings()
-    return {"status": "ok", "cala_mode": settings.cala_mode, "llm_mode": settings.llm_mode}
+app = create_app()

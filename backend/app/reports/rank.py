@@ -42,12 +42,14 @@ def _matches(c: Candidate, profile: Profile) -> bool:
         return False
     if f.sectors_in and not any(s.lower() in industries for s in f.sectors_in):
         return False
-    if f.countries and c.hq.value is not None:
-        if str(c.hq.value).lower() not in {x.lower() for x in f.countries}:
-            return False
-    if f.headcount_max is not None and isinstance(c.headcount.value, int | float):
-        if c.headcount.value > f.headcount_max:
-            return False
+    countries = {x.lower() for x in f.countries}
+    if countries and c.hq.value is not None and str(c.hq.value).lower() not in countries:
+        return False
+    # An unknown headcount is kept: absent is "not published", never a reason to drop.
+    headcount = c.headcount.value
+    too_big = isinstance(headcount, int | float) and headcount > (f.headcount_max or headcount)
+    if too_big:
+        return False
     if f.stages and c.funding_stage.value is not None:
         stage = str(c.funding_stage.value).lower()
         wanted = {s.lower() for s in f.stages}

@@ -1,10 +1,11 @@
 from app.agent.tools import apply_tool_call, diff
 from app.llm import ToolCall
 from app.models import Profile
+from app.store.profile import default_profile
 
 
 def _profile(now) -> Profile:
-    return Profile(version=1, updated_at=now)
+    return default_profile(now)
 
 
 def test_update_profile_merges_nested_fields(now):

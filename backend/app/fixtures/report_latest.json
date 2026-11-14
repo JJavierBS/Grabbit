@@ -1,0 +1,673 @@
+{
+  "id": "rep-slush-prep-2",
+  "kind": "prep",
+  "created_at": "2026-11-14T09:12:05Z",
+  "profile_version": 3,
+  "summary": "Three Slush 2026 attendees where Aurora Ventures or Lumi Angels are on the cap table. Polar Ledger is the most likely to raise now.",
+  "sections": [
+    {
+      "title": "Shortlist",
+      "body_md": "1. **Polar Ledger** (Tallinn, pre-seed): two years since its round, likely raising now.\n2. **Kelo Health** (Helsinki, seed): Aurora Ventures led, six open roles.\n3. **Saimaa Grid** (Lappeenranta, Series A): raised in April, headcount not published.",
+      "candidate_ids": [
+        "cmp-polar-ledger",
+        "cmp-kelo-health",
+        "cmp-saimaa-grid"
+      ]
+    },
+    {
+      "title": "Co-invest with who you trust",
+      "body_md": "- Aurora Ventures **led** Kelo Health's seed and **joined** Saimaa Grid's Series A.\n- Lumi Angels joined Polar Ledger's pre-seed and led Kelo Health's pre-seed.",
+      "candidate_ids": [
+        "cmp-kelo-health",
+        "cmp-saimaa-grid",
+        "cmp-polar-ledger"
+      ]
+    },
+    {
+      "title": "Ask them at Slush",
+      "body_md": "- **Polar Ledger**: is Baltic Seed Partners following on?\n- **Kelo Health**: how many hospital districts pay today?\n- **Saimaa Grid**: why is headcount not public?",
+      "candidate_ids": [
+        "cmp-polar-ledger",
+        "cmp-kelo-health",
+        "cmp-saimaa-grid"
+      ]
+    }
+  ],
+  "candidates": [
+    {
+      "entity_id": "cmp-kelo-health",
+      "name": "Kelo Health",
+      "website": "https://kelohealth.example",
+      "description": "Remote monitoring for post-surgery patients, sold to Nordic hospital districts.",
+      "founding_date": {
+        "value": "2021-03-15",
+        "unit": null,
+        "trust": "filing",
+        "sources": [
+          {
+            "name": "Finnish Trade Register",
+            "url": "https://registry.example/fi/kelo",
+            "date": "2021-03-15",
+            "date_precision": "day",
+            "rank": "filing"
+          }
+        ]
+      },
+      "funding_stage": {
+        "value": "seed",
+        "unit": null,
+        "trust": "aggregator",
+        "sources": [
+          {
+            "name": "RoundData",
+            "url": "https://rounddata.example/kelo",
+            "date": "2025-09-02",
+            "date_precision": "day",
+            "rank": "aggregator"
+          }
+        ]
+      },
+      "headcount": {
+        "value": 24,
+        "unit": "people",
+        "trust": "primary",
+        "sources": [
+          {
+            "name": "Kelo Health careers page",
+            "url": "https://kelohealth.example/careers",
+            "date": "2026-10",
+            "date_precision": "month",
+            "rank": "primary"
+          }
+        ]
+      },
+      "total_funding": {
+        "value": 3200000,
+        "unit": "EUR",
+        "trust": "press",
+        "sources": [
+          {
+            "name": "Nordic Tech Daily",
+            "url": "https://nordictech.example/kelo-seed",
+            "date": "2025-09-03",
+            "date_precision": "day",
+            "rank": "press"
+          }
+        ]
+      },
+      "hq": {
+        "value": "Helsinki, Finland",
+        "unit": null,
+        "trust": "filing",
+        "sources": [
+          {
+            "name": "Finnish Trade Register",
+            "url": "https://registry.example/fi/kelo",
+            "date": "2021-03-15",
+            "date_precision": "day",
+            "rank": "filing"
+          }
+        ]
+      },
+      "industries": [
+        "healthtech",
+        "medical devices software"
+      ],
+      "rounds": [
+        {
+          "entity_id": "rnd-kelo-seed",
+          "label": "Seed",
+          "name": "Kelo Health Seed",
+          "amount": {
+            "value": 2500000,
+            "unit": "EUR",
+            "trust": "press",
+            "sources": [
+              {
+                "name": "Nordic Tech Daily",
+                "url": "https://nordictech.example/kelo-seed",
+                "date": "2025-09-03",
+                "date_precision": "day",
+                "rank": "press"
+              }
+            ]
+          },
+          "date": {
+            "value": "2025-09-02",
+            "unit": null,
+            "trust": "primary",
+            "sources": [
+              {
+                "name": "Kelo Health press release",
+                "url": "https://kelohealth.example/news/seed",
+                "date": "2025-09-02",
+                "date_precision": "day",
+                "rank": "primary"
+              }
+            ]
+          },
+          "investors": [
+            {
+              "entity_id": "inv-aurora-ventures",
+              "name": "Aurora Ventures",
+              "is_lead": true,
+              "role": "investor"
+            },
+            {
+              "entity_id": "inv-lumi-angels",
+              "name": "Lumi Angels",
+              "is_lead": false,
+              "role": "investor"
+            }
+          ]
+        },
+        {
+          "entity_id": "rnd-kelo-pre-seed",
+          "label": "Pre-seed",
+          "name": "Kelo Health Pre-seed",
+          "amount": {
+            "value": 700000,
+            "unit": "EUR",
+            "trust": "aggregator",
+            "sources": [
+              {
+                "name": "RoundData",
+                "url": "https://rounddata.example/kelo",
+                "date": "2023-05",
+                "date_precision": "month",
+                "rank": "aggregator"
+              }
+            ]
+          },
+          "date": {
+            "value": "2023-05-01",
+            "unit": null,
+            "trust": "aggregator",
+            "sources": [
+              {
+                "name": "RoundData",
+                "url": "https://rounddata.example/kelo",
+                "date": "2023-05",
+                "date_precision": "month",
+                "rank": "aggregator"
+              }
+            ]
+          },
+          "investors": [
+            {
+              "entity_id": "inv-lumi-angels",
+              "name": "Lumi Angels",
+              "is_lead": true,
+              "role": "investor"
+            }
+          ]
+        }
+      ],
+      "signals": [
+        {
+          "kind": "co_invest",
+          "label": "Aurora Ventures led their seed",
+          "value": true,
+          "explanation": "Aurora Ventures, one of your reference investors, led the 2.5M EUR seed in September 2025.",
+          "facts": [
+            {
+              "value": "Aurora Ventures (lead)",
+              "unit": null,
+              "trust": "primary",
+              "sources": [
+                {
+                  "name": "Kelo Health press release",
+                  "url": "https://kelohealth.example/news/seed",
+                  "date": "2025-09-02",
+                  "date_precision": "day",
+                  "rank": "primary"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "lead_follow_on",
+          "label": "Lead likely to follow on",
+          "value": 0.7,
+          "explanation": "Aurora Ventures followed on in 3 of its last 4 seed leads within 18 months.",
+          "facts": [
+            {
+              "value": 3,
+              "unit": "follow-ons",
+              "trust": "aggregator",
+              "sources": [
+                {
+                  "name": "RoundData",
+                  "url": "https://rounddata.example/aurora",
+                  "date": "2026-10-30",
+                  "date_precision": "day",
+                  "rank": "aggregator"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "likely_to_raise",
+          "label": "Likely to raise in 6 months",
+          "value": 0.8,
+          "explanation": "14 months since the seed and six open roles on the careers page.",
+          "facts": [
+            {
+              "value": "2025-09-02",
+              "unit": null,
+              "trust": "primary",
+              "sources": [
+                {
+                  "name": "Kelo Health press release",
+                  "url": "https://kelohealth.example/news/seed",
+                  "date": "2025-09-02",
+                  "date_precision": "day",
+                  "rank": "primary"
+                }
+              ]
+            },
+            {
+              "value": 6,
+              "unit": "open roles",
+              "trust": "web_unverified",
+              "sources": [
+                {
+                  "name": "kelohealth.example/careers (web)",
+                  "url": "https://kelohealth.example/careers",
+                  "date": "2026-11-12",
+                  "date_precision": "day",
+                  "rank": "web_unverified"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "entity_id": "cmp-saimaa-grid",
+      "name": "Saimaa Grid",
+      "website": "https://saimaagrid.example",
+      "description": "Software that schedules home batteries against Nordic spot electricity prices.",
+      "founding_date": {
+        "value": "2019-01-01",
+        "unit": null,
+        "trust": "filing",
+        "sources": [
+          {
+            "name": "Finnish Trade Register",
+            "url": "https://registry.example/fi/saimaa",
+            "date": "2019-01-01",
+            "date_precision": "year",
+            "rank": "filing"
+          }
+        ]
+      },
+      "funding_stage": {
+        "value": "series_a",
+        "unit": null,
+        "trust": "press",
+        "sources": [
+          {
+            "name": "Nordic Tech Daily",
+            "url": "https://nordictech.example/saimaa-a",
+            "date": "2026-04-20",
+            "date_precision": "day",
+            "rank": "press"
+          }
+        ]
+      },
+      "headcount": {
+        "value": null,
+        "unit": null,
+        "trust": "not_published",
+        "sources": []
+      },
+      "total_funding": {
+        "value": 9800000,
+        "unit": "EUR",
+        "trust": "aggregator",
+        "sources": [
+          {
+            "name": "RoundData",
+            "url": "https://rounddata.example/saimaa",
+            "date": "2026-04",
+            "date_precision": "month",
+            "rank": "aggregator"
+          }
+        ]
+      },
+      "hq": {
+        "value": "Lappeenranta, Finland",
+        "unit": null,
+        "trust": "primary",
+        "sources": [
+          {
+            "name": "Saimaa Grid website",
+            "url": "https://saimaagrid.example/about",
+            "date": "2026",
+            "date_precision": "year",
+            "rank": "primary"
+          }
+        ]
+      },
+      "industries": [
+        "climate tech",
+        "energy software"
+      ],
+      "rounds": [
+        {
+          "entity_id": "rnd-saimaa-a",
+          "label": "Series A",
+          "name": "Saimaa Grid Series A",
+          "amount": {
+            "value": 8000000,
+            "unit": "EUR",
+            "trust": "press",
+            "sources": [
+              {
+                "name": "Nordic Tech Daily",
+                "url": "https://nordictech.example/saimaa-a",
+                "date": "2026-04-20",
+                "date_precision": "day",
+                "rank": "press"
+              }
+            ]
+          },
+          "date": {
+            "value": "2026-04-20",
+            "unit": null,
+            "trust": "press",
+            "sources": [
+              {
+                "name": "Nordic Tech Daily",
+                "url": "https://nordictech.example/saimaa-a",
+                "date": "2026-04-20",
+                "date_precision": "day",
+                "rank": "press"
+              }
+            ]
+          },
+          "investors": [
+            {
+              "entity_id": "inv-fjord-capital",
+              "name": "Fjord Capital",
+              "is_lead": true,
+              "role": "investor"
+            },
+            {
+              "entity_id": "inv-aurora-ventures",
+              "name": "Aurora Ventures",
+              "is_lead": false,
+              "role": "investor"
+            },
+            {
+              "entity_id": "inv-nordic-growth-bank",
+              "name": "Nordic Growth Bank",
+              "is_lead": false,
+              "role": "lender"
+            }
+          ]
+        }
+      ],
+      "signals": [
+        {
+          "kind": "co_invest",
+          "label": "Aurora Ventures joined their Series A",
+          "value": true,
+          "explanation": "Aurora Ventures, one of your reference investors, joined the 8M EUR Series A led by Fjord Capital.",
+          "facts": [
+            {
+              "value": "Aurora Ventures",
+              "unit": null,
+              "trust": "press",
+              "sources": [
+                {
+                  "name": "Nordic Tech Daily",
+                  "url": "https://nordictech.example/saimaa-a",
+                  "date": "2026-04-20",
+                  "date_precision": "day",
+                  "rank": "press"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "lead_follow_on",
+          "label": "Lead follow-on unknown",
+          "value": null,
+          "explanation": "Not enough data: Fjord Capital has no earlier leads in Cala to compare with.",
+          "facts": []
+        },
+        {
+          "kind": "likely_to_raise",
+          "label": "Unlikely to raise soon",
+          "value": 0.2,
+          "explanation": "Raised a Series A seven months ago; headcount is not published.",
+          "facts": [
+            {
+              "value": "2026-04-20",
+              "unit": null,
+              "trust": "press",
+              "sources": [
+                {
+                  "name": "Nordic Tech Daily",
+                  "url": "https://nordictech.example/saimaa-a",
+                  "date": "2026-04-20",
+                  "date_precision": "day",
+                  "rank": "press"
+                }
+              ]
+            },
+            {
+              "value": null,
+              "unit": null,
+              "trust": "not_published",
+              "sources": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "entity_id": "cmp-polar-ledger",
+      "name": "Polar Ledger",
+      "website": "https://polarledger.example",
+      "description": "Accounts-payable automation for small companies in the Baltics.",
+      "founding_date": {
+        "value": "2022-06-01",
+        "unit": null,
+        "trust": "filing",
+        "sources": [
+          {
+            "name": "Estonian e-Business Register",
+            "url": "https://registry.example/ee/polar",
+            "date": "2022-06",
+            "date_precision": "month",
+            "rank": "filing"
+          }
+        ]
+      },
+      "funding_stage": {
+        "value": "pre_seed",
+        "unit": null,
+        "trust": "primary",
+        "sources": [
+          {
+            "name": "Polar Ledger blog",
+            "url": "https://polarledger.example/blog/pre-seed",
+            "date": "2024-11-05",
+            "date_precision": "day",
+            "rank": "primary"
+          }
+        ]
+      },
+      "headcount": {
+        "value": 9,
+        "unit": "people",
+        "trust": "aggregator",
+        "sources": [
+          {
+            "name": "RoundData",
+            "url": "https://rounddata.example/polar",
+            "date": "2026-09",
+            "date_precision": "month",
+            "rank": "aggregator"
+          }
+        ]
+      },
+      "total_funding": {
+        "value": 1100000,
+        "unit": "EUR",
+        "trust": "primary",
+        "sources": [
+          {
+            "name": "Polar Ledger blog",
+            "url": "https://polarledger.example/blog/pre-seed",
+            "date": "2024-11-05",
+            "date_precision": "day",
+            "rank": "primary"
+          }
+        ]
+      },
+      "hq": {
+        "value": "Tallinn, Estonia",
+        "unit": null,
+        "trust": "filing",
+        "sources": [
+          {
+            "name": "Estonian e-Business Register",
+            "url": "https://registry.example/ee/polar",
+            "date": "2022-06",
+            "date_precision": "month",
+            "rank": "filing"
+          }
+        ]
+      },
+      "industries": [
+        "fintech",
+        "b2b saas"
+      ],
+      "rounds": [
+        {
+          "entity_id": "rnd-polar-pre-seed",
+          "label": "Pre-seed",
+          "name": "Polar Ledger Pre-seed",
+          "amount": {
+            "value": 1100000,
+            "unit": "EUR",
+            "trust": "primary",
+            "sources": [
+              {
+                "name": "Polar Ledger blog",
+                "url": "https://polarledger.example/blog/pre-seed",
+                "date": "2024-11-05",
+                "date_precision": "day",
+                "rank": "primary"
+              }
+            ]
+          },
+          "date": {
+            "value": "2024-11-05",
+            "unit": null,
+            "trust": "primary",
+            "sources": [
+              {
+                "name": "Polar Ledger blog",
+                "url": "https://polarledger.example/blog/pre-seed",
+                "date": "2024-11-05",
+                "date_precision": "day",
+                "rank": "primary"
+              }
+            ]
+          },
+          "investors": [
+            {
+              "entity_id": "inv-baltic-seed",
+              "name": "Baltic Seed Partners",
+              "is_lead": true,
+              "role": "investor"
+            },
+            {
+              "entity_id": "inv-lumi-angels",
+              "name": "Lumi Angels",
+              "is_lead": false,
+              "role": "investor"
+            }
+          ]
+        }
+      ],
+      "signals": [
+        {
+          "kind": "co_invest",
+          "label": "Lumi Angels joined their pre-seed",
+          "value": true,
+          "explanation": "Lumi Angels, one of your reference investors, joined the 1.1M EUR pre-seed led by Baltic Seed Partners.",
+          "facts": [
+            {
+              "value": "Lumi Angels",
+              "unit": null,
+              "trust": "primary",
+              "sources": [
+                {
+                  "name": "Polar Ledger blog",
+                  "url": "https://polarledger.example/blog/pre-seed",
+                  "date": "2024-11-05",
+                  "date_precision": "day",
+                  "rank": "primary"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "lead_follow_on",
+          "label": "Lead rarely follows on",
+          "value": 0.25,
+          "explanation": "Baltic Seed Partners followed on in 1 of its last 4 leads.",
+          "facts": [
+            {
+              "value": 1,
+              "unit": "follow-ons",
+              "trust": "aggregator",
+              "sources": [
+                {
+                  "name": "RoundData",
+                  "url": "https://rounddata.example/baltic-seed",
+                  "date": "2026-10-30",
+                  "date_precision": "day",
+                  "rank": "aggregator"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "likely_to_raise",
+          "label": "Likely to raise now",
+          "value": 0.9,
+          "explanation": "Two years since the pre-seed: the usual runway is running out.",
+          "facts": [
+            {
+              "value": "2024-11-05",
+              "unit": null,
+              "trust": "primary",
+              "sources": [
+                {
+                  "name": "Polar Ledger blog",
+                  "url": "https://polarledger.example/blog/pre-seed",
+                  "date": "2024-11-05",
+                  "date_precision": "day",
+                  "rank": "primary"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -5,7 +5,7 @@ from datetime import datetime
 from app import events
 from app.agent.sources import candidates_for
 from app.llm import LLM, get_llm
-from app.models import Profile, Report
+from app.models import Profile, Report, ReportRef
 from app.reports.build import Kind, build
 from app.store import profile as profile_store
 from app.store import reports as report_store
@@ -28,7 +28,7 @@ async def run(
         now=now,
     )
     report_store.add(report)
-    events.publish("report", {"id": report.id})
+    events.publish("report", ReportRef(id=report.id))
     return report
 
 

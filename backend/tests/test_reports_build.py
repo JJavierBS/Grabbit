@@ -1,13 +1,14 @@
 import re
 
+from app.agent.sources import fixture_candidates
 from app.llm.fake import FakeLLM, Script
-from app.models import Profile, ReferenceInvestor
+from app.models import ReferenceInvestor
 from app.reports.build import build
-from tests.helpers import fixture_candidates
+from app.store.profile import default_profile
 
 
 def _profile(now, **update):
-    return Profile(updated_at=now).model_copy(update=update)
+    return default_profile(now).model_copy(update=update)
 
 
 async def _build(kind, profile, llm=None, previous=None, candidates=None, now=None):

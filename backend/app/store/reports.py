@@ -13,17 +13,21 @@ db.register_table(
 
 
 def add(report: Report) -> Report:
-    db.conn().execute(
-        "INSERT INTO reports (id, report_json) VALUES (?, ?)", (report.id, report.model_dump_json())
-    )
+    with db.connect() as conn:
+        conn.execute(
+            "INSERT INTO reports (id, report_json) VALUES (?, ?)",
+            (report.id, report.model_dump_json()),
+        )
     return report
 
 
 def latest() -> Report | None:
-    row = db.conn().execute("SELECT report_json FROM reports ORDER BY seq DESC LIMIT 1").fetchone()
+    with db.connect() as conn:
+        row = conn.execute("SELECT report_json FROM reports ORDER BY seq DESC LIMIT 1").fetchone()
     return Report.model_validate_json(row["report_json"]) if row else None
 
 
 def get(report_id: str) -> Report | None:
-    row = db.conn().execute("SELECT report_json FROM reports WHERE id = ?", (report_id,)).fetchone()
+    with db.connect() as conn:
+        row = conn.execute("SELECT report_json FROM reports WHERE id = ?", (report_id,)).fetchone()
     return Report.model_validate_json(row["report_json"]) if row else None

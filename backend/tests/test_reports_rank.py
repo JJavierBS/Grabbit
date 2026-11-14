@@ -1,6 +1,7 @@
-from app.models import Profile, ReferenceInvestor
+from app.agent.sources import fixture_candidates
+from app.models import ReferenceInvestor
 from app.reports.rank import rank
-from tests.helpers import fixture_candidates
+from app.store.profile import default_profile
 
 
 def _names(profile):
@@ -8,18 +9,22 @@ def _names(profile):
 
 
 def test_reference_investor_leads_come_first(now):
-    profile = Profile(
-        updated_at=now,
-        reference_investors=[ReferenceInvestor(entity_id="inv-fjord", name="Fjord Capital")],
+    profile = default_profile(now).model_copy(
+        update={
+            "reference_investors": [ReferenceInvestor(entity_id="inv-fjord", name="Fjord Capital")]
+        }
     )
     names = _names(profile)
     assert set(names[:2]) == {"Ledgerly", "Brikk"}
 
 
 def test_lead_ranks_above_participant(now):
-    profile = Profile(
-        updated_at=now,
-        reference_investors=[ReferenceInvestor(entity_id="inv-north-pine", name="North Pine")],
+    profile = default_profile(now).model_copy(
+        update={
+            "reference_investors": [
+                ReferenceInvestor(entity_id="inv-north-pine", name="North Pine")
+            ]
+        }
     )
     names = _names(profile)
     assert names[0] == "Kiln Analytics"
@@ -27,11 +32,11 @@ def test_lead_ranks_above_participant(now):
 
 
 def test_without_references_newest_round_first(now):
-    assert _names(Profile(updated_at=now))[0] == "Saunaverse"
+    assert _names(default_profile(now))[0] == "Saunaverse"
 
 
 def test_filters_drop_sectors_countries_and_big_teams(now):
-    profile = Profile(updated_at=now)
+    profile = default_profile(now)
     profile.filters.sectors_out = ["b2c"]
     assert "Mossa Health" not in _names(profile) and "Saunaverse" not in _names(profile)
     profile.filters.countries = ["Finland"]
@@ -39,7 +44,7 @@ def test_filters_drop_sectors_countries_and_big_teams(now):
 
 
 def test_unknown_headcount_is_kept_by_headcount_filter(now):
-    profile = Profile(updated_at=now)
+    profile = default_profile(now)
     profile.filters.headcount_max = 20
     names = _names(profile)
     assert "Mossa Health" in names and "Ledgerly" not in names

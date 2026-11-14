@@ -1,6 +1,6 @@
+from app.agent.sources import fixture_candidates
 from app.models import Fact, Source
 from app.reports.facts import placeholders, render
-from tests.helpers import fixture_candidates
 
 
 def _fact(value, precision=None, unit=None, trust="filing"):
@@ -9,7 +9,7 @@ def _fact(value, precision=None, unit=None, trust="filing"):
 
 
 def test_absent_fact_reads_not_published_never_zero():
-    assert render(Fact()) == "not published"
+    assert render(Fact.not_published()) == "not published"
     assert render(Fact(value=0, trust="not_published")) == "not published"
 
 

@@ -8,19 +8,19 @@ from app.services import latest_report_summary, on_profile_change
 from app.store import chat as chat_store
 from app.store import profile as profile_store
 
-router = APIRouter(prefix="/api/chat", tags=["chat"])
+router = APIRouter(prefix="/chat", tags=["chat"])
 
 
 @router.get("")
-async def get_chat() -> list[ChatMessage]:
+def get_chat() -> list[ChatMessage]:
     return chat_store.all_messages()
 
 
 @router.post("")
-async def post_chat(body: ChatRequest) -> ChatMessage:
+async def post_chat(request: ChatRequest) -> ChatMessage:
     profile = profile_store.current()
     return await agent_chat.handle_message(
-        body.text.strip(),
+        request.text.strip(),
         llm=get_llm(),
         candidates=await candidates_for(profile),
         report_summary=latest_report_summary(),

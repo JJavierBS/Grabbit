@@ -31,11 +31,12 @@ async def build(
     selected = ranked[: LIMIT[length]]
 
     report = Report(
-        id=uuid.uuid4().hex,
+        id=f"rep-{uuid.uuid4().hex[:12]}",
         kind=kind,
         created_at=now or datetime.now(UTC),
         profile_version=profile.version,
         summary="",
+        sections=[],
         candidates=selected,
     )
     if not selected:
