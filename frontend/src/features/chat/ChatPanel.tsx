@@ -363,10 +363,9 @@ function Message({
           </div>
         )
       )}
+      {/* Open in the guided demo too: the visitor may answer by hand instead of "Show me" (#190). */}
       {isAgent && message.questions.length > 0 && (
-        <GuideLock>
-          <AgentQuestions questions={message.questions} onAnswer={onAnswer} busy={busy} />
-        </GuideLock>
+        <AgentQuestions questions={message.questions} onAnswer={onAnswer} busy={busy} />
       )}
     </article>
   );

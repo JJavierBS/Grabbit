@@ -19,7 +19,8 @@
   restores both on exit. Inside it, `useDemo()?.active` is true: never write to the
   visitor's research, ask for permissions or call the real API from there. Every app
   control goes inside `<GuideLock>`, which disables it during the demo: the coach card makes
-  every move.
+  every move. The one exception is the agent's question (#190): the visitor may pick an answer
+  and send it by hand, as "Show me" would.
 
 ## Structure
 - `src/api/`: generated `schema.ts` (api.md, `make gen-api`), named aliases in `types.ts`,
