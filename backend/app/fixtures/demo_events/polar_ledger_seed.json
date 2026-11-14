@@ -1,0 +1,39 @@
+{
+  "entity_id": "cmp-polar-ledger",
+  "entity_name": "Polar Ledger",
+  "kind": "new_round",
+  "title": "Polar Ledger raised a 3M EUR seed led by Fjord Capital",
+  "why_it_matters": "It was your top \"likely to raise\" pick, and Lumi Angels is already on the cap table: ask for an allocation today.",
+  "importance": 0.92,
+  "facts": [
+    {
+      "value": 3000000,
+      "unit": "EUR",
+      "trust": "primary",
+      "sources": [
+        {
+          "name": "Polar Ledger blog",
+          "url": "https://polarledger.example/blog/seed",
+          "date": "2026-11-14",
+          "date_precision": "day",
+          "rank": "primary"
+        }
+      ]
+    },
+    {
+      "value": "Fjord Capital (lead)",
+      "unit": null,
+      "trust": "primary",
+      "sources": [
+        {
+          "name": "Polar Ledger blog",
+          "url": "https://polarledger.example/blog/seed",
+          "date": "2026-11-14",
+          "date_precision": "day",
+          "rank": "primary"
+        }
+      ]
+    }
+  ],
+  "simulated": true
+}
