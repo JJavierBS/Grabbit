@@ -55,3 +55,29 @@ def test_a_gemini_failure_uses_the_error_shape(client, monkeypatch):
         "code": "transcription_failed",
         "message": "Grabbit could not transcribe that. Try again.",
     }
+
+
+def test_live_transcription_is_unavailable_offline(client):
+    response = client.post("/api/transcribe/token")
+    assert response.status_code == 503
+    assert response.json()["error"]["code"] == "live_transcription_unavailable"
+
+
+def test_the_browser_gets_a_token_and_the_endpoint_that_takes_it(client, monkeypatch):
+    from datetime import UTC, datetime
+
+    from app.llm import LiveToken, get_llm
+
+    async def live_token():
+        return LiveToken(
+            token="auth_tokens/abc",
+            model="gemini-live-x",
+            expires_at=datetime(2026, 11, 14, tzinfo=UTC),
+        )
+
+    monkeypatch.setattr(get_llm(), "live_token", live_token)
+    body = client.post("/api/transcribe/token").json()
+    assert body["token"] == "auth_tokens/abc" and body["model"] == "gemini-live-x"
+    # Plain BidiGenerateContent rejects ephemeral tokens (1008).
+    assert body["url"].endswith("GenerativeService.BidiGenerateContentConstrained")
+    assert "key=" not in body["url"]

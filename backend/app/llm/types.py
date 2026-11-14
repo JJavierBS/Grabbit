@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from datetime import datetime
 from typing import Any, Literal, Protocol, TypeVar
 
 from pydantic import BaseModel, Field
@@ -41,6 +42,14 @@ class Message(BaseModel):
     tool_results: list[ToolResult] = Field(default_factory=list)
 
 
+class LiveToken(BaseModel):
+    """A single-use, short-lived credential for one Live API transcription session."""
+
+    token: str
+    model: str
+    expires_at: datetime
+
+
 class ChatResult(BaseModel):
     text: str = ""
     tool_calls: list[ToolCall] = Field(default_factory=list)
@@ -67,3 +76,5 @@ class LLM(Protocol):
     ) -> T: ...
 
     async def transcribe(self, *, audio: bytes, mime_type: str) -> str: ...
+
+    async def live_token(self) -> LiveToken: ...

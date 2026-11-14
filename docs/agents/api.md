@@ -93,7 +93,7 @@ work in parallel against mocks.
 - `ErrorResponse`: `{error: {code, message}}`. Codes so far: `not_found`,
   `validation_error`, `internal_error`, `demo_mode_disabled`, `fixture_not_found`,
   `invalid_workspace`, `unsupported_media_type`, `empty_audio`, `audio_too_large`,
-  `transcription_failed`.
+  `transcription_failed`, `live_transcription_unavailable`.
 
 ## Endpoints
 | Method | Path | Purpose | Status |
@@ -104,6 +104,7 @@ work in parallel against mocks.
 | POST | `/api/profile/undo` | Revert the last change, returns `Profile` | mock |
 | GET | `/api/chat` | `ChatMessage[]` of the conversation | mock |
 | POST | `/api/chat` | `{text}` -> agent `ChatMessage` (may change the profile and regenerate the report) | mock |
+| POST | `/api/transcribe/token` | `LiveTranscription` (`url, token, model, expires_at`): a single-use Gemini ephemeral token (10 min, locked to `GEMINI_LIVE_TRANSCRIBE_MODEL`, TEXT, SMART, auto language) for the browser to stream the mic to the Live API at `url?access_token=<token>`; 503 `live_transcription_unavailable` offline or on failure, then Talk records and uses `/api/transcribe` (#185) | live |
 | POST | `/api/transcribe` | Raw `audio/*` body (a `MediaRecorder` recording, at most 10 MB) -> `Transcript`, written down by Gemini; Talk in the chat uses it in every browser (#161). 415 not audio, 400 empty, 413 too large, 502 Gemini failed | live |
 | GET | `/api/reports/latest` | Latest `Report` | mock |
 | GET | `/api/reports` | Past `Report[]`, newest first, at most 20 (#54) | mock |
