@@ -10,6 +10,9 @@ from app.cala.client import CalaCacheMiss, CalaClient, CalaError
 from app.config import get_settings
 from app.events import publish
 from app.models import Alert, ErrorResponse, SimulateEventRequest
+from app.references import resolve_references
+from app.store import profile as profile_store
+from app.store import reports as report_store
 from app.store.cala_cache import CalaCache
 from app.store.db import connect
 from app.store.snapshots import WatchStore
@@ -50,7 +53,8 @@ async def simulate_event(request: SimulateEventRequest) -> Alert:
 async def _through_watcher(name: str, event: dict[str, Any]) -> Alert:
     """A staged Cala change, sent through the real diff, scoring and delivery path."""
     settings = get_settings()
-    profile = fixtures.profile()  # TODO(#25): the stored profile once the agent owns it
+    latest = report_store.latest()
+    profile = resolve_references(profile_store.current(), latest.candidates if latest else [])
     with connect() as conn:
         client = CalaClient(settings.cala_api_key or None, CalaCache(conn), mode=settings.cala_mode)
         try:
