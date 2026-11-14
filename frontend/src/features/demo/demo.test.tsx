@@ -108,7 +108,7 @@ describe("guided demo", () => {
     expect(localStorage.getItem(SEEN)).toBe("1");
   });
 
-  it("walks the four steps on sample data with Show me, then hands back the real chat", async () => {
+  it("walks every step on sample data with Show me, then hands back the real chat", async () => {
     const calls = realApi();
     renderWithDemo();
     await userEvent.click(await screen.findByRole("button", { name: /See how it works/ }));
@@ -122,8 +122,19 @@ describe("guided demo", () => {
     expect(await screen.findByText(DEMO_STEPS[0].outcome)).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Next" }));
 
-    // 2. Answer: the report lands and opens with its trust badges.
+    // 2. Answer: the graph Grabbit walked with its steps in the open; the report waits.
     await step(DEMO_STEPS[1].title);
+    await userEvent.click(screen.getByRole("button", { name: "Show me" }));
+    expect(await screen.findByText("Around Aurora Ventures in Cala's graph")).toBeInTheDocument();
+    const steps = screen.getByRole("list", { name: "How I found this, step by step" });
+    expect(steps.closest("details")).toHaveAttribute("open");
+    expect(within(steps).getByText(/already in your report, no new Cala call/)).toBeVisible();
+    expect(await screen.findByText(DEMO_STEPS[1].outcome)).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Report" })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Next" }));
+
+    // 3. Report: it opens on request, with a trust badge on every fact.
+    await step(DEMO_STEPS[2].title);
     await userEvent.click(screen.getByRole("button", { name: "Show me" }));
     const panel = await screen.findByRole("region", { name: "Report" });
     expect(
@@ -132,14 +143,14 @@ describe("guided demo", () => {
     expect(within(panel).getAllByText("Official filing").length).toBeGreaterThan(0);
     await userEvent.click(await screen.findByRole("button", { name: "Next" }));
 
-    // 3. Correction: the report rewrites itself.
-    await step(DEMO_STEPS[2].title);
+    // 4. Correction: the report rewrites itself.
+    await step(DEMO_STEPS[3].title);
     await userEvent.click(screen.getByRole("button", { name: "Show me" }));
     expect(await screen.findByText(/Rewritten for you/)).toBeInTheDocument();
     await userEvent.click(await screen.findByRole("button", { name: "Next" }));
 
-    // 4. Confirmation: a simulated alert arrives, labelled as such.
-    await step(DEMO_STEPS[3].title);
+    // 5. Confirmation: a simulated alert arrives, labelled as such.
+    await step(DEMO_STEPS[4].title);
     await userEvent.click(screen.getByRole("button", { name: "Show me" }));
     const toasts = screen.getByRole("region", { name: "Notifications" });
     expect(await within(toasts).findByText("Simulated event")).toBeInTheDocument();

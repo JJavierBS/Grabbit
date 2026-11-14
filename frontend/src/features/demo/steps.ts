@@ -2,6 +2,8 @@
 export interface DemoSignals {
   agentReplies: number;
   hasReport: boolean;
+  /** The visitor has opened the report at least once in this demo. */
+  reportOpened: boolean;
   profileVersion: number;
   alerts: number;
 }
@@ -9,6 +11,7 @@ export interface DemoSignals {
 /** The moves "Show me" makes for the visitor, through the same paths as their own clicks. */
 export interface DemoActions {
   send: (text: string) => void;
+  openReport: () => void;
   confirm: () => void;
 }
 
@@ -35,12 +38,20 @@ export const DEMO_STEPS: DemoStep[] = [
     done: (s) => s.agentReplies >= 1,
   },
   {
-    title: "Answer, get a shortlist",
+    title: "Answer, see how it got there",
     prompt: "It asks only what the data can't settle. Pick the investors you trust.",
     outcome:
-      "Every fact in the report says where it comes from and how far to trust it, from official filing to not published.",
+      "The graph is the path Grabbit walked. The steps under it say what it did, and which part came from your report instead of Cala.",
     act: ({ send }) => send(DEMO_ANSWER),
     done: (s) => s.hasReport,
+  },
+  {
+    title: "Every fact shows its source",
+    prompt: "The shortlist is ready. Open the report.",
+    outcome:
+      "Each figure carries a badge, from official filing down to not published, so you know how far to trust it.",
+    act: ({ openReport }) => openReport(),
+    done: (s) => s.reportOpened,
   },
   {
     title: "Correct it in plain words",

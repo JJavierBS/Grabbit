@@ -18,12 +18,13 @@
   box-shadow: var(--shadow-md), var(--focus-ring);
 }
 
-/* Four hairlines along the top edge: how far the visitor is, without a label to read. */
+/* One hairline per step along the top edge: how far the visitor is, without a label to read. */
 .progress {
   position: absolute;
   inset: 0 0 auto;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
   gap: 2px;
   margin: 0;
   padding: 0;

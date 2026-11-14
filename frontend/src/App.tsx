@@ -174,15 +174,11 @@ export function App() {
     setPanel("report");
   }, [diff]);
 
-  // The demo shows the first report as soon as it lands: its trust badges are the step.
-  const firstReport = guided ? (report.data?.id ?? null) : null;
-  const shownFirst = useRef(false);
+  // The demo waits for the visitor to open the report before it explains the badges.
+  const [reportOpened, setReportOpened] = useState(false);
   useEffect(() => {
-    if (!firstReport || shownFirst.current) return;
-    shownFirst.current = true;
-    openedByApp.current = true;
-    setPanel("report");
-  }, [firstReport]);
+    if (guided && panel === "report") setReportOpened(true);
+  }, [guided, panel]);
 
   useEffect(() => {
     if (!panel) return;
@@ -235,11 +231,13 @@ export function App() {
       signals={{
         agentReplies: messages.filter((m) => m.role === "agent").length,
         hasReport: Boolean(report.data),
+        reportOpened,
         profileVersion: profile.data?.version ?? 0,
         alerts: alertsDelivered,
       }}
       actions={{
         send: submit,
+        openReport: () => openPanel("report"),
         confirm: () => {
           setConfirmed(true);
           submit(CONFIRM_MESSAGE);

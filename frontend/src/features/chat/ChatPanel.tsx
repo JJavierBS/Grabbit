@@ -165,6 +165,7 @@ export function ChatPanel({ footer, renderAfter, followKey, coach }: ChatPanelPr
                 onUndo={() => undo.mutate()}
                 onAnswer={m.id === messages.at(-1)?.id ? submit : undefined}
                 busy={send.isPending}
+                showSteps={demo?.active}
               />
               {renderAfter?.(m)}
             </Fragment>
@@ -279,9 +280,20 @@ interface MessageProps {
   /** Answers its questions with a click; only the latest reply's are still open (#153). */
   onAnswer?: (text: string) => void;
   busy: boolean;
+  /** Opens "How I found this" instead of folding it. */
+  showSteps?: boolean;
 }
 
-function Message({ message, entering, canUndo, undoing, onUndo, onAnswer, busy }: MessageProps) {
+function Message({
+  message,
+  entering,
+  canUndo,
+  undoing,
+  onUndo,
+  onAnswer,
+  busy,
+  showSteps = false,
+}: MessageProps) {
   const isAgent = message.role === "agent";
   const { note, rest } = isAgent
     ? changeNoteText(message.text, message.profile_changes)
@@ -298,7 +310,7 @@ function Message({ message, entering, canUndo, undoing, onUndo, onAnswer, busy }
       {message.ui ? (
         <div className={styles.visual}>
           <VisualAnswer ui={message.ui} graph={message.graph} />
-          {message.walk && <HowIFound walk={message.walk} />}
+          {message.walk && <HowIFound walk={message.walk} open={showSteps} />}
         </div>
       ) : (
         rest && (

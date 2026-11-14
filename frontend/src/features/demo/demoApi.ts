@@ -1,6 +1,15 @@
 import type { Profile } from "../../api/types";
 import { change, createFakeApi, type FakeApi } from "../../dev/fakeApi";
-import { historyV2, profileV2, reportV1, reportV2, reportV3 } from "../../dev/fixtures";
+import {
+  exploredShortlist,
+  historyV2,
+  profileV2,
+  reportV1,
+  reportV2,
+  reportV3,
+  shortlistAnswerUi,
+  shortlistWalk,
+} from "../../dev/fixtures";
 import { DEMO_ANSWER } from "./steps";
 
 /** Milliseconds the demo backend takes: long enough to read as real work, short enough to stay brisk. */
@@ -67,6 +76,9 @@ export function createDemoApi(timing: DemoTiming = DEMO_TIMING): FakeApi {
         match: (_text, turn) => turn === 1,
         reply:
           "From now on: Aurora Ventures and North Star Capital are your reference investors. Your Slush prep report is ready.",
+        ui: shortlistAnswerUi,
+        graph: exploredShortlist,
+        walk: shortlistWalk,
         next: (v) => ({
           profile: profileV2,
           report: reportV1,
