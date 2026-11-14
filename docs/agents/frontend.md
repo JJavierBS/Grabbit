@@ -17,7 +17,9 @@
   sidebar foot, or `?tour`. `DemoRoot` swaps in a fresh `createDemoApi()` (a
   `createFakeApi` instance from `src/dev/fakeApi.ts`) and its own `QueryClient`, then
   restores both on exit. Inside it, `useDemo()?.active` is true: never write to the
-  visitor's research, ask for permissions or call the real API from there.
+  visitor's research, ask for permissions or call the real API from there. A control that a
+  step does not use goes inside `<GuideLock>` (or `<GuideLock target=...>` if a step uses it),
+  so the demo disables it.
 
 ## Structure
 - `src/api/`: generated `schema.ts` (api.md, `make gen-api`), named aliases in `types.ts`,
