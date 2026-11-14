@@ -154,6 +154,9 @@ class ChatMessage(ApiModel):
     created_at: datetime
     profile_changes: list[ProfileChange]
     report_id: str | None = None
+    ui: str | None = Field(
+        default=None, description="OpenUI Lang drawn with Cala components under the text"
+    )
 
 
 class ReportSection(ApiModel):

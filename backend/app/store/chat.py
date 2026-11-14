@@ -22,6 +22,7 @@ def add(
     *,
     profile_changes: list[ProfileChange] | None = None,
     report_id: str | None = None,
+    ui: str | None = None,
     now: datetime | None = None,
 ) -> ChatMessage:
     message = ChatMessage(
@@ -31,6 +32,7 @@ def add(
         created_at=now or datetime.now(UTC),
         profile_changes=profile_changes or [],
         report_id=report_id,
+        ui=ui,
     )
     with db.connect() as conn:
         conn.execute(
