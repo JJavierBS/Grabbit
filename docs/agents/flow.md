@@ -63,7 +63,9 @@ is mid-conversation.
 - A "run now" for the digest and a demo trigger for the watcher: the video shows an alert
   seconds after the first report, which a real poll cannot guarantee. The watcher query is
   mocked for the demo (team decision): the trigger feeds a scripted change into the same
-  diff, importance check and delivery path the real watcher uses.
+  diff, importance check and delivery path the real watcher uses. The scripted change lives
+  in its own fixture loaded by a "simulate event" action, never in the Cala response cache,
+  so staged data stays separate from real data and can be shown if a judge asks.
 - The demo portfolio uses an existing company (team picks it).
 - Responses for the demo path pre-warmed in the cache (architecture.md "Constraints").
 - The Grabbit tab stays open in the browser so desktop notifications fire.
