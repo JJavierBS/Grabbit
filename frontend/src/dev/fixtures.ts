@@ -291,6 +291,7 @@ export const profileV2: Profile = {
     { entity_id: "i-aurora", name: "Aurora Ventures" },
     { entity_id: "i-northstar", name: "North Star Capital" },
   ],
+  sources: [],
   style: { length: "medium", detail: "plain", language: "en", sections: [] },
   cadence: "event",
   alert_threshold: "medium",
