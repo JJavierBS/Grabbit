@@ -40,6 +40,21 @@ def add(
     return message
 
 
+def relink_report(old_ids: list[str], new_id: str) -> None:
+    """Point messages whose report was superseded (never stored) at the report that was."""
+    if not old_ids:
+        return
+    with db.connect() as conn:
+        for row in conn.execute("SELECT id, message_json FROM chat_messages").fetchall():
+            message = ChatMessage.model_validate_json(row["message_json"])
+            if message.report_id in old_ids:
+                message.report_id = new_id
+                conn.execute(
+                    "UPDATE chat_messages SET message_json = ? WHERE id = ?",
+                    (message.model_dump_json(), row["id"]),
+                )
+
+
 def all_messages() -> list[ChatMessage]:
     with db.connect() as conn:
         rows = conn.execute("SELECT message_json FROM chat_messages ORDER BY seq").fetchall()

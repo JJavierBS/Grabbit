@@ -27,6 +27,15 @@ def latest() -> Report | None:
     return Report.model_validate_json(row["report_json"]) if row else None
 
 
+def recent(limit: int = 20) -> list[Report]:
+    """Stored reports, newest first."""
+    with db.connect() as conn:
+        rows = conn.execute(
+            "SELECT report_json FROM reports ORDER BY seq DESC LIMIT ?", (limit,)
+        ).fetchall()
+    return [Report.model_validate_json(r["report_json"]) for r in rows]
+
+
 def get(report_id: str) -> Report | None:
     with db.connect() as conn:
         row = conn.execute("SELECT report_json FROM reports WHERE id = ?", (report_id,)).fetchone()

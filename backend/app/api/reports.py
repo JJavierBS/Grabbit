@@ -8,6 +8,12 @@ from app.store import reports as report_store
 router = APIRouter(prefix="/reports", tags=["reports"])
 
 
+@router.get("")
+def list_reports() -> list[Report]:
+    """Past reports, newest first, at most 20."""
+    return report_store.recent(20)
+
+
 @router.get("/latest")
 def get_latest_report() -> Report:
     report = report_store.latest()

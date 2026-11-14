@@ -13,6 +13,7 @@ from app.llm import LLM, get_llm
 from app.models import Profile, Report, ReportRef
 from app.references import resolve_references
 from app.reports.build import Kind, build, new_report_id, with_web_signals
+from app.store import chat as chat_store
 from app.store import profile as profile_store
 from app.store import reports as report_store
 
@@ -20,6 +21,10 @@ log = logging.getLogger(__name__)
 
 _pending: set[asyncio.Task] = set()
 _generation = 0
+# Chat messages carry the id of the rebuild their turn scheduled. A superseded rebuild is
+# never stored, so its id is relinked to the report of the newer one.
+_dropped: list[str] = []
+_stored: tuple[int, str] | None = None  # (generation, report id) of the newest stored rebuild
 
 
 async def run(
@@ -76,6 +81,7 @@ def schedule_rebuild(profile: Profile, *, llm: LLM | None = None) -> str:
 async def _rebuild(
     kind: Kind, profile: Profile, llm: LLM | None, report_id: str, generation: int
 ) -> None:
+    global _stored
     try:
         await run(
             kind,
@@ -86,6 +92,15 @@ async def _rebuild(
         )
     except Exception:
         log.exception("background report rebuild failed")
+        return
+    if report_store.get(report_id) is not None:
+        _stored = (generation, report_id)
+        chat_store.relink_report(_dropped, report_id)
+        _dropped.clear()
+    elif _stored and _stored[0] > generation:
+        chat_store.relink_report([report_id], _stored[1])
+    else:
+        _dropped.append(report_id)
 
 
 async def wait_idle() -> None:
