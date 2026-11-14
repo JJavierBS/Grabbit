@@ -55,7 +55,7 @@ describe('useEvents', () => {
     const { streams, client } = setup();
     const spy = vi.spyOn(client, 'invalidateQueries');
     streams[0].push('report', { id: 'rep-9' });
-    expect(spy).toHaveBeenCalledWith({ queryKey: keys.report });
+    expect(spy).toHaveBeenCalledWith({ queryKey: keys.reportsAll });
     streams[0].push('profile', { ...profileV2, version: 7 });
     expect(client.getQueryData<{ version: number }>(keys.profile)?.version).toBe(7);
   });

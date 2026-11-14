@@ -36,7 +36,8 @@ the angel finds a round. Success: the angel spends their time on deciding, not o
   dashboard the user must visit.
 
 ## Operating Context
-- One screen: the chat beside the current report. Alerts arrive as toasts and as desktop
+- One screen: a centred chat. A report shows in the chat as an outline and opens in a side
+  panel (full screen on a phone). Alerts arrive as toasts and as desktop
   notifications when the tab is hidden.
 - Used on a laptop while the angel plans the event, and shown on a 1920x1080 projector and
   at 375px on a phone during judging.
@@ -55,8 +56,10 @@ the angel finds a round. Success: the angel spends their time on deciding, not o
 
 ## Brand Commitments
 - Name and mark: Grabbit. Grabbit keeps its own name and its own mark.
-- Pinned reference aesthetic: the visual tone of cala.ai. The brief wins over the design
-  skill's own taste.
+- Pinned reference aesthetic: the Grabbit logo (black, night ink #0e111a, violet #6139f8),
+  a minimal chat in the manner of Grok, and reports that show as an outline in the chat and
+  open in a side panel, in the manner of Claude artifacts. This replaced the cala.ai tone on
+  2026-11-14 (#53). The brief wins over the design skill's own taste.
 - Never use Cala's logo, wordmark or copy. Never make Grabbit look like a Cala product.
 - Voice: plain, factual, short. The agent states changes in one line. *(inferred from
   agent.md and research.md)*

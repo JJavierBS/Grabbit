@@ -60,7 +60,7 @@ export function useEvents(onAlert: (alert: Alert) => void): StreamStatus {
         onAlertRef.current(alert);
       });
       stream.addEventListener('report', () => {
-        client.invalidateQueries({ queryKey: keys.report });
+        client.invalidateQueries({ queryKey: keys.reportsAll });
       });
       stream.addEventListener('profile', (ev) => {
         const profile = parse<Profile>(ev);

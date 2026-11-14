@@ -1,5 +1,5 @@
-@import "@fontsource-variable/source-serif-4";
 @import "@fontsource-variable/hanken-grotesk";
+@import "@fontsource-variable/outfit";
 @import "./tokens.css";
 
 *,
@@ -22,6 +22,7 @@ body {
   font-size: var(--text-md);
   line-height: var(--leading-body);
   font-variant-numeric: tabular-nums;
+  caret-color: var(--color-violet-light);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -66,7 +67,7 @@ a:hover {
 }
 
 ::selection {
-  background: var(--color-marker);
+  background: var(--color-marker-soft);
   color: var(--color-ink);
 }
 
