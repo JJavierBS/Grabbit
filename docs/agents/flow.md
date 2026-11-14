@@ -61,9 +61,9 @@ is mid-conversation.
 
 ## 5. What the demo needs from the build
 - A "run now" for the digest and a demo trigger for the watcher: the video shows an alert
-  seconds after the first report, which a real poll cannot guarantee. The trigger replays a
-  real, dated Cala fact as if it were new; the data stays real.
-- A demo portfolio whose companies have rich Cala coverage: UK or French companies, or
-  listed ones. Spain and Finland only have registry basics (research.md "Cala coverage").
+  seconds after the first report, which a real poll cannot guarantee. The watcher query is
+  mocked for the demo (team decision): the trigger feeds a scripted change into the same
+  diff, importance check and delivery path the real watcher uses.
+- The demo portfolio uses an existing company (team picks it).
 - Responses for the demo path pre-warmed in the cache (architecture.md "Constraints").
 - The Grabbit tab stays open in the browser so desktop notifications fire.
