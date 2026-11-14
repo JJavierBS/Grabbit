@@ -112,10 +112,7 @@
   --duration-fast: 150ms;
   --duration-base: 200ms;
   --duration-slow: 280ms;
-  /* How long a "changed" mark stays before it fades (the fade itself is --duration-slow). */
-  --changed-hold: 4s;
 
-  --layout-max: 1600px;
   --chat-width: 26rem;
   --z-toast: 50;
 }

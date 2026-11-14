@@ -224,7 +224,7 @@ date or an amount is never set in the serif. All numerals are tabular.
 ## Layout
 
 One screen. On a wide screen the chat column (26rem) sits beside the report, which reads as
-a sheet of paper on the cream ground, up to a 1600px frame for a 1920x1080 projector. Below
+a sheet of paper (max 60rem) centred on the cream ground, full width up to a 1920x1080 projector. Below
 about 64rem the two stack, the report first, with the chat composer kept in reach. At 375px
 there is a 16px gutter and no horizontal scroll.
 
