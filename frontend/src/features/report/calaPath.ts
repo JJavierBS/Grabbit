@@ -111,7 +111,7 @@ export function layoutPath(c: Candidate, trusted: Set<string>, eventName: string
         sub:
           [
             isTrusted && "you trust",
-            inv.is_lead && "lead",
+            inv.is_lead && "lead investor",
             !isTrusted && inv.is_lead && ri === 0 && followText,
           ]
             .filter(Boolean)

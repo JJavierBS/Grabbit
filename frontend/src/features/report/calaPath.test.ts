@@ -32,6 +32,7 @@ describe("layoutPath", () => {
     const investors = nodes.filter((n) => n.kind === "investor");
     expect(investors.map((n) => n.label)).toEqual(["trusted", "lead", "a"]);
     expect(investors[0].sub).toBe("you trust");
+    expect(investors[1].sub).toMatch(/^lead investor/);
     expect(nodes.find((n) => n.kind === "more")?.label).toBe("+2 more");
   });
 });
