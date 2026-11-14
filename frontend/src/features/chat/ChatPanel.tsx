@@ -21,7 +21,18 @@ import { useDictation } from "./useDictation";
 import { useFollowLog } from "./useFollowLog";
 import { WorkingLine } from "./WorkingLine";
 
-const SUGGESTIONS = ["Shorter, co-investors first", "Drop consumer health"];
+/** Corrections to try once a report exists. */
+export const CORRECTIONS = ["Shorter, co-investors first", "Drop consumer health"];
+
+/** First-run examples: a thesis can be this vague, and Grabbit asks the rest. */
+export const THESIS_EXAMPLES = [
+  "AI startups at pre-seed and seed",
+  "Nordic climate tech at seed",
+  "Fintech backed by Y Combinator",
+];
+
+export const PLACEHOLDER_FIRST = "Describe your thesis: sector, stage, investors you trust";
+export const PLACEHOLDER_REPORT = "Correct the report or ask a question";
 
 interface ChatPanelProps {
   /** Items with no place in the conversation yet, rendered after the messages. */
@@ -41,6 +52,10 @@ export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
   const [draft, setDraft] = useState("");
   const dictation = useDictation(setDraft);
   const messages = chat.data ?? [];
+  const hasReport = Boolean(report.data);
+  const firstRun = chat.isSuccess && messages.length === 0;
+  // Corrections need a report; examples help only before the first message.
+  const suggestions = hasReport ? CORRECTIONS : firstRun ? THESIS_EXAMPLES : [];
   const follow = useFollowLog(messages, chat.isSuccess, `${followKey}|${send.isPending}`);
 
   const submit = (text: string) => {
@@ -97,7 +112,15 @@ export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
               </Button>
             </div>
           )}
-          {chat.isSuccess && messages.length === 0 && <Logo stacked className={styles.welcome} />}
+          {firstRun && (
+            <div className={styles.welcome}>
+              <Logo stacked className={styles.welcomeLogo} />
+              <p className={styles.welcomeLead}>Tell me what you look for at Slush 2026.</p>
+              <p className={styles.welcomeHint}>
+                A sector, a stage, investors you trust: however vague. I ask the rest.
+              </p>
+            </div>
+          )}
           {messages.map((m) => (
             <Fragment key={m.id}>
               <Message
@@ -112,7 +135,7 @@ export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
           ))}
           {footer}
           {/* The working line is always the last thing in the log, under any card. */}
-          {send.isPending && <WorkingLine hasReport={Boolean(report.data)} />}
+          {send.isPending && <WorkingLine hasReport={hasReport} />}
         </div>
       </div>
 
@@ -143,19 +166,21 @@ export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
             {dictation.error}
           </p>
         )}
-        <div className={styles.suggestions}>
-          {SUGGESTIONS.map((s) => (
-            <Button
-              key={s}
-              variant="secondary"
-              size="sm"
-              disabled={send.isPending}
-              onClick={() => submit(s)}
-            >
-              {s}
-            </Button>
-          ))}
-        </div>
+        {suggestions.length > 0 && (
+          <div className={styles.suggestions}>
+            {suggestions.map((s) => (
+              <Button
+                key={s}
+                variant="secondary"
+                size="sm"
+                disabled={send.isPending}
+                onClick={() => submit(s)}
+              >
+                {s}
+              </Button>
+            ))}
+          </div>
+        )}
         <div className={styles.inputRow}>
           <TextArea
             label="Message Grabbit"
@@ -163,7 +188,9 @@ export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
             placeholder={
               dictation.listening
                 ? "Listening… press Stop when you are done"
-                : "Correct the report or ask a question"
+                : hasReport
+                  ? PLACEHOLDER_REPORT
+                  : PLACEHOLDER_FIRST
             }
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
