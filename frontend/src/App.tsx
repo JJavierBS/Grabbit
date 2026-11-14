@@ -4,6 +4,7 @@ import { useLatestReport, useSendMessage, useSimulateEvent } from './api/hooks/q
 import { type StreamStatus, useEvents } from './api/hooks/useEvents';
 import type { Alert, Report } from './api/types';
 import { Button } from './components/Button';
+import { Logo } from './components/Logo';
 import { AlertCard } from './features/alerts/AlertCard';
 import { askNotificationPermission } from './features/alerts/notify';
 import { useAlertDelivery } from './features/alerts/useAlertDelivery';
@@ -137,13 +138,9 @@ export function App() {
   return (
     <div className={styles.app}>
       <header className={styles.topbar}>
-        <div className={styles.brand}>
-          <svg className={styles.mark} viewBox="0 0 144 84" aria-hidden="true">
-            <rect x="38" y="2" width="104" height="28" rx="14" />
-            <rect x="2" y="52" width="128" height="29" rx="14.5" />
-          </svg>
-          <h1 className={styles.wordmark}>Grabbit</h1>
-        </div>
+        <h1 className={styles.brand}>
+          <Logo />
+        </h1>
         <span className={styles.status} data-status={stream} role="status">
           {STATUS_TEXT[stream]}
         </span>

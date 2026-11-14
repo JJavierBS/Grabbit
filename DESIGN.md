@@ -198,9 +198,15 @@ works offline.
 
 Numbers use tabular figures everywhere.
 
+**Logo:** `components/Logo.tsx`, also `public/favicon.svg`. Violet speed lines, the
+night-ink rabbit whose head is a G, and the wordmark in Outfit 800 (`--font-logo`, the
+closest open face to the logo lettering; used for the wordmark only). The mark is drawn as
+vector from the logo artwork, because the source PNG is a glow render on black that cannot
+be cut out cleanly. Replace it with the original vector when the team has one.
+
 ## Layout
 
-- **Top bar:** the violet two-pill mark and the "Grabbit" wordmark on the left, the live
+- **Top bar:** the Grabbit logo (`components/Logo.tsx`) on the left, the live
   status next to it, then "Alerts" (demo only), "Reports" and "What changed" on the right
   as small ghost buttons. No border, no other labels.
 - **Chat:** one column, 44rem max, centred while the panel is closed. Composer at the

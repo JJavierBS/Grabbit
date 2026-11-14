@@ -63,6 +63,8 @@
   --font-ui:
     "Hanken Grotesk Variable", "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-display: var(--font-ui);
+  /* The wordmark only: Outfit is the closest open face to the logo lettering. */
+  --font-logo: "Outfit Variable", "Outfit", var(--font-ui);
 
   --text-xs: 0.75rem; /* 12px labels, badges */
   --text-sm: 0.875rem; /* 14px meta */

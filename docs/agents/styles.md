@@ -2,8 +2,9 @@
 
 ## Design system
 - Library / CSS approach: plain CSS Modules (`Name.module.css` next to `Name.tsx`), no UI
-  kit. Icons from `lucide-react`. One font, Hanken Grotesk, self-hosted with
-  `@fontsource-variable`, so the demo works offline.
+  kit. Icons from `lucide-react`. Hanken Grotesk for all text, and Outfit for
+  the logo wordmark only, both self-hosted with `@fontsource-variable`, so the demo works
+  offline.
 - Tokens file: `frontend/src/styles/tokens.css` (colours, spacing, radius, typography,
   shadows, motion live there, nowhere else). Global element styles: `src/styles/base.css`.
 - Brand: "Afterglow", taken from the Grabbit logo: near-white ground, white panels,
