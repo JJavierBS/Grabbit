@@ -23,6 +23,7 @@ async def build(
     candidates: list[Candidate],
     previous: Report | None = None,
     now: datetime | None = None,
+    report_id: str | None = None,
 ) -> Report:
     ranked = rank(candidates, profile)
     context = ""
@@ -32,7 +33,7 @@ async def build(
     selected = ranked[: LIMIT[length]]
 
     report = Report(
-        id=f"rep-{uuid.uuid4().hex[:12]}",
+        id=report_id or new_report_id(),
         kind=kind,
         created_at=now or datetime.now(UTC),
         profile_version=profile.version,
@@ -52,6 +53,10 @@ async def build(
     report.summary = summary or f"{len(selected)} startups match your thesis."
     report.sections = _sections(kind, selected, paragraphs, profile)
     return report
+
+
+def new_report_id() -> str:
+    return f"rep-{uuid.uuid4().hex[:12]}"
 
 
 def _what_changed(ranked: list[Candidate], previous: Report | None) -> tuple[list[Candidate], str]:

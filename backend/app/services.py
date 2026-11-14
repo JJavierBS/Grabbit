@@ -6,8 +6,8 @@ from app.store import reports as report_store
 
 
 async def on_profile_change(profile: Profile) -> str | None:
-    """Rebuild the report for a new profile version; returns the new report id."""
-    return await reports.rebuild(profile)
+    """Start rebuilding the report for a new profile version; returns its future id."""
+    return reports.schedule_rebuild(profile)
 
 
 def latest_report_summary() -> str | None:

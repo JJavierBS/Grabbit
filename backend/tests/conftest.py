@@ -23,9 +23,12 @@ def offline_settings(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Iterato
 @pytest.fixture
 def client() -> Iterator[TestClient]:
     from app.main import create_app
+    from app.reports.service import wait_idle
 
     with TestClient(create_app()) as test_client:
         yield test_client
+        # Background report rebuilds must finish before the app and its loop shut down.
+        test_client.portal.call(wait_idle)
 
 
 @pytest.fixture(autouse=True)

@@ -1,7 +1,12 @@
 from app.llm.fake import FakeLLM
 from app.llm.scoring import score_alert
 from app.models import Alert, ReportRef
+from app.reports import service
 from app.store.profile import default_profile
+
+
+def settle(client):
+    client.portal.call(service.wait_idle)
 
 
 def test_run_then_latest_and_report_event(client, published):
@@ -21,6 +26,7 @@ def test_chat_correction_regenerates_the_report(client):
     first = client.post("/api/reports/run", json={"kind": "prep"}).json()
     client.post("/api/chat", json={"text": "hello"})
     reply = client.post("/api/chat", json={"text": "Shorter, co-investors first"}).json()
+    settle(client)
 
     latest = client.get("/api/reports/latest").json()
     assert reply["report_id"] == latest["id"] != first["id"]
@@ -31,8 +37,10 @@ def test_chat_correction_regenerates_the_report(client):
 def test_undo_regenerates_the_report(client):
     client.post("/api/chat", json={"text": "hello"})
     client.post("/api/chat", json={"text": "No B2C please"})
+    settle(client)
     assert len(client.get("/api/reports/latest").json()["candidates"]) == 4
     client.post("/api/profile/undo")
+    settle(client)
     assert len(client.get("/api/reports/latest").json()["candidates"]) == 6
 
 
