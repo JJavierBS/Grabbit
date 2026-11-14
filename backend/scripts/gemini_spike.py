@@ -20,7 +20,7 @@ from app.agent.tools import TOOL_SPECS, apply_tool_call  # noqa: E402
 from app.config import Settings  # noqa: E402
 from app.llm import Message  # noqa: E402
 from app.llm.client import GeminiLLM  # noqa: E402
-from app.models import Profile  # noqa: E402
+from app.store.profile import default_profile  # noqa: E402
 
 TURNS = [
     "Shorter, co-investors first",
@@ -31,9 +31,9 @@ TURNS = [
 
 
 async def main() -> None:
-    settings = Settings(_env_file=("../.env", ".env"))
+    settings = Settings()
     llm = GeminiLLM(api_key=settings.gemini_api_key, model=settings.gemini_model)
-    profile = Profile(updated_at=datetime.now(UTC))
+    profile = default_profile(datetime.now(UTC))
     candidates = await candidates_for(profile)
     system = system_prompt(profile, None, candidates)
     print(f"model: {settings.gemini_model}")
