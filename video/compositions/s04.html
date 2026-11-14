@@ -1,0 +1,22 @@
+<template>
+  <style>
+    @font-face{font-family:"Hanken Grotesk";src:url("assets/fonts/hanken-grotesk.woff2") format("woff2");font-weight:100 900}
+    #root{position:absolute;inset:0;background:#f7f7fa;color:#14151c;font-family:"Hanken Grotesk",sans-serif;overflow:hidden}
+    .s04-screen{position:absolute;left:470px;top:110px;width:1240px;height:760px;background:#fff;border:14px solid #14151c;border-radius:22px;padding:90px 80px}
+    .s04-t{font-size:84px;font-weight:800;letter-spacing:-.035em;line-height:1.05}
+    .s04-d{font-size:42px;font-weight:500;color:#5c5d6e;line-height:1.35;margin-top:36px}
+  </style>
+  <div id="root" data-composition-id="s04" data-width="1920" data-height="1080">
+    <div style="position:absolute;left:0px;top:0px;width:1920px;height:1080px;background:#b9bcc9;"></div>
+    <div style="position:absolute;left:380px;top:884px;width:1420px;height:260px;background:#8f93a6;border-radius:18px"></div>
+    <div data-layout-allow-overflow><div style="position:absolute;left:60.0px;top:350px;width:260.0px;height:260.0px;background:#14151c;border-radius:50%"></div><div style="position:absolute;left:-31.00000000000003px;top:636.0px;width:442.00000000000006px;height:1014.0px;background:#14151c;border-radius:156.0px 156.0px 8px 8px"></div></div>
+    <div class="s04-screen">
+      <div class="s04-t">The laptop screen</div>
+      <div class="s04-d">The camera goes into the screen. The real app capture starts when the screen fills the frame.</div>
+    </div>
+    <div class="s04-note" style="position:absolute;left:96px;top:978px;background:#fff;border:2px solid #4b25d6;border-radius:12px;padding:10px 20px;font-size:30px;font-weight:700;color:#4b25d6">Footage placeholder: filming shot 4, over the shoulder, the screen large and flat to the camera</div>
+  </div>
+  <script>
+    window.__timelines["s04"] = gsap.timeline({ paused: true });
+  </script>
+</template>

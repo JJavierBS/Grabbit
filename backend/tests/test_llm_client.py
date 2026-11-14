@@ -107,3 +107,30 @@ async def test_a_quick_structured_call_asks_for_minimal_thinking():
 
     assert configs[0].thinking_config.thinking_level == types.ThinkingLevel.MINIMAL
     assert configs[1].thinking_config is None
+
+
+async def test_a_live_token_is_single_use_and_locked_to_talk():
+    """#185: the browser streams to Gemini itself; the key stays on the server."""
+    from google.genai import types
+
+    from app.llm.client import GeminiLLM
+
+    configs = []
+
+    async def create(*, config):
+        configs.append(config)
+        return types.AuthToken(name="auth_tokens/abc")
+
+    llm = GeminiLLM(api_key="k", model="m", live_transcribe_model="gemini-3.5-transcribe-live")
+    llm._live_client.aio.auth_tokens.create = create
+
+    token = await llm.live_token()
+
+    assert token.token == "auth_tokens/abc" and token.model == "gemini-3.5-transcribe-live"
+    config = configs[0]
+    assert config.uses == 1
+    assert (config.expire_time - config.new_session_expire_time).total_seconds() == 9 * 60
+    locked = config.live_connect_constraints
+    assert locked.model == "gemini-3.5-transcribe-live"
+    assert locked.config.response_modalities == [types.Modality.TEXT]
+    assert locked.config.input_audio_transcription.mode == "SMART"

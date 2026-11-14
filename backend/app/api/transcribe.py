@@ -6,7 +6,7 @@ from fastapi import APIRouter, Request
 
 from app.api.errors import ApiError
 from app.llm import LLMError, get_llm
-from app.models import Transcript
+from app.models import ErrorResponse, LiveTranscription, Transcript
 
 log = logging.getLogger(__name__)
 
@@ -40,6 +40,28 @@ async def post_transcribe(request: Request) -> Transcript:
             502, "transcription_failed", "Grabbit could not transcribe that. Try again."
         ) from exc
     return Transcript(text=text.strip())
+
+
+# Browsers authenticate with an ephemeral token, which only this "Constrained" endpoint takes.
+LIVE_URL = (
+    "wss://generativelanguage.googleapis.com/ws/"
+    "google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained"
+)
+
+
+@router.post("/token", responses={503: {"model": ErrorResponse}})
+async def post_transcribe_token() -> LiveTranscription:
+    """Live Talk: the browser streams the mic straight to Gemini with this single-use token."""
+    try:
+        live = await get_llm().live_token()
+    except LLMError as exc:
+        log.info("live transcription unavailable: %s", exc)
+        raise ApiError(
+            503, "live_transcription_unavailable", "Live transcription is not available now."
+        ) from exc
+    return LiveTranscription(
+        url=LIVE_URL, token=live.token, model=live.model, expires_at=live.expires_at
+    )
 
 
 async def _read_limited(request: Request) -> bytes:

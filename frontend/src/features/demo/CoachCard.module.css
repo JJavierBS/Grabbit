@@ -1,0 +1,141 @@
+/* The guide sits on the composer like a note on the desk: white, soft edge, no light of its
+   own. Violet stays with the agent (DESIGN.md "The One Light Rule"). */
+.card {
+  position: relative;
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-4) var(--space-3);
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border-soft);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  animation: rise var(--duration-slow) var(--ease-out) both;
+}
+
+.card:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-md), var(--focus-ring);
+}
+
+/* One hairline per step along the top edge: how far the visitor is, without a label to read. */
+.progress {
+  position: absolute;
+  inset: 0 0 auto;
+  display: grid;
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.progress li {
+  height: 3px;
+  background: var(--color-panel-strong);
+  transition: background-color var(--duration-slow) var(--ease-out);
+}
+
+.progress li[data-state] {
+  background: var(--color-ink);
+}
+
+.head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.title {
+  padding-top: var(--space-1);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+  color: var(--color-ink);
+  text-wrap: balance;
+}
+
+.exit {
+  flex: none;
+  width: var(--control-size);
+  height: var(--control-size);
+  margin: calc(-1 * var(--space-1)) calc(-1 * var(--space-2)) 0 0;
+  padding: 0;
+  color: var(--color-text-muted);
+}
+
+.text {
+  max-width: 60ch;
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  color: var(--color-text);
+  text-wrap: pretty;
+  animation: appear var(--duration-base) var(--ease-out) both;
+}
+
+.foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-top: var(--space-1);
+}
+
+.meta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-left: auto;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.meta svg {
+  width: 0.875rem;
+  height: 0.875rem;
+  flex: none;
+}
+
+.count {
+  padding-left: var(--space-2);
+  border-left: var(--border-width) solid var(--color-border-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-2));
+  }
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Below 64rem the report panel covers the chat; the guide stays on top of it. */
+@media (max-width: 63.99rem) {
+  .card[data-floating] {
+    position: fixed;
+    inset: auto var(--space-3) max(var(--space-3), env(safe-area-inset-bottom));
+    z-index: calc(var(--z-panel) + 1);
+    box-shadow: var(--shadow-lg);
+  }
+}
+
+@media (max-width: 40rem) {
+  .meta {
+    margin-left: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .text {
+    animation: none;
+  }
+}
