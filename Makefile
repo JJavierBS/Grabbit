@@ -12,7 +12,7 @@ CHANGED_WEB = $(patsubst frontend/%,%,$(filter-out frontend/src/api/schema.ts fr
 
 setup:
 	cd backend && uv sync --quiet
-	cd frontend && npm ci --silent --no-audit --no-fund
+	cd frontend && DO_NOT_TRACK=1 OPENUI_TELEMETRY_DISABLED=1 npm ci --silent --no-audit --no-fund
 	bash scripts/setup.sh
 
 # API on :8000 (one worker, see architecture.md) and Vite on :5173 proxying /api.
