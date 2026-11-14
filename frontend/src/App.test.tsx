@@ -1,6 +1,6 @@
-import { screen, within } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { App, CONFIRM_MESSAGE } from './App';
+import { ALERT_DELAY_MS, App, CONFIRM_MESSAGE } from './App';
 import type { ChatMessage } from './api/types';
 import { chatV2, historyV2, profileV2, reportV1, reportV2 } from './dev/fixtures';
 import { formatChangeValue } from './features/profile/ProfileHistory';
@@ -136,6 +136,96 @@ describe('App', () => {
     expect(within(card).getByText('Simulated event')).toBeInTheDocument();
     expect(within(card).getByText('Aurora Ventures leads it.')).toBeInTheDocument();
     expect(screen.getByText('Live')).toBeInTheDocument();
+  });
+
+  it('lists past reports and opens one read only', async () => {
+    mockApi({
+      ...base,
+      'GET /api/reports/latest': () => reportV2,
+      'GET /api/reports': () => [reportV2, reportV1],
+    });
+    renderWithClient(<App />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Reports' }));
+    const panel = screen.getByRole('region', { name: 'Reports' });
+    const items = await within(panel).findAllByRole('button', { name: /Slush 2026 prep report/ });
+    expect(items).toHaveLength(2);
+    expect(within(items[0]).getByText('Latest')).toBeInTheDocument();
+
+    await userEvent.click(items[1]);
+    const past = screen.getByRole('region', { name: 'Past report' });
+    expect(
+      within(past).getByText(`Profile version ${reportV1.profile_version}`),
+    ).toBeInTheDocument();
+    expect(within(past).queryByRole('button', { name: 'Run now' })).not.toBeInTheDocument();
+
+    await userEvent.click(within(past).getByRole('button', { name: 'All reports' }));
+    expect(screen.getByRole('region', { name: 'Reports' })).toBeInTheDocument();
+  });
+
+  it('fires the demo alert 30 s after Alerts is pressed, with no demo data label', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    window.history.replaceState({}, '', '/?demo');
+    const calls = mockApi({
+      ...base,
+      'GET /api/reports/latest': () => reportV1,
+      'POST /api/demo/simulate-event': () => ({}),
+    });
+    renderWithClient(<App />);
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    const button = await screen.findByRole('button', { name: 'Alerts' });
+    expect(screen.queryByText(/Demo data/)).not.toBeInTheDocument();
+
+    await user.click(button);
+    expect(button).toBeDisabled();
+    act(() => vi.advanceTimersByTime(ALERT_DELAY_MS - 1000));
+    expect(calls.some((c) => c.key === 'POST /api/demo/simulate-event')).toBe(false);
+    act(() => vi.advanceTimersByTime(1000));
+    await waitFor(() =>
+      expect(calls.find((c) => c.key === 'POST /api/demo/simulate-event')?.body).toEqual({
+        fixture: 'new_round',
+      }),
+    );
+    window.history.replaceState({}, '', '/');
+    vi.useRealTimers();
+  });
+
+  it('puts speech into the message box while Talk is on', async () => {
+    const instances: Record<string, unknown>[] = [];
+    class FakeRecognition {
+      onresult: ((e: unknown) => void) | null = null;
+      onend: (() => void) | null = null;
+      start = vi.fn();
+      stop = vi.fn(() => this.onend?.());
+      abort = vi.fn();
+      constructor() {
+        instances.push(this as unknown as Record<string, unknown>);
+      }
+    }
+    vi.stubGlobal('webkitSpeechRecognition', FakeRecognition);
+    mockApi({ ...base, 'GET /api/reports/latest': () => reportV1 });
+    renderWithClient(<App />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Talk' }));
+    const rec = instances[0] as unknown as FakeRecognition;
+    expect(rec.start).toHaveBeenCalledOnce();
+
+    act(() =>
+      rec.onresult?.({ results: [[{ transcript: 'Drop consumer' }], [{ transcript: ' health' }]] }),
+    );
+    expect(screen.getByRole('textbox', { name: 'Message Grabbit' })).toHaveValue(
+      'Drop consumer health',
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Stop talking' }));
+    expect(rec.stop).toHaveBeenCalledOnce();
+    expect(screen.getByRole('button', { name: 'Talk' })).toBeInTheDocument();
+    vi.unstubAllGlobals();
+  });
+
+  it('hides Talk when the browser has no speech recognition', async () => {
+    mockApi({ ...base, 'GET /api/reports/latest': () => reportV1 });
+    renderWithClient(<App />);
+    await screen.findByRole('button', { name: 'Open report' });
+    expect(screen.queryByRole('button', { name: 'Talk' })).not.toBeInTheDocument();
   });
 
   it('opens the profile history with the reason for each change', async () => {
