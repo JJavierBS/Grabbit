@@ -4,7 +4,7 @@ from app.agent import sources
 from app.agent.sources import candidates_for, fixture_candidates
 from app.discovery.pipeline import DiscoveryResult, DiscoveryStats
 from app.models import ReferenceInvestor
-from app.references import resolve_references
+from app.references import remember, resolve_references
 from app.reports import service
 from app.signals.core import co_invest
 from app.store import profile as profile_store
@@ -39,6 +39,17 @@ def test_name_match_ignores_case_punctuation_and_legal_suffix():
     resolved = resolve_references(profile, fixture_candidates())
 
     assert resolved.reference_investors[0].entity_id == "inv-fjord"
+
+
+def test_an_investor_seen_only_in_filtered_out_startups_still_resolves():
+    remember({"lifeline ventures": "inv-lifeline"})
+    profile = _profile_with(
+        ReferenceInvestor(entity_id="unresolved:lifeline ventures", name="Lifeline Ventures")
+    )
+
+    resolved = resolve_references(profile, [])
+
+    assert resolved.reference_investors[0].entity_id == "inv-lifeline"
 
 
 def test_resolved_ids_are_left_alone():
