@@ -1,9 +1,9 @@
-import { PanelRightOpen } from 'lucide-react';
-import type { Report } from '../../api/types';
-import { Badge } from '../../components/Badge';
-import { formatDate } from '../../components/FactValue';
-import styles from './ReportOutline.module.css';
-import { KIND_TITLE } from './ReportView';
+import { PanelRightOpen } from "lucide-react";
+import type { Report } from "../../api/types";
+import { Badge } from "../../components/Badge";
+import { formatDate } from "../../components/FactValue";
+import styles from "./ReportOutline.module.css";
+import { KIND_TITLE } from "./ReportView";
 
 interface ReportOutlineProps {
   report: Report;
@@ -23,7 +23,7 @@ export function ReportOutline({ report, open, rewritten, onOpen }: ReportOutline
         {rewritten && <Badge tone="warning">Rewritten</Badge>}
       </div>
       <p className={styles.meta}>
-        {formatDate(report.created_at, 'day')} · {count} {count === 1 ? 'startup' : 'startups'} ·
+        {formatDate(report.created_at, "day")} · {count} {count === 1 ? "startup" : "startups"} ·
         Profile version {report.profile_version}
       </p>
       {report.sections.length > 0 && (
@@ -41,7 +41,7 @@ export function ReportOutline({ report, open, rewritten, onOpen }: ReportOutline
         onClick={onOpen}
       >
         <PanelRightOpen aria-hidden="true" />
-        {open ? 'Report is open' : 'Open report'}
+        {open ? "Report is open" : "Open report"}
       </button>
     </article>
   );

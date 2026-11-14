@@ -1,9 +1,9 @@
-import { LoaderCircle } from 'lucide-react';
-import { type ButtonHTMLAttributes, forwardRef, type ReactNode } from 'react';
-import styles from './Button.module.css';
+import { LoaderCircle } from "lucide-react";
+import { type ButtonHTMLAttributes, forwardRef, type ReactNode } from "react";
+import styles from "./Button.module.css";
 
-type Variant = 'primary' | 'secondary' | 'ghost';
-type Size = 'sm' | 'md';
+type Variant = "primary" | "secondary" | "ghost";
+type Size = "sm" | "md";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
@@ -14,8 +14,8 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
   {
-    variant = 'primary',
-    size = 'md',
+    variant = "primary",
+    size = "md",
     loading = false,
     icon,
     disabled,
@@ -29,10 +29,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
   return (
     <button
       ref={ref}
-      type={type ?? 'button'}
+      type={type ?? "button"}
       className={[styles.button, styles[variant], styles[size], className]
         .filter(Boolean)
-        .join(' ')}
+        .join(" ")}
       disabled={disabled || loading}
       aria-busy={loading || undefined}
       {...rest}

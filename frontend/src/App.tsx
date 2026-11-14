@@ -1,48 +1,48 @@
-import { ArrowLeft, Bell, FileText, History, RefreshCw, X } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useLatestReport, useSendMessage, useSimulateEvent } from './api/hooks/queries';
-import { type StreamStatus, useEvents } from './api/hooks/useEvents';
-import type { Alert, Report } from './api/types';
-import { Button } from './components/Button';
-import { Logo } from './components/Logo';
-import { AlertCard } from './features/alerts/AlertCard';
-import { askNotificationPermission } from './features/alerts/notify';
-import { useAlertDelivery } from './features/alerts/useAlertDelivery';
-import { ChatPanel } from './features/chat/ChatPanel';
-import { ProfileHistory } from './features/profile/ProfileHistory';
-import { ReportList } from './features/report/ReportList';
-import { ReportOutline } from './features/report/ReportOutline';
-import { ReportView } from './features/report/ReportView';
-import { useReportChanges } from './features/report/useReportChanges';
-import styles from './App.module.css';
+import { ArrowLeft, Bell, FileText, History, RefreshCw, X } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import styles from "./App.module.css";
+import { useLatestReport, useSendMessage, useSimulateEvent } from "./api/hooks/queries";
+import { type StreamStatus, useEvents } from "./api/hooks/useEvents";
+import type { Alert, Report } from "./api/types";
+import { Button } from "./components/Button";
+import { Logo } from "./components/Logo";
+import { AlertCard } from "./features/alerts/AlertCard";
+import { askNotificationPermission } from "./features/alerts/notify";
+import { useAlertDelivery } from "./features/alerts/useAlertDelivery";
+import { ChatPanel } from "./features/chat/ChatPanel";
+import { ProfileHistory } from "./features/profile/ProfileHistory";
+import { ReportList } from "./features/report/ReportList";
+import { ReportOutline } from "./features/report/ReportOutline";
+import { ReportView } from "./features/report/ReportView";
+import { useReportChanges } from "./features/report/useReportChanges";
 
-type Panel = 'report' | 'reports' | 'history';
+type Panel = "report" | "reports" | "history";
 
 const PANEL_TITLE: Record<Panel, string> = {
-  report: 'Report',
-  reports: 'Reports',
-  history: 'What changed',
+  report: "Report",
+  reports: "Reports",
+  history: "What changed",
 };
 
 /** The demo alert arrives this long after the click, so it lands like a real one. */
 export const ALERT_DELAY_MS = 30_000;
 
-export const CONFIRM_MESSAGE = 'Looks right, keep me posted.';
+export const CONFIRM_MESSAGE = "Looks right, keep me posted.";
 
 const STATUS_TEXT: Record<StreamStatus, string> = {
-  connecting: 'Connecting',
-  open: 'Live',
-  retrying: 'Reconnecting',
+  connecting: "Connecting",
+  open: "Live",
+  retrying: "Reconnecting",
 };
 
 // Below this width the panel covers the chat instead of sitting beside it.
-const NARROW = '(max-width: 63.99rem)';
+const NARROW = "(max-width: 63.99rem)";
 
 // The demo trigger shows with the fake API, or with ?demo (fixture name: ?demo=<name>).
 function demoFixture(): string | null {
-  const param = new URLSearchParams(location.search).get('demo');
-  if (param !== null) return param || 'new_round';
-  return import.meta.env.VITE_FAKE_API === '1' ? 'new_round' : null;
+  const param = new URLSearchParams(location.search).get("demo");
+  if (param !== null) return param || "new_round";
+  return import.meta.env.VITE_FAKE_API === "1" ? "new_round" : null;
 }
 
 export function App() {
@@ -84,17 +84,17 @@ export function App() {
   useEffect(() => {
     if (!diff) return;
     setPastReport(null);
-    setPanel('report');
+    setPanel("report");
   }, [diff]);
 
   useEffect(() => {
     if (!panel) return;
     panelRef.current?.focus();
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') closePanel();
+      if (e.key === "Escape") closePanel();
     };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, [panel, closePanel]);
 
   useEffect(() => () => window.clearTimeout(alertTimer.current), []);
@@ -116,9 +116,9 @@ export function App() {
     <ReportOutline
       key={report.data.id}
       report={report.data}
-      open={panel === 'report' && pastReport === null}
+      open={panel === "report" && pastReport === null}
       rewritten={diff !== null}
-      onOpen={() => openPanel('report')}
+      onOpen={() => openPanel("report")}
     />
   ) : report.isError ? (
     <div className={styles.reportError} role="alert">
@@ -160,8 +160,8 @@ export function App() {
             variant="ghost"
             size="sm"
             icon={<FileText aria-hidden="true" />}
-            aria-pressed={panel === 'reports' || (panel === 'report' && pastReport !== null)}
-            onClick={() => (panel === 'reports' ? closePanel() : openPanel('reports'))}
+            aria-pressed={panel === "reports" || (panel === "report" && pastReport !== null)}
+            onClick={() => (panel === "reports" ? closePanel() : openPanel("reports"))}
           >
             Reports
           </Button>
@@ -169,8 +169,8 @@ export function App() {
             variant="ghost"
             size="sm"
             icon={<History aria-hidden="true" />}
-            aria-pressed={panel === 'history'}
-            onClick={() => (panel === 'history' ? closePanel() : openPanel('history'))}
+            aria-pressed={panel === "history"}
+            onClick={() => (panel === "history" ? closePanel() : openPanel("history"))}
           >
             What changed
           </Button>
@@ -203,13 +203,13 @@ export function App() {
                   variant="ghost"
                   size="sm"
                   icon={<ArrowLeft aria-hidden="true" />}
-                  onClick={() => openPanel('reports')}
+                  onClick={() => openPanel("reports")}
                 >
                   All reports
                 </Button>
               ) : null}
               <h2 id="panel-title" className={styles.panelTitle}>
-                {pastReport ? 'Past report' : PANEL_TITLE[panel]}
+                {pastReport ? "Past report" : PANEL_TITLE[panel]}
               </h2>
               <Button
                 variant="ghost"
@@ -219,14 +219,14 @@ export function App() {
                 onClick={closePanel}
               />
             </div>
-            {panel === 'history' ? (
+            {panel === "history" ? (
               <ProfileHistory />
-            ) : panel === 'reports' ? (
+            ) : panel === "reports" ? (
               <ReportList
                 onOpen={(r) => {
                   // The newest entry is the live report, with its confirm and run actions.
                   setPastReport(r.id === report.data?.id ? null : r);
-                  setPanel('report');
+                  setPanel("report");
                 }}
               />
             ) : pastReport ? (

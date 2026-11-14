@@ -48,11 +48,16 @@ work in parallel against mocks.
 - `Alert`: `id, created_at, entity_id, entity_name, kind (new_round|executive_change|
   headcount_jump|acquisition|status_change|web_news), title, why_it_matters,
   importance (0-1), facts: Fact[], simulated: bool`. `simulated=true` is shown on screen.
+- `Health`: `status ("ok"), cala_mode (live|replay), llm_mode (gemini|fake), demo_mode: bool`.
+- Request bodies: `ChatRequest {text}` (1-4000 chars), `ReportRunRequest {kind}`,
+  `SimulateEventRequest {fixture}` (a file name in `backend/app/fixtures/demo_events/`).
+- `ErrorResponse`: `{error: {code, message}}`. Codes so far: `not_found`,
+  `validation_error`, `internal_error`, `demo_mode_disabled`, `fixture_not_found`.
 
 ## Endpoints
 | Method | Path | Purpose | Status |
 | --- | --- | --- | --- |
-| GET | `/api/health` | Liveness and modes (`cala_mode`, `llm_mode`) | mock |
+| GET | `/api/health` | Liveness and modes (`cala_mode`, `llm_mode`, `demo_mode`) | mock |
 | GET | `/api/profile` | Current `Profile` | mock |
 | GET | `/api/profile/history` | `ProfileChange[]`, newest first | mock |
 | POST | `/api/profile/undo` | Revert the last change, returns `Profile` | mock |

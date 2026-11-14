@@ -1,10 +1,10 @@
-import { useQueryClient } from '@tanstack/react-query';
-import { useEffect, useRef, useState } from 'react';
-import { openEventStream } from '../client';
-import type { Alert, Profile } from '../types';
-import { keys } from './queries';
+import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
+import { openEventStream } from "../client";
+import type { Alert, Profile } from "../types";
+import { keys } from "./queries";
 
-export type StreamStatus = 'connecting' | 'open' | 'retrying';
+export type StreamStatus = "connecting" | "open" | "retrying";
 
 const CLOSED = 2;
 const MAX_BACKOFF_MS = 15_000;
@@ -19,7 +19,7 @@ export const backoff = (attempt: number) => Math.min(1000 * 2 ** attempt, MAX_BA
  */
 export function useEvents(onAlert: (alert: Alert) => void): StreamStatus {
   const client = useQueryClient();
-  const [status, setStatus] = useState<StreamStatus>('connecting');
+  const [status, setStatus] = useState<StreamStatus>("connecting");
   const onAlertRef = useRef(onAlert);
   onAlertRef.current = onAlert;
 
@@ -38,20 +38,20 @@ export function useEvents(onAlert: (alert: Alert) => void): StreamStatus {
     };
 
     const connect = () => {
-      stream = openEventStream('/api/events');
+      stream = openEventStream("/api/events");
       stream.onopen = () => {
         attempt = 0;
-        setStatus('open');
+        setStatus("open");
       };
       stream.onerror = () => {
         if (stopped) return;
-        setStatus('retrying');
+        setStatus("retrying");
         if (stream?.readyState === CLOSED) {
           stream.close();
           timer = setTimeout(connect, backoff(attempt++));
         }
       };
-      stream.addEventListener('alert', (ev) => {
+      stream.addEventListener("alert", (ev) => {
         const alert = parse<Alert>(ev);
         if (!alert) return;
         client.setQueryData<Alert[]>(keys.alerts, (list = []) =>
@@ -59,10 +59,10 @@ export function useEvents(onAlert: (alert: Alert) => void): StreamStatus {
         );
         onAlertRef.current(alert);
       });
-      stream.addEventListener('report', () => {
+      stream.addEventListener("report", () => {
         client.invalidateQueries({ queryKey: keys.reportsAll });
       });
-      stream.addEventListener('profile', (ev) => {
+      stream.addEventListener("profile", (ev) => {
         const profile = parse<Profile>(ev);
         if (profile) client.setQueryData(keys.profile, profile);
         client.invalidateQueries({ queryKey: keys.history });

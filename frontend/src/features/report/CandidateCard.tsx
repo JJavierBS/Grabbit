@@ -1,14 +1,14 @@
-import { ExternalLink } from 'lucide-react';
-import type { Candidate, Round, Signal } from '../../api/types';
-import { Badge } from '../../components/Badge';
-import { FactValue } from '../../components/FactValue';
-import styles from './CandidateCard.module.css';
-import type { ChangeMark } from './reportDiff';
+import { ExternalLink } from "lucide-react";
+import type { Candidate, Round, Signal } from "../../api/types";
+import { Badge } from "../../components/Badge";
+import { FactValue } from "../../components/FactValue";
+import styles from "./CandidateCard.module.css";
+import type { ChangeMark } from "./reportDiff";
 
 const MARK_LABEL: Record<ChangeMark, string> = {
-  added: 'New',
-  moved: 'Moved',
-  changed: 'Rewritten',
+  added: "New",
+  moved: "Moved",
+  changed: "Rewritten",
 };
 
 interface CandidateCardProps {
@@ -108,7 +108,7 @@ function RoundRow({ round, trusted }: { round: Round; trusted: Set<string> }) {
             <span className={styles.muted}> · with </span>
             {others.map((i, n) => (
               <span key={i.entity_id}>
-                {n > 0 && ', '}
+                {n > 0 && ", "}
                 <InvestorName name={i.name} trusted={trusted.has(i.entity_id)} />
               </span>
             ))}
@@ -128,14 +128,14 @@ function InvestorName({ name, trusted }: { name: string; trusted: boolean }) {
   );
 }
 
-function signalStatus(s: Signal): { text: string; tone: 'info' | 'neutral' } {
+function signalStatus(s: Signal): { text: string; tone: "info" | "neutral" } {
   if (s.value === null || s.value === undefined)
-    return { text: 'Not enough data', tone: 'neutral' };
-  if (s.value === false) return { text: 'Not now', tone: 'neutral' };
-  if (typeof s.value === 'number') return { text: `${Math.round(s.value * 100)}%`, tone: 'info' };
+    return { text: "Not enough data", tone: "neutral" };
+  if (s.value === false) return { text: "Not now", tone: "neutral" };
+  if (typeof s.value === "number") return { text: `${Math.round(s.value * 100)}%`, tone: "info" };
   if (Array.isArray(s.value))
-    return { text: `${s.value.length} match${s.value.length === 1 ? '' : 'es'}`, tone: 'info' };
-  return { text: 'Yes', tone: 'info' };
+    return { text: `${s.value.length} match${s.value.length === 1 ? "" : "es"}`, tone: "info" };
+  return { text: "Yes", tone: "info" };
 }
 
 function SignalRow({ signal }: { signal: Signal }) {

@@ -1,15 +1,15 @@
-import { ChevronRight, RefreshCw } from 'lucide-react';
-import { useReports } from '../../api/hooks/queries';
-import type { Report } from '../../api/types';
-import { Badge } from '../../components/Badge';
-import { Button } from '../../components/Button';
-import { formatDate } from '../../components/FactValue';
-import { Skeleton } from '../../components/Skeleton';
-import styles from './ReportList.module.css';
-import { KIND_TITLE } from './ReportView';
+import { ChevronRight, RefreshCw } from "lucide-react";
+import { useReports } from "../../api/hooks/queries";
+import type { Report } from "../../api/types";
+import { Badge } from "../../components/Badge";
+import { Button } from "../../components/Button";
+import { formatDate } from "../../components/FactValue";
+import { Skeleton } from "../../components/Skeleton";
+import styles from "./ReportList.module.css";
+import { KIND_TITLE } from "./ReportView";
 
 const time = (iso: string) =>
-  new Date(iso).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  new Date(iso).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
 
 /** Every report Grabbit wrote, newest first. Opening one shows it in the panel. */
 export function ReportList({ onOpen }: { onOpen: (report: Report) => void }) {
@@ -51,8 +51,8 @@ export function ReportList({ onOpen }: { onOpen: (report: Report) => void }) {
                 {i === 0 && <Badge tone="neutral">Latest</Badge>}
               </span>
               <span className={styles.meta}>
-                {formatDate(r.created_at, 'day')}, {time(r.created_at)} · {r.candidates.length}{' '}
-                {r.candidates.length === 1 ? 'startup' : 'startups'} · Profile version{' '}
+                {formatDate(r.created_at, "day")}, {time(r.created_at)} · {r.candidates.length}{" "}
+                {r.candidates.length === 1 ? "startup" : "startups"} · Profile version{" "}
                 {r.profile_version}
               </span>
             </span>

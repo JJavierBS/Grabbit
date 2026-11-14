@@ -13,8 +13,10 @@
   `new_round`) or `?demo=<fixture>` against the real backend (`DEMO_MODE=1`).
 
 ## Structure
-- `src/api/`: generated `schema.ts` (api.md), the single client `client.ts`, query hooks in
-  `src/api/hooks/`. Until #21 generates `schema.ts`, `types.ts` holds a hand copy of api.md.
+- `src/api/`: generated `schema.ts` (api.md, `make gen-api`), named aliases in `types.ts`,
+  the single `openapi-fetch` client in `client.ts` (`api.GET/POST` + `unwrap`), query hooks
+  in `src/api/hooks/`. `setTransport` swaps the network for the fake API and the tests.
+  `getUntyped` serves only `GET /api/reports` until #54 adds it to the schema.
 - `src/features/chat/`, `src/features/report/`, `src/features/profile/`, `src/features/alerts/`:
   one folder per area, each with its components, hooks and tests.
 - `src/components/`: shared pieces, e.g. `TrustBadge` (agent.md "Trust scale"), `FactValue`

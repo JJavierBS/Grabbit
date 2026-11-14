@@ -1,5 +1,5 @@
-import { act } from '@testing-library/react';
-import { type EventStream, setEventStreamFactory } from '../api/client';
+import { act } from "@testing-library/react";
+import { type EventStream, setEventStreamFactory } from "../api/client";
 
 /** A controllable EventSource for tests: open, push events, drop the connection. */
 export class TestStream implements EventStream {
@@ -8,8 +8,11 @@ export class TestStream implements EventStream {
   onerror: ((ev: Event) => unknown) | null = null;
   closed = false;
   private listeners = new Map<string, ((ev: MessageEvent) => void)[]>();
+  readonly url: string;
 
-  constructor(readonly url: string) {}
+  constructor(url: string) {
+    this.url = url;
+  }
 
   addEventListener(type: string, listener: (ev: MessageEvent) => void) {
     this.listeners.set(type, [...(this.listeners.get(type) ?? []), listener]);
@@ -23,7 +26,7 @@ export class TestStream implements EventStream {
   open() {
     act(() => {
       this.readyState = 1;
-      this.onopen?.(new Event('open'));
+      this.onopen?.(new Event("open"));
     });
   }
 
@@ -38,7 +41,7 @@ export class TestStream implements EventStream {
   drop() {
     act(() => {
       this.readyState = 2;
-      this.onerror?.(new Event('error'));
+      this.onerror?.(new Event("error"));
     });
   }
 }

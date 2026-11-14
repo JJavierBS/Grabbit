@@ -1,6 +1,6 @@
-import { Sparkles, Undo2 } from 'lucide-react';
-import { Button } from '../../components/Button';
-import styles from './ChangeNote.module.css';
+import { Sparkles, Undo2 } from "lucide-react";
+import { Button } from "../../components/Button";
+import styles from "./ChangeNote.module.css";
 
 interface ChangeNoteProps {
   note: string;

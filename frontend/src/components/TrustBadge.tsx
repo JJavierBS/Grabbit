@@ -1,14 +1,14 @@
-import { Building2, CircleDashed, Database, Globe, Landmark, Newspaper } from 'lucide-react';
-import type { TrustLevel } from '../api/types';
-import styles from './TrustBadge.module.css';
+import { Building2, CircleDashed, Database, Globe, Landmark, Newspaper } from "lucide-react";
+import type { TrustLevel } from "../api/types";
+import styles from "./TrustBadge.module.css";
 
 export const TRUST_LABELS: Record<TrustLevel, string> = {
-  filing: 'Official filing',
-  primary: 'Company or investor',
-  press: 'Press',
-  aggregator: 'Database',
-  web_unverified: 'Web, unverified',
-  not_published: 'Not published',
+  filing: "Official filing",
+  primary: "Company or investor",
+  press: "Press",
+  aggregator: "Database",
+  web_unverified: "Web, unverified",
+  not_published: "Not published",
 };
 
 const ICONS = {
@@ -36,12 +36,12 @@ export function TrustBadge({ level, sourceName, href, compact = false }: TrustBa
   const content = (
     <>
       <Icon className={styles.icon} aria-hidden="true" strokeWidth={2} />
-      <span className={compact ? 'visually-hidden' : undefined}>{label}</span>
+      <span className={compact ? "visually-hidden" : undefined}>{label}</span>
     </>
   );
   const className = `${styles.badge} ${styles[level]}`;
 
-  if (href && level !== 'not_published') {
+  if (href && level !== "not_published") {
     return (
       <a
         className={`${className} ${styles.link}`}

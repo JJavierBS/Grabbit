@@ -1,5 +1,5 @@
-import { useId } from 'react';
-import styles from './Logo.module.css';
+import { useId } from "react";
+import styles from "./Logo.module.css";
 
 /**
  * The Grabbit logo: violet speed lines, the rabbit whose head is a G, and the wordmark.
@@ -8,7 +8,7 @@ import styles from './Logo.module.css';
 export function Logo({ className }: { className?: string }) {
   const cut = useId();
   return (
-    <span className={[styles.logo, className].filter(Boolean).join(' ')}>
+    <span className={[styles.logo, className].filter(Boolean).join(" ")}>
       <svg className={styles.mark} viewBox="115 290 410 370" aria-hidden="true">
         <mask id={cut}>
           <rect x="0" y="0" width="1000" height="1000" fill="#fff" />

@@ -1,4 +1,4 @@
-import type { ProfileChange } from '../../api/types';
+import type { ProfileChange } from "../../api/types";
 
 const NOTE = /(?:^|(?<=[.!?]\s))From now on:[^.!?]*[.!?]?/;
 
@@ -7,7 +7,7 @@ export function splitChangeNote(text: string): { note: string | null; rest: stri
   const match = NOTE.exec(text);
   if (!match) return { note: null, rest: text };
   const rest = (text.slice(0, match.index) + text.slice(match.index + match[0].length))
-    .replace(/\s+/g, ' ')
+    .replace(/\s+/g, " ")
     .trim();
   return { note: match[0].trim(), rest };
 }
@@ -20,7 +20,7 @@ export function changeNoteText(
   const split = splitChangeNote(text);
   if (split.note || changes.length === 0) return split;
   return {
-    note: `From now on: ${changes.map((c) => c.reason.replace(/\.$/, '')).join('; ')}.`,
+    note: `From now on: ${changes.map((c) => c.reason.replace(/\.$/, "")).join("; ")}.`,
     rest: text,
   };
 }

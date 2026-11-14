@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
-import type { Report } from '../../api/types';
-import { diffReports, hasChanges, type ReportDiff } from './reportDiff';
+import { useEffect, useRef, useState } from "react";
+import type { Report } from "../../api/types";
+import { diffReports, hasChanges, type ReportDiff } from "./reportDiff";
 
 /** How long the "changed" marks stay before they fade (the fade is --duration-slow). */
 export const CHANGED_HOLD_MS = 4000;

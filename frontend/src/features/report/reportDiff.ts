@@ -1,6 +1,6 @@
-import type { Report } from '../../api/types';
+import type { Report } from "../../api/types";
 
-export type ChangeMark = 'added' | 'moved' | 'changed';
+export type ChangeMark = "added" | "moved" | "changed";
 
 export interface ReportDiff {
   summaryChanged: boolean;
@@ -46,9 +46,9 @@ export function diffReports(prev: Report | undefined, next: Report): ReportDiff 
   const movedTitles = moved(prevTitles, nextTitles);
   const sections: Record<string, ChangeMark> = {};
   for (const s of next.sections) {
-    if (!prevBodies.has(s.title)) sections[s.title] = 'added';
-    else if (movedTitles.has(s.title)) sections[s.title] = 'moved';
-    else if (prevBodies.get(s.title) !== s.body_md) sections[s.title] = 'changed';
+    if (!prevBodies.has(s.title)) sections[s.title] = "added";
+    else if (movedTitles.has(s.title)) sections[s.title] = "moved";
+    else if (prevBodies.get(s.title) !== s.body_md) sections[s.title] = "changed";
   }
 
   const prevIds = candidateOrder(prev);
@@ -56,8 +56,8 @@ export function diffReports(prev: Report | undefined, next: Report): ReportDiff 
   const movedIds = moved(prevIds, nextIds);
   const candidates: Record<string, ChangeMark> = {};
   for (const id of nextIds) {
-    if (!prevIds.includes(id)) candidates[id] = 'added';
-    else if (movedIds.has(id)) candidates[id] = 'moved';
+    if (!prevIds.includes(id)) candidates[id] = "added";
+    else if (movedIds.has(id)) candidates[id] = "moved";
   }
   const names = new Map(prev.candidates.map((c) => [c.entity_id, c.name]));
   const removedCandidates = prevIds
@@ -84,16 +84,16 @@ const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one :
 export function describeDiff(diff: ReportDiff): string[] {
   const marks = Object.values(diff.sections);
   const count = (m: ChangeMark) => marks.filter((x) => x === m).length;
-  const startups = Object.values(diff.candidates).filter((m) => m === 'added').length;
+  const startups = Object.values(diff.candidates).filter((m) => m === "added").length;
   return [
-    count('moved') && `${plural(count('moved'), 'section', 'sections')} moved`,
-    count('added') && `${plural(count('added'), 'section', 'sections')} added`,
-    count('changed') && `${plural(count('changed'), 'section', 'sections')} rewritten`,
+    count("moved") && `${plural(count("moved"), "section", "sections")} moved`,
+    count("added") && `${plural(count("added"), "section", "sections")} added`,
+    count("changed") && `${plural(count("changed"), "section", "sections")} rewritten`,
     diff.removedSections.length &&
-      `${plural(diff.removedSections.length, 'section', 'sections')} removed`,
-    startups && `${plural(startups, 'startup', 'startups')} added`,
+      `${plural(diff.removedSections.length, "section", "sections")} removed`,
+    startups && `${plural(startups, "startup", "startups")} added`,
     diff.removedCandidates.length &&
-      `${plural(diff.removedCandidates.length, 'startup', 'startups')} removed`,
+      `${plural(diff.removedCandidates.length, "startup", "startups")} removed`,
     diff.shorterBy && `${diff.shorterBy}% shorter`,
   ].filter((x): x is string => Boolean(x));
 }

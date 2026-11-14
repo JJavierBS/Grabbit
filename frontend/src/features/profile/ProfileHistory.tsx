@@ -1,47 +1,47 @@
-import { ArrowRight, RefreshCw } from 'lucide-react';
-import { useProfile, useProfileHistory } from '../../api/hooks/queries';
-import type { ProfileChange } from '../../api/types';
-import { Badge } from '../../components/Badge';
-import { Button } from '../../components/Button';
-import { Skeleton } from '../../components/Skeleton';
-import styles from './ProfileHistory.module.css';
+import { ArrowRight, RefreshCw } from "lucide-react";
+import { useProfile, useProfileHistory } from "../../api/hooks/queries";
+import type { ProfileChange } from "../../api/types";
+import { Badge } from "../../components/Badge";
+import { Button } from "../../components/Button";
+import { Skeleton } from "../../components/Skeleton";
+import styles from "./ProfileHistory.module.css";
 
 const FIELD_LABELS: Record<string, string> = {
-  instructions: 'Its own report instructions',
-  thesis: 'Thesis',
-  reference_investors: 'Reference investors',
-  'filters.stages': 'Stages',
-  'filters.sectors_in': 'Sectors to include',
-  'filters.sectors_out': 'Sectors to leave out',
-  'filters.countries': 'Countries',
-  'filters.headcount_max': 'Largest team size',
-  'filters.ticket': 'Ticket',
-  'style.length': 'Report length',
-  'style.detail': 'Level of detail',
-  'style.sections': 'Section order',
-  cadence: 'Cadence',
-  alert_threshold: 'Alert threshold',
+  instructions: "Its own report instructions",
+  thesis: "Thesis",
+  reference_investors: "Reference investors",
+  "filters.stages": "Stages",
+  "filters.sectors_in": "Sectors to include",
+  "filters.sectors_out": "Sectors to leave out",
+  "filters.countries": "Countries",
+  "filters.headcount_max": "Largest team size",
+  "filters.ticket": "Ticket",
+  "style.length": "Report length",
+  "style.detail": "Level of detail",
+  "style.sections": "Section order",
+  cadence: "Cadence",
+  alert_threshold: "Alert threshold",
 };
 
 export const fieldLabel = (field: string) =>
   FIELD_LABELS[field] ??
   field
-    .replace(/^[a-z]+\./, '')
-    .replace(/_/g, ' ')
+    .replace(/^[a-z]+\./, "")
+    .replace(/_/g, " ")
     .replace(/^./, (c) => c.toUpperCase());
 
 /** A before/after value as plain text; empty values read "nothing". */
 export function formatChangeValue(value: unknown): string {
-  if (value === null || value === undefined || value === '') return 'nothing';
+  if (value === null || value === undefined || value === "") return "nothing";
   if (Array.isArray(value)) {
-    return value.length ? value.map(formatChangeValue).join(', ') : 'nothing';
+    return value.length ? value.map(formatChangeValue).join(", ") : "nothing";
   }
-  if (typeof value === 'object') {
-    if ('name' in value) return String((value as { name: unknown }).name);
-    if ('value' in value) return formatChangeValue((value as { value: unknown }).value);
+  if (typeof value === "object") {
+    if ("name" in value) return String((value as { name: unknown }).name);
+    if ("value" in value) return formatChangeValue((value as { value: unknown }).value);
     return JSON.stringify(value);
   }
-  return String(value).replace(/_/g, ' ');
+  return String(value).replace(/_/g, " ");
 }
 
 export function ProfileHistory() {
@@ -64,7 +64,7 @@ export function ProfileHistory() {
         <section className={styles.current} aria-label="Current instructions">
           <h3 className={styles.currentTitle}>How it writes for you now</h3>
           <blockquote className={styles.quote}>
-            {profile.data.instructions || 'No instructions yet.'}
+            {profile.data.instructions || "No instructions yet."}
           </blockquote>
           <p className={styles.meta}>Profile version {profile.data.version}</p>
         </section>
@@ -106,8 +106,8 @@ function ChangeRow({ change }: { change: ProfileChange }) {
       <div className={styles.rowHead}>
         <span className={styles.version}>v{change.version}</span>
         <span className={styles.field}>{fieldLabel(change.field)}</span>
-        <Badge tone={change.by === 'agent' ? 'ink' : 'neutral'}>
-          {change.by === 'agent' ? 'By Grabbit' : 'By you'}
+        <Badge tone={change.by === "agent" ? "ink" : "neutral"}>
+          {change.by === "agent" ? "By Grabbit" : "By you"}
         </Badge>
       </div>
       <p className={styles.diff}>

@@ -1,4 +1,4 @@
-import { X } from 'lucide-react';
+import { X } from "lucide-react";
 import {
   createContext,
   type ReactNode,
@@ -8,13 +8,13 @@ import {
   useMemo,
   useRef,
   useState,
-} from 'react';
-import styles from './Toast.module.css';
+} from "react";
+import styles from "./Toast.module.css";
 
 export interface ToastInput {
   title: string;
   description?: string;
-  tone?: 'default' | 'alert';
+  tone?: "default" | "alert";
   /** Extra label row, e.g. the "Simulated event" badge. */
   meta?: ReactNode;
   action?: { label: string; onClick: () => void };
@@ -73,13 +73,13 @@ function ToastCard({ item, onDismiss }: { item: ToastItem; onDismiss: (id: numbe
     return () => clearTimeout(timer);
   }, [duration, item.id, onDismiss]);
 
-  const tone = item.tone ?? 'default';
+  const tone = item.tone ?? "default";
   return (
     <li className={`${styles.toast} ${styles[tone]}`}>
       <div
         className={styles.body}
-        role={tone === 'alert' ? 'alert' : 'status'}
-        aria-live={tone === 'alert' ? 'assertive' : 'polite'}
+        role={tone === "alert" ? "alert" : "status"}
+        aria-live={tone === "alert" ? "assertive" : "polite"}
       >
         {item.meta && <div className={styles.meta}>{item.meta}</div>}
         <p className={styles.title}>{item.title}</p>
@@ -111,6 +111,6 @@ function ToastCard({ item, onDismiss }: { item: ToastItem; onDismiss: (id: numbe
 
 export function useToast(): ToastApi {
   const api = useContext(ToastContext);
-  if (!api) throw new Error('useToast must be used inside <ToastProvider>');
+  if (!api) throw new Error("useToast must be used inside <ToastProvider>");
   return api;
 }

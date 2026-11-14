@@ -1,4 +1,4 @@
-import { ArrowUp, Mic, RefreshCw, Square } from 'lucide-react';
+import { ArrowUp, Mic, RefreshCw, Square } from "lucide-react";
 import {
   type FormEvent,
   type KeyboardEvent,
@@ -6,18 +6,18 @@ import {
   useEffect,
   useRef,
   useState,
-} from 'react';
-import { useChat, useProfile, useSendMessage, useUndo } from '../../api/hooks/queries';
-import type { ChatMessage } from '../../api/types';
-import { Button } from '../../components/Button';
-import { TextArea } from '../../components/Input';
-import { Skeleton } from '../../components/Skeleton';
-import styles from './ChatPanel.module.css';
-import { ChangeNote } from './ChangeNote';
-import { changeNoteText, isUndoable } from './noteText';
-import { useDictation } from './useDictation';
+} from "react";
+import { useChat, useProfile, useSendMessage, useUndo } from "../../api/hooks/queries";
+import type { ChatMessage } from "../../api/types";
+import { Button } from "../../components/Button";
+import { TextArea } from "../../components/Input";
+import { Skeleton } from "../../components/Skeleton";
+import { ChangeNote } from "./ChangeNote";
+import styles from "./ChatPanel.module.css";
+import { changeNoteText, isUndoable } from "./noteText";
+import { useDictation } from "./useDictation";
 
-const SUGGESTIONS = ['Shorter, co-investors first', 'Drop consumer health'];
+const SUGGESTIONS = ["Shorter, co-investors first", "Drop consumer health"];
 
 interface ChatPanelProps {
   /** Extra items rendered after the messages, e.g. an alert opened from a notification. */
@@ -29,21 +29,21 @@ export function ChatPanel({ footer }: ChatPanelProps) {
   const profile = useProfile();
   const send = useSendMessage();
   const undo = useUndo();
-  const [draft, setDraft] = useState('');
+  const [draft, setDraft] = useState("");
   const dictation = useDictation(setDraft);
   const endRef = useRef<HTMLDivElement>(null);
   const messages = chat.data ?? [];
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: scroll on every new message or footer.
   useEffect(() => {
-    endRef.current?.scrollIntoView?.({ block: 'end' });
+    endRef.current?.scrollIntoView?.({ block: "end" });
   }, [messages.length, send.isPending, footer]);
 
   const submit = (text: string) => {
     const value = text.trim();
     if (!value || send.isPending) return;
-    if (dictation.listening) dictation.toggle('');
-    send.mutate(value, { onSuccess: () => setDraft('') });
+    if (dictation.listening) dictation.toggle("");
+    send.mutate(value, { onSuccess: () => setDraft("") });
   };
 
   const onSubmit = (e: FormEvent) => {
@@ -52,7 +52,7 @@ export function ChatPanel({ footer }: ChatPanelProps) {
   };
 
   const onKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+    if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();
       submit(draft);
     }
@@ -142,8 +142,8 @@ export function ChatPanel({ footer }: ChatPanelProps) {
             hideLabel
             placeholder={
               dictation.listening
-                ? 'Listening… press Stop when you are done'
-                : 'Correct the report or ask a question'
+                ? "Listening… press Stop when you are done"
+                : "Correct the report or ask a question"
             }
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
@@ -152,8 +152,8 @@ export function ChatPanel({ footer }: ChatPanelProps) {
           />
           {dictation.supported && (
             <Button
-              variant={dictation.listening ? 'primary' : 'ghost'}
-              aria-label={dictation.listening ? 'Stop talking' : 'Talk'}
+              variant={dictation.listening ? "primary" : "ghost"}
+              aria-label={dictation.listening ? "Stop talking" : "Talk"}
               aria-pressed={dictation.listening}
               className={styles.talk}
               onClick={() => dictation.toggle(draft)}
@@ -184,13 +184,13 @@ interface MessageProps {
 }
 
 function Message({ message, canUndo, undoing, onUndo }: MessageProps) {
-  const isAgent = message.role === 'agent';
+  const isAgent = message.role === "agent";
   const { note, rest } = isAgent
     ? changeNoteText(message.text, message.profile_changes)
     : { note: null, rest: message.text };
   return (
     <article className={`${styles.message} ${isAgent ? styles.agent : styles.user}`}>
-      <p className="visually-hidden">{isAgent ? 'Grabbit said:' : 'You said:'}</p>
+      <p className="visually-hidden">{isAgent ? "Grabbit said:" : "You said:"}</p>
       {note && <ChangeNote note={note} canUndo={canUndo} undoing={undoing} onUndo={onUndo} />}
       {rest && <p className={styles.bubble}>{rest}</p>}
     </article>

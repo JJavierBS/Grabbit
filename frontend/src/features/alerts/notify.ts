@@ -1,13 +1,13 @@
-import type { Alert } from '../../api/types';
+import type { Alert } from "../../api/types";
 
-export const SIMULATED_LABEL = 'Simulated event';
+export const SIMULATED_LABEL = "Simulated event";
 
-const supported = () => typeof window !== 'undefined' && 'Notification' in window;
+const supported = () => typeof window !== "undefined" && "Notification" in window;
 
 /** Asks once, when the first report is confirmed (flow.md 2). Never throws. */
-export async function askNotificationPermission(): Promise<NotificationPermission | 'unsupported'> {
-  if (!supported()) return 'unsupported';
-  if (Notification.permission !== 'default') return Notification.permission;
+export async function askNotificationPermission(): Promise<NotificationPermission | "unsupported"> {
+  if (!supported()) return "unsupported";
+  if (Notification.permission !== "default") return Notification.permission;
   try {
     return await Notification.requestPermission();
   } catch {
@@ -25,10 +25,10 @@ export function notificationText(alert: Alert): { title: string; body: string } 
 
 /** Shows a desktop notification if allowed; returns false when it could not. */
 export function showDesktopNotification(alert: Alert, onClick: () => void): boolean {
-  if (!supported() || Notification.permission !== 'granted') return false;
+  if (!supported() || Notification.permission !== "granted") return false;
   const { title, body } = notificationText(alert);
   try {
-    const n = new Notification(title, { body, tag: alert.id, icon: '/favicon.svg' });
+    const n = new Notification(title, { body, tag: alert.id, icon: "/favicon.svg" });
     n.onclick = () => {
       window.focus();
       onClick();

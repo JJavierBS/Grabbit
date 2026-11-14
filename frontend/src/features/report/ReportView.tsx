@@ -1,24 +1,24 @@
-import { BellRing, Minus, RefreshCw, Sparkles } from 'lucide-react';
-import { useProfile, useRunReport } from '../../api/hooks/queries';
-import type { Candidate, Report } from '../../api/types';
-import { Badge } from '../../components/Badge';
-import { Button } from '../../components/Button';
-import { Markdown } from '../../components/Markdown';
-import { Skeleton } from '../../components/Skeleton';
-import { formatDate } from '../../components/FactValue';
-import { CandidateCard } from './CandidateCard';
-import { type ChangeMark, describeDiff, type ReportDiff } from './reportDiff';
-import styles from './ReportView.module.css';
+import { BellRing, Minus, RefreshCw, Sparkles } from "lucide-react";
+import { useProfile, useRunReport } from "../../api/hooks/queries";
+import type { Candidate, Report } from "../../api/types";
+import { Badge } from "../../components/Badge";
+import { Button } from "../../components/Button";
+import { formatDate } from "../../components/FactValue";
+import { Markdown } from "../../components/Markdown";
+import { Skeleton } from "../../components/Skeleton";
+import { CandidateCard } from "./CandidateCard";
+import styles from "./ReportView.module.css";
+import { type ChangeMark, describeDiff, type ReportDiff } from "./reportDiff";
 
-export const KIND_TITLE: Record<Report['kind'], string> = {
-  prep: 'Slush 2026 prep report',
-  digest: 'Digest',
-  memo: 'Investment memo',
+export const KIND_TITLE: Record<Report["kind"], string> = {
+  prep: "Slush 2026 prep report",
+  digest: "Digest",
+  memo: "Investment memo",
 };
 const MARK_LABEL: Record<ChangeMark, string> = {
-  added: 'New',
-  moved: 'Moved',
-  changed: 'Rewritten',
+  added: "New",
+  moved: "Moved",
+  changed: "Rewritten",
 };
 
 interface ReportViewProps {
@@ -62,7 +62,7 @@ export function ReportView({
       <div className={styles.sheet}>
         <div className={styles.state} role="alert">
           <h2 className={styles.stateTitle}>The report did not load</h2>
-          <p>{error?.message ?? 'There is no report yet.'}</p>
+          <p>{error?.message ?? "There is no report yet."}</p>
           <Button variant="secondary" icon={<RefreshCw aria-hidden="true" />} onClick={onRetry}>
             Try again
           </Button>
@@ -80,7 +80,7 @@ export function ReportView({
     <article className={styles.sheet} aria-labelledby="report-title">
       <header className={styles.header}>
         <div className={styles.meta}>
-          <span>{formatDate(report.created_at, 'day')}</span>
+          <span>{formatDate(report.created_at, "day")}</span>
           <span aria-hidden="true">·</span>
           <span>Profile version {report.profile_version}</span>
         </div>
@@ -98,7 +98,7 @@ export function ReportView({
                 onClick={onConfirm}
                 disabled={confirmed}
               >
-                {confirmed ? 'Watching your shortlist' : 'Looks right, keep me posted'}
+                {confirmed ? "Watching your shortlist" : "Looks right, keep me posted"}
               </Button>
             )}
             <Button
@@ -122,7 +122,7 @@ export function ReportView({
         <div className={styles.banner} role="status">
           <Sparkles aria-hidden="true" className={styles.bannerIcon} />
           <p>
-            <strong>Rewritten for you.</strong> {lines.join(' · ')}
+            <strong>Rewritten for you.</strong> {lines.join(" · ")}
           </p>
         </div>
       )}
@@ -187,7 +187,7 @@ function SeeAbove({ candidates }: { candidates: Candidate[] }) {
       <span>See above: </span>
       {candidates.map((c, i) => (
         <span key={c.entity_id}>
-          {i > 0 && ', '}
+          {i > 0 && ", "}
           <a href={`#candidate-${c.entity_id}`}>{c.name}</a>
         </span>
       ))}

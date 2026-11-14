@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from "react";
 
 // The Web Speech API is not in the TypeScript DOM lib; this is the part Grabbit uses.
 interface Recognition {
@@ -38,21 +38,21 @@ export function useDictation(onText: (text: string) => void) {
     const Ctor = getRecognition();
     if (!Ctor) return;
     const r = new Ctor();
-    r.lang = navigator.language || 'en-US';
+    r.lang = navigator.language || "en-US";
     r.interimResults = true;
     r.continuous = true;
     r.onresult = (e) => {
       const spoken = Array.from(e.results, (res) => res[0].transcript)
-        .join('')
+        .join("")
         .trim();
       onText(base ? `${base} ${spoken}` : spoken);
     };
     r.onerror = (e) => {
-      if (e.error === 'aborted' || e.error === 'no-speech') return;
+      if (e.error === "aborted" || e.error === "no-speech") return;
       setError(
-        e.error === 'not-allowed' || e.error === 'service-not-allowed'
-          ? 'Grabbit cannot use the microphone. Allow it in the browser, then press Talk again.'
-          : 'Grabbit did not catch that. Press Talk and try again.',
+        e.error === "not-allowed" || e.error === "service-not-allowed"
+          ? "Grabbit cannot use the microphone. Allow it in the browser, then press Talk again."
+          : "Grabbit did not catch that. Press Talk and try again.",
       );
     };
     r.onend = () => {

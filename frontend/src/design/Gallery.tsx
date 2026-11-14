@@ -1,21 +1,21 @@
-import { Bell, Send } from 'lucide-react';
-import type { TrustLevel } from '../api/types';
-import { Badge } from '../components/Badge';
-import { Button } from '../components/Button';
-import { Card } from '../components/Card';
-import { Input, TextArea } from '../components/Input';
-import { Skeleton } from '../components/Skeleton';
-import { useToast } from '../components/Toast';
-import { TrustBadge } from '../components/TrustBadge';
-import styles from './Gallery.module.css';
+import { Bell, Send } from "lucide-react";
+import type { TrustLevel } from "../api/types";
+import { Badge } from "../components/Badge";
+import { Button } from "../components/Button";
+import { Card } from "../components/Card";
+import { Input, TextArea } from "../components/Input";
+import { Skeleton } from "../components/Skeleton";
+import { useToast } from "../components/Toast";
+import { TrustBadge } from "../components/TrustBadge";
+import styles from "./Gallery.module.css";
 
 const LEVELS: TrustLevel[] = [
-  'filing',
-  'primary',
-  'press',
-  'aggregator',
-  'web_unverified',
-  'not_published',
+  "filing",
+  "primary",
+  "press",
+  "aggregator",
+  "web_unverified",
+  "not_published",
 ];
 
 /** Living reference of the base components, at /?gallery once the app exists. */
@@ -84,7 +84,7 @@ export function Gallery() {
           <Button
             variant="secondary"
             onClick={() =>
-              toast({ title: 'Report rewritten', description: 'Co-investors now lead.' })
+              toast({ title: "Report rewritten", description: "Co-investors now lead." })
             }
           >
             Show toast
@@ -93,11 +93,11 @@ export function Gallery() {
             icon={<Bell aria-hidden="true" />}
             onClick={() =>
               toast({
-                tone: 'alert',
-                title: 'Northwind Labs raised a seed round',
-                description: 'Led by an investor you trust.',
+                tone: "alert",
+                title: "Northwind Labs raised a seed round",
+                description: "Led by an investor you trust.",
                 meta: <Badge tone="warning">Simulated event</Badge>,
-                action: { label: 'Open in chat', onClick: () => undefined },
+                action: { label: "Open in chat", onClick: () => undefined },
                 duration: null,
               })
             }

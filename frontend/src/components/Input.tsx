@@ -1,5 +1,5 @@
-import { forwardRef, type InputHTMLAttributes, type TextareaHTMLAttributes, useId } from 'react';
-import styles from './Input.module.css';
+import { forwardRef, type InputHTMLAttributes, type TextareaHTMLAttributes, useId } from "react";
+import styles from "./Input.module.css";
 
 interface FieldProps {
   label: string;
@@ -18,7 +18,7 @@ function useFieldIds(id: string | undefined, hint?: string, error?: string) {
   const describedBy =
     [error ? `${fieldId}-error` : null, hint ? `${fieldId}-hint` : null]
       .filter(Boolean)
-      .join(' ') || undefined;
+      .join(" ") || undefined;
   return { fieldId, describedBy };
 }
 
@@ -32,7 +32,7 @@ function FieldFrame({
 }: FieldProps & { fieldId: string; children: React.ReactNode }) {
   return (
     <div className={styles.field}>
-      <label htmlFor={fieldId} className={hideLabel ? 'visually-hidden' : styles.label}>
+      <label htmlFor={fieldId} className={hideLabel ? "visually-hidden" : styles.label}>
         {label}
       </label>
       {children}
@@ -60,7 +60,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
       <input
         ref={ref}
         id={fieldId}
-        className={[styles.control, className].filter(Boolean).join(' ')}
+        className={[styles.control, className].filter(Boolean).join(" ")}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
         {...rest}
@@ -79,7 +79,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(function 
       <textarea
         ref={ref}
         id={fieldId}
-        className={[styles.control, styles.multiline, className].filter(Boolean).join(' ')}
+        className={[styles.control, styles.multiline, className].filter(Boolean).join(" ")}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
         {...rest}
