@@ -21,6 +21,7 @@ from app.cala.client import CalaClient
 from app.config import get_settings
 from app.llm import LLM, LLMError
 from app.models import Candidate, ExploredGraph, Profile, WalkSummary
+from app.references import resolve_references
 
 log = logging.getLogger(__name__)
 
@@ -86,6 +87,9 @@ async def visual_answer(
     """OpenUI Lang for the reply plus the Cala subgraph it draws, or None when nothing fits."""
     if not candidates:
         return None
+    # Investors typed in chat are stored by name; the walk compares Cala ids (as the profile
+    # endpoint does), or it never marks them as trusted.
+    profile = resolve_references(profile, candidates)
     trusted = {r.entity_id for r in profile.reference_investors}
 
     def problem(text: str, graph: ExploredGraph | None) -> str | None:

@@ -277,3 +277,26 @@ def test_a_walk_without_cala_calls_keeps_no_summary():
     tracer = Tracer(max_rounds=6, max_nodes=30)
     tracer.thought("**Answering from the report**")
     assert tracer.summary() is None
+
+
+async def test_an_investor_typed_in_chat_is_trusted_in_the_walk(recorded, published):  # noqa: F811
+    from app.models import ReferenceInvestor
+    from app.references import remember
+    from tests.test_agent_explore import GLOBAL_500
+
+    remember({"500 global (500 emerging europe)": GLOBAL_500})
+    typed = PROFILE.model_copy(
+        update={
+            "reference_investors": [
+                ReferenceInvestor(entity_id="unresolved:500 Global", name="500 Global")
+            ]
+        }
+    )
+    await visual_answer(
+        FakeLLM(WALK_SCRIPTS),
+        "Who did FIRSTPICK back?",
+        typed,
+        fixture_candidates(),
+        open_client=recorded,
+    )
+    assert traces(published)[-1].steps[-1].result.endswith("including 500 Global, whom you trust")
