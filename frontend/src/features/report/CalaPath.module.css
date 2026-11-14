@@ -12,11 +12,12 @@
   background: var(--color-panel);
 }
 
+/* Drawn at its own size (width and height attributes): text never shrinks below 12px;
+   when the path is wider than the column, this frame scrolls sideways instead. */
 .svg {
   display: block;
-  width: 100%;
-  min-width: 36rem; /* legible in the chat column; the frame scrolls */
-  height: auto;
+  max-width: none;
+  overflow: visible;
   font-family: var(--font-ui);
 }
 
@@ -37,16 +38,15 @@
 }
 
 .edgeLabel {
-  font-size: 9px;
-  letter-spacing: 0.04em;
-  fill: var(--color-text-faint);
+  font-size: 12px;
+  fill: var(--color-text-muted);
 }
 
-.edgeStrong .edgeDashed path {
-  stroke-dasharray: 5 4;
+.edgeLabelBg {
+  fill: var(--color-panel);
 }
 
-.edgeLabel {
+.edgeStrong .edgeLabel {
   fill: var(--color-violet-light);
   font-weight: 600;
 }
@@ -101,14 +101,29 @@
   stroke-width: 2.5;
 }
 
+/* The full-name overlay of the hovered or focused node: on top, not a target. */
+.node[data-overlay] {
+  pointer-events: none;
+}
+
+.node[data-overlay] rect {
+  stroke: var(--color-focus);
+  stroke-width: 2;
+}
+
+/* Some node fills are translucent; the overlay must hide the clipped name under it. */
+.node[data-overlay] .overlayBase {
+  fill: var(--color-surface);
+}
+
 .nodeLabel {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   fill: var(--color-ink);
 }
 
 .nodeSub {
-  font-size: 10px;
+  font-size: 12px;
   fill: var(--color-text-muted);
 }
 
@@ -123,14 +138,15 @@
   color: var(--color-text);
 }
 
+.caption [data-trust] {
+  min-height: 24px;
+}
+
 .caption code {
   font-size: var(--text-xs);
 }
 
-.node[data-kind="startup"] .nodeLabel {
+.node[data-kind="startup"] .nodeLabel,
+.node[data-kind="startup"] .nodeSub {
   fill: var(--color-on-ink);
-}
-
-.figure[data-tall] .svg {
-  min-width: 0;
 }

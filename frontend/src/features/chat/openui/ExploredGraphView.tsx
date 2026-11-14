@@ -1,14 +1,27 @@
 import { useEffect, useRef, useState } from "react";
 import type { ExploredGraph } from "../../../api/types";
 import { FactValue } from "../../../components/FactValue";
+import {
+  clip,
+  EDGE_PX,
+  EdgeLabel,
+  fits,
+  fullNodeWidth,
+  LABEL_PX,
+  NODE_H,
+  NODE_PAD,
+  SUB_PX,
+} from "../../../components/GraphText";
 import styles from "./ExploredGraphView.module.css";
 import { layoutWalk, NODE_W, ROW, toTallWalk, typeLabel, type WalkNode } from "./exploredGraph";
 import { factKind, factLabel } from "./facts";
 
-const NODE_H = 34;
 const PAD = 8;
-/** Below this width the wide drawing would need scrolling; draw the tree instead. */
-const TALL_BELOW = 560;
+/**
+ * The wide drawing is never scaled down (#116), so when it does not fit the frame the tree
+ * is drawn instead; the frame still scrolls if anything runs wider.
+ */
+const TALL_BELOW = 1;
 
 /** The frame's width, or null until measured (and in tests, which draw the wide layout). */
 function useWidth(ref: React.RefObject<HTMLElement | null>): number | null {
@@ -23,10 +36,6 @@ function useWidth(ref: React.RefObject<HTMLElement | null>): number | null {
   return width;
 }
 
-function clip(text: string, max: number): string {
-  return text.length > max ? `${text.slice(0, max - 1)}…` : text;
-}
-
 interface Props {
   graph: ExploredGraph;
   rootId: string;
@@ -39,9 +48,15 @@ export function ExploredGraphView({ graph, rootId, trusted }: Props) {
   const wide = layoutWalk(graph, rootId, trusted);
   const width = useWidth(frame);
   const layout =
-    width !== null && width < TALL_BELOW ? toTallWalk(wide, width - 2 * PAD - 18) : wide;
+    width !== null && width < wide.width * TALL_BELOW
+      ? toTallWalk(wide, width - 2 * PAD - 18)
+      : wide;
   const [picked, setPicked] = useState<string | null>(null);
+  // The node under the pointer or keyboard focus shows its whole name in an overlay drawn
+  // on top. The node itself stays put: moving a focused element in the DOM would blur it.
+  const [active, setActive] = useState<string | null>(null);
   const byId = new Map(layout.nodes.map((n) => [n.id, n]));
+  const activeNode = active ? byId.get(active) : undefined;
   const pickedNode = graph.nodes.find((n) => n.entity_id === picked);
   const root = layout.nodes.find((n) => n.kind === "root");
   const w = layout.width + PAD * 2;
@@ -53,6 +68,8 @@ export function ExploredGraphView({ graph, rootId, trusted }: Props) {
       <div className={styles.scroll}>
         <svg
           className={styles.svg}
+          width={w}
+          height={h}
           viewBox={`${-PAD} ${-PAD - NODE_H / 2} ${w} ${h}`}
           role="img"
           aria-label={`Entities and edges Grabbit walked in Cala's graph from ${root?.label ?? "the question"}`}
@@ -80,47 +97,61 @@ export function ExploredGraphView({ graph, rootId, trusted }: Props) {
                 {e.title && <title>{e.title}</title>}
                 <path d={`M${x1},${a.y} C${mx},${a.y} ${mx},${b.y} ${x2},${b.y}`} />
                 {e.label && (
-                  <text x={x2 - 6} y={b.y - 5} textAnchor="end" className={styles.edgeLabel}>
-                    {clip(e.label, 18)}
+                  <EdgeLabel
+                    x={x2 - 8}
+                    y={b.y - 6}
+                    anchor="end"
+                    text={clip(e.label, fits(x2 - x1 - 16, EDGE_PX))}
+                    className={styles.edgeLabel}
+                    backgroundClassName={styles.edgeLabelBg}
+                  />
+                )}
+              </g>
+            );
+          })}
+          {layout.nodes.map((n) => {
+            const inner = (n.w ?? NODE_W) - 2 * NODE_PAD;
+            return (
+              // biome-ignore lint/a11y/useSemanticElements: an SVG group cannot be a <button>.
+              <g
+                key={n.id}
+                role="button"
+                tabIndex={n.kind === "more" ? -1 : 0}
+                aria-label={`${n.kind === "more" ? "" : `${typeLabel(graph.nodes.find((g) => g.entity_id === n.entityId)?.entity_type ?? "")} `}${n.label}`}
+                aria-pressed={n.kind === "more" ? undefined : picked === n.entityId}
+                className={styles.node}
+                data-kind={n.kind}
+                data-trusted={n.trusted || undefined}
+                data-lead={n.lead || undefined}
+                data-picked={(picked && picked === n.entityId) || undefined}
+                data-active={n.id === active || undefined}
+                transform={`translate(${n.x},${n.y - NODE_H / 2})`}
+                onClick={() => pick(n)}
+                onPointerEnter={() => setActive(n.id)}
+                onPointerLeave={() => setActive((a) => (a === n.id ? null : a))}
+                onFocus={() => setActive(n.id)}
+                onBlur={() => setActive((a) => (a === n.id ? null : a))}
+                onKeyDown={(ev) => {
+                  if (ev.key === "Enter" || ev.key === " ") {
+                    ev.preventDefault();
+                    pick(n);
+                  }
+                }}
+              >
+                <title>{n.label}</title>
+                <rect width={n.w ?? NODE_W} height={NODE_H} rx={8} />
+                <text x={NODE_PAD} y={n.sub ? 15 : 23} className={styles.nodeLabel}>
+                  {clip(n.label, fits(inner, LABEL_PX, true))}
+                </text>
+                {n.sub && (
+                  <text x={NODE_PAD} y={30} className={styles.nodeSub}>
+                    {clip(n.sub, fits(inner, SUB_PX))}
                   </text>
                 )}
               </g>
             );
           })}
-          {layout.nodes.map((n) => (
-            // biome-ignore lint/a11y/useSemanticElements: an SVG group cannot be a <button>.
-            <g
-              key={n.id}
-              role="button"
-              tabIndex={n.kind === "more" ? -1 : 0}
-              aria-label={`${n.kind === "more" ? "" : `${typeLabel(graph.nodes.find((g) => g.entity_id === n.entityId)?.entity_type ?? "")} `}${n.label}`}
-              aria-pressed={n.kind === "more" ? undefined : picked === n.entityId}
-              className={styles.node}
-              data-kind={n.kind}
-              data-trusted={n.trusted || undefined}
-              data-lead={n.lead || undefined}
-              data-picked={(picked && picked === n.entityId) || undefined}
-              transform={`translate(${n.x},${n.y - NODE_H / 2})`}
-              onClick={() => pick(n)}
-              onKeyDown={(ev) => {
-                if (ev.key === "Enter" || ev.key === " ") {
-                  ev.preventDefault();
-                  pick(n);
-                }
-              }}
-            >
-              <title>{n.label}</title>
-              <rect width={n.w ?? NODE_W} height={NODE_H} rx={8} />
-              <text x={10} y={n.sub ? 14 : 21} className={styles.nodeLabel}>
-                {clip(n.label, Math.floor(((n.w ?? NODE_W) - 20) / 7))}
-              </text>
-              {n.sub && (
-                <text x={10} y={27} className={styles.nodeSub}>
-                  {clip(n.sub, Math.floor(((n.w ?? NODE_W) - 20) / 5.6))}
-                </text>
-              )}
-            </g>
-          ))}
+          {activeNode && <FullName node={activeNode} />}
         </svg>
       </div>
       <figcaption className={styles.caption} aria-live="polite">
@@ -143,5 +174,32 @@ export function ExploredGraphView({ graph, rootId, trusted }: Props) {
         )}
       </figcaption>
     </figure>
+  );
+}
+
+/** The active node again, unclipped and wider when it needs to be; decoration only. */
+function FullName({ node }: { node: WalkNode }) {
+  const width = Math.max(node.w ?? NODE_W, fullNodeWidth(node.label, node.sub));
+  return (
+    // biome-ignore lint/a11y/noAriaHiddenOnFocusable: an SVG <g> without tabIndex is not focusable; the name it repeats is already the node's label.
+    <g
+      aria-hidden="true"
+      className={styles.node}
+      data-overlay=""
+      data-kind={node.kind}
+      data-trusted={node.trusted || undefined}
+      transform={`translate(${node.x},${node.y - NODE_H / 2})`}
+    >
+      <rect width={width} height={NODE_H} rx={8} className={styles.overlayBase} />
+      <rect width={width} height={NODE_H} rx={8} />
+      <text x={NODE_PAD} y={node.sub ? 15 : 23} className={styles.nodeLabel}>
+        {node.label}
+      </text>
+      {node.sub && (
+        <text x={NODE_PAD} y={30} className={styles.nodeSub}>
+          {node.sub}
+        </text>
+      )}
+    </g>
   );
 }
