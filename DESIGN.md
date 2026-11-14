@@ -1,28 +1,28 @@
 ---
 name: Grabbit
-description: A proactive research agent for business angels. Afterglow - a black room with one violet light, taken from the Grabbit logo.
+description: A proactive research agent for business angels. Afterglow - a light, quiet room with one violet light, taken from the Grabbit logo.
 colors:
   violet: "#6139f8"
-  violet-light: "#a593ff"
-  ground: "#000000"
-  surface: "#0e111a"
-  surface-raised: "#161a26"
-  panel-strong: "#1d2230"
-  ink: "#f4f3fa"
-  text: "#d9d8e3"
-  text-muted: "#a3a2b2"
-  text-faint: "#807f90"
-  on-ink: "#000000"
-  border: "#60657c"
-  border-soft: "#262b3c"
-  focus: "#a593ff"
-  info: "#9db4ff"
-  info-bg: "#141b33"
+  violet-light: "#5530e8"
+  ground: "#f7f7fa"
+  surface: "#ffffff"
+  surface-raised: "#ffffff"
+  panel-strong: "#ecebf3"
+  ink: "#14151c"
+  text: "#2a2b36"
+  text-muted: "#5c5d6e"
+  text-faint: "#737485"
+  on-ink: "#ffffff"
+  border: "#8e8fa3"
+  border-soft: "#e3e3ec"
+  focus: "#6139f8"
+  info: "#1f5fbf"
+  info-bg: "#e6efff"
   marker: "#6139f8"
-  marker-soft: "#1f1745"
-  warning-ink: "#a593ff"
-  danger: "#ff8a7a"
-  danger-bg: "#2b1210"
+  marker-soft: "#ece7ff"
+  warning-ink: "#4b25d6"
+  danger: "#b42318"
+  danger-bg: "#fde8e6"
 typography:
   display:
     fontFamily: "Hanken Grotesk Variable, system-ui, sans-serif"
@@ -107,7 +107,7 @@ components:
     rounded: "{rounded.lg}"
   rewrite-banner:
     backgroundColor: "{colors.marker}"
-    textColor: "{colors.ink}"
+    textColor: "{colors.on-ink}"
     rounded: "{rounded.md}"
     padding: "12px 16px"
   change-note:
@@ -128,60 +128,59 @@ components:
 
 **Creative North Star: "Afterglow"**
 
-A black room with one violet light, and the light moves only while the agent works. The
-world comes from the Grabbit logo: a black field, a night-ink rabbit and wordmark
-(#0e111a), and two violet pills (#6139f8) that glow. The demo runs in a dark event hall
-and on a projector, so the page is dark only.
+A light, quiet room with one violet light, and the light moves only while the agent works
+or listens. The violet and the night ink (#14151c) come from the Grabbit logo. The first
+build was black; the team asked for a lighter page on 2026-11-14, so the page is now light
+only.
 
 The surface is an Operate surface in the manner of a minimal AI chat. One centred column
 holds the conversation. A report shows in that column as a short outline card, and the
-full report opens in a side panel on the right, in the manner of an artifact panel.
-"What changed" opens in the same panel. Below 64rem the panel covers the screen.
+full report opens in a side panel on the right, in the manner of an artifact panel. The
+same panel holds "Reports" (every past report) and "What changed". Below 64rem the panel
+covers the screen. Everything must stay easy: few controls, plain words, one action at a
+time.
 
 Decided on 2026-11-14 (#53); it replaces the cala.ai cream tone. Shipped code wins where
 this file and the code differ.
 
 **Key Characteristics:**
-- Black ground, night-ink panels, near-white ink. Violet is light, never paint.
+- Near-white ground, white panels, night-ink text. Violet is light, never decoration.
 - One sans (Hanken Grotesk) for everything. Rank comes from weight and size.
-- The agent speaks in plain text with no bubble. The user's lines sit in a dark pill.
-- Flat surfaces separated by soft rules. Black shadows do not show on black, so lifted
-  parts get a lighter edge, and the only glow is the violet light.
+- The agent speaks in plain text with no bubble. The user's lines sit in a soft grey pill.
+- Flat surfaces separated by soft rules and soft ink shadows. The only coloured glow is the
+  violet light.
 
 ## Colors
 
 ### Primary
 - **Violet** (#6139f8): the light. It glows under the composer, edges a new report
-  outline and the alert toast, fills the "Rewritten for you" banner and the text
-  selection, and colours the logo mark. Never use it for small text: it fails on black.
-- **Violet light** (#a593ff): violet as text or as a line on black (the "Open report"
-  link, the focus ring, the caret, warning badges, the "Live" dot). 7.6:1 on black.
+  outline and the alert toast, fills the "Rewritten for you" banner (white text) and the
+  pressed Talk button, and colours the logo mark. 6.1:1 on white.
+- **Violet light** (#5530e8): violet as small text or a thin line (the "Open report"
+  link, the caret, the "Live" dot).
 
 ### Neutral
-- **Ground** (#000000): the page and the chat column.
-- **Surface** (#0e111a): the logo's night ink. The side panel, the report outline card,
-  cards.
-- **Surface raised** (#161a26): the composer and the alert toast.
-- **Panel strong** (#1d2230): user message pills, neutral badges, hover fills, skeleton
-  bones.
-- **Ink** (#f4f3fa): headings and primary buttons. **Text** (#d9d8e3): body.
-  **Text muted** (#a3a2b2): meta, at any size. **Text faint** (#807f90): list markers and
-  large text only.
-- **Border** (#60657c): field and secondary button edges, 3.3:1 on black. **Border soft**
-  (#262b3c): rules and card edges.
+- **Ground** (#f7f7fa): the page and the chat column.
+- **Surface** (#ffffff): the side panel, the report outline card, the composer, cards.
+- **Panel strong** (#ecebf3): user message pills, neutral badges, hover and pressed fills,
+  skeleton bones.
+- **Ink** (#14151c): headings and primary buttons. **Text** (#2a2b36): body.
+  **Text muted** (#5c5d6e): meta, at any size. **Text faint** (#737485): list markers.
+- **Border** (#8e8fa3): field and secondary button edges, 3:1 on white. **Border soft**
+  (#e3e3ec): rules and card edges.
 
 ### Support
-- **Info** (#9db4ff on #141b33): the Press trust badge.
-- **Marker soft** (#1f1745): the violet wash on changed report parts and the chat change
-  note.
-- **Danger** (#ff8a7a on #2b1210): errors only.
+- **Info** (#1f5fbf on #e6efff): the Press trust badge.
+- **Marker soft** (#ece7ff) with **warning ink** (#4b25d6): the violet wash on changed
+  report parts, the chat change note, warning badges, text selection.
+- **Danger** (#b42318 on #fde8e6): errors only.
 
 ### Named Rules
-**The One Light Rule.** Violet means "the agent did something": it works, it changed the
-report, it raised an alert. Never use it for decoration.
+**The One Light Rule.** Violet means "the agent did something or listens": it works, it
+changed the report, it raised an alert, it hears you. Never use it for decoration.
 
 **The Trust Ladder Rule.** Trust strength reads from fill weight before hue: solid ink,
-ink outline, blue tint, panel tint, dashed violet, dashed empty. A judge on a washed-out
+ink outline, blue tint, grey tint, dashed violet, dashed empty. A judge on a washed-out
 projector, or without colour vision, must still rank the six badges.
 
 ## Typography
@@ -202,8 +201,8 @@ Numbers use tabular figures everywhere.
 ## Layout
 
 - **Top bar:** the violet two-pill mark and the "Grabbit" wordmark on the left, the live
-  status next to it, then "Simulate event" (demo only), "What changed" and the "Demo
-  data" badge on the right. No border.
+  status next to it, then "Alerts" (demo only), "Reports" and "What changed" on the right
+  as small ghost buttons. No border, no other labels.
 - **Chat:** one column, 44rem max, centred while the panel is closed. Composer at the
   foot with suggestion chips above it.
 - **Side panel:** `min(52rem, 56vw)` wide, surface fill, soft left edge, 14px top-left
@@ -216,17 +215,31 @@ Numbers use tabular figures everywhere.
 ## Elevation & Depth
 
 Flat by default. The side panel and cards sit on soft 1px edges. The large shadow pairs
-a black drop with a 1px soft edge. The glow tokens (`--glow-rest`, `--glow-work`) fall
+a soft ink drop with a 1px soft edge. The glow tokens (`--glow-rest`, `--glow-work`) fall
 from below with a negative spread, like the logo's light, and only the composer, the
 report outline and the alert toast carry them.
 
 ## Components
 
 ### Composer (signature)
-A raised capsule, 24px corners, soft edge, resting violet glow below. The field inside has
-no frame of its own. Focus turns the edge violet light. While the agent works, the edge
-turns violet and the glow breathes between rest and full every 1.6s. Under reduced motion
-it holds the full glow without motion. The send button is a round primary (ink) button.
+A white capsule, 24px corners, soft edge, resting violet glow below. The field inside has
+no frame of its own. Focus turns the edge violet. While the agent works or listens, the
+edge turns violet and the glow breathes between rest and full every 1.6s. Under reduced
+motion it holds the full glow without motion. Inside, right to left: the round primary
+(ink) send button and the round Talk button.
+
+### Talk (press to talk)
+A round ghost button with a microphone. Press it and it turns violet with a stop square;
+the browser's speech recognition writes into the message box as the user speaks. Press it
+again (or send) to stop. The text stays in the box for the user to read and send, so a
+misheard word never reaches the agent unseen. Browsers without speech recognition do not
+show the button. A blocked microphone shows a one-line error above the chips.
+
+### Reports
+The side panel lists every report, newest first, from `GET /api/reports`: title with a
+neutral "Latest" badge on the newest, then date, time, number of startups and profile
+version, and a chevron. The whole row is the button. Opening an older report shows it
+read only (no confirm, no "Run now") with an "All reports" back button in the panel bar.
 
 ### Report Outline (signature)
 The report as it shows in the chat: the report title (16px semibold), a meta line (date,
@@ -253,8 +266,10 @@ you" banner names the changes, changed parts get the marker-soft wash and a "New
 Six pills with a Lucide icon and the agent.md label, ranked by the Trust Ladder Rule.
 
 ### Alert Toast
-Bottom right, raised surface, violet edge, large shadow plus the full glow, ink text,
-"Open in chat" as a small ink pill. It stays until dismissed and uses `role="alert"`.
+Bottom right, white, violet edge, large shadow plus the full glow, ink text, "Open in
+chat" as a small ink pill. It stays until dismissed and uses `role="alert"`. In the demo,
+"Alerts" in the top bar fires the simulated alert 30 s after the click, so it lands like a
+real one; the alert itself still carries the "Simulated event" label.
 
 ### Buttons
 Pills. Primary: ink fill, black text. Secondary: border outline. Ghost: no fill, panel
@@ -265,12 +280,12 @@ strong on hover and when pressed (`aria-pressed`).
 ### Do:
 - **Do** take every value from `frontend/src/styles/tokens.css`.
 - **Do** show a Trust Badge next to every fact, and "Not published" when Cala has no value.
-- **Do** check every new text colour for 4.5:1 on black and on #0e111a.
+- **Do** check every new text colour for 4.5:1 on #f7f7fa and on white.
 - **Do** keep one primary (ink) button per view.
 
 ### Don't:
-- **Don't** use violet (#6139f8) as text, or use any violet that is not the agent acting.
+- **Don't** use violet for anything that is not the agent acting or listening.
 - **Don't** add a second typeface, gradients on text, or glass.
-- **Don't** add a light theme.
+- **Don't** add a dark theme, or a "Demo data" label.
 - **Don't** put agent text in bubbles, or a report beside the chat before the user opens it.
 - **Don't** use Cala's logo, wordmark or copy.

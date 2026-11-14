@@ -6,8 +6,8 @@
   Notification API when the tab is hidden.
 - Run: `make dev` (URL `http://localhost:5173`, proxies `/api` to `:8000`).
 - Without a backend: `cd frontend && npm run dev:fake` serves the whole demo path from
-  synthetic fixtures (`src/dev/fakeApi.ts`, `src/dev/fixtures.ts`) and shows a "Demo data"
-  badge. Dev only; tests use `src/test/renderApp.tsx` (`mockApi`) instead.
+  synthetic fixtures (`src/dev/fakeApi.ts`, `src/dev/fixtures.ts`). The "Alerts" button
+  in the top bar fires a simulated alert 30 s after the click. Dev only; tests use `src/test/renderApp.tsx` (`mockApi`) instead.
 - Design system reference: open `/?gallery`.
 - Demo trigger: a "Simulate event" button shows with the fake API, or with `?demo` (fixture
   `new_round`) or `?demo=<fixture>` against the real backend (`DEMO_MODE=1`).
