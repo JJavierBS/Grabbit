@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { App } from "../../App";
 import { historyV2, profileV2 } from "../../dev/fixtures";
 import { mockApi, renderWithClient } from "../../test/renderApp";
+import { THESIS_EXAMPLES } from "../chat/ChatPanel";
 import { DemoRoot } from "./DemoRoot";
 import { createDemoApi } from "./demoApi";
 import { DEMO_ANSWER, DEMO_END, DEMO_STEPS, DEMO_THESIS } from "./steps";
@@ -174,6 +175,47 @@ describe("guided demo", () => {
     );
     // The real app reads from the real API again.
     await waitFor(() => expect(calls.length).toBeGreaterThan(before));
+  });
+
+  it("enables only the controls the current step uses", async () => {
+    realApi();
+    renderWithDemo();
+    await userEvent.click(await screen.findByRole("button", { name: /See how it works/ }));
+    const composer = () => screen.getByRole("textbox", { name: "Message Grabbit" });
+
+    // 1. Thesis: the composer and the example theses, nothing else.
+    await step(DEMO_STEPS[0].title);
+    expect(composer()).toBeEnabled();
+    expect(screen.getByRole("button", { name: THESIS_EXAMPLES[0] })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "What changed" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Close sidebar" })).toBeDisabled();
+    await userEvent.click(screen.getByRole("button", { name: "Show me" }));
+
+    // 2. Answer: the questions are open; the change note's Undo is not.
+    await step(DEMO_STEPS[1].title);
+    expect(await screen.findByRole("button", { name: "Send answers" })).toBeInTheDocument();
+    expect(screen.getAllByRole("radio")[0]).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Undo" })).toBeDisabled();
+    await userEvent.click(screen.getByRole("button", { name: "Show me" }));
+
+    // 3. Open the report: only the outline; the composer waits.
+    await step(DEMO_STEPS[2].title);
+    expect(screen.getByRole("button", { name: "Open report" })).toBeEnabled();
+    expect(composer()).toBeDisabled();
+    await userEvent.click(screen.getByRole("button", { name: "Show me" }));
+
+    // 4. Correct: the composer again; the report's own actions stay locked.
+    await step(DEMO_STEPS[3].title);
+    expect(composer()).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Looks right, keep me posted" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Run now" })).toBeDisabled();
+    await userEvent.click(screen.getByRole("button", { name: "Show me" }));
+
+    // 5. Confirm: the report's confirm button opens up; Run now never does.
+    await step(DEMO_STEPS[4].title);
+    expect(screen.getByRole("button", { name: "Looks right, keep me posted" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Run now" })).toBeDisabled();
+    expect(composer()).toBeDisabled();
   });
 
   it("advances when the visitor makes the move themselves", async () => {

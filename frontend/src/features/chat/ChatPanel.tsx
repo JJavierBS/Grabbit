@@ -24,7 +24,8 @@ import { Logo } from "../../components/Logo";
 import { Markdown } from "../../components/Markdown";
 import { Skeleton } from "../../components/Skeleton";
 import { DemoLauncher } from "../demo/DemoLauncher";
-import { useDemo } from "../demo/DemoRoot";
+import { useDemo, useGuideLocked } from "../demo/DemoRoot";
+import { GuideLock } from "../demo/GuideLock";
 import { AgentQuestions } from "./AgentQuestions";
 import { ChangeNote } from "./ChangeNote";
 import styles from "./ChatPanel.module.css";
@@ -72,6 +73,8 @@ export function ChatPanel({ footer, renderAfter, followKey, coach }: ChatPanelPr
   const undo = useUndo();
   const [draft, setDraft] = useState("");
   const field = useRef<HTMLTextAreaElement>(null);
+  // Talk is never a step of the guided demo.
+  const talkLocked = useGuideLocked();
   const dictation = useDictation(setDraft);
   const messages = chat.data ?? [];
   const hasReport = Boolean(report.data);
@@ -204,65 +207,70 @@ export function ChatPanel({ footer, renderAfter, followKey, coach }: ChatPanelPr
           </p>
         )}
         {suggestions.length > 0 && (
-          <div className={styles.suggestions}>
-            {suggestions.map((s) => (
-              <Button
-                key={s}
-                variant="secondary"
-                size="sm"
-                disabled={send.isPending}
-                onClick={() => submit(s)}
-              >
-                {s}
-              </Button>
-            ))}
-          </div>
+          <GuideLock target="composer">
+            <div className={styles.suggestions}>
+              {suggestions.map((s) => (
+                <Button
+                  key={s}
+                  variant="secondary"
+                  size="sm"
+                  disabled={send.isPending}
+                  onClick={() => submit(s)}
+                >
+                  {s}
+                </Button>
+              ))}
+            </div>
+          </GuideLock>
         )}
-        <div className={styles.inputRow}>
-          <TextArea
-            label="Message Grabbit"
-            hideLabel
-            placeholder={
-              dictation.listening
-                ? "Listening… press Stop when you are done"
-                : dictation.transcribing
-                  ? "Writing down what you said…"
-                  : hasReport
-                    ? PLACEHOLDER_REPORT
-                    : PLACEHOLDER_FIRST
-            }
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={onKeyDown}
-            rows={1}
-            ref={field}
-          />
-          {dictation.supported && (
-            <Button
-              variant={dictation.listening ? "primary" : "ghost"}
-              aria-label={dictation.listening ? "Stop talking" : "Talk"}
-              aria-pressed={dictation.listening}
-              className={styles.talk}
-              loading={dictation.transcribing}
-              onClick={dictation.toggle}
-              icon={
-                dictation.listening ? (
-                  <Square aria-hidden="true" />
-                ) : (
-                  <MicVocal aria-hidden="true" />
-                )
+        <GuideLock target="composer">
+          <div className={styles.inputRow}>
+            <TextArea
+              label="Message Grabbit"
+              hideLabel
+              placeholder={
+                dictation.listening
+                  ? "Listening… press Stop when you are done"
+                  : dictation.transcribing
+                    ? "Writing down what you said…"
+                    : hasReport
+                      ? PLACEHOLDER_REPORT
+                      : PLACEHOLDER_FIRST
               }
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={onKeyDown}
+              rows={1}
+              ref={field}
             />
-          )}
-          <Button
-            type="submit"
-            aria-label="Send"
-            className={styles.send}
-            loading={send.isPending}
-            disabled={!draft.trim()}
-            icon={<SendHorizontal aria-hidden="true" />}
-          />
-        </div>
+            {dictation.supported && (
+              <Button
+                variant={dictation.listening ? "primary" : "ghost"}
+                aria-label={dictation.listening ? "Stop talking" : "Talk"}
+                aria-pressed={dictation.listening}
+                className={styles.talk}
+                disabled={talkLocked}
+                loading={dictation.transcribing}
+                onClick={dictation.toggle}
+                icon={
+                  dictation.listening ? (
+                    <Square aria-hidden="true" />
+                  ) : (
+                    <MicVocal aria-hidden="true" />
+                  )
+                }
+              />
+            )}
+            <Button
+              type="submit"
+              aria-label="Send"
+              className={styles.send}
+              loading={send.isPending}
+              disabled={!draft.trim()}
+              icon={<SendHorizontal aria-hidden="true" />}
+            />
+          </div>
+        </GuideLock>
       </form>
     </section>
   );
@@ -303,11 +311,17 @@ function Message({
       data-enter={entering || undefined}
     >
       <p className="visually-hidden">{isAgent ? "Grabbit said:" : "You said:"}</p>
-      {note && <ChangeNote note={note} canUndo={canUndo} undoing={undoing} onUndo={onUndo} />}
+      {note && (
+        <GuideLock>
+          <ChangeNote note={note} canUndo={canUndo} undoing={undoing} onUndo={onUndo} />
+        </GuideLock>
+      )}
       {/* A visual answer opens with its own sentence; the text stays as the model's history. */}
       {message.ui ? (
         <div className={styles.visual}>
-          <VisualAnswer ui={message.ui} graph={message.graph} />
+          <GuideLock>
+            <VisualAnswer ui={message.ui} graph={message.graph} />
+          </GuideLock>
           {message.walk && <HowIFound walk={message.walk} open={showSteps} />}
         </div>
       ) : (
@@ -319,7 +333,9 @@ function Message({
         )
       )}
       {isAgent && message.questions.length > 0 && (
-        <AgentQuestions questions={message.questions} onAnswer={onAnswer} busy={busy} />
+        <GuideLock target="answers">
+          <AgentQuestions questions={message.questions} onAnswer={onAnswer} busy={busy} />
+        </GuideLock>
       )}
     </article>
   );

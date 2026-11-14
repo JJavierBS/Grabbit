@@ -15,8 +15,12 @@ export interface DemoActions {
   confirm: () => void;
 }
 
+/** The controls a step uses; inside the demo every other one is disabled. */
+export type DemoTarget = "composer" | "answers" | "report" | "confirm";
+
 export interface DemoStep {
   title: string;
+  targets: DemoTarget[];
   /** What the last step just did, then what to do now; the card moves on by itself. */
   prompt: string;
   act: (actions: DemoActions) => void;
@@ -30,12 +34,14 @@ export const DEMO_CORRECTION = "Shorter, co-investors first";
 export const DEMO_STEPS: DemoStep[] = [
   {
     title: "Start vague",
+    targets: ["composer"],
     prompt: "Say what you look for in your own words. A sector and a stage are enough.",
     act: ({ send }) => send(DEMO_THESIS),
     done: (s) => s.agentReplies >= 1,
   },
   {
     title: "Answer its question",
+    targets: ["answers", "composer"],
     prompt:
       "Grabbit walked the Slush attendees and asks only what the data can't settle. Pick the investors you trust.",
     act: ({ send }) => send(DEMO_ANSWER),
@@ -43,6 +49,7 @@ export const DEMO_STEPS: DemoStep[] = [
   },
   {
     title: "See how it got there",
+    targets: ["report"],
     prompt:
       "Above: the path Grabbit walked, and under it every step it took, even the one read from your report. Now open the report.",
     act: ({ openReport }) => openReport(),
@@ -50,6 +57,7 @@ export const DEMO_STEPS: DemoStep[] = [
   },
   {
     title: "Correct it in plain words",
+    targets: ["composer"],
     prompt:
       "Every figure carries a badge that says how far to trust it. There is no settings screen: tell Grabbit what to change.",
     act: ({ send }) => send(DEMO_CORRECTION),
@@ -58,6 +66,7 @@ export const DEMO_STEPS: DemoStep[] = [
   },
   {
     title: "It comes to you",
+    targets: ["confirm", "report"],
     prompt:
       "Grabbit rewrote its instructions and the report; What changed keeps why. Confirm, and it watches your shortlist.",
     act: ({ confirm }) => confirm(),

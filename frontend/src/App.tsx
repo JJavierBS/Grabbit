@@ -17,7 +17,8 @@ import { useAlertDelivery } from "./features/alerts/useAlertDelivery";
 import { ChatPanel } from "./features/chat/ChatPanel";
 import { CoachCard } from "./features/demo/CoachCard";
 import { DemoLauncher } from "./features/demo/DemoLauncher";
-import { useDemo } from "./features/demo/DemoRoot";
+import { useDemo, useGuideLocked } from "./features/demo/DemoRoot";
+import { GuideLock } from "./features/demo/GuideLock";
 import { ProfileHistory } from "./features/profile/ProfileHistory";
 import { ReportOutline } from "./features/report/ReportOutline";
 import { ReportSidebar, reportKey } from "./features/report/ReportSidebar";
@@ -77,11 +78,34 @@ export function Grabbit() {
   return <App key={current} />;
 }
 
+/** Links and SVG buttons ignore a disabled fieldset; the guided demo holds them here. */
+function isHeld(target: EventTarget | null): boolean {
+  if (!(target instanceof Element)) return false;
+  return Boolean(
+    target.closest("[data-guide-locked]") && target.closest('a[href], [role="button"]'),
+  );
+}
+
+function holdLocked(e: React.MouseEvent) {
+  if (!isHeld(e.target)) return;
+  e.preventDefault();
+  e.stopPropagation();
+}
+
+function holdLockedKey(e: React.KeyboardEvent) {
+  if ((e.key === "Enter" || e.key === " ") && isHeld(e.target)) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+}
+
 export function App() {
   const [panel, setPanel] = useState<Panel | null>(null);
   const [demo] = useState(demoFixture);
   // Inside the guided demo (#184): sample data, nothing may touch the visitor's research.
   const guided = useDemo()?.active ?? false;
+  // Controls no step of the guided demo uses (sidebar, What changed) stay disabled in it.
+  const guideLocked = useGuideLocked();
   const [alertsDelivered, setAlertsDelivered] = useState(0);
   const [confirmed, setConfirmed] = useState(false);
   const report = useLatestReport();
@@ -251,14 +275,16 @@ export function App() {
   const reportInChat = report.isPending ? (
     <Skeleton block="card" label="Loading the report" />
   ) : report.data ? (
-    <ReportOutline
-      key={report.data.id}
-      report={report.data}
-      open={panel === "report" && pastReport === null}
-      rewriting={rewriting}
-      rewritten={diff !== null}
-      onOpen={() => openPanel("report")}
-    />
+    <GuideLock target="report">
+      <ReportOutline
+        key={report.data.id}
+        report={report.data}
+        open={panel === "report" && pastReport === null}
+        rewriting={rewriting}
+        rewritten={diff !== null}
+        onOpen={() => openPanel("report")}
+      />
+    </GuideLock>
   ) : report.isError ? (
     <div className={styles.reportError} role="alert">
       <p className={styles.reportErrorTitle}>The report did not load</p>
@@ -295,26 +321,30 @@ export function App() {
       data-sidebar={sidebarOpen ? "open" : "closed"}
       data-drawer={drawerOpen ? "open" : undefined}
       data-guided={guided || undefined}
+      onClickCapture={guided ? holdLocked : undefined}
+      onKeyDownCapture={guided ? holdLockedKey : undefined}
     >
-      <ReportSidebar
-        id="report-sidebar"
-        className={styles.sidebar}
-        activeKey={activeKey}
-        onOpen={openReport}
-        onClose={closeSidebar}
-        brand={<Logo />}
-        top={
-          guided ? undefined : (
-            <ResearchList
-              current={research.current}
-              list={research.list}
-              onNew={newResearch}
-              onOpen={openResearch}
-            />
-          )
-        }
-        foot={guided ? undefined : <DemoLauncher place="sidebar" />}
-      />
+      <GuideLock>
+        <ReportSidebar
+          id="report-sidebar"
+          className={styles.sidebar}
+          activeKey={activeKey}
+          onOpen={openReport}
+          onClose={closeSidebar}
+          brand={<Logo />}
+          top={
+            guided ? undefined : (
+              <ResearchList
+                current={research.current}
+                list={research.list}
+                onNew={newResearch}
+                onOpen={openResearch}
+              />
+            )
+          }
+          foot={guided ? undefined : <DemoLauncher place="sidebar" />}
+        />
+      </GuideLock>
       {drawerOpen && (
         <button
           type="button"
@@ -337,6 +367,7 @@ export function App() {
             aria-controls="report-sidebar"
             aria-expanded={drawerOpen}
             icon={<PanelLeft aria-hidden="true" />}
+            disabled={guideLocked}
             onClick={openSidebar}
           />
           <span className={styles.topLogo} aria-hidden="true">
@@ -365,6 +396,7 @@ export function App() {
               size="sm"
               icon={<SlidersHorizontal aria-hidden="true" />}
               aria-pressed={panel === "history"}
+              disabled={guideLocked}
               onClick={() => (panel === "history" ? closePanel() : openPanel("history"))}
             >
               <span className={styles.actionLabel}>What changed</span>

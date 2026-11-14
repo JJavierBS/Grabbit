@@ -110,3 +110,14 @@
     transform: none;
   }
 }
+
+/* Locked by the guided demo: the card stays readable but no longer offers itself. */
+.card:has(.open:disabled) {
+  transform: none;
+  border-color: var(--color-border-soft);
+}
+
+.open:disabled {
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}

@@ -21,21 +21,22 @@ interface CoachCardProps {
  */
 export function CoachCard({ signals, actions, busy, floating = false }: CoachCardProps) {
   const demo = useDemo();
-  const [index, setIndex] = useState(0);
   // The step whose move was made: its button waits for the result, e.g. the alert.
   const [acted, setActed] = useState(-1);
   const ref = useRef<HTMLElement>(null);
+  const index = demo?.step ?? 0;
   const finished = index >= DEMO_STEPS.length;
   const step = DEMO_STEPS[index];
   const done = !finished && step.done(signals);
   const advanceMs = demo?.advanceMs ?? 0;
+  const next = demo?.next;
 
   // A beat to see the result land, then the next step.
   useEffect(() => {
-    if (!done) return;
-    const timer = setTimeout(() => setIndex((i) => i + 1), advanceMs);
+    if (!done || !next) return;
+    const timer = setTimeout(next, advanceMs);
     return () => clearTimeout(timer);
-  }, [done, advanceMs]);
+  }, [done, advanceMs, next]);
 
   // The demo opens on the card, so a keyboard reader starts where the guide speaks.
   useEffect(() => {

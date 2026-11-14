@@ -17,7 +17,14 @@ import {
 } from "../../api/client";
 import { useToast } from "../../components/Toast";
 import type { FakeApi } from "../../dev/fakeApi";
-import { DEMO_TIMING, type DemoTiming, readDemoSeen, saveDemoSeen } from "./steps";
+import {
+  DEMO_STEPS,
+  DEMO_TIMING,
+  type DemoTarget,
+  type DemoTiming,
+  readDemoSeen,
+  saveDemoSeen,
+} from "./steps";
 
 export interface DemoContextValue {
   /** True inside the guided demo, false in the visitor's own research. */
@@ -28,12 +35,26 @@ export interface DemoContextValue {
   returning: boolean;
   /** How long a finished step stays on screen before the guide moves on. */
   advanceMs: number;
+  /** The step on screen; past the last one, the closing card. */
+  step: number;
+  next: () => void;
 }
 
 const DemoContext = createContext<DemoContextValue | null>(null);
 
 /** The guided demo's controls, or null where the app runs without it (most tests). */
 export const useDemo = () => useContext(DemoContext);
+
+/**
+ * True when the guided demo is on and the current step does not use this control (or no
+ * target is given: a control no step uses). Outside the demo nothing is locked.
+ */
+export function useGuideLocked(target?: DemoTarget): boolean {
+  const demo = useDemo();
+  if (!demo?.active) return false;
+  const allowed = DEMO_STEPS[demo.step]?.targets ?? [];
+  return !target || !allowed.includes(target);
+}
 
 const TOUR_PARAM = "tour";
 
@@ -61,6 +82,8 @@ export function DemoRoot({ children, demo, timing }: DemoRootProps) {
   const [run, setRun] = useState<Run | null>(null);
   const current = useRef<Run | null>(null);
   const [returning, setReturning] = useState(false);
+  const [step, setStep] = useState(0);
+  const next = useCallback(() => setStep((s) => s + 1), []);
   const saved = useRef<{ transport: Transport; stream: EventStreamFactory } | null>(null);
   const runs = useRef(0);
   const toasts = useToast();
@@ -74,6 +97,7 @@ export function DemoRoot({ children, demo, timing }: DemoRootProps) {
     // A replay swaps one demo for another; the visitor's transport was saved by the first.
     saved.current ??= { transport, stream };
     toasts.clear();
+    setStep(0);
     current.current?.api.dispose();
     runs.current += 1;
     current.current = {
@@ -132,8 +156,10 @@ export function DemoRoot({ children, demo, timing }: DemoRootProps) {
       exit,
       returning: returning && run === null,
       advanceMs: (timing ?? DEMO_TIMING).advance,
+      step,
+      next,
     }),
-    [run, start, exit, returning, timing],
+    [run, start, exit, returning, timing, step, next],
   );
 
   return (
