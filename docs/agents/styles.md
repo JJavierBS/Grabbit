@@ -30,3 +30,6 @@
   report outline lands with light that fades in 1.2s, and the demo Alerts button drains a ring
   over the 30 s before the staged alert. All stop under reduced motion (the ring leaves the
   seconds in the label).
+- What a rewrite changed is tinted lavender for about 4 s (`useSettled`), then the tint fades
+  in `--duration-slow`; the "New"/"Rewritten" badges stay. The hold is a state, not motion.
+- A visual answer reveals text, graph, then facts 60ms apart (`--reveal-step`), 270ms in all.

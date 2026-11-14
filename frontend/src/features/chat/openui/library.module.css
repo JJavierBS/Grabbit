@@ -3,6 +3,33 @@
   gap: var(--space-3);
 }
 
+/* A visual answer arrives in reading order: text, then the graph, then the facts, one
+   step apart, all within 300ms. Under reduced motion it is simply there. */
+.answer > * {
+  animation: reveal var(--duration-fast) var(--ease-out) both;
+}
+
+.answer > :nth-child(2) {
+  animation-delay: var(--reveal-step);
+}
+
+.answer > :nth-child(n + 3) {
+  animation-delay: calc(2 * var(--reveal-step));
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(var(--reveal-rise));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .answer > * {
+    animation: none;
+  }
+}
+
 .block {
   display: grid;
   gap: var(--space-2);
