@@ -24,10 +24,7 @@ def not_published() -> Fact:
 
 def to_source(raw: dict[str, Any], precision: str | None = None) -> Source:
     document = raw.get("document")
-    if isinstance(document, dict):
-        url = document.get("endpoint")
-    else:
-        url = document
+    url = document.get("endpoint") if isinstance(document, dict) else document
     return Source(
         name=raw.get("name") or "unknown",
         url=url or None,
@@ -53,7 +50,16 @@ def to_fact(
     if value is None:
         return not_published()
     sources = [to_source(s, precision) for s in raw_sources or []]
-    return Fact(value=value, unit=unit, trust=strongest(sources), sources=sources)
+    return Fact(value=_scalar(value), unit=unit, trust=strongest(sources), sources=sources)
+
+
+def _scalar(value: Any) -> Any:
+    """`Fact.value` is a scalar or a list of scalars (api.md); flatten anything richer."""
+    if isinstance(value, bool | int | float | str):
+        return value
+    if isinstance(value, list):
+        return [v if isinstance(v, bool | int | float | str) else str(v) for v in value]
+    return str(value)
 
 
 def property_fact(entity: dict[str, Any], name: str) -> Fact:

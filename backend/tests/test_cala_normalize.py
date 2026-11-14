@@ -79,3 +79,9 @@ def test_observations_by_code_sorted_oldest_first():
     points = observations(company, "employee_count")
     assert [(t, v) for t, v, _ in points] == [("2025-09-01", 12), ("2026-10-01", 18)]
     assert points[0][2].url == "https://aggregator.example/n/2025"
+
+
+def test_rich_values_are_flattened_to_the_contract():
+    fact = to_fact({"city": "Helsinki"}, [])
+    assert fact.value == "{'city': 'Helsinki'}"
+    assert to_fact([1, {"a": 1}], []).value == [1, "{'a': 1}"]

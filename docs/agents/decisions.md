@@ -40,3 +40,6 @@ Format: `YYYY-MM-DD HH:MM | area | decision | why`
 2026-11-14 03:40 | product | "Likely to raise soon" v1: true when 2 of 3 checks with data pass (12-30 months since last round, headcount +20% in 12 months, last lead follow-on ratio >= 0.3); null with less data (agent.md) | ARR is rarely published, so it is left out of v1
 2026-11-14 03:40 | scope | Out of scope: Telegram and WhatsApp. Voice input stays nice to have; the sources allow-list stays in the MVP | team decision
 2026-11-14 03:40 | process | Feature freeze Sun 00:00 (Helsinki); after it only fixes, video, deck and README | leaves ten hours before the 10:00 submission; team can move it
+2026-11-14 04:10 | stack | Frontend: React 18 (as in frontend.md), TypeScript 5.9 (openapi-typescript does not support 7 yet), Biome for lint and format, openapi-fetch as the single typed client in `src/api/client.ts` | one client generated from the contract, one tool for lint and format
+2026-11-14 04:10 | data | API fixtures use fictional companies and investors (`*.example` URLs) | mock data must never be read as a real claim about a real startup
+2026-11-14 04:10 | api | Generated response types mark every field required (`json_schema_serialization_defaults_required`) | the backend always sends nullable fields as `null`, so the frontend does not handle `undefined`
