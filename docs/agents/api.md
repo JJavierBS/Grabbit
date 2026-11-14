@@ -22,7 +22,10 @@ work in parallel against mocks.
 - Error shape for every endpoint: `{ "error": { "code": "snake_case", "message": "..." } }`
   with a matching HTTP status.
 - Names: snake_case in JSON. Dates ISO 8601. Money as number plus `unit` (currency code).
-- Single user in the MVP: no auth, one profile.
+- No auth. Every request may send `X-Workspace: <id>` (1-64 of `A-Za-z0-9_-`); the SSE
+  stream takes `?workspace=<id>` instead. Missing means `default`. Profile, chat, reports and
+  alerts belong to the workspace; a malformed id gets 400 `invalid_workspace`. The frontend
+  keeps a random id in `localStorage` (`frontend/src/api/workspace.ts`).
 
 ## Shared types
 `?` marks nullable. Enum values are lowercase strings.
@@ -64,7 +67,8 @@ work in parallel against mocks.
 - Request bodies: `ChatRequest {text}` (1-4000 chars), `ReportRunRequest {kind}`,
   `SimulateEventRequest {fixture}` (a file name in `backend/app/fixtures/demo_events/`).
 - `ErrorResponse`: `{error: {code, message}}`. Codes so far: `not_found`,
-  `validation_error`, `internal_error`, `demo_mode_disabled`, `fixture_not_found`.
+  `validation_error`, `internal_error`, `demo_mode_disabled`, `fixture_not_found`,
+  `invalid_workspace`.
 
 ## Endpoints
 | Method | Path | Purpose | Status |

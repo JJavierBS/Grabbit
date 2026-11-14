@@ -10,6 +10,7 @@ from app.api.errors import install_error_handlers
 from app.config import REPO_ROOT
 from app.runtime import start_scheduler
 from app.store.db import init_db
+from app.workspace import WorkspaceMiddleware
 
 FRONTEND_DIST = REPO_ROOT / "frontend" / "dist"
 
@@ -37,6 +38,7 @@ def create_app() -> FastAPI:
         redoc_url=None,
     )
     install_error_handlers(app)
+    app.add_middleware(WorkspaceMiddleware)
     app.include_router(api_router)
     if FRONTEND_DIST.is_dir():
         app.mount("/", StaticFiles(directory=FRONTEND_DIST, html=True), name="frontend")
