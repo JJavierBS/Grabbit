@@ -1,4 +1,5 @@
 import type { ExploredGraph, GraphEdge, GraphNode } from "../../../api/types";
+import { humanize } from "../../../lib/humanize";
 
 /** One box of the explored subgraph: a Cala entity, or a fold of the ones left out. */
 export interface WalkNode {
@@ -56,14 +57,29 @@ export function typeLabel(entityType: string): string {
 }
 
 function edgeLabel(e: GraphEdge): string {
-  if (e.is_lead) return "is_lead";
-  return e.role ?? e.relationship;
+  if (e.is_lead) return humanize("is_lead");
+  return humanize(e.role ?? e.relationship);
 }
 
 function edgeTitle(e: GraphEdge): string {
-  return [e.relationship, e.role && `role ${e.role}`, e.is_lead && "is_lead"]
+  return [
+    humanize(e.relationship),
+    e.role && `as ${humanize(e.role)}`,
+    e.is_lead && "lead investor",
+  ]
     .filter(Boolean)
     .join(" · ");
+}
+
+// The node's own word that an edge word already says.
+const ALSO_SAID: Record<string, string> = {
+  [humanize("is_lead")]: "lead investor",
+  [humanize("INVESTOR")]: "investor",
+};
+
+function saysAgain(edge: string, part: string): boolean {
+  const word = part.toLowerCase();
+  return word === edge.toLowerCase() || word === ALSO_SAID[edge];
 }
 
 interface Link {
@@ -170,7 +186,7 @@ export function layoutWalk(graph: ExploredGraph, rootId: string, trusted: Set<st
       kind,
       label: n.name,
       sub:
-        [isTrusted && "you trust", isLead && "lead", role || typeLabel(n.entity_type)]
+        [isTrusted && "you trust", isLead ? "Lead investor" : role || typeLabel(n.entity_type)]
           .filter(Boolean)
           .join(" · ") || undefined,
       entityId: n.entity_id,
@@ -223,10 +239,8 @@ export function toTallWalk(wide: WalkLayout, width: number): WalkLayout {
     const n = byId.get(id);
     if (!n) return;
     const x = depth * INDENT;
-    // "INVESTOR · Investor" says it twice: keep the edge's word.
-    const own = (n.sub ?? "")
-      .split(" · ")
-      .filter((p) => p.toLowerCase() !== via?.label.toLowerCase());
+    // "invested · Investor" or "led · Lead investor" says it twice: keep the edge's word.
+    const own = (n.sub ?? "").split(" · ").filter((p) => !(via && saysAgain(via.label, p)));
     const sub = [via?.label, ...own].filter(Boolean).join(" · ") || undefined;
     nodes.push({ ...n, sub, x, y: nodes.length * ROW, w: width - x });
     // Kids follow the wide layout's top-to-bottom order.

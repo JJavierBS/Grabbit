@@ -28,4 +28,21 @@ describe("CandidateCard", () => {
       "Led by Y Combinator, SixThirty Cyber Fund",
     );
   });
+
+  it("shows readable stages, sectors and round names, never Cala's enums", () => {
+    const base = reportV1.candidates[0];
+    const candidate = {
+      ...base,
+      industries: ["SOFTWARE_AND_SERVICES", "ai"],
+      funding_stage: { ...base.funding_stage, value: "PRE_SEED" },
+      rounds: base.rounds.slice(0, 1).map((r) => ({ ...r, label: "SERIES_A" })),
+    };
+    const { container } = render(<CandidateCard candidate={candidate} trusted={new Set()} />);
+    const tags = screen.getByRole("list", { name: "Industries" });
+    expect(tags).toHaveTextContent("Software and services");
+    expect(tags).toHaveTextContent("AI");
+    expect(container).toHaveTextContent("Pre-seed");
+    expect(container).toHaveTextContent("Series A");
+    expect(container.textContent).not.toMatch(/PRE_SEED|SOFTWARE_AND_SERVICES|SERIES_A/);
+  });
 });

@@ -316,7 +316,7 @@ describe("formatChangeValue", () => {
   it("reads empty, lists, objects and enum values in plain words", () => {
     expect(formatChangeValue(null)).toBe("nothing");
     expect(formatChangeValue([])).toBe("nothing");
-    expect(formatChangeValue(["pre_seed", "seed"])).toBe("pre seed, seed");
+    expect(formatChangeValue(["pre_seed", "seed"])).toBe("Pre-seed, Seed");
     expect(formatChangeValue([{ entity_id: "x", name: "Aurora Ventures" }])).toBe(
       "Aurora Ventures",
     );

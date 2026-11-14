@@ -50,7 +50,7 @@ issue per item before working on it.
 | --- | --- | --- | --- |
 | P1 | Fixed in #107: the shell clips (`overflow: clip`) and the chat log and side panel are positioned, so visually hidden labels no longer grow the document | `App.module.css`, `ChatPanel.module.css` | Pinned by `frontend/src/layout.test.ts` |
 | P2 | In the explored graph, Cala's two entities "500 Global" and "500 Global (500 Emerging Europe)" both show, and only the second is marked "you trust" | `frontend/src/features/chat/openui/ExploredGraphView.tsx`, trusted set | Match trusted investors by normalised fund name as `app/discovery/links.py` does, not only by entity id |
-| P3 | Edge labels show raw Cala values ("is_lead") | explored graph labels (`exploredGraph.ts`) | Map to readable words ("lead", "invested", "raised") |
+| P3 | Fixed in #115: edge labels, stages and sectors showed raw Cala values ("is_lead", `PRE_SEED`) | `frontend/src/lib/humanize.ts`, used by the graphs, cards and `FactValue` | Pinned by `lib/humanize.test.ts` |
 | P4 | At 1920 px, edge labels such as ISSUER and GRANTOR overlap the lines in the explored graph | `ExploredGraphView` | Give labels a background or offset them from the curve |
 | P5 | `alerts.test.tsx` fails on machines whose Node/ICU formats €8M as "€8.0M" or "8 M €" (es-ES); it was already failing before #73-#75 | `frontend/src/features/alerts/alerts.test.tsx`, money formatter | Fix the formatter's locale (or the test's), so `make test` is green on every laptop |
 | P6 | `scripts/board.sh` fails: `.github/project.env` does not exist, so the board cannot be moved from the CLI; #73, #74, #75 never moved | `.github/project.env` | Whoever set up the board adds the file, or move items by hand |

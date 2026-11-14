@@ -21,6 +21,8 @@
   one folder per area, each with its components, hooks and tests.
 - `src/components/`: shared pieces, e.g. `TrustBadge` (agent.md "Trust scale"), `FactValue`
   (value, date with its precision, "not published").
+- `src/lib/`: pure helpers shared across features, e.g. `humanize` (readable words for
+  Cala's stages, sectors and graph edges; never show a raw enum).
 - `src/App.tsx`: layout. One screen: a centred chat; the report shows in the chat as an
   outline (`features/report/ReportOutline.tsx`) and opens in a side panel, which also holds
   "What changed". A left sidebar (`features/report/ReportSidebar.tsx`) lists every report;

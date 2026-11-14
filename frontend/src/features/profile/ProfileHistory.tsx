@@ -4,6 +4,7 @@ import type { ProfileChange } from "../../api/types";
 import { Badge } from "../../components/Badge";
 import { Button } from "../../components/Button";
 import { Skeleton } from "../../components/Skeleton";
+import { humanizeEnum } from "../../lib/humanize";
 import styles from "./ProfileHistory.module.css";
 
 const FIELD_LABELS: Record<string, string> = {
@@ -42,7 +43,7 @@ export function formatChangeValue(value: unknown): string {
     if ("value" in value) return formatChangeValue((value as { value: unknown }).value);
     return JSON.stringify(value);
   }
-  return String(value).replace(/_/g, " ");
+  return humanizeEnum(String(value));
 }
 
 export function ProfileHistory() {
