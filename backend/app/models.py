@@ -254,6 +254,14 @@ class WalkSummary(ApiModel):
     seconds: float
 
 
+class ReplySource(ApiModel):
+    """Where the facts about one startup named in a chat reply come from (#141)."""
+
+    entity_id: str
+    name: str
+    sources: list[Source] = Field(description="Each source once, strongest trust level first")
+
+
 class ChatMessage(ApiModel):
     id: str
     role: ChatRole
@@ -269,6 +277,10 @@ class ChatMessage(ApiModel):
     )
     walk: WalkSummary | None = Field(
         default=None, description="How the agent walked Cala for this answer, step by step"
+    )
+    sources: list[ReplySource] = Field(
+        default_factory=list,
+        description="Sources of the facts about each startup the reply text names",
     )
 
 

@@ -6,7 +6,7 @@ from app.agent import chat
 from app.agent.sources import fixture_candidates
 from app.agent.visual import Visual
 from app.llm import ChatResult, LLMError
-from app.llm.fake import FakeLLM
+from app.llm.fake import FakeLLM, Script
 from app.models import ChatMessage, ExploredGraph, GraphNode, WalkStep, WalkSummary
 from app.store import chat as chat_store
 from app.store import profile as profile_store
@@ -250,3 +250,27 @@ def test_messages_stored_before_the_walk_summary_still_load():
         ' "profile_changes": [], "report_id": null, "ui": null, "graph": null}'
     )
     assert ChatMessage.model_validate_json(old).walk is None
+
+
+async def test_a_prose_reply_carries_the_sources_of_the_startups_it_names(candidates, now):
+    llm = FakeLLM()
+    name = candidates[0].name
+    llm.scripts.insert(0, Script(task="chat", match=["what about"], text=f"{name} fits."))
+    await _say("hello", candidates, now, llm=llm)
+    reply = await _say("What about the first one?", candidates, now, llm=llm)
+
+    assert [s.entity_id for s in reply.sources] == [candidates[0].entity_id]
+    assert reply.sources[0].sources
+    assert chat_store.all_messages()[-1].sources == reply.sources
+
+
+async def test_a_visual_answer_keeps_its_own_badges_and_cites_nothing_more(
+    candidates, now, monkeypatch
+):
+    async def visual(llm, question, profile, candidates):
+        return Visual(ui='root = Answer([t])\nt = Text("Aurora.")')
+
+    monkeypatch.setattr(chat, "visual_answer", visual)
+    await _say("hello", candidates, now)
+    reply = await _say(f"Tell me about {candidates[0].name}", candidates, now)
+    assert reply.sources == []

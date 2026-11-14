@@ -303,6 +303,11 @@ export interface components {
       graph: components["schemas"]["ExploredGraph"] | null;
       /** @description How the agent walked Cala for this answer, step by step */
       walk: components["schemas"]["WalkSummary"] | null;
+      /**
+       * Sources
+       * @description Sources of the facts about each startup the reply text names
+       */
+      sources: components["schemas"]["ReplySource"][];
     };
     /** ChatRequest */
     ChatRequest: {
@@ -636,6 +641,21 @@ export interface components {
       entity_id: string;
       /** Name */
       name: string;
+    };
+    /**
+     * ReplySource
+     * @description Where the facts about one startup named in a chat reply come from (#141).
+     */
+    ReplySource: {
+      /** Entity Id */
+      entity_id: string;
+      /** Name */
+      name: string;
+      /**
+       * Sources
+       * @description Each source once, strongest trust level first
+       */
+      sources: components["schemas"]["Source"][];
     };
     /** Report */
     Report: {

@@ -21,6 +21,7 @@ import { HowIFound } from "./HowIFound";
 import { LiveWalk } from "./LiveWalk";
 import { changeNoteText, isUndoable } from "./noteText";
 import { VisualAnswer } from "./openui/VisualAnswer";
+import { ReplySources } from "./ReplySources";
 import { useDictation } from "./useDictation";
 import { useFollowLog } from "./useFollowLog";
 import { WorkingLine } from "./WorkingLine";
@@ -266,7 +267,12 @@ function Message({ message, entering, canUndo, undoing, onUndo }: MessageProps) 
           {message.walk && <HowIFound walk={message.walk} />}
         </div>
       ) : (
-        rest && <div className={styles.bubble}>{isAgent ? <Markdown source={rest} /> : rest}</div>
+        rest && (
+          <div className={styles.bubble}>
+            {isAgent ? <Markdown source={rest} /> : rest}
+            {isAgent && message.sources.length > 0 && <ReplySources cited={message.sources} />}
+          </div>
+        )
       )}
     </article>
   );
