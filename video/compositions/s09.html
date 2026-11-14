@@ -1,0 +1,44 @@
+<template>
+  <style>
+    @font-face{font-family:"Hanken Grotesk";src:url("assets/fonts/hanken-grotesk.woff2") format("woff2");font-weight:100 900}
+    #root{position:absolute;inset:0;color:#14151c;font-family:"Hanken Grotesk",sans-serif;overflow:hidden}
+    #root .clip{position:absolute;inset:0}
+    .s09-plate{position:absolute;background:#f7f7fa;border:2px solid #e3e3ec;border-radius:22px;box-shadow:0 30px 70px rgba(20,21,28,.14);padding:28px 36px 32px}
+    .s09-line{font-size:64px;font-weight:800;letter-spacing:-.035em;line-height:1.15;white-space:nowrap}
+    .s09-violet{color:#6139f8}
+    .s09-toast{display:flex;align-items:center;gap:22px;width:640px;background:#fff;padding:22px 28px}
+    .s09-toast img{height:64px;display:block}
+    .s09-head{font-size:28px;font-weight:700;color:#5c5d6e;display:flex;gap:14px}
+    .s09-head b{font-family:"Outfit",sans-serif;font-weight:800;color:#14151c}
+    .s09-body{font-size:34px;font-weight:600;letter-spacing:-.02em;line-height:1.2;margin-top:4px}
+  </style>
+  <div id="root" data-composition-id="s09" data-width="1920" data-height="1080">
+    <div id="s09-watch" class="clip" data-start="0.6" data-duration="4.2">
+      <div id="s09-watch-plate" class="s09-plate" style="left:80px;top:330px">
+        <div class="s09-line">You: away.</div>
+        <div id="s09-l2" class="s09-line">Grabbit: <span class="s09-violet">on watch.</span></div>
+      </div>
+    </div>
+    <div id="s09-alert" class="clip" data-start="2.35" data-duration="2.45">
+      <div id="s09-toast" class="s09-plate s09-toast" style="left:80px;top:590px">
+        <img src="assets/grabbit-mark.svg" alt="">
+        <div>
+          <div class="s09-head"><b>Grabbit</b><span>now</span></div>
+          <div class="s09-body">Something moved on your shortlist.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    (() => {
+      const tl = gsap.timeline({ paused: true });
+      // "while I am away" 0.65 s, "ready to notify" 1.8 s, "notify" 2.45 s
+      tl.fromTo("#s09-watch-plate", { opacity: 0, y: 40, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "expo.out" }, 0.65);
+      tl.fromTo("#s09-l2", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power2.out" }, 1.7);
+      // whip: the notification lands blurred and sharpens
+      tl.fromTo("#s09-toast", { opacity: 0, x: -140, filter: "blur(10px)" }, { opacity: 1, x: 0, filter: "blur(0px)", duration: 0.45, ease: "power4.out" }, 2.4);
+      tl.to(["#s09-watch-plate", "#s09-toast"], { opacity: 0, y: -20, duration: 0.28, ease: "power2.in" }, 4.4);
+      window.__timelines["s09"] = tl;
+    })();
+  </script>
+</template>
