@@ -17,14 +17,7 @@ import {
 } from "../../api/client";
 import { useToast } from "../../components/Toast";
 import type { FakeApi } from "../../dev/fakeApi";
-import {
-  DEMO_STEPS,
-  DEMO_TIMING,
-  type DemoTarget,
-  type DemoTiming,
-  readDemoSeen,
-  saveDemoSeen,
-} from "./steps";
+import { DEMO_TIMING, type DemoTiming, readDemoSeen, saveDemoSeen } from "./steps";
 
 export interface DemoContextValue {
   /** True inside the guided demo, false in the visitor's own research. */
@@ -46,14 +39,11 @@ const DemoContext = createContext<DemoContextValue | null>(null);
 export const useDemo = () => useContext(DemoContext);
 
 /**
- * True when the guided demo is on and the current step does not use this control (or no
- * target is given: a control no step uses). Outside the demo nothing is locked.
+ * True while the guided demo runs: the guide card makes every move ("Show me"), so every
+ * other control is disabled. Outside the demo nothing is locked.
  */
-export function useGuideLocked(target?: DemoTarget): boolean {
-  const demo = useDemo();
-  if (!demo?.active) return false;
-  const allowed = DEMO_STEPS[demo.step]?.targets ?? [];
-  return !target || !allowed.includes(target);
+export function useGuideLocked(): boolean {
+  return useDemo()?.active ?? false;
 }
 
 const TOUR_PARAM = "tour";

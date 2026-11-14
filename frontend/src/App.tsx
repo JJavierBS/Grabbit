@@ -104,7 +104,7 @@ export function App() {
   const [demo] = useState(demoFixture);
   // Inside the guided demo (#184): sample data, nothing may touch the visitor's research.
   const guided = useDemo()?.active ?? false;
-  // Controls no step of the guided demo uses (sidebar, What changed) stay disabled in it.
+  // In the guided demo the guide card makes every move; the app's own controls wait.
   const guideLocked = useGuideLocked();
   const [alertsDelivered, setAlertsDelivered] = useState(0);
   const [confirmed, setConfirmed] = useState(false);
@@ -275,7 +275,7 @@ export function App() {
   const reportInChat = report.isPending ? (
     <Skeleton block="card" label="Loading the report" />
   ) : report.data ? (
-    <GuideLock target="report">
+    <GuideLock>
       <ReportOutline
         key={report.data.id}
         report={report.data}

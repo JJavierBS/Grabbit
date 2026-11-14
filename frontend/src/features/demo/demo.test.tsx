@@ -177,57 +177,44 @@ describe("guided demo", () => {
     await waitFor(() => expect(calls.length).toBeGreaterThan(before));
   });
 
-  it("enables only the controls the current step uses", async () => {
+  it("leaves only the guide card enabled at every step", async () => {
     realApi();
     renderWithDemo();
     await userEvent.click(await screen.findByRole("button", { name: /See how it works/ }));
     const composer = () => screen.getByRole("textbox", { name: "Message Grabbit" });
+    const showMe = () => screen.getByRole("button", { name: "Show me" });
 
-    // 1. Thesis: the composer and the example theses, nothing else.
+    // 1. Thesis: the composer and the example theses wait for the guide.
     await step(DEMO_STEPS[0].title);
-    expect(composer()).toBeEnabled();
-    expect(screen.getByRole("button", { name: THESIS_EXAMPLES[0] })).toBeEnabled();
+    expect(showMe()).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Exit the demo" })).toBeEnabled();
+    expect(composer()).toBeDisabled();
+    expect(screen.getByRole("button", { name: THESIS_EXAMPLES[0] })).toBeDisabled();
     expect(screen.getByRole("button", { name: "What changed" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Close sidebar" })).toBeDisabled();
-    await userEvent.click(screen.getByRole("button", { name: "Show me" }));
+    await userEvent.click(showMe());
 
-    // 2. Answer: the questions are open; the change note's Undo is not.
+    // 2. Answer: the question's options and Undo are locked too.
     await step(DEMO_STEPS[1].title);
-    expect(await screen.findByRole("button", { name: "Send answers" })).toBeInTheDocument();
-    expect(screen.getAllByRole("radio")[0]).toBeEnabled();
+    expect(await screen.findByRole("button", { name: "Send answers" })).toBeDisabled();
+    expect(screen.getAllByRole("radio")[0]).toBeDisabled();
     expect(screen.getByRole("button", { name: "Undo" })).toBeDisabled();
-    await userEvent.click(screen.getByRole("button", { name: "Show me" }));
+    await userEvent.click(showMe());
 
-    // 3. Open the report: only the outline; the composer waits.
+    // 3. Report: the outline waits; Show me opens it.
     await step(DEMO_STEPS[2].title);
-    expect(screen.getByRole("button", { name: "Open report" })).toBeEnabled();
-    expect(composer()).toBeDisabled();
-    await userEvent.click(screen.getByRole("button", { name: "Show me" }));
+    expect(screen.getByRole("button", { name: "Open report" })).toBeDisabled();
+    await userEvent.click(showMe());
 
-    // 4. Correct: the composer again; the report's own actions stay locked.
+    // 4 and 5: the report's own actions and the corrections stay locked.
     await step(DEMO_STEPS[3].title);
-    expect(composer()).toBeEnabled();
-    expect(screen.getByRole("button", { name: "Looks right, keep me posted" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Shorter, co-investors first" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Run now" })).toBeDisabled();
-    await userEvent.click(screen.getByRole("button", { name: "Show me" }));
-
-    // 5. Confirm: the report's confirm button opens up; Run now never does.
+    await userEvent.click(showMe());
     await step(DEMO_STEPS[4].title);
-    expect(screen.getByRole("button", { name: "Looks right, keep me posted" })).toBeEnabled();
-    expect(screen.getByRole("button", { name: "Run now" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Looks right, keep me posted" })).toBeDisabled();
     expect(composer()).toBeDisabled();
-  });
-
-  it("advances when the visitor makes the move themselves", async () => {
-    realApi();
-    renderWithDemo();
-    await userEvent.click(await screen.findByRole("button", { name: /See how it works/ }));
-    await step(DEMO_STEPS[0].title);
-    await userEvent.type(
-      screen.getByRole("textbox", { name: "Message Grabbit" }),
-      "Robotics at pre-seed{Enter}",
-    );
-    await step(DEMO_STEPS[1].title);
+    expect(showMe()).toBeEnabled();
   });
 
   it("leaves with Escape from the card, and with its close button", async () => {

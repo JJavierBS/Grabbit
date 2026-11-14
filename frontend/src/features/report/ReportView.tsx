@@ -123,7 +123,7 @@ export function ReportView({
         {!archived && (
           <div className={styles.actions}>
             {onConfirm && (
-              <GuideLock target="confirm">
+              <GuideLock>
                 <Button
                   icon={<BellRing aria-hidden="true" />}
                   onClick={onConfirm}

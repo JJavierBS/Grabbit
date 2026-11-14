@@ -24,7 +24,7 @@ import { Logo } from "../../components/Logo";
 import { Markdown } from "../../components/Markdown";
 import { Skeleton } from "../../components/Skeleton";
 import { DemoLauncher } from "../demo/DemoLauncher";
-import { useDemo, useGuideLocked } from "../demo/DemoRoot";
+import { useDemo } from "../demo/DemoRoot";
 import { GuideLock } from "../demo/GuideLock";
 import { AgentQuestions } from "./AgentQuestions";
 import { ChangeNote } from "./ChangeNote";
@@ -73,8 +73,6 @@ export function ChatPanel({ footer, renderAfter, followKey, coach }: ChatPanelPr
   const undo = useUndo();
   const [draft, setDraft] = useState("");
   const field = useRef<HTMLTextAreaElement>(null);
-  // Talk is never a step of the guided demo.
-  const talkLocked = useGuideLocked();
   const dictation = useDictation(setDraft);
   const messages = chat.data ?? [];
   const hasReport = Boolean(report.data);
@@ -207,7 +205,7 @@ export function ChatPanel({ footer, renderAfter, followKey, coach }: ChatPanelPr
           </p>
         )}
         {suggestions.length > 0 && (
-          <GuideLock target="composer">
+          <GuideLock>
             <div className={styles.suggestions}>
               {suggestions.map((s) => (
                 <Button
@@ -223,7 +221,7 @@ export function ChatPanel({ footer, renderAfter, followKey, coach }: ChatPanelPr
             </div>
           </GuideLock>
         )}
-        <GuideLock target="composer">
+        <GuideLock>
           <div className={styles.inputRow}>
             <TextArea
               label="Message Grabbit"
@@ -249,7 +247,6 @@ export function ChatPanel({ footer, renderAfter, followKey, coach }: ChatPanelPr
                 aria-label={dictation.listening ? "Stop talking" : "Talk"}
                 aria-pressed={dictation.listening}
                 className={styles.talk}
-                disabled={talkLocked}
                 loading={dictation.transcribing}
                 onClick={dictation.toggle}
                 icon={
@@ -333,7 +330,7 @@ function Message({
         )
       )}
       {isAgent && message.questions.length > 0 && (
-        <GuideLock target="answers">
+        <GuideLock>
           <AgentQuestions questions={message.questions} onAnswer={onAnswer} busy={busy} />
         </GuideLock>
       )}

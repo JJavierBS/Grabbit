@@ -15,8 +15,8 @@ interface CoachCardProps {
 }
 
 /**
- * The guided demo's narrator (#184): one step at a time. "Show me" makes the move for the
- * visitor, and making it themselves works the same. Once the result is on screen the guide
+ * The guided demo's narrator (#184): one step at a time. "Show me" makes the move, the only
+ * control the demo leaves enabled besides leaving it. Once the result is on screen the guide
  * moves on by itself; the next step's text says what just happened.
  */
 export function CoachCard({ signals, actions, busy, floating = false }: CoachCardProps) {

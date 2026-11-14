@@ -188,6 +188,16 @@
   border-color: transparent;
 }
 
+/* Locked (the guided demo drives it): the whole capsule rests, not a grey box inside it. */
+.inputRow:has(textarea:disabled) {
+  background: var(--color-panel);
+  box-shadow: none;
+}
+
+.inputRow textarea:disabled {
+  background: transparent;
+}
+
 .talk[aria-pressed="true"] {
   background: var(--color-violet);
 }
