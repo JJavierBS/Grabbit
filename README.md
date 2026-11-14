@@ -63,7 +63,8 @@ API docs while `make dev` runs: http://localhost:8000/api/docs
 
 ## Deploy
 The demo runs on Aiven, project `grabbit`, AWS `eu-central-1`:
-https://cosmic-enhanced-jawfish.eur-1.aiven.app
+https://www.grabbit.cloud (Aiven host: https://cosmic-enhanced-jawfish.eur-1.aiven.app;
+`http://grabbit.cloud` redirects there from IONOS, which holds the domain and its DNS)
 - `grabbit-app` (Aiven Runtime, `startup-100-2048`) builds the root `Dockerfile` from branch
   `129-valkey-cala-cache` and serves it on port 8000. Pushing does **not** deploy: use
   Runtime > `grabbit-app` > Actions > **Deploy latest commit** in the console. Keys and
