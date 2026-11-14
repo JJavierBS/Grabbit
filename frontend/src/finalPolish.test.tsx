@@ -47,6 +47,7 @@ describe("panel focus", () => {
       ui: null,
       graph: null,
       walk: null,
+      sources: [],
       text: "I rewrote your report.",
       created_at: "2026-11-14T09:34:00Z",
       profile_changes: [],
