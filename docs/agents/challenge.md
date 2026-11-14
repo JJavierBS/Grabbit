@@ -40,7 +40,7 @@ file, not the raw PDFs or slides. Keep it under 100 lines. All times Europe/Hels
 - Innovation: new or different compared to the other projects.
 - Impact: significant for society; solves it for a large share of the people affected.
 - Implementation: realistic, viable and feasible from every perspective.
-Peer review happens at tables: a stranger must get the point and see it work in ~2 minutes.
+Peer review happens at tables: in 5 minutes a stranger must get the point and drive the app.
 
 ## Rules that affect the code
 - All project code is written during the event (from Fri 19:30). Open source libraries are fine.
