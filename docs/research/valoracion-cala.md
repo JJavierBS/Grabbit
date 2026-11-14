@@ -15,17 +15,16 @@ dato llega con su fuente. Sin Cala no habría producto, solo una búsqueda web s
 Como **dato**, Cala es fuerte. Da las rondas con el rol de cada participante y quién lideró,
 una fuente y un nivel de confianza (`source_rank`) por hecho, y la lista de asistentes de
 Slush enlazada al grafo. Como **plataforma**, todavía es inmadura para un producto en tiempo
-real. Se lee nodo a nodo, sin filtros en el servidor, con límites de uso sin documentar,
-latencias de minutos en nodos grandes y un saldo que se agotó durante el hackathon.
+real. Se lee nodo a nodo, sin filtros en el servidor y con latencias de minutos en nodos
+grandes.
 
 En cifras: con Y Combinator y 500 Global como inversores de confianza, el grafo de Cala
 pasó a mostrar **27 startups de Slush** con uno de ellos en sus rondas (antes 5) y 8 de las
 10 primeras del ranking eran invisibles antes. A cambio, un solo turno del chat hace **898
-llamadas** a Cala (casi todas desde la caché), leer Slush entero costaría unas **9.000**, y
-el saldo de créditos se agotó el 15 de noviembre, en plena validación.
+llamadas** a Cala (casi todas desde la caché) y leer Slush entero costaría unas **9.000**.
 
 Veredicto: **la apuesta es correcta para el papel de fuente verificada**, siempre que el
-producto gestione por su cuenta la caché, el presupuesto de llamadas y la identidad de las
+producto gestione por su cuenta la caché, el número de llamadas y la identidad de las
 entidades. Buena parte de nuestra ingeniería se ha ido a eso y no a la lógica de negocio.
 
 ## Qué es Cala y qué le pedimos
@@ -67,11 +66,11 @@ Cada paso respondió a algo que aprendimos de Cala.
 | 14 nov, 11:40 | Noticias por startup con `knowledge/query` | Recomendación del taller de Cala |
 | 14 nov, 11:50 | El chat recorre el grafo él mismo (buscar y abrir vecinos) | No hay consultas por criterios: hay que caminar |
 | 14 nov, 17:30 | Enlaces ocultos de segundo grado entre startups e inversores | Las rondas enlazan a todos sus participantes |
-| 14 nov, 17:40–18:02 | Caché compartida en Valkey y un único limitador de llamadas por proceso | Unos 100 errores 429 con varios clientes a la vez |
+| 14 nov, 17:40 | Caché compartida en Valkey para todas las instancias | Lecturas lentas: la demo tiene que responder sin esperar a Cala |
 | 14 nov, 23:20 | Recorrido inverso: del inversor de confianza a sus rondas y a sus participadas en Slush | El recorrido por evento solo veía el 5 % de Slush |
 | 14 nov, 23:27 | Segundo anillo: los co-inversores habituales de esos fondos | Las rondas leídas ya dicen quién invierte junto a quién |
 | 14 nov, 23:20–23:50 | Puntuación de proximidad e identidad de fondo por nombre | Un fondo real son muchas entidades en Cala |
-| 15 nov | Correcciones del motor (#205) y auditoría de datos | Revisión con datos reales; Cala responde 402 por saldo |
+| 15 nov | Correcciones del motor (#205) y auditoría de datos | Revisión con datos reales de Cala |
 
 El cambio de fondo fue el recorrido inverso. Antes se leían los asistentes en el orden de
 Cala y la confianza del inversor solo etiquetaba el resultado. Ahora decide qué se lee:
@@ -140,23 +139,21 @@ Esta es la parte más importante: son las que han marcado el diseño. Las agrupa
 | --- | --- | --- |
 | No hay llamada que devuelva un subgrafo ni que liste entidades por criterios | Un nodo por llamada; sin filtros ni orden en el servidor | Filtrar, ordenar y puntuar es todo local; el primer turno del chat hace 898 llamadas |
 | Leer el evento entero no es asumible | Unas 3 llamadas por asistente (456 para 150): unas 9.000 para Slush (estimación); 76 de los 150 primeros no eran startups | El recorrido por evento se limitó a 150 asistentes (5 %); hizo falta inventar el recorrido inverso |
-| La arista inversor → ronda no lleva fecha | Lo reciente solo se sabe tras leer la ronda | Las rondas se leen en el orden de Cala; con poco presupuesto se pueden leer antes las viejas |
+| La arista inversor → ronda no lleva fecha | Lo reciente solo se sabe tras leer la ronda | Las rondas se leen en el orden de Cala; si el recorrido se corta antes, se pueden haber leído primero las viejas |
 | Sin filtros en aristas | No se puede pedir "las rondas de este fondo desde 2024" | Se pagina todo y se descarta en local |
-| Límite de paginación sin documentar | `limit: 100` funciona; máximo y defecto sin medir | Paginamos de 100 en 100 por prudencia |
+| Tamaño máximo de página sin documentar | `limit: 100` funciona; máximo y defecto sin medir | Paginamos de 100 en 100 por prudencia |
 | Sin push ni webhooks | Ningún mecanismo de cambios | Alertas por sondeo y comparación de instantáneas |
 | Los endpoints con LLM pierden datos y se retiran | Petición de Cala; respuestas aproximadas ("over 100M") | No sirven para descubrir; solo los usamos para noticias |
 
-### Rendimiento, límites y coste
+### Rendimiento y volumen de llamadas
 
 | Limitación | Evidencia | Impacto en Grabbit |
 | --- | --- | --- |
-| Límite de uso sin documentar y 429 sin `Retry-After` | 4 peticiones en paralelo lo disparan; ráfagas en serie a las 12, luego a las 3–4 llamadas | Un único limitador por proceso: 1 llamada en vuelo, 250 ms entre llamadas, espera global ante un 429 |
 | Caídas con 403 en HTML | Varios minutos el 14 nov hacia las 11:40, incluso con una sola petición | Se trata como "Cala no disponible" y se sirve desde la caché |
 | Latencia muy variable | Normal < 1 s; introspección 4–11 s; una ronda de 15 participantes 12 s; dos lecturas de unos 7 minutos | Tiempo máximo de 25 s por llamada; la demo depende de una caché precalentada |
 | Nodos hub impracticables | Las aristas de un nodo `Industry` no respondieron en 50 s | Nunca se expanden industrias, países ni eventos en el chat; tope de 300 rondas por co-inversor |
 | Noticias lentas e inestables | 29–46 s por llamada (hasta 180 s documentado); a veces devuelve un perfil o nada | Solo en un proceso programado; los informes leen la caché |
-| Coste en frío por encima de un turno | Unas 520 llamadas para dos inversores frente a un presupuesto de 300 | El primer turno con inversores nuevos sale parcial; la demo depende de `make warm` |
-| Saldo de créditos agotado | `402 Insufficient balance` desde el 15 nov hacia las 00:24; las 35 llamadas siguientes devolvieron 402 | No se puede calentar ni refrescar la caché; la demo funciona solo en replay |
+| Mucho volumen en frío | Unas 520 lecturas en serie para dos inversores nuevos; un turno lee como máximo 300 nuevas para no hacer esperar | El primer turno con inversores nuevos sale parcial; la demo depende de `make warm` |
 
 ### Calidad e identidad de los datos
 
@@ -179,9 +176,8 @@ Esta es la parte más importante: son las que han marcado el diseño. Las agrupa
 
 | Problema | Solución en Grabbit | Dónde |
 | --- | --- | --- |
-| Latencia, límites y caídas | Caché de cada respuesta (SQLite y Valkey compartido), modo replay y `make warm --check` antes de la demo | `app/cala/client.py`, `app/store/` |
-| 429 en ráfagas | Limitador único por proceso con espera global y reintentos con backoff | `CalaLimiter` |
-| Nodos lentos | Tiempo máximo de 25 s por llamada y presupuesto de 300 llamadas nuevas por recorrido | `ReverseLimits`, `LinkLimits` |
+| Latencia y caídas | Caché de cada respuesta (SQLite y Valkey compartido), modo replay y `make warm --check` antes de la demo | `app/cala/client.py`, `app/store/` |
+| Nodos lentos | Tiempo máximo de 25 s por llamada y como máximo 300 lecturas nuevas por recorrido, para acotar la espera | `ReverseLimits`, `LinkLimits` |
 | Sin consultas por criterios | Búsqueda de encuentro a medio camino: del fondo a sus rondas, cruzado con los asistentes | `discovery/reverse.py` |
 | Un fondo, muchas entidades | Coincidencia por id o por nombre de fondo en todo el producto | `app/trusted.py` |
 | Errores repetidos | Los 404 también se cachean; los demás errores no | `app/cala/client.py` |
@@ -193,23 +189,21 @@ Esta es la parte más importante: son las que han marcado el diseño. Las agrupa
 
 Ordenadas por impacto en un producto como Grabbit:
 
-1. **Documentar el límite de uso** y devolver `Retry-After` en los 429.
-2. **Leer varios nodos en una llamada**, o un subgrafo a profundidad 2. Hoy un informe son
+1. **Leer varios nodos en una llamada**, o un subgrafo a profundidad 2. Hoy un informe son
    cientos de llamadas en serie.
-3. **Fecha y filtros en las aristas**: la fecha de la ronda en la arista inversor → ronda y
+2. **Fecha y filtros en las aristas**: la fecha de la ronda en la arista inversor → ronda y
    poder pedir "desde una fecha", para leer primero lo reciente.
-4. **Identidad canónica de fondo**: un id de familia que agrupe Company, Organization y
+3. **Identidad canónica de fondo**: un id de familia que agrupe Company, Organization y
    vehículos ("Y Combinator W24").
-5. **Corregir la dirección de `INVESTED_IN`** y documentar el rol `GRANTOR`.
-6. **Un feed de cambios o webhooks**, para alertas sin sondeo.
-7. **Panel de consumo y aviso antes de agotar el saldo**: el 402 llegó sin previo aviso a mitad de la validación.
-8. **Más cobertura de etapa, plantilla y participantes de ronda** en startups pequeñas.
-9. **Latencia acotada en nodos hub** o una forma paginada de recorrerlos.
+4. **Corregir la dirección de `INVESTED_IN`** y documentar el rol `GRANTOR`.
+5. **Un feed de cambios o webhooks**, para alertas sin sondeo.
+6. **Más cobertura de etapa, plantilla y participantes de ronda** en startups pequeñas.
+7. **Latencia acotada en nodos hub** o una forma paginada de recorrerlos.
 
 ## Fuentes
 
-- [docs/agents/cala.md](../agents/cala.md): endpoints, peculiaridades de los datos, límites
-  y latencias medidas (13–14 nov).
+- [docs/agents/cala.md](../agents/cala.md): endpoints, peculiaridades de los datos y
+  latencias medidas (13–14 nov).
 - [docs/agents/decisions.md](../agents/decisions.md): decisiones fechadas que marcan la evolución.
 - [docs/algorithm.md](../algorithm.md): el motor, sus resultados, la revisión del 15 nov y la
   auditoría de datos.
