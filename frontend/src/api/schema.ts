@@ -176,7 +176,8 @@ export interface paths {
     };
     /**
      * Stream Events
-     * @description Server-Sent Events: `alert` (Alert), `report` ({id}), `profile` (Profile).
+     * @description Server-Sent Events: `alert` (Alert), `report` ({id}), `profile` (Profile),
+     *     `progress` (TurnProgress) while a chat turn runs.
      */
     get: operations["stream_events_api_events_get"];
     put?: never;
@@ -736,6 +737,19 @@ export interface components {
         | "web_unverified"
         | "not_published";
     };
+    /**
+     * TurnProgress
+     * @description What a chat turn is doing right now, sent as a `progress` event on /api/events.
+     */
+    TurnProgress: {
+      /**
+       * Phase
+       * @enum {string}
+       */
+      phase: "cala" | "llm" | "report" | "graph";
+      /** Label */
+      label: string;
+    };
   };
   responses: never;
   parameters: never;
@@ -1149,6 +1163,7 @@ export interface operations {
         };
         content: {
           "text/event-stream": unknown;
+          "application/json": components["schemas"]["TurnProgress"];
         };
       };
       /** @description Not Found */
