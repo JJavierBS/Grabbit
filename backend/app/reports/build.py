@@ -8,7 +8,7 @@ from typing import Literal
 from app.llm import LLM
 from app.models import Candidate, Fact, Profile, Report, ReportSection
 from app.reports import write
-from app.reports.facts import BADGES, facts_line, render_date
+from app.reports.facts import BADGES, render_date
 from app.reports.rank import co_invest, rank
 
 Kind = Literal["prep", "digest", "memo"]
@@ -97,10 +97,10 @@ def _what_changed(ranked: list[Candidate], previous: Report | None) -> tuple[lis
 def _sections(
     kind: Kind, selected: list[Candidate], paragraphs: dict[str, str], profile: Profile
 ) -> list[ReportSection]:
-    refs = {r.entity_id: r.name for r in profile.reference_investors}
+    refs = {r.entity_id for r in profile.reference_investors}
     groups: dict[str, list[Candidate]] = {}
     for c in selected:
-        led, joined = co_invest(c, set(refs))
+        led, joined = co_invest(c, refs)
         likely = next((s.value for s in c.signals if s.kind == "likely_to_raise"), None)
         if kind == "digest":
             title = "What changed"
@@ -112,30 +112,18 @@ def _sections(
             title = "Other matches"
         groups.setdefault(title, []).append(c)
 
-    short = kind != "memo" and profile.style.length == "short"
     return [
         ReportSection(
             title=title,
-            body_md="\n\n".join(_entry(c, paragraphs.get(c.entity_id), refs, short) for c in cs),
+            body_md="\n\n".join(
+                f"**{c.name}**: {paragraphs[c.entity_id]}"
+                for c in cs
+                if paragraphs.get(c.entity_id)
+            ),
             candidate_ids=[c.entity_id for c in cs],
         )
         for title, cs in groups.items()
     ]
-
-
-def _entry(c: Candidate, paragraph: str | None, refs: dict[str, str], short: bool) -> str:
-    lines = [f"**{c.name}**: {paragraph or c.description or ''}".rstrip(": ")]
-    with_refs = [
-        f"{i.name} ({'lead, ' if i.is_lead else ''}{r.name})"
-        for r in c.rounds
-        for i in r.investors
-        if i.entity_id in refs
-    ]
-    if with_refs:
-        lines.append("Co-invest: " + "; ".join(with_refs))
-    if facts := facts_line(c, short=short):
-        lines.append(facts)
-    return "\n\n".join(lines)
 
 
 WEB_SECTION = "Web signals (unverified)"

@@ -6,6 +6,10 @@ fixtures with real responses (trim them before committing).
 `--news` then fetches Cala news (about 45 s each, strictly serial) for the startups the
 stored profile shortlists plus those in the latest report; `--retry-empty` asks again
 once for startups whose cached answer had no news.
+
+Every run ends with the first chat turn's own walk (`agent/sources.event_walk_limits`), which
+refills anything the big walk timed out on, then replays it from the cache only and prints
+the misses. `--check` does only that replay and exits 1 on any miss: run it before a demo.
 """
 
 from __future__ import annotations
@@ -18,7 +22,8 @@ import sqlite3
 from pathlib import Path
 from typing import Any
 
-from app.cala.client import CalaClient
+from app.agent.sources import event_walk_limits
+from app.cala.client import CalaCacheMiss, CalaClient
 from app.cala.news import warm_news
 from app.discovery.links import LinkLimits
 from app.discovery.pipeline import SLUSH_2026, Limits, get_candidates, neutral_profile
@@ -40,7 +45,34 @@ def dump_raw(raw: dict[str, dict[str, Any]], directory: Path) -> int:
     return len(raw)
 
 
-async def main(args: argparse.Namespace) -> None:
+async def warm_first_turn(client: CalaClient, event: str) -> None:
+    """The exact event walk the first chat turn makes; cached reads are free."""
+    await get_candidates(client, neutral_profile(event), limits=event_walk_limits())
+
+
+async def first_turn_misses(cache: CalaCache, event: str) -> tuple[int, int]:
+    """(Cala calls the first chat turn would make, how many the cache cannot answer)."""
+    client = CalaClient(None, cache, mode="replay")
+    try:
+        await warm_first_turn(client, event)
+    except CalaCacheMiss:
+        pass  # the event's attendee list itself is missing: counted below
+    finally:
+        await client.aclose()
+    return client.cache_hits + client.cache_misses, client.cache_misses
+
+
+async def check(args: argparse.Namespace) -> int:
+    calls, misses = await first_turn_misses(CalaCache(sqlite3.connect(database_path())), args.event)
+    print(f"first chat turn: {calls} Cala calls, {misses} cache misses")
+    if misses:
+        print("run `make warm` with live Cala before presenting")
+    return 1 if misses else 0
+
+
+async def main(args: argparse.Namespace) -> int:
+    if args.check:
+        return await check(args)
     db = database_path()
     db.parent.mkdir(parents=True, exist_ok=True)
     cache = CalaCache(sqlite3.connect(db))
@@ -54,6 +86,8 @@ async def main(args: argparse.Namespace) -> None:
         # No call budget: warming is where the hidden-link walk is meant to run in full.
         limits = Limits(max_attendees=args.limit, links=LinkLimits(call_budget=None))
         result = await get_candidates(client, neutral_profile(args.event), limits=limits)
+        # The big walk can time out on slow nodes; the demo's own walk retries them.
+        await warm_first_turn(client, args.event)
         if args.news:
             targets = await news_targets(client, limits)
             news = await warm_news(client, targets, retry_empty=args.retry_empty)
@@ -75,6 +109,9 @@ async def main(args: argparse.Namespace) -> None:
         print(f"dumped {dump_raw(result.raw, Path(args.dump))} nodes to {args.dump}")
     for name, count in news.items():
         print(f"news {count:2d}  {name}")
+    calls, misses = await first_turn_misses(cache, args.event)
+    print(f"first chat turn: {calls} Cala calls, {misses} cache misses")
+    return 0
 
 
 async def news_targets(client: CalaClient, limits: Limits) -> list[Candidate]:
@@ -99,4 +136,7 @@ if __name__ == "__main__":
     parser.add_argument("--dump", default=None, help="directory for raw nodes")
     parser.add_argument("--news", action="store_true", help="also fetch Cala news")
     parser.add_argument("--retry-empty", action="store_true", help="re-ask empty news once")
-    asyncio.run(main(parser.parse_args()))
+    parser.add_argument(
+        "--check", action="store_true", help="only check the first chat turn hits the cache"
+    )
+    raise SystemExit(asyncio.run(main(parser.parse_args())))

@@ -9,27 +9,27 @@
    "paragraphs": [
     {
      "candidate_id": "cand-kiln",
-     "text": "Led by {last_round_lead} in {last_round_date}; {last_round_amount} {last_round}."
+     "text": "Climate software for heavy industry, early enough to matter."
     },
     {
      "candidate_id": "cand-ledgerly",
-     "text": "{last_round_lead} led the {last_round} in {last_round_date}."
+     "text": "Business finance tooling with backers worth a co-investment talk."
     },
     {
      "candidate_id": "cand-mossa",
-     "text": "Raised {last_round_amount} in {last_round_date}."
+     "text": "A consumer app; check it fits your thesis."
     },
     {
      "candidate_id": "cand-tundra",
-     "text": "{last_round_lead} led the {last_round} in {last_round_date}."
+     "text": "Grid software whose backers tend to follow on."
     },
     {
      "candidate_id": "cand-brikk",
-     "text": "{last_round_lead} led the {last_round} in {last_round_date}."
+     "text": "Construction software that shares a backer with Ledgerly."
     },
     {
      "candidate_id": "cand-sauna",
-     "text": "{last_round_lead} led the {last_round} in {last_round_date}."
+     "text": "A marketplace with an engaged lead investor."
     }
    ]
   }
@@ -42,27 +42,27 @@
    "paragraphs": [
     {
      "candidate_id": "cand-kiln",
-     "text": "Energy analytics for kilns, at {stage} with a team of {headcount}. Its {last_round} of {last_round_amount} closed in {last_round_date}, led by {last_round_lead}."
+     "text": "Energy analytics for industrial kilns, an early fit for a climate software thesis. Worth meeting before its next raise."
     },
     {
      "candidate_id": "cand-ledgerly",
-     "text": "Finance close automation from {hq}, now {stage}. {last_round_lead} led its {last_round} of {last_round_amount} in {last_round_date}."
+     "text": "Finance close automation for mid-market teams. Its backers make it a natural co-investment conversation."
     },
     {
      "candidate_id": "cand-mossa",
-     "text": "Consumer physiotherapy app from {hq}. Team size is {headcount}; it raised {last_round_amount} in {last_round_date}."
+     "text": "A consumer physiotherapy app. It sits outside a business-software thesis, so check the fit before the meeting."
     },
     {
      "candidate_id": "cand-tundra",
-     "text": "Grid-balancing software from {hq} with {headcount} people. The {last_round} amount is {last_round_amount}; {last_round_lead} led it in {last_round_date}."
+     "text": "Grid-balancing software for utilities. Its lead investor tends to follow on, a sign worth watching."
     },
     {
      "candidate_id": "cand-brikk",
-     "text": "Construction scheduling at {stage}, {headcount} people. {last_round_lead} led a {last_round_amount} {last_round} in {last_round_date}."
+     "text": "Construction scheduling software. It shares a backer with Ledgerly, so the two could be discussed together."
     },
     {
      "candidate_id": "cand-sauna",
-     "text": "Sauna booking marketplace founded in {founded}, {headcount} people. {last_round_lead} led its {last_round} in {last_round_date}."
+     "text": "A sauna booking marketplace with a lead investor that stays involved. Ask how bookings grew since its last round."
     }
    ]
   }
