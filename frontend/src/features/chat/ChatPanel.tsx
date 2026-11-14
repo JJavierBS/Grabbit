@@ -71,7 +71,7 @@ export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
   const submit = (text: string) => {
     const value = text.trim();
     if (!value || send.isPending) return;
-    if (dictation.listening) dictation.toggle("");
+    dictation.cancel();
     // The message leaves the composer at once; if it is not sent, it comes back to edit.
     setDraft("");
     send.mutate(value, { onError: () => setDraft((current) => current || value) });
@@ -202,9 +202,11 @@ export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
             placeholder={
               dictation.listening
                 ? "Listening… press Stop when you are done"
-                : hasReport
-                  ? PLACEHOLDER_REPORT
-                  : PLACEHOLDER_FIRST
+                : dictation.transcribing
+                  ? "Writing down what you said…"
+                  : hasReport
+                    ? PLACEHOLDER_REPORT
+                    : PLACEHOLDER_FIRST
             }
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
@@ -217,7 +219,8 @@ export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
               aria-label={dictation.listening ? "Stop talking" : "Talk"}
               aria-pressed={dictation.listening}
               className={styles.talk}
-              onClick={() => dictation.toggle(draft)}
+              loading={dictation.transcribing}
+              onClick={dictation.toggle}
               icon={
                 dictation.listening ? (
                   <Square aria-hidden="true" />

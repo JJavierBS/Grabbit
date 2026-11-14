@@ -86,11 +86,13 @@ work in parallel against mocks.
   headcount_jump|acquisition|status_change|web_news), title, why_it_matters,
   importance (0-1), facts: Fact[], simulated: bool`. `simulated=true` is shown on screen.
 - `Health`: `status ("ok"), cala_mode (live|replay), llm_mode (gemini|fake), demo_mode: bool`.
+- `Transcript`: `text` (empty when nobody spoke).
 - Request bodies: `ChatRequest {text}` (1-4000 chars), `ReportRunRequest {kind}`,
   `SimulateEventRequest {fixture}` (a file name in `backend/app/fixtures/demo_events/`).
 - `ErrorResponse`: `{error: {code, message}}`. Codes so far: `not_found`,
   `validation_error`, `internal_error`, `demo_mode_disabled`, `fixture_not_found`,
-  `invalid_workspace`.
+  `invalid_workspace`, `unsupported_media_type`, `empty_audio`, `audio_too_large`,
+  `transcription_failed`.
 
 ## Endpoints
 | Method | Path | Purpose | Status |
@@ -101,6 +103,7 @@ work in parallel against mocks.
 | POST | `/api/profile/undo` | Revert the last change, returns `Profile` | mock |
 | GET | `/api/chat` | `ChatMessage[]` of the conversation | mock |
 | POST | `/api/chat` | `{text}` -> agent `ChatMessage` (may change the profile and regenerate the report) | mock |
+| POST | `/api/transcribe` | Raw `audio/*` body (a `MediaRecorder` recording, at most 10 MB) -> `Transcript`, written down by Gemini; Talk in the chat uses it in every browser (#161). 415 not audio, 400 empty, 413 too large, 502 Gemini failed | live |
 | GET | `/api/reports/latest` | Latest `Report` | mock |
 | GET | `/api/reports` | Past `Report[]`, newest first, at most 20 (#54) | mock |
 | POST | `/api/reports/run` | `{kind}` -> new `Report` ("run now" for the demo) | mock |
