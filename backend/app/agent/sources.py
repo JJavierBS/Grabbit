@@ -77,7 +77,10 @@ async def _reverse_candidates(event_id: str, references: list[ReferenceInvestor]
     async with open_cala() as (client, _):
         result = await reverse_walk(client, references, event_id)
     remember(result.investors)
-    _reverse_walks[key] = (_now(), result)
+    # A walk cut short by its call budget is not kept: the next turn walks again, reads what
+    # it already has from the Cala response cache for free and spends its budget further on.
+    if not result.stats.budget_spent:
+        _reverse_walks[key] = (_now(), result)
     return result
 
 
