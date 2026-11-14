@@ -4,6 +4,7 @@ from app.config import get_settings
 from app.llm.types import (
     LLM,
     ChatResult,
+    LiveToken,
     LLMError,
     Message,
     OnText,
@@ -15,6 +16,7 @@ from app.llm.types import (
 __all__ = [
     "LLM",
     "ChatResult",
+    "LiveToken",
     "LLMError",
     "Message",
     "OnText",
@@ -39,4 +41,5 @@ def get_llm() -> LLM:
         model=settings.gemini_model,
         timeout_s=settings.gemini_timeout_s,
         thoughts=settings.gemini_thoughts,
+        live_transcribe_model=settings.gemini_live_transcribe_model,
     )

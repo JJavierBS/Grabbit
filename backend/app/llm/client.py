@@ -2,14 +2,18 @@
 
 import logging
 import time
+from datetime import UTC, datetime, timedelta
 
 from google import genai
 from google.genai import errors, types
 from pydantic import ValidationError
 
-from app.llm.types import ChatResult, LLMError, Message, OnText, T, ToolCall, ToolSpec
+from app.llm.types import ChatResult, LiveToken, LLMError, Message, OnText, T, ToolCall, ToolSpec
 
 log = logging.getLogger(__name__)
+
+# The Live API closes a transcription session after 10 minutes anyway.
+LIVE_SESSION_MINUTES = 10
 
 TRANSCRIBE_SYSTEM = (
     "Transcribe the speech in this recording word for word, in the language it is spoken in. "
@@ -19,12 +23,24 @@ TRANSCRIBE_SYSTEM = (
 
 class GeminiLLM:
     def __init__(
-        self, *, api_key: str, model: str, timeout_s: float = 30.0, thoughts: bool = False
+        self,
+        *,
+        api_key: str,
+        model: str,
+        timeout_s: float = 30.0,
+        thoughts: bool = False,
+        live_transcribe_model: str = "",
     ) -> None:
         if not api_key or not model:
             raise LLMError("GEMINI_API_KEY and GEMINI_MODEL are required with LLM_MODE=gemini")
         self.model = model
         self.thoughts = thoughts
+        self.live_transcribe_model = live_transcribe_model
+        # Ephemeral tokens and the Live API exist only on v1beta.
+        self._live_client = genai.Client(
+            api_key=api_key,
+            http_options=types.HttpOptions(api_version="v1beta", timeout=int(timeout_s * 1000)),
+        )
         self._client = genai.Client(
             api_key=api_key,
             http_options=types.HttpOptions(
@@ -103,6 +119,40 @@ class GeminiLLM:
             )
         ]
         return _text(_parts_of(await self._call("transcribe", contents, config)))
+
+    async def live_token(self) -> LiveToken:
+        """One Live API transcription session for the browser, locked to Talk's config."""
+        if not self.live_transcribe_model:
+            raise LLMError("GEMINI_LIVE_TRANSCRIBE_MODEL is not set")
+        now = datetime.now(UTC)
+        expires_at = now + timedelta(minutes=LIVE_SESSION_MINUTES)
+        try:
+            token = await self._live_client.aio.auth_tokens.create(
+                config=types.CreateAuthTokenConfig(
+                    uses=1,
+                    expire_time=expires_at,
+                    new_session_expire_time=now + timedelta(minutes=1),
+                    live_connect_constraints=types.LiveConnectConstraints(
+                        model=self.live_transcribe_model,
+                        config=types.LiveConnectConfig(
+                            response_modalities=[types.Modality.TEXT],
+                            # Auto language; SMART drops "eh", fixes punctuation and numbers.
+                            input_audio_transcription=types.AudioTranscriptionConfig(
+                                language_codes=[], mode="SMART"
+                            ),
+                        ),
+                    ),
+                )
+            )
+        except errors.APIError as exc:
+            log.warning("gemini live token failed: %s %s", exc.code, exc.status)
+            raise LLMError(f"live_token: Gemini returned {exc.code}") from exc
+        except Exception as exc:
+            log.warning("gemini live token failed: %s", type(exc).__name__)
+            raise LLMError("live_token: Gemini unreachable") from exc
+        if not token.name:
+            raise LLMError("live_token: Gemini returned no token")
+        return LiveToken(token=token.name, model=self.live_transcribe_model, expires_at=expires_at)
 
     async def _stream(self, task: str, contents, config, on_text: OnText) -> list[types.Part]:
         """Stream the reply, telling `on_text` the answer so far; returns every part seen."""
