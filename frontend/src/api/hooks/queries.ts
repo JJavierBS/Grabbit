@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ApiError, api, unwrap } from "../client";
-import type { ChatMessage, Report, TurnProgress } from "../types";
+import type { ChatMessage, Report, TurnProgress, WalkTrace } from "../types";
 
 export const keys = {
   profile: ["profile"] as const,
@@ -13,6 +13,8 @@ export const keys = {
   alerts: ["alerts"] as const,
   /** The running chat turn's phase, pushed by `progress` events; never fetched. */
   progress: ["progress"] as const,
+  /** The running chat turn's live Cala walk, pushed by `trace` events; never fetched. */
+  trace: ["trace"] as const,
 };
 
 export const useProfile = () =>
@@ -28,6 +30,15 @@ export const useProfileHistory = () =>
 export const useTurnProgress = () =>
   useQuery<TurnProgress | null>({
     queryKey: keys.progress,
+    queryFn: () => null,
+    enabled: false,
+    initialData: null,
+  });
+
+/** The Cala walk of the running chat turn as it happens (#134); null until it starts. */
+export const useWalkTrace = () =>
+  useQuery<WalkTrace | null>({
+    queryKey: keys.trace,
     queryFn: () => null,
     enabled: false,
     initialData: null,
@@ -76,6 +87,7 @@ export function useSendMessage() {
     onMutate: async (text) => {
       // A new turn: forget the phase the previous one ended in.
       client.setQueryData(keys.progress, null);
+      client.setQueryData(keys.trace, null);
       await client.cancelQueries({ queryKey: keys.chat });
       const pending: ChatMessage = {
         id: `pending-${Date.now()}`,

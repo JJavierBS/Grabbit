@@ -160,3 +160,16 @@
 .node[data-kind="root"][data-trusted] rect {
   fill: var(--color-ink);
 }
+
+/* Live walk (#134): each entity and edge fades in once, when the agent reaches it. Keys are
+   entity ids, so what is already drawn does not replay; reduced motion zeroes the duration. */
+.figure[data-live] .node:not([data-overlay]),
+.figure[data-live] .edge {
+  animation: reach var(--duration-slow) var(--ease-out);
+}
+
+@keyframes reach {
+  from {
+    opacity: 0;
+  }
+}

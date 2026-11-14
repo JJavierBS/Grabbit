@@ -320,3 +320,18 @@ def test_headcount_range_is_compared_by_its_upper_bound():
     assert big.headcount.value == "51-200"
     assert not matches_profile(big, make_profile(headcount_max=20))
     assert matches_profile(small, make_profile(headcount_max=20))
+
+
+async def test_pipeline_reports_each_attendee_it_checks(graph):
+    heard: list[tuple[int, int, int]] = []
+    await get_candidates(
+        FakeCala(graph),
+        make_profile(),
+        TODAY,
+        Limits(page_size=2),
+        on_progress=lambda *counts: heard.append(counts),
+    )
+    assert [checked for checked, _, _ in heard] == [1, 2, 3, 4, 5]
+    assert {total for _, total, _ in heard} == {5}
+    startups = [s for _, _, s in heard]
+    assert startups == sorted(startups) and startups[-1] <= 2

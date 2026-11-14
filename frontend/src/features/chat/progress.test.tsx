@@ -59,7 +59,12 @@ describe("turn progress", () => {
     await userEvent.type(box, "AI at seed{Enter}");
     expect(await screen.findByText(workingText(false))).toBeInTheDocument();
 
-    const phase: TurnProgress = { phase: "llm", label: "Reading your message…" };
+    const phase: TurnProgress = {
+      phase: "llm",
+      label: "Reading your message…",
+      done: null,
+      total: null,
+    };
     act(() => backend.streams[0].push("progress", phase));
     expect(await screen.findByText("Reading your message…")).toBeInTheDocument();
 
