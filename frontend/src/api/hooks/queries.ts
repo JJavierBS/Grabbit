@@ -80,14 +80,15 @@ function useRefreshAfterTurn() {
     ]);
 }
 
-export function useSendMessage() {
+/** `sandbox`: the guided demo (#184) sends on sample data and must not rename a research. */
+export function useSendMessage({ sandbox = false }: { sandbox?: boolean } = {}) {
   const client = useQueryClient();
   const refresh = useRefreshAfterTurn();
   return useMutation({
     mutationFn: (text: string) => unwrap(api.POST("/api/chat", { body: { text } })),
     onMutate: async (text) => {
       // The first message names the research in the sidebar (#145).
-      nameResearch(text);
+      if (!sandbox) nameResearch(text);
       // A new turn: forget the phase the previous one ended in.
       client.setQueryData(keys.progress, null);
       client.setQueryData(keys.trace, null);

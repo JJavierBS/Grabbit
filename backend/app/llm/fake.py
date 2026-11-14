@@ -6,7 +6,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from app.llm.types import ChatResult, LLMError, Message, OnText, T, ToolCall, ToolSpec
+from app.llm.types import ChatResult, LiveToken, LLMError, Message, OnText, T, ToolCall, ToolSpec
 
 SCRIPTS_DIR = Path(__file__).resolve().parent.parent / "fixtures" / "llm"
 
@@ -72,6 +72,9 @@ class FakeLLM:
         self.calls.append(("transcribe", mime_type))
         script = self._find("transcribe", "")
         return script.text if script else ""
+
+    async def live_token(self) -> LiveToken:
+        raise LLMError("live transcription needs Gemini")
 
     def _find(self, task: str, text: str) -> Script | None:
         lowered = text.lower()

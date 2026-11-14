@@ -32,6 +32,8 @@ interface ToastItem extends ToastInput {
 interface ToastApi {
   toast: (input: ToastInput) => number;
   dismiss: (id: number) => void;
+  /** Closes every toast, e.g. when the guided demo ends. */
+  clear: () => void;
 }
 
 const ToastContext = createContext<ToastApi | null>(null);
@@ -55,7 +57,11 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     return id;
   }, []);
 
-  const api = useMemo(() => ({ toast, dismiss }), [toast, dismiss]);
+  const clear = useCallback(() => {
+    setItems((list) => list.map((t) => ({ ...t, leaving: true })));
+  }, []);
+
+  const api = useMemo(() => ({ toast, dismiss, clear }), [toast, dismiss, clear]);
 
   return (
     <ToastContext.Provider value={api}>

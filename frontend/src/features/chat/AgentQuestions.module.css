@@ -94,3 +94,17 @@
   font-size: var(--text-sm);
   color: var(--color-text-muted);
 }
+
+/* Locked by the guided demo, or while a turn runs elsewhere. */
+.option:has(input:disabled) {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.option:has(input:disabled):hover {
+  border-color: var(--color-border-soft);
+}
+
+.option input:disabled {
+  cursor: not-allowed;
+}
