@@ -1,12 +1,5 @@
-import { ArrowUp, Mic, RefreshCw, Square } from "lucide-react";
-import {
-  type FormEvent,
-  type KeyboardEvent,
-  type ReactNode,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { ArrowDown, ArrowUp, Mic, RefreshCw, Square } from "lucide-react";
+import { type FormEvent, Fragment, type KeyboardEvent, type ReactNode, useState } from "react";
 import {
   useChat,
   useLatestReport,
@@ -25,16 +18,21 @@ import styles from "./ChatPanel.module.css";
 import { changeNoteText, isUndoable } from "./noteText";
 import { VisualAnswer } from "./openui/VisualAnswer";
 import { useDictation } from "./useDictation";
+import { useFollowLog } from "./useFollowLog";
 import { WorkingLine } from "./WorkingLine";
 
 const SUGGESTIONS = ["Shorter, co-investors first", "Drop consumer health"];
 
 interface ChatPanelProps {
-  /** Extra items rendered after the messages, e.g. an alert opened from a notification. */
+  /** Items with no place in the conversation yet, rendered after the messages. */
   footer?: ReactNode;
+  /** Items anchored to a message, e.g. the report outline after the turn that wrote it. */
+  renderAfter?: (message: ChatMessage) => ReactNode;
+  /** Changes when the anchored or footer items change, so the log can follow them. */
+  followKey?: string;
 }
 
-export function ChatPanel({ footer }: ChatPanelProps) {
+export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
   const chat = useChat();
   const profile = useProfile();
   const report = useLatestReport();
@@ -42,13 +40,8 @@ export function ChatPanel({ footer }: ChatPanelProps) {
   const undo = useUndo();
   const [draft, setDraft] = useState("");
   const dictation = useDictation(setDraft);
-  const endRef = useRef<HTMLDivElement>(null);
   const messages = chat.data ?? [];
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: scroll on every new message or footer.
-  useEffect(() => {
-    endRef.current?.scrollIntoView?.({ block: "end" });
-  }, [messages.length, send.isPending, footer]);
+  const follow = useFollowLog(messages, chat.isSuccess, `${followKey}|${send.isPending}`);
 
   const submit = (text: string) => {
     const value = text.trim();
@@ -81,7 +74,14 @@ export function ChatPanel({ footer }: ChatPanelProps) {
       <h2 id="chat-title" className="visually-hidden">
         Chat with Grabbit
       </h2>
-      <div className={styles.log} role="log" aria-live="polite" aria-busy={chat.isPending}>
+      <div
+        ref={follow.logRef}
+        className={styles.log}
+        role="log"
+        aria-live="polite"
+        aria-busy={chat.isPending}
+        onScroll={follow.onScroll}
+      >
         <div className={styles.column}>
           {chat.isPending && <Skeleton lines={4} label="Loading the conversation" />}
           {chat.isError && (
@@ -99,22 +99,35 @@ export function ChatPanel({ footer }: ChatPanelProps) {
           )}
           {chat.isSuccess && messages.length === 0 && <Logo stacked className={styles.welcome} />}
           {messages.map((m) => (
-            <Message
-              key={m.id}
-              message={m}
-              canUndo={isUndoable(m.profile_changes, profile.data?.version)}
-              undoing={undo.isPending}
-              onUndo={() => undo.mutate()}
-            />
+            <Fragment key={m.id}>
+              <Message
+                message={m}
+                entering={follow.isNew(m)}
+                canUndo={isUndoable(m.profile_changes, profile.data?.version)}
+                undoing={undo.isPending}
+                onUndo={() => undo.mutate()}
+              />
+              {renderAfter?.(m)}
+            </Fragment>
           ))}
           {footer}
           {/* The working line is always the last thing in the log, under any card. */}
           {send.isPending && <WorkingLine hasReport={Boolean(report.data)} />}
-          <div ref={endRef} />
         </div>
       </div>
 
       <form className={styles.composer} onSubmit={onSubmit}>
+        {follow.behind && (
+          <Button
+            variant="secondary"
+            size="sm"
+            className={styles.jump}
+            icon={<ArrowDown aria-hidden="true" />}
+            onClick={follow.jumpToLatest}
+          >
+            Jump to latest
+          </Button>
+        )}
         {send.isError && (
           <p className={styles.sendError} role="alert">
             Your message was not sent: {send.error.message}
@@ -185,18 +198,24 @@ export function ChatPanel({ footer }: ChatPanelProps) {
 
 interface MessageProps {
   message: ChatMessage;
+  /** Arrived during this visit: it enters with a short fade instead of popping in. */
+  entering: boolean;
   canUndo: boolean;
   undoing: boolean;
   onUndo: () => void;
 }
 
-function Message({ message, canUndo, undoing, onUndo }: MessageProps) {
+function Message({ message, entering, canUndo, undoing, onUndo }: MessageProps) {
   const isAgent = message.role === "agent";
   const { note, rest } = isAgent
     ? changeNoteText(message.text, message.profile_changes)
     : { note: null, rest: message.text };
   return (
-    <article className={`${styles.message} ${isAgent ? styles.agent : styles.user}`}>
+    <article
+      className={`${styles.message} ${isAgent ? styles.agent : styles.user}`}
+      data-message-id={message.id}
+      data-enter={entering || undefined}
+    >
       <p className="visually-hidden">{isAgent ? "Grabbit said:" : "You said:"}</p>
       {note && <ChangeNote note={note} canUndo={canUndo} undoing={undoing} onUndo={onUndo} />}
       {/* A visual answer opens with its own sentence; the text stays as the model's history. */}
