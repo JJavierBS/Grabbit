@@ -214,6 +214,18 @@ describe("guided demo", () => {
     expect(screen.queryByRole("button", { name: "New research" })).not.toBeInTheDocument();
   });
 
+  it("puts the real API back when it unmounts mid-demo", async () => {
+    const calls = realApi();
+    const { unmount } = renderWithDemo();
+    await userEvent.click(await screen.findByRole("button", { name: /See how it works/ }));
+    await step(DEMO_STEPS[0].title);
+    unmount();
+    const before = calls.length;
+    renderWithClient(<App />);
+    expect(await screen.findByText("Tell me what you look for at Slush 2026.")).toBeInTheDocument();
+    expect(calls.length).toBeGreaterThan(before);
+  });
+
   it("shows no launcher where the app runs without the demo", async () => {
     realApi();
     renderWithClient(<App />);

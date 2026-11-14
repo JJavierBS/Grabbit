@@ -112,6 +112,20 @@ export function DemoRoot({ children, demo, timing }: DemoRootProps) {
     setSeen(true);
   }, []);
 
+  // Unmounted mid-demo (e.g. a hot reload): the visitor's app must never keep the fake API.
+  useEffect(
+    () => () => {
+      if (saved.current) {
+        setTransport(saved.current.transport);
+        setEventStreamFactory(saved.current.stream);
+        saved.current = null;
+      }
+      current.current?.api.dispose();
+      current.current = null;
+    },
+    [],
+  );
+
   // `?tour` opens straight on the demo, e.g. for the pitch.
   const startRef = useRef(start);
   startRef.current = start;
