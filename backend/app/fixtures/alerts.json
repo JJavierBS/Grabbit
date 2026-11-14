@@ -1,0 +1,70 @@
+[
+  {
+    "id": "alr-2",
+    "created_at": "2026-11-14T10:30:00Z",
+    "entity_id": "cmp-polar-ledger",
+    "entity_name": "Polar Ledger",
+    "kind": "new_round",
+    "title": "Polar Ledger raised a 3M EUR seed led by Fjord Capital",
+    "why_it_matters": "It was your top \"likely to raise\" pick, and Lumi Angels is already on the cap table: ask for an allocation today.",
+    "importance": 0.92,
+    "facts": [
+      {
+        "value": 3000000,
+        "unit": "EUR",
+        "trust": "primary",
+        "sources": [
+          {
+            "name": "Polar Ledger blog",
+            "url": "https://polarledger.example/blog/seed",
+            "date": "2026-11-14",
+            "date_precision": "day",
+            "rank": "primary"
+          }
+        ]
+      },
+      {
+        "value": "Fjord Capital (lead)",
+        "unit": null,
+        "trust": "primary",
+        "sources": [
+          {
+            "name": "Polar Ledger blog",
+            "url": "https://polarledger.example/blog/seed",
+            "date": "2026-11-14",
+            "date_precision": "day",
+            "rank": "primary"
+          }
+        ]
+      }
+    ],
+    "simulated": true
+  },
+  {
+    "id": "alr-1",
+    "created_at": "2026-11-13T18:00:00Z",
+    "entity_id": "cmp-kelo-health",
+    "entity_name": "Kelo Health",
+    "kind": "web_news",
+    "title": "Kelo Health is hiring a VP of Sales",
+    "why_it_matters": "A first sales leader often comes before a raise; it matches the \"likely to raise\" signal.",
+    "importance": 0.55,
+    "facts": [
+      {
+        "value": "VP of Sales job post",
+        "unit": null,
+        "trust": "web_unverified",
+        "sources": [
+          {
+            "name": "kelohealth.example/careers (web)",
+            "url": "https://kelohealth.example/careers/vp-sales",
+            "date": "2026-11-13",
+            "date_precision": "day",
+            "rank": "web_unverified"
+          }
+        ]
+      }
+    ],
+    "simulated": false
+  }
+]

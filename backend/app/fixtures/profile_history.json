@@ -1,0 +1,37 @@
+[
+  {
+    "version": 3,
+    "field": "instructions",
+    "before": "Write for a business angel at Slush 2026. Lead with who led each round. Keep it short and plain.",
+    "after": "Write for a business angel at Slush 2026 with tickets of 25-50k EUR. Lead with who led each round and whether Aurora Ventures or Lumi Angels are on the cap table. Skip hardware. Keep it short and plain; end with one question to ask each founder.",
+    "reason": "The user said hardware is out and wants a question per founder.",
+    "by": "agent"
+  },
+  {
+    "version": 2,
+    "field": "filters.sectors_out",
+    "before": [],
+    "after": [
+      "hardware"
+    ],
+    "reason": "User: \"skip hardware, I never understand the capex\".",
+    "by": "user"
+  },
+  {
+    "version": 1,
+    "field": "reference_investors",
+    "before": [],
+    "after": [
+      {
+        "entity_id": "inv-aurora-ventures",
+        "name": "Aurora Ventures"
+      },
+      {
+        "entity_id": "inv-lumi-angels",
+        "name": "Lumi Angels"
+      }
+    ],
+    "reason": "User named the investors they trust.",
+    "by": "user"
+  }
+]
