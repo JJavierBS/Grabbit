@@ -52,6 +52,28 @@ def test_an_investor_seen_only_in_filtered_out_startups_still_resolves():
     assert resolved.reference_investors[0].entity_id == "inv-lifeline"
 
 
+def test_a_name_resolves_to_the_fund_vehicle_that_starts_with_it():
+    remember(
+        {
+            "ugly duckling ventures management": "inv-ud",
+            "500 global 500 emerging europe": "inv-500",
+        }
+    )
+    profile = _profile_with(
+        ReferenceInvestor(entity_id="unresolved:ugly duckling", name="Ugly Duckling Ventures"),
+        ReferenceInvestor(entity_id="unresolved:500 global", name="500 Global"),
+        ReferenceInvestor(entity_id="unresolved:ugly", name="Ugly"),
+    )
+
+    resolved = resolve_references(profile, [])
+
+    assert [r.entity_id for r in resolved.reference_investors] == [
+        "inv-ud",
+        "inv-500",
+        "unresolved:ugly",
+    ]
+
+
 def test_resolved_ids_are_left_alone():
     profile = _profile_with(ReferenceInvestor(entity_id="inv-birch", name="Aurora Angels"))
 

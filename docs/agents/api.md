@@ -60,7 +60,7 @@ work in parallel against mocks.
 | Method | Path | Purpose | Status |
 | --- | --- | --- | --- |
 | GET | `/api/health` | Liveness and modes (`cala_mode`, `llm_mode`, `demo_mode`) | mock |
-| GET | `/api/profile` | Current `Profile` | mock |
+| GET | `/api/profile` | Current `Profile`; reference investors typed in chat come back with their Cala id once a report has seen them | mock |
 | GET | `/api/profile/history` | `ProfileChange[]`, newest first | mock |
 | POST | `/api/profile/undo` | Revert the last change, returns `Profile` | mock |
 | GET | `/api/chat` | `ChatMessage[]` of the conversation | mock |

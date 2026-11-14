@@ -2,6 +2,7 @@ import { ExternalLink } from "lucide-react";
 import type { Candidate, Round, Signal } from "../../api/types";
 import { Badge } from "../../components/Badge";
 import { FactValue } from "../../components/FactValue";
+import { CalaPath } from "./CalaPath";
 import styles from "./CandidateCard.module.css";
 import type { ChangeMark } from "./reportDiff";
 
@@ -55,6 +56,13 @@ export function CandidateCard({ candidate, trusted, mark }: CandidateCardProps) 
         <FactValue label="Total raised" fact={c.total_funding} />
         <FactValue label="Headquarters" fact={c.hq} />
       </dl>
+
+      {c.rounds.length > 0 && (
+        <section className={styles.block} aria-label={`Why ${c.name} is here`}>
+          <h5 className={styles.blockTitle}>Why it is here</h5>
+          <CalaPath candidate={c} trusted={trusted} />
+        </section>
+      )}
 
       {c.signals.length > 0 && (
         <section className={styles.block} aria-label={`Signals for ${c.name}`}>

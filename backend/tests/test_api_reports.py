@@ -71,3 +71,18 @@ def test_list_reports_newest_first(client):
     first = client.post("/api/reports/run", json={"kind": "prep"}).json()
     second = client.post("/api/reports/run", json={"kind": "digest"}).json()
     assert [r["id"] for r in client.get("/api/reports").json()] == [second["id"], first["id"]]
+
+
+def test_profile_links_a_chat_typed_investor_to_the_cala_id_in_the_report(client):
+    from app.models import ReferenceInvestor
+    from app.store import profile as profile_store
+
+    typed = ReferenceInvestor(entity_id="unresolved:aurora angels", name="Aurora Angels")
+    profile_store.save_version(
+        profile_store.current().model_copy(update={"reference_investors": [typed]}), []
+    )
+    client.post("/api/reports/run", json={"kind": "prep"})
+
+    refs = client.get("/api/profile").json()["reference_investors"]
+
+    assert refs == [{"entity_id": "inv-aurora", "name": "Aurora Angels"}]

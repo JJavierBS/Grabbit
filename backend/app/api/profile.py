@@ -3,15 +3,19 @@ from fastapi import APIRouter
 from app import events
 from app.api.errors import ApiError
 from app.models import Profile, ProfileChange
+from app.references import resolve_references
 from app.services import on_profile_change
 from app.store import profile as profile_store
+from app.store import reports as report_store
 
 router = APIRouter(prefix="/profile", tags=["profile"])
 
 
 @router.get("")
 def get_profile() -> Profile:
-    return profile_store.current()
+    """With names typed in chat linked to Cala ids, so the page can mark investors you trust."""
+    latest = report_store.latest()
+    return resolve_references(profile_store.current(), latest.candidates if latest else [])
 
 
 @router.get("/history")
