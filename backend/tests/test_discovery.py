@@ -118,6 +118,8 @@ class FakeCala:
 
     async def retrieve(self, entity_id, body=None, fresh=False):
         self.calls.append(("retrieve", entity_id))
+        if entity_id not in self.nodes:
+            raise CalaError(404, "not found")
         node = self.nodes[entity_id]
         page = (
             ((body or {}).get("relationships") or {})
@@ -197,6 +199,19 @@ async def test_pipeline_keeps_startups_with_rounds_and_signals(graph):
     assert signals["co_invest"].value == ["Aurora Ventures"]
     assert signals["lead_follow_on"].value == 0.33  # followed on in alpha, not beta or gamma
     assert signals["likely_to_raise"].value is True
+
+
+async def test_pipeline_attaches_hidden_links_between_shortlisted_startups(graph):
+    graph["rk"] = round_node("rk", "kide", "2026-03-01", [("other-vc", True), (AURORA, False)])
+    graph["rk"]["relationships"]["incoming"]["PARTICIPATES_IN_FUNDING_ROUND"][2]["name"] = (
+        "Aurora Ventures"
+    )
+    result = await get_candidates(FakeCala(graph), make_profile(), TODAY)
+    kide = next(c for c in result.candidates if c.name == "Kide Health")
+    assert [(link.kind, link.target.name) for link in kide.links] == [
+        ("shared_investor", "Northwind Robotics")
+    ]
+    assert AURORA in result.links.investors
 
 
 async def test_profile_filters_apply(graph):

@@ -8,6 +8,7 @@ from pydantic import TypeAdapter
 from app import fixtures
 from app.cala.client import CalaCacheMiss, CalaError
 from app.discovery.filters import matches_profile
+from app.discovery.links import LinkGraph, attach_links
 from app.discovery.pipeline import SLUSH_2026, Limits, get_candidates, neutral_profile
 from app.models import Candidate, Profile
 from app.references import remember, resolve_references
@@ -28,7 +29,7 @@ def fixture_candidates() -> list[Candidate]:
 # turn and report rebuild needs it. One walk per event is kept, unfiltered, and each profile
 # is applied on top; the TTL lets new Cala data in. The watcher re-reads its shortlist fresh.
 DISCOVERY_TTL = timedelta(minutes=15)
-_discoveries: dict[str, tuple[datetime, list[Candidate]]] = {}
+_discoveries: dict[str, tuple[datetime, list[Candidate], LinkGraph]] = {}
 
 
 def clear_discovery_cache() -> None:
@@ -39,16 +40,16 @@ def _now() -> datetime:
     return datetime.now(UTC)
 
 
-async def _event_candidates(event_id: str) -> list[Candidate]:
+async def _event_candidates(event_id: str) -> tuple[list[Candidate], LinkGraph]:
     hit = _discoveries.get(event_id)
     if hit and _now() - hit[0] < DISCOVERY_TTL:
-        return hit[1]
+        return hit[1], hit[2]
     async with open_cala() as (client, _):
         limits = Limits(max_attendees=MAX_ATTENDEES)
         result = await get_candidates(client, neutral_profile(event_id), limits=limits)
     remember(result.investors)
-    _discoveries[event_id] = (_now(), result.candidates)
-    return result.candidates
+    _discoveries[event_id] = (_now(), result.candidates, result.links)
+    return result.candidates, result.links
 
 
 async def candidates_for(profile: Profile) -> list[Candidate]:
@@ -58,19 +59,26 @@ async def candidates_for(profile: Profile) -> list[Candidate]:
     Falls back to the fictional fixture candidates only when Cala, or its cache in replay
     mode, cannot list the event, so a cold laptop still demos instead of failing.
     """
+    graph: LinkGraph | None = None
     try:
-        found = await _event_candidates(profile.event_id or SLUSH_2026)
+        found, graph = await _event_candidates(profile.event_id or SLUSH_2026)
         candidates = [c for c in found if matches_profile(c, profile)]
     except (CalaError, CalaCacheMiss) as err:
         log.warning("discovery unavailable, using fixture candidates: %s", err)
         candidates = fixture_candidates()
-    return _with_resolved_co_invest(candidates, profile)
+    return _with_resolved_references(candidates, profile, graph)
 
 
-def _with_resolved_co_invest(candidates: list[Candidate], profile: Profile) -> list[Candidate]:
-    """Co-invest against the profile's reference investors, with names typed in chat
-    linked to Cala investors. The cached walk has none, so it is recomputed here."""
+def _with_resolved_references(
+    candidates: list[Candidate], profile: Profile, graph: LinkGraph | None = None
+) -> list[Candidate]:
+    """Co-invest and hidden links against the profile's reference investors, with names
+    typed in chat linked to Cala investors. The cached walk is unfiltered and has no
+    references, so both are recomputed here on the filtered shortlist."""
     resolved = resolve_references(profile, candidates)
+    if graph is not None:
+        # Shared-investor links point at other startups on this shortlist, so they follow it.
+        candidates = attach_links(candidates, graph, resolved.reference_investors)
     if not resolved.reference_investors:
         return candidates
     return [

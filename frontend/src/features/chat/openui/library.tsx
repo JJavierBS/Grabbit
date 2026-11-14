@@ -6,6 +6,7 @@ import { FactValue } from "../../../components/FactValue";
 import { Markdown } from "../../../components/Markdown";
 import { CalaNews } from "../../report/CalaNews";
 import { CalaPath } from "../../report/CalaPath";
+import { HiddenLinkList } from "../../report/HiddenLinkList";
 import { ExploredGraphView } from "./ExploredGraphView";
 import { EXPLORED_FIELDS, factKind, factLabel } from "./facts";
 import styles from "./library.module.css";
@@ -65,6 +66,29 @@ const CompanyGraph = defineComponent({
       <div className={styles.block}>
         <h6 className={styles.title}>{c.name} in Cala's graph</h6>
         <CalaPath candidate={c} trusted={trusted} />
+      </div>
+    );
+  },
+});
+
+const HiddenLinks = defineComponent({
+  name: "HiddenLinks",
+  description:
+    "Relationships two steps away in Cala's graph that the startup's own page does not show: " +
+    "an investor in its rounds who co-invested with an investor the user trusts, or who also " +
+    "backs another startup on the list. Each comes with the rounds that prove it.",
+  props: z.object({ entityId: z.string().describe("Cala entity id of the startup") }),
+  component: function HiddenLinksView({ props }) {
+    const c = useCandidate(props.entityId);
+    if (!c) return <Missing id={props.entityId} />;
+    return (
+      <div className={styles.block}>
+        <h6 className={styles.title}>{c.name}: links two steps away</h6>
+        {c.links.length > 0 ? (
+          <HiddenLinkList links={c.links} />
+        ) : (
+          <p className={styles.missing}>No hidden link found in Cala's graph.</p>
+        )}
       </div>
     );
   },
@@ -241,6 +265,7 @@ const Answer = defineComponent({
         ExploredGraphComponent.ref,
         EntityFacts.ref,
         News.ref,
+        HiddenLinks.ref,
       ]),
     ),
   }),
@@ -260,6 +285,7 @@ export const answerLibrary = createLibrary({
     ExploredGraphComponent,
     EntityFacts,
     News,
+    HiddenLinks,
   ],
 });
 
@@ -273,6 +299,7 @@ export const PROMPT_OPTIONS = {
     "Never write a number, amount or date in Text; show it with FactGrid, Compare or EntityFacts.",
     "To explain why a startup is on the list, use CompanyGraph.",
     "For what is new about a startup, use News; never retell a headline in Text.",
+    "For links an investor would not see on one company page (co-investors of trusted investors, shared investors), use HiddenLinks.",
     "Start with one Text that answers the question in one or two sentences; it replaces the text reply.",
     "Keep every Text to two sentences at most.",
   ],

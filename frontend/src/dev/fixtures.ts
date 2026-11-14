@@ -5,6 +5,8 @@ import type {
   ChatMessage,
   ExploredGraph,
   Fact,
+  HiddenLink,
+  LinkNode,
   NewsItem,
   Profile,
   ProfileChange,
@@ -79,6 +81,131 @@ const newsItem = (
   trust: "cala_news",
 });
 
+const node = (entity_id: string, name: string, entity_type = "Organization"): LinkNode => ({
+  entity_id,
+  name,
+  entity_type,
+});
+const took = (source: string, target: string, role: string) => ({
+  source,
+  target,
+  relationship: "PARTICIPATES_IN_FUNDING_ROUND",
+  role,
+});
+
+/** Fjordline Angels, in Northwind's seed, sat next to North Star Capital in three rounds. */
+const fjordlineWithNorthStar: HiddenLink = {
+  kind: "trusted_co_investor",
+  label: "co-invested 3× with North Star Capital",
+  explanation:
+    "Fjordline Angels, who joined a round of Northwind Labs, invested alongside North Star Capital in 3 other rounds: Pinecone Grid, Tundra Health, Brightwave.",
+  via_entity_id: "i-fjordline",
+  target: node("i-northstar", "North Star Capital"),
+  count: 3,
+  trust: "press",
+  nodes: [
+    node("c-northwind", "Northwind Labs", "Company"),
+    node("r-northwind-seed", "Northwind Labs seed round", "FundingRound"),
+    node("i-fjordline", "Fjordline Angels"),
+    node("r-pinecone-seed", "Seed", "FundingRound"),
+    node("i-northstar", "North Star Capital"),
+    node("c-pinecone", "Pinecone Grid", "Company"),
+    node("r-tundra-seed", "Seed", "FundingRound"),
+    node("c-tundra", "Tundra Health", "Company"),
+    node("r-brightwave-pre", "Pre-Seed", "FundingRound"),
+    node("c-brightwave", "Brightwave", "Company"),
+  ],
+  edges: [
+    took("c-northwind", "r-northwind-seed", "ISSUER"),
+    took("i-fjordline", "r-northwind-seed", "INVESTOR"),
+    took("i-fjordline", "r-pinecone-seed", "INVESTOR"),
+    took("i-northstar", "r-pinecone-seed", "is_lead"),
+    took("c-pinecone", "r-pinecone-seed", "ISSUER"),
+    took("i-fjordline", "r-tundra-seed", "INVESTOR"),
+    took("i-northstar", "r-tundra-seed", "INVESTOR"),
+    took("c-tundra", "r-tundra-seed", "ISSUER"),
+    took("i-fjordline", "r-brightwave-pre", "INVESTOR"),
+    took("i-northstar", "r-brightwave-pre", "is_lead"),
+    took("c-brightwave", "r-brightwave-pre", "ISSUER"),
+  ],
+  facts: [
+    fact("Pinecone Grid · Seed", press("Arctic Startup Daily", "2023-03-02")),
+    fact("Tundra Health · Seed", press("Nordic Finance Wire", "2024-01-15")),
+    fact("Brightwave · Pre-Seed", database),
+  ],
+};
+
+interface LinkEnd {
+  id: string;
+  name: string;
+  round: string;
+  roundName: string;
+}
+
+const auroraAlsoBacks = (from: LinkEnd, to: LinkEnd, lead: boolean): HiddenLink => ({
+  kind: "shared_investor",
+  label: `also backs ${to.name}`,
+  explanation: `Aurora Ventures backs ${from.name} and also ${to.name}, another startup on your list.`,
+  via_entity_id: "i-aurora",
+  target: node(to.id, to.name, "Company"),
+  count: 1,
+  trust: "press",
+  nodes: [
+    node(from.id, from.name, "Company"),
+    node(from.round, from.roundName, "FundingRound"),
+    node("i-aurora", "Aurora Ventures"),
+    node(to.round, to.roundName, "FundingRound"),
+    node(to.id, to.name, "Company"),
+  ],
+  edges: [
+    took(from.id, from.round, "ISSUER"),
+    took("i-aurora", from.round, "INVESTOR"),
+    took("i-aurora", to.round, lead ? "is_lead" : "INVESTOR"),
+    took(to.id, to.round, "ISSUER"),
+  ],
+  facts: [fact(`${to.name} · ${to.roundName}`, press("Nordic Finance Wire", "2023-05-03"))],
+});
+const northwindEnd: LinkEnd = {
+  id: "c-northwind",
+  name: "Northwind Labs",
+  round: "r-northwind-seed",
+  roundName: "Northwind Labs seed round",
+};
+const lumenEnd: LinkEnd = {
+  id: "c-lumen",
+  name: "Lumen Ledger",
+  round: "r-lumen-a",
+  roundName: "Lumen Ledger Series A",
+};
+
+/** Baltic Seed Fund, Kettle's lead, sat next to Aurora Ventures in one other round. */
+const balticWithAurora: HiddenLink = {
+  kind: "trusted_co_investor",
+  label: "co-invested 1× with Aurora Ventures",
+  explanation:
+    "Baltic Seed Fund, who led a round of Kettle Robotics, invested alongside Aurora Ventures in 1 other round: Pinecone Grid.",
+  via_entity_id: "i-baltic",
+  target: node("i-aurora", "Aurora Ventures"),
+  count: 1,
+  trust: "aggregator",
+  nodes: [
+    node("c-kettle", "Kettle Robotics", "Company"),
+    node("r-kettle-pre", "Kettle Robotics pre-seed", "FundingRound"),
+    node("i-baltic", "Baltic Seed Fund"),
+    node("r-pinecone-seed", "Seed", "FundingRound"),
+    node("i-aurora", "Aurora Ventures"),
+    node("c-pinecone", "Pinecone Grid", "Company"),
+  ],
+  edges: [
+    took("c-kettle", "r-kettle-pre", "ISSUER"),
+    took("i-baltic", "r-kettle-pre", "is_lead"),
+    took("i-baltic", "r-pinecone-seed", "INVESTOR"),
+    took("i-aurora", "r-pinecone-seed", "INVESTOR"),
+    took("c-pinecone", "r-pinecone-seed", "ISSUER"),
+  ],
+  facts: [fact("Pinecone Grid · Seed", database)],
+};
+
 export const candidates: Candidate[] = [
   {
     entity_id: "c-northwind",
@@ -134,6 +261,7 @@ export const candidates: Candidate[] = [
       ),
       newsItem("Hiring a head of sales for Germany", "Two open roles in Hamburg.", null, null, []),
     ],
+    links: [fjordlineWithNorthStar, auroraAlsoBacks(northwindEnd, lumenEnd, false)],
   },
   {
     entity_id: "c-lumen",
@@ -189,6 +317,7 @@ export const candidates: Candidate[] = [
         [{ entity_id: "e-nordbank", name: "Nordbank", entity_type: "Company" }],
       ),
     ],
+    links: [auroraAlsoBacks(lumenEnd, northwindEnd, true)],
   },
   {
     entity_id: "c-kettle",
@@ -224,6 +353,7 @@ export const candidates: Candidate[] = [
       },
     ],
     news: [],
+    links: [balticWithAurora],
   },
   {
     entity_id: "c-saltmarsh",
@@ -249,6 +379,7 @@ export const candidates: Candidate[] = [
     rounds: [],
     signals: [],
     news: [],
+    links: [],
   },
 ];
 

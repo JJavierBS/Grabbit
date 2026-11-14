@@ -15,6 +15,7 @@ TrustLevel = Literal[
 DatePrecision = Literal["day", "month", "year"]
 InvestorRole = Literal["investor", "lender"]
 SignalKind = Literal["co_invest", "lead_follow_on", "likely_to_raise"]
+LinkKind = Literal["trusted_co_investor", "shared_investor"]
 StyleLength = Literal["short", "medium", "long"]
 StyleDetail = Literal["plain", "technical"]
 Cadence = Literal["event", "daily", "weekly"]
@@ -93,6 +94,14 @@ class NewsEntity(ApiModel):
     entity_type: str
 
 
+class LinkNode(ApiModel):
+    """A Cala entity on the path that proves a hidden link."""
+
+    entity_id: str
+    name: str
+    entity_type: str
+
+
 class NewsItem(ApiModel):
     """A news row from Cala's knowledge query: no per-item source, so trust is `cala_news`."""
 
@@ -101,6 +110,30 @@ class NewsItem(ApiModel):
     date: Fact = Field(description="Read at its source's date_precision; absent when Cala has none")
     entities: list[NewsEntity] = Field(default_factory=list, description="Mentioned in the item")
     trust: TrustLevel = "cala_news"
+
+
+class LinkEdge(ApiModel):
+    """A Cala relationship between two path nodes, in Cala's own direction."""
+
+    source: str
+    target: str
+    relationship: str
+    role: str | None = None
+
+
+class HiddenLink(ApiModel):
+    """A second-degree relationship in Cala's graph that one company page does not show."""
+
+    kind: LinkKind
+    label: str
+    explanation: str
+    via_entity_id: str = Field(description="Investor on the candidate's own path it branches from")
+    target: LinkNode
+    count: int = Field(description="Rounds that prove it")
+    trust: TrustLevel = Field(description="Weakest edge in the path: the link holds only if all do")
+    nodes: list[LinkNode]
+    edges: list[LinkEdge]
+    facts: list[Fact]
 
 
 class Candidate(ApiModel):
@@ -119,6 +152,7 @@ class Candidate(ApiModel):
     news: list[NewsItem] = Field(
         default_factory=list, description="Latest news from Cala, newest first (cala_news)"
     )
+    links: list[HiddenLink] = Field(default_factory=list)
 
 
 class ProfileFilters(ApiModel):
