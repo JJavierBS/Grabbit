@@ -279,6 +279,15 @@ def test_a_walk_without_cala_calls_keeps_no_summary():
     assert tracer.summary() is None
 
 
+async def test_a_step_read_from_the_report_stays_on_the_answer(published):
+    tracer = Tracer(max_rounds=6, max_nodes=30)
+    tracer.note("search", "Searching Cala for “Aurora Ventures”")
+    tracer.note("report", "Matching them against the startups already in your report")
+    summary = tracer.summary()
+    assert summary is not None
+    assert [s.kind for s in summary.steps] == ["search", "report"]
+
+
 async def test_an_investor_typed_in_chat_is_trusted_in_the_walk(recorded, published):  # noqa: F811
     from app.models import ReferenceInvestor
     from app.references import remember

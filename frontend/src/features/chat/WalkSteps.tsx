@@ -1,8 +1,14 @@
-import { Brain, Network, RotateCcw, Search } from "lucide-react";
+import { Brain, FileText, Network, RotateCcw, Search } from "lucide-react";
 import type { WalkStep } from "../../api/types";
 import styles from "./WalkSteps.module.css";
 
-const ICONS = { search: Search, expand: Network, thought: Brain, rewrite: RotateCcw };
+const ICONS = {
+  search: Search,
+  expand: Network,
+  thought: Brain,
+  rewrite: RotateCcw,
+  report: FileText,
+};
 
 interface Props {
   steps: WalkStep[];

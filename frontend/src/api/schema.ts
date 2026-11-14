@@ -110,6 +110,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/transcribe/token": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Post Transcribe Token
+     * @description Live Talk: the browser streams the mic straight to Gemini with this single-use token.
+     */
+    post: operations["post_transcribe_token_api_transcribe_token_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/reports": {
     parameters: {
       query?: never;
@@ -546,6 +566,26 @@ export interface components {
       /** Entity Type */
       entity_type: string;
     };
+    /**
+     * LiveTranscription
+     * @description Where the browser streams the mic for live Talk, and the single-use token to do it.
+     */
+    LiveTranscription: {
+      /**
+       * Url
+       * @description Live API WebSocket; append ?access_token=<token>
+       */
+      url: string;
+      /** Token */
+      token: string;
+      /** Model */
+      model: string;
+      /**
+       * Expires At
+       * Format: date-time
+       */
+      expires_at: string;
+    };
     /** NewsEntity */
     NewsEntity: {
       /** Entity Id */
@@ -864,7 +904,7 @@ export interface components {
        * Kind
        * @enum {string}
        */
-      kind: "search" | "expand" | "thought" | "rewrite";
+      kind: "search" | "expand" | "thought" | "rewrite" | "report";
       /** Text */
       text: string;
       /**
@@ -1213,6 +1253,53 @@ export interface operations {
       };
       /** @description Unprocessable Entity */
       422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  post_transcribe_token_api_transcribe_token_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["LiveTranscription"];
+        };
+      };
+      /** @description Not Found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Unprocessable Entity */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Service Unavailable */
+      503: {
         headers: {
           [name: string]: unknown;
         };

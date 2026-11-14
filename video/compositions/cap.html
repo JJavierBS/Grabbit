@@ -1,0 +1,23 @@
+<template>
+  <style>
+    @font-face{font-family:"Hanken Grotesk";src:url("assets/fonts/hanken-grotesk.woff2") format("woff2");font-weight:100 900}
+    #root{position:absolute;inset:0;background:#f7f7fa;color:#14151c;font-family:"Hanken Grotesk",sans-serif;overflow:hidden}
+    .cap-dome{position:absolute;left:330px;top:170px;width:1260px;height:620px;background:#2a2b36;border-radius:630px 630px 60px 60px;display:flex;align-items:center;justify-content:center;padding-top:170px}
+    .cap-dome span{font-size:150px;font-weight:800;letter-spacing:-.03em;color:#fff;white-space:nowrap}
+    .cap-brim{position:absolute;left:230px;top:764px;width:1460px;height:150px;background:#14151c;border-radius:50% 50% 46% 46%}
+    .cap-sp{position:absolute;background:#6139f8}
+  </style>
+  <div id="root" data-composition-id="cap" data-width="1920" data-height="1080">
+    <div style="position:absolute;left:0px;top:0px;width:1920px;height:1080px;background:#b9bcc9;"></div>
+    <div class="cap-dome"><span>Skip the data.</span></div>
+    <div class="cap-brim"></div>
+    <div data-layout-allow-overflow>
+      <div class="cap-sp" style="left:1370px;top:900px;width:640px;height:84px;border-radius:42px"></div>
+      <div class="cap-sp" style="left:1210px;top:1000px;width:800px;height:86px;border-radius:43px"></div>
+    </div>
+    <div class="cap-note" style="position:absolute;left:96px;top:24px;background:#fff;border:2px solid #4b25d6;border-radius:12px;padding:10px 20px;font-size:30px;font-weight:700;color:#4b25d6">Footage placeholder: filming shot 2b, the Cala cap. The slogan on the real cap is the title of this frame.</div>
+  </div>
+  <script>
+    window.__timelines["cap"] = gsap.timeline({ paused: true });
+  </script>
+</template>

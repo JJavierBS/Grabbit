@@ -10,7 +10,7 @@ from datetime import UTC, datetime
 from pydantic import BaseModel
 
 from app.llm import LLM, LLMError
-from app.models import Candidate, Profile
+from app.models import Candidate, Investor, Profile
 
 log = logging.getLogger(__name__)
 
@@ -38,7 +38,11 @@ def pick_questions(
 
     candidates = [c for c in candidates if matches_profile(c, profile, today=now.date())]
     builders = (_stage, _ticket, _investors, _industries, _team, _recency, _hq)
-    questions = [q for build in builders if (q := build(candidates, profile, now)) and q.split > 0]
+    questions = [
+        q
+        for build in builders
+        if (q := build(candidates, profile, now)) and q.split > 0 and len(q.options) >= 2
+    ]
     questions.sort(key=lambda q: q.split, reverse=True)
     return questions[:limit]
 
@@ -209,14 +213,31 @@ def _investors(cs: list[Candidate], profile: Profile, _n: datetime) -> Question 
             0.5,
             tuple(options),
         )
-    refs = {r.entity_id for r in profile.reference_investors}
-    backed = sum(1 for c in cs if any(i.entity_id in refs for r in c.rounds for i in r.investors))
-    names = ", ".join(r.name for r in profile.reference_investors)
+    # Investors typed in chat keep an `unresolved:<name>` id until a report resolves them.
+    ref_ids = {r.entity_id for r in profile.reference_investors}
+    ref_names = {_name(r.name) for r in profile.reference_investors}
+
+    def trusted(i: Investor) -> bool:
+        return i.entity_id in ref_ids or _name(i.name) in ref_names
+
+    backed = sum(1 for c in cs if any(trusted(i) for r in c.rounds for i in r.investors))
+    if not backed:
+        return None
+    names = " or ".join(r.name for r in profile.reference_investors)
+    options = [
+        ("Only those", f"Only startups backed by {names}."),
+        ("Others too", f"Show other startups too, with {names} first."),
+    ]
+    others = Counter(
+        i.name for c in cs for r in c.rounds for i in r.investors if not trusted(i)
+    ).most_common(1)
+    if others:
+        options.append((f"Add {others[0][0]}", f"I also trust {others[0][0]}."))
     return Question(
         "investors",
-        f"{backed} attendees are backed by {names}. Any other investors you trust?",
+        f"{backed} of {len(cs)} startups here are backed by {names}. Only those, or others too?",
         0.3,
-        (("Just these", "No other investors for now."),),
+        tuple(options),
     )
 
 
@@ -261,19 +282,31 @@ def _recency(cs: list[Candidate], _p: Profile, now: datetime) -> Question | None
     if _p.filters.fundraising != "any":
         return None
     last_dates = [d for c in cs if (d := _last_round(c)) is not None]
-    if not last_dates:
-        return None
     recent = sum(1 for d in last_dates if (now.year - d[0]) * 12 + now.month - d[1] <= 12)
+    soon = sum(
+        1 for c in cs if any(s.kind == "likely_to_raise" and s.value is True for s in c.signals)
+    )
+    # Both filters drop every startup they cannot confirm: offer only the ones that keep some,
+    # or an answer empties the report (#181).
+    facts, options = [], []
+    if recent:
+        facts.append(f"{recent} of {len(cs)} raised in the last 12 months")
+        options.append(("Just raised", "Show me startups that raised in the last 12 months."))
+    if soon:
+        facts.append(f"{soon} may raise soon")
+        options.append(("May raise soon", "Show me startups that may raise soon."))
+    if not options:
+        return None
+    if len(options) == 2:
+        options.append(("Both", "Show me both: recent raises and startups that may raise soon."))
+    else:
+        options.append(("Any time", "When they last raised does not matter to me."))
+    flagged = max(recent, soon)
     return Question(
         "recency",
-        f"{recent} raised in the last 12 months and {len(last_dates) - recent} earlier. "
-        "Startups that just raised, or ones that may raise soon?",
-        _balance(recent, len(last_dates) - recent),
-        (
-            ("Just raised", "Show me startups that raised in the last 12 months."),
-            ("May raise soon", "Show me startups that may raise soon."),
-            ("Both", "Show me both: recent raises and startups that may raise soon."),
-        ),
+        f"{' and '.join(facts)}. Only those, or any time?",
+        _balance(flagged, len(cs) - flagged),
+        tuple(options),
     )
 
 
@@ -301,6 +334,10 @@ def money(value: float, unit: str) -> str:
         if value >= size:
             return f"{unit} {value / size:.3g}{suffix}".strip()
     return f"{unit} {value:.0f}".strip()
+
+
+def _name(name: str) -> str:
+    return " ".join(name.split(" (")[0].casefold().split())
 
 
 def _headcount(value: object) -> int | None:

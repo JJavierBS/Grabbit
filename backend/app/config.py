@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     gemini_model: str = ""
     gemini_timeout_s: float = 30.0
     gemini_thoughts: bool = False
+    gemini_live_transcribe_model: str = "gemini-3.5-transcribe-live"
     walk_step_min_s: float = 0.0
     cala_mode: CalaMode = "live"
     # One Cala request at a time for the whole process, starts this far apart (#119).

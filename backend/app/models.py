@@ -237,7 +237,8 @@ class ExploredGraph(ApiModel):
     edges: list[GraphEdge]
 
 
-WalkStepKind = Literal["search", "expand", "thought", "rewrite"]
+# `report`: a step answered from the report or the cache, with no Cala call (#184).
+WalkStepKind = Literal["search", "expand", "thought", "rewrite", "report"]
 
 
 class WalkStep(ApiModel):
@@ -342,6 +343,15 @@ class Health(ApiModel):
 
 class ChatRequest(ApiModel):
     text: str = Field(min_length=1, max_length=4000)
+
+
+class LiveTranscription(ApiModel):
+    """Where the browser streams the mic for live Talk, and the single-use token to do it."""
+
+    url: str = Field(description="Live API WebSocket; append ?access_token=<token>")
+    token: str
+    model: str
+    expires_at: datetime
 
 
 class Transcript(ApiModel):
