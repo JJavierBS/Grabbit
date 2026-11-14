@@ -127,9 +127,9 @@ def facts_for(change: Change, company: dict[str, Any], candidate: Candidate) -> 
         return [round_.amount, round_.date] if round_ else []
     if change.kind == "executive_change":
         rel, person_id = change.key.split(":")[:2]
-        edge = next(
-            (e for e in relationships(company, "incoming", rel) if e["id"] == person_id), None
-        )
+        # The last edge for a person wins, as in the snapshot (a staged patch appends one).
+        edges = [e for e in relationships(company, "incoming", rel) if e["id"] == person_id]
+        edge = edges[-1] if edges else None
         if edge is None or rel not in EXECUTIVE_EDGES:
             return []
         return [edge_fact(edge, "valid_until" if change.data.get("left") else "valid_since")]
