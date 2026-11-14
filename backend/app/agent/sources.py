@@ -11,6 +11,7 @@ from app.cala.client import CalaCacheMiss, CalaError
 from app.discovery.filters import matches_profile
 from app.discovery.links import LinkGraph, attach_links
 from app.discovery.pipeline import SLUSH_2026, Limits, get_candidates, neutral_profile
+from app.discovery.proximity import attach_proximity
 from app.models import Candidate, Profile
 from app.references import remember, resolve_references
 from app.runtime import open_cala
@@ -90,6 +91,7 @@ def _with_resolved_references(
     if graph is not None:
         # Shared-investor links point at other startups on this shortlist, so they follow it.
         candidates = attach_links(candidates, graph, resolved.reference_investors)
+    candidates = attach_proximity(candidates, graph or LinkGraph(), resolved.reference_investors)
     if not resolved.reference_investors:
         return candidates
     return [

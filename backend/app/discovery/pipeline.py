@@ -25,6 +25,7 @@ from app.discovery.build import (
 )
 from app.discovery.filters import StartupRules, is_startup, matches_profile
 from app.discovery.links import LinkGraph, LinkLimits, attach_links, walk_investors
+from app.discovery.proximity import attach_proximity
 from app.models import Candidate, Profile, ProfileFilters, ProfileStyle
 from app.signals.core import Portfolio, SignalInputs, compute_signals, last_round
 
@@ -189,6 +190,7 @@ async def get_candidates(
         )
     graph = await walk_investors(client, candidates, raw, limits.links, INVESTOR_BODY, ROUND_BODY)
     candidates = attach_links(candidates, graph, profile.reference_investors)
+    candidates = attach_proximity(candidates, graph, profile.reference_investors, today=today)
     candidates = [c for c in candidates if matches_profile(c, profile, today=today)]
     stats.candidates = len(candidates)
     investors = {

@@ -100,6 +100,7 @@ async def test_co_invest_signal_fires_for_a_name_typed_in_chat(monkeypatch):
     mossa = next(c for c in candidates if c.entity_id == "cand-mossa")
     signal = next(s for s in mossa.signals if s.kind == "co_invest")
     assert signal.value == ["Aurora Angels"]
+    assert mossa.proximity.paths[0].explanation.startswith("Aurora Angels led Mossa Health's")
 
 
 async def test_report_groups_co_investments_for_a_name_typed_in_chat():

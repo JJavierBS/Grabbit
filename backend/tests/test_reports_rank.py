@@ -1,5 +1,5 @@
 from app.agent.sources import fixture_candidates
-from app.models import ReferenceInvestor
+from app.models import Proximity, ReferenceInvestor, Signal
 from app.reports.rank import rank
 from app.store.profile import default_profile
 
@@ -33,6 +33,62 @@ def test_lead_ranks_above_participant(now):
 
 def test_without_references_newest_round_first(now):
     assert _names(default_profile(now))[0] == "Saunaverse"
+
+
+NEWEST_FIRST = ["Saunaverse", "Mossa Health", "Ledgerly", "Kiln Analytics", "Brikk", "Tundra Grid"]
+
+
+def _close(candidate, score):
+    return candidate.model_copy(update={"proximity": Proximity(score=score, paths=[])})
+
+
+def test_without_references_the_order_ignores_proximity(now):
+    profile = default_profile(now)
+    assert _names(profile) == NEWEST_FIRST
+    scored = [_close(c, n) for n, c in enumerate(fixture_candidates())]
+    assert [c.name for c in rank(scored, profile)] == NEWEST_FIRST
+
+
+def test_with_references_the_highest_proximity_score_comes_first(now):
+    profile = default_profile(now).model_copy(
+        update={"reference_investors": [ReferenceInvestor(entity_id="inv-none", name="Nobody")]}
+    )
+    scores = {"Tundra Grid": 0.9, "Brikk": 0.15}
+    scored = [_close(c, scores.get(c.name, 0.0)) for c in fixture_candidates()]
+    names = [c.name for c in rank(scored, profile)]
+    assert names == [
+        "Tundra Grid",
+        "Brikk",
+        "Saunaverse",
+        "Mossa Health",
+        "Ledgerly",
+        "Kiln Analytics",
+    ]
+
+
+def test_equal_proximity_falls_back_to_likely_to_raise_then_recency(now):
+    profile = default_profile(now).model_copy(
+        update={"reference_investors": [ReferenceInvestor(entity_id="inv-none", name="Nobody")]}
+    )
+    likely = Signal(kind="likely_to_raise", label="Likely", value=True, explanation="", facts=[])
+    scored = [
+        _close(c, 0.5).model_copy(update={"signals": [likely] if c.name == "Brikk" else []})
+        for c in fixture_candidates()
+    ]
+    names = [c.name for c in rank(scored, profile)]
+    assert names == ["Brikk"] + [n for n in NEWEST_FIRST if n != "Brikk"]
+
+
+def test_candidates_without_proximity_are_scored_from_their_own_rounds(now):
+    profile = default_profile(now).model_copy(
+        update={
+            "reference_investors": [
+                ReferenceInvestor(entity_id="unresolved:fjord capital", name="Fjord Capital")
+            ]
+        }
+    )
+    # Ledgerly's Fjord-led round is newer than Brikk's; nobody else has Fjord.
+    assert _names(profile)[:3] == ["Ledgerly", "Brikk", "Saunaverse"]
 
 
 def test_filters_drop_sectors_countries_and_big_teams(now):

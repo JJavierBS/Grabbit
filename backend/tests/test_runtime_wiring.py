@@ -273,7 +273,8 @@ async def test_reference_investors_apply_on_top_of_the_cached_walk(monkeypatch):
     found = sources.fixture_candidates()
     _counting_discovery(monkeypatch, found)
     lead = next(i for c in found for r in c.rounds for i in r.investors if i.is_lead)
-    await sources.candidates_for(profile_store.current())  # fills the cache without refs
+    without_ref = await sources.candidates_for(profile_store.current())  # fills the cache
+    assert all(c.proximity is None for c in without_ref)
     with_ref = profile_store.current().model_copy(
         update={
             "reference_investors": [ReferenceInvestor(entity_id=lead.entity_id, name=lead.name)]
@@ -284,6 +285,7 @@ async def test_reference_investors_apply_on_top_of_the_cached_walk(monkeypatch):
     assert matched and all(
         lead.name in s.value for c in matched for s in c.signals if s.kind == "co_invest"
     )
+    assert {c.entity_id for c in result if c.proximity.score > 0} == {c.entity_id for c in matched}
 
 
 async def test_a_failed_walk_is_not_cached(monkeypatch):
