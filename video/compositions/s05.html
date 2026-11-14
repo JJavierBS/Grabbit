@@ -1,7 +1,7 @@
 <template>
   <style>
     @font-face{font-family:"Hanken Grotesk";src:url("assets/fonts/hanken-grotesk.woff2") format("woff2");font-weight:100 900}
-    #root{position:absolute;inset:0;background:#f7f7fa;color:#14151c;font-family:"Hanken Grotesk",sans-serif;overflow:hidden}
+    #root{position:absolute;inset:0;background:#f7f7fa url("assets/footage/bg-3.jpg") center/cover;color:#14151c;font-family:"Hanken Grotesk",sans-serif;overflow:hidden}
     .s05-win{position:absolute;background:#fff;border:2px solid #e3e3ec;border-radius:22px;box-shadow:0 30px 70px rgba(20,21,28,.14);overflow:hidden}
     .s05-bar{height:68px;background:#f0eff5;border-bottom:2px solid #e3e3ec;display:flex;align-items:flex-end;gap:6px;padding:0 22px}
     .s05-dots{display:flex;gap:10px;align-self:center;margin-right:18px}
@@ -12,12 +12,15 @@
     .s05-body{position:absolute;left:0;right:0;top:70px;bottom:0;overflow:hidden;background:#f7f7fa}
     .s05-cap{position:absolute;inset:0}
     .s05-cap video{position:absolute;left:0;top:0;width:1724px;height:866px}
+    .s05-veil{position:absolute;inset:0;background:#f7f7fa;opacity:1}
   </style>
   <div id="root" data-composition-id="s05" data-width="1920" data-height="1080">
+    <!-- the venue behind the app: a blurred still of the shot before it. The veil joins it to the bloom of the zoom-through -->
+    <div id="s05-veil" class="s05-veil"></div>
     <div id="s05-win" class="s05-win" style="left:96px;top:70px;width:1728px;height:940px">
       <div class="s05-bar"><span class="s05-dots"><i></i><i></i><i></i></span><span class="s05-tab"><img src="assets/grabbit-mark.svg" alt=""><b>Grabbit</b></span></div>
       <div class="s05-body">
-        <div id="s05-cap" class="s05-cap" data-layout-allow-overflow><video id="s05-v" class="clip" src="assets/captures/s05.mp4" data-start="0" data-duration="16" data-track-index="0" muted playsinline></video></div>
+        <div id="s05-cap" class="s05-cap" data-layout-allow-overflow><video id="s05-v" class="clip" src="assets/captures/fast/s05.mp4" data-start="0" data-duration="6.75" data-track-index="0" muted playsinline></video></div>
       </div>
     </div>
   </div>
@@ -26,11 +29,13 @@
       const tl = gsap.timeline({ paused: true });
       // zoom-through: the window lands from the footage push, and leaves before the footage returns
       tl.fromTo("#s05-win", { opacity: 0.15, scale: 0.75, filter: "blur(18px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.5, ease: "expo.out" }, 0);
+      tl.to("#s05-veil", { opacity: 0, duration: 0.45, ease: "power2.out" }, 0);
+      // fast capture (assets/captures/recut.sh): typing 0.5-2.2 s, send 2.4 s, the questions arrive 3.9 s
       // punch-in on the typed thesis, wide again for the send, then in on the questions (s06 continues there)
-      tl.to("#s05-cap", { scale: 1.6, transformOrigin: "60.6% 91.2%", duration: 0.5, ease: "power3.inOut" }, 1.4);
-      tl.to("#s05-cap", { scale: 1, duration: 0.5, ease: "power3.inOut" }, 5.5);
-      tl.set("#s05-cap", { transformOrigin: "73% 54.6%" }, 6.1);
-      tl.to("#s05-cap", { scale: 1.45, duration: 0.5, ease: "power3.inOut" }, 11);
+      tl.to("#s05-cap", { scale: 1.6, transformOrigin: "60.6% 91.2%", duration: 0.45, ease: "power3.inOut" }, 0.3);
+      tl.to("#s05-cap", { scale: 1, duration: 0.4, ease: "power3.inOut" }, 2.35);
+      tl.set("#s05-cap", { transformOrigin: "73% 54.6%" }, 2.8);
+      tl.to("#s05-cap", { scale: 1.45, duration: 0.45, ease: "power3.inOut" }, 3.6);
       window.__timelines["s05"] = tl;
     })();
   </script>

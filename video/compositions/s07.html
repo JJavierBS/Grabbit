@@ -1,7 +1,7 @@
 <template>
   <style>
     @font-face{font-family:"Hanken Grotesk";src:url("assets/fonts/hanken-grotesk.woff2") format("woff2");font-weight:100 900}
-    #root{position:absolute;inset:0;background:#f7f7fa;color:#14151c;font-family:"Hanken Grotesk",sans-serif;overflow:hidden}
+    #root{position:absolute;inset:0;background:#f7f7fa url("assets/footage/bg-3.jpg") center/cover;color:#14151c;font-family:"Hanken Grotesk",sans-serif;overflow:hidden}
     .s07-win{position:absolute;background:#fff;border:2px solid #e3e3ec;border-radius:22px;box-shadow:0 30px 70px rgba(20,21,28,.14);overflow:hidden}
     .s07-bar{height:68px;background:#f0eff5;border-bottom:2px solid #e3e3ec;display:flex;align-items:flex-end;gap:6px;padding:0 22px}
     .s07-dots{display:flex;gap:10px;align-self:center;margin-right:18px}
@@ -17,7 +17,7 @@
     <div class="s07-win" style="left:96px;top:70px;width:1728px;height:940px">
       <div class="s07-bar"><span class="s07-dots"><i></i><i></i><i></i></span><span class="s07-tab"><img src="assets/grabbit-mark.svg" alt=""><b>Grabbit</b></span></div>
       <div class="s07-body">
-        <div id="s07-cap" class="s07-cap" data-layout-allow-overflow><video id="s07-v" class="clip" src="assets/captures/s07.mp4" data-start="0" data-duration="10" data-track-index="0" muted playsinline></video></div>
+        <div id="s07-cap" class="s07-cap" data-layout-allow-overflow><video id="s07-v" class="clip" src="assets/captures/fast/s07.mp4" data-start="0" data-duration="6.5" data-track-index="0" muted playsinline></video></div>
       </div>
     </div>
   </div>
@@ -25,7 +25,7 @@
     (() => {
       const tl = gsap.timeline({ paused: true });
       // punch-in on the report panel as it starts to scroll
-      tl.to("#s07-cap", { scale: 1.3, transformOrigin: "100% 50%", duration: 0.5, ease: "power3.inOut" }, 2.9);
+      tl.to("#s07-cap", { scale: 1.3, transformOrigin: "100% 50%", duration: 0.5, ease: "power3.inOut" }, 1.5);
       window.__timelines["s07"] = tl;
     })();
   </script>

@@ -1,7 +1,7 @@
 <template>
   <style>
     @font-face{font-family:"Hanken Grotesk";src:url("assets/fonts/hanken-grotesk.woff2") format("woff2");font-weight:100 900}
-    #root{position:absolute;inset:0;background:#f7f7fa;color:#14151c;font-family:"Hanken Grotesk",sans-serif;overflow:hidden}
+    #root{position:absolute;inset:0;background:#f7f7fa url("assets/footage/bg-3.jpg") center/cover;color:#14151c;font-family:"Hanken Grotesk",sans-serif;overflow:hidden}
     .s08-win{position:absolute;background:#fff;border:2px solid #e3e3ec;border-radius:22px;box-shadow:0 30px 70px rgba(20,21,28,.14);overflow:hidden}
     .s08-bar{height:68px;background:#f0eff5;border-bottom:2px solid #e3e3ec;display:flex;align-items:flex-end;gap:6px;padding:0 22px}
     .s08-dots{display:flex;gap:10px;align-self:center;margin-right:18px}
@@ -12,12 +12,15 @@
     .s08-body{position:absolute;left:0;right:0;top:70px;bottom:0;overflow:hidden;background:#f7f7fa}
     .s08-cap{position:absolute;inset:0}
     .s08-cap video{position:absolute;left:0;top:0;width:1724px;height:866px}
+    .s08-veil{position:absolute;inset:0;background:#f7f7fa;opacity:0}
   </style>
   <div id="root" data-composition-id="s08" data-width="1920" data-height="1080">
+    <!-- the venue behind the app: a blurred still of the shot before it. The veil joins it to the bloom of the zoom-through -->
+    <div id="s08-veil" class="s08-veil"></div>
     <div id="s08-win" class="s08-win" style="left:96px;top:70px;width:1728px;height:940px">
       <div class="s08-bar"><span class="s08-dots"><i></i><i></i><i></i></span><span class="s08-tab"><img src="assets/grabbit-mark.svg" alt=""><b>Grabbit</b></span></div>
       <div class="s08-body">
-        <div id="s08-cap" class="s08-cap" data-layout-allow-overflow><video id="s08-v" class="clip" src="assets/captures/s08.mp4" data-start="0" data-duration="10" data-track-index="0" muted playsinline></video></div>
+        <div id="s08-cap" class="s08-cap" data-layout-allow-overflow><video id="s08-v" class="clip" src="assets/captures/fast/s08.mp4" data-start="0" data-duration="6" data-track-index="0" muted playsinline></video></div>
       </div>
     </div>
   </div>
@@ -25,10 +28,11 @@
     (() => {
       const tl = gsap.timeline({ paused: true });
       // zoom-through: the window lands from the footage push, and leaves before the footage returns
-      tl.to("#s08-win", { scale: 0.8, filter: "blur(18px)", duration: 0.25, ease: "power3.in" }, 9.75);
-      tl.to("#s08-win", { opacity: 0.15, duration: 0.25, ease: "none" }, 9.75);
+      tl.to("#s08-win", { scale: 0.8, filter: "blur(18px)", duration: 0.25, ease: "power3.in" }, 5.75);
+      tl.to("#s08-win", { opacity: 0.15, duration: 0.25, ease: "none" }, 5.75);
+      tl.to("#s08-veil", { opacity: 1, duration: 0.25, ease: "power2.in" }, 5.75);
       // punch-in on the top of the report just before it rewrites itself
-      tl.to("#s08-cap", { scale: 1.3, transformOrigin: "100% 73.9%", duration: 0.5, ease: "power3.inOut" }, 5.3);
+      tl.to("#s08-cap", { scale: 1.3, transformOrigin: "100% 73.9%", duration: 0.5, ease: "power3.inOut" }, 1.9);
       window.__timelines["s08"] = tl;
     })();
   </script>
