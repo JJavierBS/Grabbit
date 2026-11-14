@@ -25,12 +25,12 @@ async def build(
     now: datetime | None = None,
     report_id: str | None = None,
 ) -> Report:
-    ranked = rank(candidates, profile)
+    ranked = rank(candidates, profile, today=now.date() if now else None)
     context = ""
     if kind == "digest":
         ranked, context = _what_changed(ranked, previous)
     length = "long" if kind == "memo" else profile.style.length
-    selected = ranked[: LIMIT[length]]
+    selected = ranked[: min(LIMIT[length], profile.style.max_candidates or LIMIT[length])]
 
     report = Report(
         id=report_id or new_report_id(),

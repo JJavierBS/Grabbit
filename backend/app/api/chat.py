@@ -29,4 +29,5 @@ async def post_chat(request: ChatRequest) -> ChatMessage:
         candidates=candidates,
         report_summary=latest_report_summary(),
         on_profile_change=on_profile_change,
+        load_candidates=candidates_for,
     )

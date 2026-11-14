@@ -162,6 +162,9 @@ class ProfileFilters(ApiModel):
     countries: list[str]
     headcount_max: int | None = None
     ticket: Fact | None = None
+    fundraising: Literal["any", "recent", "likely_to_raise"] = "any"
+    raised_within_months: int = Field(default=12, ge=1, le=120)
+    required_backers: list[str] = Field(default_factory=list)
 
 
 class ReferenceInvestor(ApiModel):
@@ -170,6 +173,7 @@ class ReferenceInvestor(ApiModel):
 
 
 class ProfileStyle(ApiModel):
+    max_candidates: int | None = Field(default=None, ge=1, le=20)
     length: StyleLength
     detail: StyleDetail
     language: str

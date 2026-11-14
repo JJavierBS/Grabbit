@@ -174,7 +174,10 @@ async def get_candidates(
 
     candidates: list[Candidate] = []
     for candidate, company in built:
-        if not matches_profile(candidate, profile):
+        structural = profile.model_copy(
+            update={"filters": profile.filters.model_copy(update={"fundraising": "any"})}
+        )
+        if not matches_profile(candidate, structural, today=today):
             continue
         inputs = SignalInputs(
             reference_investors=profile.reference_investors,
@@ -186,6 +189,7 @@ async def get_candidates(
         )
     graph = await walk_investors(client, candidates, raw, limits.links, INVESTOR_BODY, ROUND_BODY)
     candidates = attach_links(candidates, graph, profile.reference_investors)
+    candidates = [c for c in candidates if matches_profile(c, profile, today=today)]
     stats.candidates = len(candidates)
     investors = {
         normalise_name(i.name): i.entity_id

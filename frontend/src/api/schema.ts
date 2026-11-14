@@ -651,9 +651,24 @@ export interface components {
       /** Headcount Max */
       headcount_max: number | null;
       ticket: components["schemas"]["Fact"] | null;
+      /**
+       * Fundraising
+       * @default any
+       * @enum {string}
+       */
+      fundraising: "any" | "recent" | "likely_to_raise";
+      /**
+       * Raised Within Months
+       * @default 12
+       */
+      raised_within_months: number;
+      /** Required Backers */
+      required_backers: string[];
     };
     /** ProfileStyle */
     ProfileStyle: {
+      /** Max Candidates */
+      max_candidates: number | null;
       /**
        * Length
        * @enum {string}

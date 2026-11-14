@@ -68,3 +68,16 @@ describe("CandidateCard", () => {
     expect(container.textContent).not.toMatch(/\d{4}-\d{2}-\d{2}/);
   });
 });
+
+it("opens bare company domains as external HTTPS links", () => {
+  render(
+    <CandidateCard
+      candidate={{ ...reportV1.candidates[0], website: "slickerhq.com" }}
+      trusted={new Set()}
+    />,
+  );
+  expect(screen.getByRole("link", { name: "Website" })).toHaveAttribute(
+    "href",
+    "https://slickerhq.com/",
+  );
+});

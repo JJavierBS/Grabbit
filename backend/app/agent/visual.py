@@ -85,8 +85,6 @@ async def visual_answer(
     open_client: ClientFactory = _shared_cala,
 ) -> Visual | None:
     """OpenUI Lang for the reply plus the Cala subgraph it draws, or None when nothing fits."""
-    if not candidates:
-        return None
     # Investors typed in chat are stored by name; the walk compares Cala ids (as the profile
     # endpoint does), or it never marks them as trusted.
     profile = resolve_references(profile, candidates)

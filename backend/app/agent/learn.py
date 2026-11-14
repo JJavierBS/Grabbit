@@ -13,12 +13,15 @@ log = logging.getLogger(__name__)
 SYSTEM = f"""You maintain the report instructions of an investment research agent.
 Decide whether the investor's latest reaction should change how future reports are written.
 Rewrite only for a lasting preference (length, order, what to skip, tone), not for one-off
-questions. When you rewrite, return the complete new instructions, keeping what still applies.
+questions. Questions about companies, investors or graph connections never change report
+preferences; a change of language in a question is not a lasting preference.
+When you rewrite, return the complete new instructions, keeping what still applies.
 Answers that keep the search open ("any country", "both", "size does not matter") change
 nothing: do not rewrite for them.
 The reason is shown to the investor as "From now on: <reason>": one short line saying what
 changes, in the language the reaction is written in, e.g. "two lines per startup".
 Never describe the investor or the request ("The investor asked…").
+
 
 {FIXED_RULES}"""
 
