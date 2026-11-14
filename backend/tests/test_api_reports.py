@@ -95,3 +95,14 @@ def test_second_quiet_digest_does_not_reannounce_the_prep_startups(client):
     assert first["candidates"] == []
     assert second["candidates"] == []
     assert second["summary"] == "Nothing new since the last report."
+
+
+def test_undo_buttons_point_at_distinct_versions(client):
+    client.post("/api/chat", json={"text": "hello"})
+    first = client.post("/api/chat", json={"text": "No B2C please"}).json()
+    client.post("/api/profile/undo")
+    second = client.post("/api/chat", json={"text": "No B2C please"}).json()
+    settle(client)
+    v1 = {c["version"] for c in first["profile_changes"]}
+    v2 = {c["version"] for c in second["profile_changes"]}
+    assert v1 and v2 and v1.isdisjoint(v2)

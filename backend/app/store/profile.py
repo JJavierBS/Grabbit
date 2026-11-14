@@ -24,6 +24,14 @@ db.register_table(
         by TEXT NOT NULL
     )"""
 )
+# Highest version ever issued. Undo deletes a version, but its number must never come back:
+# chat messages keep pointing at it, and the frontend offers Undo by version.
+db.register_table(
+    """CREATE TABLE IF NOT EXISTS profile_version_seq (
+        id INTEGER PRIMARY KEY CHECK (id = 1),
+        last INTEGER NOT NULL
+    )"""
+)
 
 
 def default_profile(now: datetime | None = None) -> Profile:
@@ -58,9 +66,18 @@ def save_version(
     profile: Profile, changes: list[ProfileChange], now: datetime | None = None
 ) -> Profile:
     """Store `profile` as the next version with the changes that produced it."""
-    version = current(now).version + 1
-    saved = profile.model_copy(update={"version": version, "updated_at": now or datetime.now(UTC)})
+    latest = current(now).version
     with db.connect() as conn:
+        row = conn.execute("SELECT last FROM profile_version_seq WHERE id = 1").fetchone()
+        version = max(latest, row["last"] if row else 0) + 1
+        conn.execute(
+            "INSERT INTO profile_version_seq (id, last) VALUES (1, ?)"
+            " ON CONFLICT(id) DO UPDATE SET last = excluded.last",
+            (version,),
+        )
+        saved = profile.model_copy(
+            update={"version": version, "updated_at": now or datetime.now(UTC)}
+        )
         _insert(conn, saved)
         conn.executemany(
             "INSERT INTO profile_changes (version, field, before_json, after_json, reason, by)"
