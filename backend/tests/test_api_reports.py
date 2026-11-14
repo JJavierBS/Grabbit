@@ -64,3 +64,10 @@ async def test_score_alert(now):
     )
     score, reason = await score_alert(FakeLLM(scripts=[]), alert, profile)
     assert score == 0.5 and reason.startswith("Not scored")
+
+
+def test_list_reports_newest_first(client):
+    assert client.get("/api/reports").json() == []
+    first = client.post("/api/reports/run", json={"kind": "prep"}).json()
+    second = client.post("/api/reports/run", json={"kind": "digest"}).json()
+    assert [r["id"] for r in client.get("/api/reports").json()] == [second["id"], first["id"]]

@@ -34,6 +34,20 @@ describe("change note text", () => {
     );
   });
 
+  it("finds the note after a blank line and keeps names with dots whole", () => {
+    const text =
+      "I updated your profile.\n\nFrom now on: trusting Maki.vc; AI only.\n\n- Raise soon?\n- Small teams?";
+    expect(splitChangeNote(text)).toEqual({
+      note: "From now on: trusting Maki.vc; AI only.",
+      rest: "I updated your profile.\n\n- Raise soon?\n- Small teams?",
+    });
+  });
+
+  it("says a reason shared by several changed fields once", () => {
+    const changes = [change(2, "AI only"), change(2, "AI only"), change(2, "small teams")];
+    expect(changeNoteText("Done.", changes).note).toBe("From now on: AI only; small teams.");
+  });
+
   it("shows no note when nothing changed", () => {
     expect(changeNoteText("Hello.", [])).toEqual({ note: null, rest: "Hello." });
   });

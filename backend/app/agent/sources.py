@@ -8,7 +8,7 @@ from app import fixtures
 from app.cala.client import CalaCacheMiss, CalaError
 from app.discovery.pipeline import Limits, get_candidates
 from app.models import Candidate, Profile
-from app.references import resolve_references
+from app.references import remember, resolve_references
 from app.runtime import open_cala
 from app.signals.core import co_invest
 
@@ -31,7 +31,9 @@ async def candidates_for(profile: Profile) -> list[Candidate]:
     try:
         async with open_cala() as (client, _):
             limits = Limits(max_attendees=MAX_ATTENDEES)
-            candidates = (await get_candidates(client, profile, limits=limits)).candidates
+            result = await get_candidates(client, profile, limits=limits)
+            remember(result.investors)
+            candidates = result.candidates
     except (CalaError, CalaCacheMiss) as err:
         log.warning("discovery unavailable, using fixture candidates: %s", err)
         candidates = fixture_candidates()

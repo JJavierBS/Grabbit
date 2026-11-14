@@ -63,7 +63,7 @@ export function App() {
   const [demo] = useState(demoFixture);
   const [confirmed, setConfirmed] = useState(false);
   const report = useLatestReport();
-  const diff = useReportChanges(report.data);
+  const diff = useReportChanges(report.data ?? undefined);
   const send = useSendMessage();
   const simulate = useSimulateEvent();
   const [openAlert, setOpenAlert] = useState<Alert | null>(null);
@@ -302,7 +302,7 @@ export function App() {
                 />
               ) : (
                 <ReportView
-                  report={report.data}
+                  report={report.data ?? undefined}
                   isPending={report.isPending}
                   error={report.error}
                   onRetry={() => report.refetch()}

@@ -204,6 +204,8 @@ async def test_profile_filters_apply(graph):
     result = await get_candidates(FakeCala(graph), profile, TODAY)
     # Northwind is in FI and is dropped; Kide passes.
     assert [c.name for c in result.candidates] == ["Kide Health"]
+    # Investors of dropped startups are still known, so reference investors can resolve.
+    assert result.investors["aurora ventures"] == AURORA
 
 
 async def test_a_failing_attendee_is_skipped_not_fatal(graph):

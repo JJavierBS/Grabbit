@@ -12,8 +12,10 @@ class FakeWeb:
         return self.articles.get(kwargs["domain"] or kwargs["name"], [])
 
 
-def _article(story, title, date="2026-10-02T08:00:00Z"):
+def _article(story, title, date="2026-10-02T08:00:00Z", level="primary", description=""):
     return {
+        "match": {"level": level, "confidence": 0.9},
+        "description": description,
         "id": title,
         "story_id": story,
         "title": title,
@@ -55,3 +57,21 @@ async def test_disabled_client_returns_nothing(now):
     web = FakeWeb({"Kiln Analytics": [_article("s1", "x")]}, enabled=False)
     assert await soft_signals(web, fixture_candidates(), default_profile(now), now) == {}
     assert web.calls == []
+
+
+async def test_secondary_matches_count_only_when_they_name_the_company(now):
+    web = FakeWeb(
+        {
+            "Kiln Analytics": [
+                _article("s1", "Busan promotes spiny lobster", level="secondary"),
+                _article(
+                    "s2",
+                    "Nordic startups to watch",
+                    level="secondary",
+                    description="Kiln Analytics raised a seed round.",
+                ),
+            ]
+        }
+    )
+    signals = await soft_signals(web, fixture_candidates()[:1], default_profile(now), now)
+    assert [f.value for f in signals["cand-kiln"]] == ["Nordic startups to watch"]

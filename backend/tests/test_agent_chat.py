@@ -121,3 +121,29 @@ async def test_turn_with_a_tool_call_skips_learning(candidates, now):
     llm.calls.clear()
     await _say("No B2C please", candidates, now, llm=llm)
     assert [task for task, _ in llm.calls] == ["chat"]
+
+
+async def test_note_joins_reasons_without_their_full_stops(candidates, now):
+    class TwoChanges(FakeLLM):
+        async def chat(self, *, system, messages, tools=None):
+            if tools:
+                return ChatResult(
+                    tool_calls=[
+                        {
+                            "name": "update_profile",
+                            "args": {"patch": {"cadence": "daily"}, "reason": "a daily digest."},
+                        },
+                        {
+                            "name": "update_profile",
+                            "args": {
+                                "patch": {"alert_threshold": "high"},
+                                "reason": "fewer alerts.",
+                            },
+                        },
+                    ]
+                )
+            return ChatResult(text="Done.")
+
+    await _say("hello", candidates, now)
+    reply = await _say("daily, fewer alerts", candidates, now, llm=TwoChanges())
+    assert reply.text.endswith("From now on: a daily digest; fewer alerts.")

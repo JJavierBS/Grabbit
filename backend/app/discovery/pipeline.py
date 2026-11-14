@@ -116,6 +116,9 @@ class DiscoveryResult:
     candidates: list[Candidate]
     stats: DiscoveryStats
     raw: dict[str, dict[str, Any]] = field(default_factory=dict)
+    # Normalised name -> entity id of every investor in any attending startup's rounds, before
+    # the profile filters; reference investors typed in chat resolve against it.
+    investors: dict[str, str] = field(default_factory=dict)
 
 
 async def get_candidates(
@@ -171,7 +174,13 @@ async def get_candidates(
             candidate.model_copy(update={"signals": compute_signals(candidate, inputs, today)})
         )
     stats.candidates = len(candidates)
-    return DiscoveryResult(candidates=candidates, stats=stats, raw=raw)
+    investors = {
+        normalise_name(i.name): i.entity_id
+        for candidate, _ in built
+        for r in candidate.rounds
+        for i in r.investors
+    }
+    return DiscoveryResult(candidates=candidates, stats=stats, raw=raw, investors=investors)
 
 
 async def attendees(client: Cala, event_id: str, limits: Limits) -> list[dict[str, Any]]:
