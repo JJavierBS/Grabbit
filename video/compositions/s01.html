@@ -1,0 +1,26 @@
+<template>
+  <style>
+    @font-face{font-family:"Hanken Grotesk";src:url("assets/fonts/hanken-grotesk.woff2") format("woff2");font-weight:100 900}
+    #root{position:absolute;inset:0;background:#f7f7fa;color:#14151c;font-family:"Hanken Grotesk",sans-serif;overflow:hidden}
+    .s01-num{position:absolute;left:88px;top:120px;font-size:430px;font-weight:800;letter-spacing:-.045em;line-height:1}
+    .s01-sub{position:absolute;left:104px;top:580px;font-size:76px;font-weight:600;letter-spacing:-.02em}
+    .s01-one{position:absolute;left:104px;top:800px;font-size:124px;font-weight:800;letter-spacing:-.03em;color:#6139f8}
+    .s01-list{position:absolute;left:1290px;top:96px;width:720px;height:1100px;background:#fff;border:2px solid #e3e3ec;border-radius:22px;box-shadow:0 30px 70px rgba(20,21,28,.14)}
+    .s01-head{height:96px;display:flex;align-items:center;padding:0 36px;font-size:32px;font-weight:700;border-bottom:2px solid #e3e3ec}
+    .s01-row{height:78px;display:flex;align-items:center;gap:28px;padding:0 36px;border-bottom:2px solid #f0eff5}
+    .s01-n{font-size:28px;font-weight:600;color:#5c5d6e;font-variant-numeric:tabular-nums;width:110px}
+    .s01-row i{display:block;height:20px;border-radius:10px;background:#e3e3ec}
+  </style>
+  <div id="root" data-composition-id="s01" data-width="1920" data-height="1080">
+    <div class="s01-num">2,989</div>
+    <div class="s01-sub">attendees at Slush 2026</div>
+    <div class="s01-one">One of you.</div>
+    <div class="s01-list" data-layout-allow-overflow>
+      <div class="s01-head">Slush 2026 attendees</div>
+      <div class="s01-row"><span class="s01-n">#2978</span><i style="width:300px"></i></div><div class="s01-row"><span class="s01-n">#2979</span><i style="width:220px"></i></div><div class="s01-row"><span class="s01-n">#2980</span><i style="width:360px"></i></div><div class="s01-row"><span class="s01-n">#2981</span><i style="width:260px"></i></div><div class="s01-row"><span class="s01-n">#2982</span><i style="width:190px"></i></div><div class="s01-row"><span class="s01-n">#2983</span><i style="width:330px"></i></div><div class="s01-row"><span class="s01-n">#2984</span><i style="width:280px"></i></div><div class="s01-row"><span class="s01-n">#2985</span><i style="width:240px"></i></div><div class="s01-row"><span class="s01-n">#2986</span><i style="width:350px"></i></div><div class="s01-row"><span class="s01-n">#2987</span><i style="width:210px"></i></div><div class="s01-row"><span class="s01-n">#2988</span><i style="width:310px"></i></div><div class="s01-row"><span class="s01-n">#2989</span><i style="width:270px"></i></div>
+    </div>
+  </div>
+  <script>
+    window.__timelines["s01"] = gsap.timeline({ paused: true });
+  </script>
+</template>

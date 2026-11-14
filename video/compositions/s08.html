@@ -1,0 +1,20 @@
+<template>
+  <style>
+    @font-face{font-family:"Hanken Grotesk";src:url("assets/fonts/hanken-grotesk.woff2") format("woff2");font-weight:100 900}
+    #root{position:absolute;inset:0;background:#f7f7fa;color:#14151c;font-family:"Hanken Grotesk",sans-serif;overflow:hidden}
+    .s08-a,.s08-b{position:absolute;left:88px;font-size:184px;font-weight:800;letter-spacing:-.04em;line-height:1;white-space:nowrap}
+    .s08-a{top:190px}
+    .s08-b{top:420px}
+    .s08-b span{color:#6139f8}
+    .s08-sp{position:absolute;background:#6139f8}
+  </style>
+  <div id="root" data-composition-id="s08" data-width="1920" data-height="1080">
+    <div class="s08-a">You: coffee.</div>
+    <div class="s08-b">Grabbit: <span>on watch.</span></div>
+    <div class="s08-sp" style="left:760px;top:760px;width:520px;height:80px;border-radius:40px"></div>
+    <div class="s08-sp" style="left:600px;top:872px;width:660px;height:82px;border-radius:41px"></div>
+  </div>
+  <script>
+    window.__timelines["s08"] = gsap.timeline({ paused: true });
+  </script>
+</template>

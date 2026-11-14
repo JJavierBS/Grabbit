@@ -1,0 +1,32 @@
+<template>
+  <style>
+    @font-face{font-family:"Hanken Grotesk";src:url("assets/fonts/hanken-grotesk.woff2") format("woff2");font-weight:100 900}
+    #root{position:absolute;inset:0;background:#f7f7fa;color:#14151c;font-family:"Hanken Grotesk",sans-serif;overflow:hidden}
+    .s09-win{position:absolute;background:#fff;border:2px solid #e3e3ec;border-radius:22px;box-shadow:0 30px 70px rgba(20,21,28,.14);overflow:hidden}
+    .s09-bar{height:68px;background:#f0eff5;border-bottom:2px solid #e3e3ec;display:flex;align-items:flex-end;gap:6px;padding:0 22px}
+    .s09-dots{display:flex;gap:10px;align-self:center;margin-right:18px}
+    .s09-dots i{width:16px;height:16px;border-radius:50%;background:#c9c9d6;display:block}
+    .s09-tab{height:48px;border-radius:12px 12px 0 0;background:#fff;border:2px solid #e3e3ec;border-bottom:0;padding:0 14px;display:flex;align-items:center;gap:10px;font-size:22px;font-weight:500;color:#5c5d6e;white-space:nowrap;overflow:hidden;flex:none}
+    .s09-tab img{height:28px}
+    .s09-tab b{font-family:"Outfit",sans-serif;font-weight:800;font-size:26px;color:#14151c}
+    .s09-body{position:absolute;left:0;right:0;top:70px;bottom:0;background:repeating-linear-gradient(135deg,#f7f7fa 0 30px,#f0eff5 30px 60px);padding:150px 130px}
+    .s09-k{font-size:34px;font-weight:700;color:#4b25d6}
+    .s09-t{font-size:96px;font-weight:800;letter-spacing:-.035em;line-height:1.05;margin-top:26px}
+    .s09-d{font-size:42px;font-weight:500;color:#5c5d6e;line-height:1.35;margin-top:40px;max-width:1300px}
+    .s09-z{font-size:38px;font-weight:700;margin-top:44px}
+  </style>
+  <div id="root" data-composition-id="s09" data-width="1920" data-height="1080">
+    <div class="s09-win" style="left:96px;top:70px;width:1728px;height:940px">
+      <div class="s09-bar"><span class="s09-dots"><i></i><i></i><i></i></span><span class="s09-tab"><img src="assets/grabbit-mark.svg" alt=""><b>Grabbit</b></span></div>
+      <div class="s09-body">
+        <div class="s09-k">Placeholder: app capture, filmed when the app is ready</div>
+        <div class="s09-t">The alert</div>
+        <div class="s09-d">A desktop notification arrives with the Simulated event label. A click opens the alert and why it matters.</div>
+        <div class="s09-z">Punch-in: the notification</div>
+      </div>
+    </div>
+  </div>
+  <script>
+    window.__timelines["s09"] = gsap.timeline({ paused: true });
+  </script>
+</template>

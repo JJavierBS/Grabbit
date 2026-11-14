@@ -1,0 +1,17 @@
+<template>
+  <style>
+    @font-face{font-family:"Hanken Grotesk";src:url("assets/fonts/hanken-grotesk.woff2") format("woff2");font-weight:100 900}
+    #root{position:absolute;inset:0;background:#f7f7fa;color:#14151c;font-family:"Hanken Grotesk",sans-serif;overflow:hidden}
+    .s10-a,.s10-b{position:absolute;left:92px;font-size:158px;font-weight:800;letter-spacing:-.04em;line-height:1;white-space:nowrap}
+    .s10-a{top:300px}
+    .s10-b{top:520px}
+    .s10-b span{color:#6139f8}
+  </style>
+  <div id="root" data-composition-id="s10" data-width="1920" data-height="1080">
+    <div class="s10-a">Every fact sourced.</div>
+    <div class="s10-b">Every decision <span>yours.</span></div>
+  </div>
+  <script>
+    window.__timelines["s10"] = gsap.timeline({ paused: true });
+  </script>
+</template>

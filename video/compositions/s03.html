@@ -1,0 +1,27 @@
+<template>
+  <style>
+    @font-face{font-family:"Hanken Grotesk";src:url("assets/fonts/hanken-grotesk.woff2") format("woff2");font-weight:100 900}
+    #root{position:absolute;inset:0;background:#f7f7fa;color:#14151c;font-family:"Hanken Grotesk",sans-serif;overflow:hidden}
+    .s03-strip{position:absolute;left:0;top:320px;width:1920px;height:2px;background:#e3e3ec}
+    .s03-tab{position:absolute;left:96px;top:206px;width:620px;height:116px;background:#fff;border:2px solid #e3e3ec;border-bottom:0;border-radius:28px 28px 0 0;display:flex;align-items:center;gap:22px;padding:0 34px}
+    .s03-tab img{height:66px}
+    .s03-tab b{font-family:"Outfit",sans-serif;font-weight:800;font-size:58px;letter-spacing:-.01em}
+    .s03-tab span{margin-left:auto;font-size:52px;font-weight:400;color:#5c5d6e}
+    .s03-cur{position:absolute;left:640px;top:268px}
+    .s03-big{position:absolute;left:84px;top:390px;font-size:340px;font-weight:800;letter-spacing:-.045em;line-height:1}
+    .s03-sp{position:absolute;background:#6139f8}
+  </style>
+  <div id="root" data-composition-id="s03" data-width="1920" data-height="1080">
+    <div class="s03-strip"></div>
+    <div class="s03-tab"><img src="assets/grabbit-mark.svg" alt=""><b>Grabbit</b><span>&times;</span></div>
+    <div class="s03-big">One tab.</div>
+    <div data-layout-allow-overflow>
+      <div class="s03-sp" style="left:1370px;top:800px;width:640px;height:84px;border-radius:42px"></div>
+      <div class="s03-sp" style="left:1210px;top:912px;width:800px;height:86px;border-radius:43px"></div>
+    </div>
+    <div class="s03-cur"><svg viewBox="0 0 24 24" width="96" height="96"><path d="M4 2l16 9-7 2-3 7z" fill="#14151c" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg></div>
+  </div>
+  <script>
+    window.__timelines["s03"] = gsap.timeline({ paused: true });
+  </script>
+</template>
