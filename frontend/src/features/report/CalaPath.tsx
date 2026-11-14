@@ -1,18 +1,20 @@
 import { useEffect, useRef, useState } from "react";
 import type { Candidate } from "../../api/types";
+import { TrustBadge } from "../../components/TrustBadge";
 import styles from "./CalaPath.module.css";
-import { layoutPath, NODE_W, type PathNode, ROW, toTall } from "./calaPath";
+import { layoutPath, NODE_W, type PathEdge, type PathNode, ROW, toTall } from "./calaPath";
 
 const NODE_H = 34;
 const PAD = 8;
-/** Below this width the wide path would need scrolling; draw the tree instead. */
-const TALL_BELOW = 560;
+/** Below this share of its natural width the wide path gets too small; draw the tree. */
+const TALL_BELOW = 0.8;
 
 const KIND_LABEL: Record<PathNode["kind"], string> = {
   event: "Event",
   startup: "Company",
   round: "Funding round",
   investor: "Investor",
+  link: "Hidden link",
   more: "",
 };
 
@@ -27,6 +29,12 @@ function useWidth(ref: React.RefObject<HTMLElement | null>): number | null {
     return () => observer.disconnect();
   }, [ref]);
   return width;
+}
+
+function edgeClass(e: PathEdge): string {
+  return [e.strong ? styles.edgeStrong : styles.edge, e.dashed && styles.edgeDashed]
+    .filter(Boolean)
+    .join(" ");
 }
 
 function clip(text: string, max = 18): string {
@@ -45,8 +53,10 @@ export function CalaPath({ candidate, trusted, eventName = "Slush 2026" }: CalaP
   const wide = layoutPath(candidate, trusted, eventName);
   const width = useWidth(frame);
   // Tall: drawn at the frame's own width (padding and border aside), so text is not scaled.
-  const layout = width !== null && width < TALL_BELOW ? toTall(wide, width - 2 * PAD - 18) : wide;
+  const layout =
+    width !== null && width < wide.width * TALL_BELOW ? toTall(wide, width - 2 * PAD - 18) : wide;
   const [picked, setPicked] = useState<PathNode | null>(null);
+  const hasLinks = layout.edges.some((e) => e.dashed);
   const byId = new Map(layout.nodes.map((n) => [n.id, n]));
   const w = layout.width + PAD * 2;
   const h = layout.height - ROW + NODE_H + PAD * 2;
@@ -67,7 +77,7 @@ export function CalaPath({ candidate, trusted, eventName = "Slush 2026" }: CalaP
             if (layout.tall) {
               const x = a.x + 11;
               return (
-                <g key={`${e.from}-${e.to}`} className={e.strong ? styles.edgeStrong : styles.edge}>
+                <g key={`${e.from}-${e.to}`} className={edgeClass(e)}>
                   <path d={`M${x},${a.y + NODE_H / 2} V${b.y} H${b.x}`} />
                 </g>
               );
@@ -76,7 +86,7 @@ export function CalaPath({ candidate, trusted, eventName = "Slush 2026" }: CalaP
             const x2 = b.x;
             const mx = (x1 + x2) / 2;
             return (
-              <g key={`${e.from}-${e.to}`} className={e.strong ? styles.edgeStrong : styles.edge}>
+              <g key={`${e.from}-${e.to}`} className={edgeClass(e)}>
                 <path d={`M${x1},${a.y} C${mx},${a.y} ${mx},${b.y} ${x2},${b.y}`} />
                 {e.label && (
                   <text
@@ -102,6 +112,7 @@ export function CalaPath({ candidate, trusted, eventName = "Slush 2026" }: CalaP
               data-kind={n.kind}
               data-trusted={n.trusted || undefined}
               data-lead={n.lead || undefined}
+              data-link={n.kind === "link" || undefined}
               data-picked={picked?.id === n.id || undefined}
               transform={`translate(${n.x},${n.y - NODE_H / 2})`}
               onClick={() => setPicked(n.kind === "more" ? null : n)}
@@ -133,9 +144,16 @@ export function CalaPath({ candidate, trusted, eventName = "Slush 2026" }: CalaP
                 · Cala entity <code>{picked.entityId.slice(0, 8)}</code>
               </>
             )}
+            {picked.detail && (
+              <span className={styles.detail}>
+                {picked.detail} {picked.trust && <TrustBadge level={picked.trust} />}
+              </span>
+            )}
           </>
         ) : (
-          "Path in Cala's entity graph. Each box is a Cala entity, each line an edge. Select one."
+          `Path in Cala's entity graph. Each box is a Cala entity, each line an edge${
+            hasLinks ? "; dashed lines are links found two steps away" : ""
+          }. Select one.`
         )}
       </figcaption>
     </figure>

@@ -4,6 +4,7 @@ import { Badge } from "../../components/Badge";
 import { FactValue } from "../../components/FactValue";
 import { CalaPath } from "./CalaPath";
 import styles from "./CandidateCard.module.css";
+import { HiddenLinkList } from "./HiddenLinkList";
 import type { ChangeMark } from "./reportDiff";
 
 const MARK_LABEL: Record<ChangeMark, string> = {
@@ -61,6 +62,13 @@ export function CandidateCard({ candidate, trusted, mark }: CandidateCardProps) 
         <section className={styles.block} aria-label={`Why ${c.name} is here`}>
           <h5 className={styles.blockTitle}>Why it is here</h5>
           <CalaPath candidate={c} trusted={trusted} />
+        </section>
+      )}
+
+      {c.links.length > 0 && (
+        <section className={styles.block} aria-label={`Hidden links of ${c.name}`}>
+          <h5 className={styles.blockTitle}>Links two steps away</h5>
+          <HiddenLinkList links={c.links} />
         </section>
       )}
 

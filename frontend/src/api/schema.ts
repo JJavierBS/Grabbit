@@ -264,6 +264,8 @@ export interface components {
       rounds: components["schemas"]["Round"][];
       /** Signals */
       signals: components["schemas"]["Signal"][];
+      /** Links */
+      links: components["schemas"]["HiddenLink"][];
     };
     /** ChatMessage */
     ChatMessage: {
@@ -344,6 +346,44 @@ export interface components {
       /** Demo Mode */
       demo_mode: boolean;
     };
+    /**
+     * HiddenLink
+     * @description A second-degree relationship in Cala's graph that one company page does not show.
+     */
+    HiddenLink: {
+      /**
+       * Kind
+       * @enum {string}
+       */
+      kind: "trusted_co_investor" | "shared_investor";
+      /** Label */
+      label: string;
+      /** Explanation */
+      explanation: string;
+      /**
+       * Via Entity Id
+       * @description Investor on the candidate's own path it branches from
+       */
+      via_entity_id: string;
+      target: components["schemas"]["LinkNode"];
+      /**
+       * Count
+       * @description Rounds that prove it
+       */
+      count: number;
+      /**
+       * Trust
+       * @description Weakest edge in the path: the link holds only if all do
+       * @enum {string}
+       */
+      trust: "filing" | "primary" | "press" | "aggregator" | "web_unverified" | "not_published";
+      /** Nodes */
+      nodes: components["schemas"]["LinkNode"][];
+      /** Edges */
+      edges: components["schemas"]["LinkEdge"][];
+      /** Facts */
+      facts: components["schemas"]["Fact"][];
+    };
     /** Investor */
     Investor: {
       /** Entity Id */
@@ -357,6 +397,32 @@ export interface components {
        * @enum {string}
        */
       role: "investor" | "lender";
+    };
+    /**
+     * LinkEdge
+     * @description A Cala relationship between two path nodes, in Cala's own direction.
+     */
+    LinkEdge: {
+      /** Source */
+      source: string;
+      /** Target */
+      target: string;
+      /** Relationship */
+      relationship: string;
+      /** Role */
+      role: string | null;
+    };
+    /**
+     * LinkNode
+     * @description A Cala entity on the path that proves a hidden link.
+     */
+    LinkNode: {
+      /** Entity Id */
+      entity_id: string;
+      /** Name */
+      name: string;
+      /** Entity Type */
+      entity_type: string;
     };
     /** Profile */
     Profile: {
