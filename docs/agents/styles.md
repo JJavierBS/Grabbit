@@ -1,9 +1,19 @@
 # Styles
 
 ## Design system
-- Library / CSS approach: TODO
-- Tokens file: TODO (colours, spacing, radius, typography live there, nowhere else)
-- Brand: TODO (partner colours/logo if the track requires them)
+- Library / CSS approach: plain CSS Modules (`Name.module.css` next to `Name.tsx`), no UI
+  kit. Icons from `lucide-react`. Fonts self-hosted with `@fontsource-variable` (Source
+  Serif 4 for names and titles, Hanken Grotesk for everything else), so the demo works
+  offline.
+- Tokens file: `frontend/src/styles/tokens.css` (colours, spacing, radius, typography,
+  shadows, motion live there, nowhere else). Global element styles: `src/styles/base.css`.
+- Brand: the visual tone of cala.ai (cream ground, brown ink, serif titles), measured and
+  explained in `DESIGN.md`. Grabbit keeps its own name and mark: never Cala's logo,
+  wordmark or copy. Product context for design work: `PRODUCT.md`.
+- Base components in `frontend/src/components/`: `Button`, `Card`, `Badge`, `TrustBadge`,
+  `Input` / `TextArea`, `Toast` (`ToastProvider`, `useToast`), `Skeleton`. Reuse them
+  before you write a new one. A visual reference renders from `src/design/Gallery.tsx`.
+- Light theme only: cala.ai has no dark theme.
 
 ## Rules
 - Use tokens, never raw hex values or pixel spacings in components.
