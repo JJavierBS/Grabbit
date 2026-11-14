@@ -31,7 +31,8 @@ async def test_prep_report_renders_values_from_facts(now):
     assert report.summary == "6 Slush attendees match your thesis."
     assert report.profile_version == 1
     body = _body(report)
-    assert "Its Seed of EUR 2M (Press) closed in May 2024 (Official filing)" in body
+    assert "Its Seed of EUR 2M closed in May 2024, led by North Pine Ventures." in body
+    assert "Last round: Seed, EUR 2M (Press), May 2024 (Official filing)" in body
     assert "Team size is not published" in body
     assert len(report.candidates) == 6
 
@@ -161,7 +162,7 @@ def _rendered_values(report):
     return values
 
 
-async def test_badges_echoed_by_the_model_are_removed(now):
+async def test_prose_has_no_badges_and_no_doubled_round(now):
     echo = Script(
         task="report_write",
         output={
@@ -170,15 +171,15 @@ async def test_badges_echoed_by_the_model_are_removed(now):
                 {
                     "candidate_id": "cand-kiln",
                     "text": "Based in {hq} (Official filing) and led by {last_round_lead}, "
-                    "with {last_round_co_investors} joining; raised {last_round_amount} [Press].",
+                    "with {last_round_co_investors} joining; raised {last_round_amount} [Press] "
+                    "in its {last_round} round.",
                 }
             ],
         },
     )
     report = await _build("prep", _profile(now), llm=FakeLLM(scripts=[echo]), now=now)
     kiln = next(s for s in report.sections if "cand-kiln" in s.candidate_ids).body_md
-    assert (
-        "Based in Finland (Official filing) and led by North Pine Ventures, with Aurora Angels"
-        in kiln
-    )
-    assert "raised EUR 2M (Press)." in kiln
+    [prose] = [p for p in kiln.split("\n\n") if p.startswith("**Kiln")]
+    assert "Based in Finland and led by North Pine Ventures, with Aurora Angels" in prose
+    assert "raised EUR 2M in its Seed round." in prose
+    assert "(Press)" in kiln  # the facts line under the prose keeps the badges

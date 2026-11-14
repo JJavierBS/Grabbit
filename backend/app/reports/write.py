@@ -16,9 +16,9 @@ SYSTEM = f"""You write investment research reports for a business angel.
 Write prose only. Never write a digit, not even in years or event names: cite every value
 with a placeholder from the list given
 for that startup, e.g. "raised {{last_round_amount}} in {{last_round_date}}". Never cite a
-placeholder that is not listed for that startup. Placeholder values already carry their trust
-badge, so never write badge names such as "(Official filing)" yourself. Follow the investor's
-report instructions and style. Describe evidence; never say what to buy.
+placeholder that is not listed for that startup. Trust badges are shown next to the facts
+under each paragraph, so never write badge names such as "(Official filing)" yourself.
+Follow the investor's report instructions and style. Describe evidence; never say what to buy.
 
 {FIXED_RULES}"""
 
@@ -29,7 +29,8 @@ LENGTH_HINT = {
 }
 _PLACEHOLDER = re.compile(r"\{([a-z_]+)\}")
 _BADGE_NAMES = "|".join(re.escape(b) for b in BADGES.values())
-_ECHOED_BADGE = re.compile(rf"(\((?:{_BADGE_NAMES})\))(?:\s*[\(\[](?:{_BADGE_NAMES})[\)\]])+")
+_WRITTEN_BADGE = re.compile(rf"\s*[\(\[](?:{_BADGE_NAMES})[\)\]]")
+_ROUND_ROUND = re.compile(r"\b(round)\s+round\b", re.IGNORECASE)
 
 
 class Paragraph(BaseModel):
@@ -79,7 +80,7 @@ def _prompt(profile: Profile, kind: str, candidates: list[Candidate], context: s
         lines.append(f"What changed: {context}")
     lines.append("Startups, in the order to present them:")
     for c in candidates:
-        values = "; ".join(f"{{{k}}} = {v}" for k, v in placeholders(c).items())
+        values = "; ".join(f"{{{k}}} = {v}" for k, v in placeholders(c, badge=False).items())
         lines.append(
             f"- id {c.entity_id}: {c.name}. {c.description or ''} "
             f"Industries: {', '.join(c.industries) or 'not published'}. Placeholders: {values}"
@@ -124,7 +125,7 @@ def _render(draft: Draft | None, candidates: list[Candidate]) -> tuple[str, dict
         if c is None or p.candidate_id in paragraphs:
             continue
         names = [c.name, *(i.name for r in c.rounds for i in r.investors)]
-        values = placeholders(c)
+        values = placeholders(c, badge=False)
         if not _text_problems(p.text, set(values), names):
             paragraphs[c.entity_id] = _fill(p.text, values)
     return summary, paragraphs
@@ -132,5 +133,7 @@ def _render(draft: Draft | None, candidates: list[Candidate]) -> tuple[str, dict
 
 def _fill(text: str, values: dict[str, str]) -> str:
     filled = _PLACEHOLDER.sub(lambda m: values[m.group(1)], text).strip()
-    # Models echo the badge they saw next to each value; keep only the rendered one.
-    return _ECHOED_BADGE.sub(r"\1", filled)
+    # Prose stays readable: badges live in the facts line and cards, not after every value.
+    filled = _WRITTEN_BADGE.sub("", filled)
+    # Cala names some rounds "Equity round", and the model adds its own "round" after them.
+    return _ROUND_ROUND.sub(r"\1", filled)
