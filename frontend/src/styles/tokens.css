@@ -1,42 +1,46 @@
 /*
  * Grabbit design tokens. The only file with raw colour, size and motion values.
- * Tone measured on cala.ai (DESIGN.md); light only, because cala.ai ships no dark theme.
+ * Afterglow (DESIGN.md): the logo's black and night ink, with one violet light.
+ * Dark only, because the logo is dark and the demo runs in a dark event hall.
  */
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 
-  /* Ground and surfaces: warm cream paper, from cala.ai's beige family. */
-  --color-ground: #f6e8cd;
-  --color-surface: #fcf8f0;
-  --color-surface-raised: #ffffff;
-  /* shortcut: beige-100/200 are derived, not measured; re-sample if cala.ai exposes them. */
-  --color-panel: #faefda;
-  --color-panel-strong: #f1dfc0;
+  /* The logo: void black, night ink #0e111a, violet #6139f8. */
+  --color-violet: #6139f8;
+  --color-violet-light: #a593ff; /* violet as text or a line on black */
+  --color-glow: rgb(97 57 248 / 0.5);
 
-  /* Ink: brown-black, never pure black. */
-  --color-ink: #2e2723;
-  --color-text: #39312c;
-  --color-text-muted: #64574f;
-  /* Large text (>= 18px) or on --color-surface only: 4.15:1 on the ground. */
-  --color-text-faint: #7c6c63;
-  --color-on-ink: #fcf8f0;
+  /* Ground and surfaces. */
+  --color-ground: #000000;
+  --color-surface: #0e111a;
+  --color-surface-raised: #161a26;
+  --color-panel: #000000;
+  --color-panel-strong: #1d2230;
 
-  /* Lines */
-  --color-border: #968378;
-  --color-border-soft: #d8c9c1;
-  --color-border-strong: #2e2723;
-  --color-focus: #075a8e;
+  /* "Ink" is the strongest foreground. On black it is near white. */
+  --color-ink: #f4f3fa;
+  --color-text: #d9d8e3;
+  --color-text-muted: #a3a2b2;
+  --color-text-faint: #807f90;
+  --color-on-ink: #000000;
 
-  /* Accents measured on cala.ai: info blue, marker yellow. */
-  --color-info: #075a8e;
-  --color-info-bg: #d6f0ff;
-  --color-marker: #ffda7c;
-  --color-marker-soft: #fee5b3;
-  --color-warning-ink: #814d00;
-  --color-danger: #a9241b;
-  --color-danger-bg: #fbe4df;
+  /* Lines: --color-border keeps 3:1 on black for field edges. */
+  --color-border: #60657c;
+  --color-border-soft: #262b3c;
+  --color-border-strong: #f4f3fa;
+  --color-focus: var(--color-violet-light);
 
-  /* Trust scale: strength reads from fill weight first, colour second. */
+  /* Info stays cool and quiet. The marker is the violet light: "look here now". */
+  --color-info: #9db4ff;
+  --color-info-bg: #141b33;
+  --color-marker: var(--color-violet);
+  --color-marker-soft: #1f1745;
+  --color-warning-ink: var(--color-violet-light);
+  --color-danger: #ff8a7a;
+  --color-danger-bg: #2b1210;
+
+  /* Trust scale: strength reads from line form first (fill, outline, tint, dashed), hue second. */
   --trust-filing-bg: var(--color-ink);
   --trust-filing-fg: var(--color-on-ink);
   --trust-filing-border: var(--color-ink);
@@ -56,17 +60,17 @@
   --trust-absent-fg: var(--color-text-muted);
   --trust-absent-border: var(--color-border);
 
-  /* Typography. Source Serif 4 stands in for cala.ai's Tiempos, Hanken Grotesk for Waldenburg. */
-  --font-display: "Source Serif 4 Variable", "Source Serif 4", Georgia, "Times New Roman", serif;
+  /* Typography: one workhorse sans. Rank comes from weight and size, never a second face. */
   --font-ui:
     "Hanken Grotesk Variable", "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-ui);
 
   --text-xs: 0.75rem; /* 12px labels, badges */
-  --text-sm: 0.875rem; /* 14px meta, chat */
-  --text-md: 1rem; /* 16px body */
+  --text-sm: 0.875rem; /* 14px meta */
+  --text-md: 1rem; /* 16px body, chat */
   --text-lg: 1.25rem; /* 20px lead */
-  --text-xl: 1.875rem; /* 30px section title, serif */
-  --text-2xl: 2.5rem; /* 40px report title, serif */
+  --text-xl: 1.5rem; /* 24px section title */
+  --text-2xl: 2rem; /* 32px report title */
 
   --leading-tight: 1.2;
   --leading-snug: 1.375;
@@ -77,7 +81,7 @@
   --weight-medium: 500;
   --weight-semibold: 600;
 
-  --tracking-display: -0.025em;
+  --tracking-display: -0.02em;
   --tracking-label: 0.08em;
 
   /* Spacing: one 4px-based scale. */
@@ -92,28 +96,33 @@
   --space-12: 3rem;
   --space-16: 4rem;
 
-  /* Radius: cala.ai uses 6 / 10 / 14 and full pills. */
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
+  --radius-xl: 24px;
   --radius-pill: 999px;
 
   --border-width: 1px;
-  --focus-ring: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-focus);
+  --focus-ring: 0 0 0 2px var(--color-ground), 0 0 0 4px var(--color-focus);
 
-  /* Elevation: flat by default, brown-tinted when lifted. */
-  --shadow-sm: 0 1px 3px 0 rgb(46 39 35 / 0.1), 0 1px 2px -1px rgb(46 39 35 / 0.1);
-  --shadow-md: 0 4px 6px -1px rgb(46 39 35 / 0.1), 0 2px 4px -2px rgb(46 39 35 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(46 39 35 / 0.12), 0 4px 6px -4px rgb(46 39 35 / 0.12);
+  /* Elevation: black shadows are invisible on black, so lifted parts get a lighter edge instead. */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.6);
+  --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.7);
+  --shadow-lg: 0 16px 40px -8px rgb(0 0 0 / 0.8), 0 0 0 1px var(--color-border-soft);
+  /* The light: it falls from below, like the logo's glow. */
+  --glow-rest: 0 18px 48px -18px rgb(97 57 248 / 0.35);
+  --glow-work: 0 18px 64px -8px var(--color-glow);
 
-  /* Motion: cala.ai's 150ms standard curve; nothing above 300ms. */
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --duration-fast: 150ms;
   --duration-base: 200ms;
   --duration-slow: 280ms;
+  --duration-glow: 1600ms; /* the working light breathes; it is a state, not a decoration */
 
-  --chat-width: 26rem;
+  --chat-width: 44rem;
+  --panel-width: min(52rem, 56vw);
+  --z-panel: 40;
   --z-toast: 50;
 }
 
@@ -122,5 +131,6 @@
     --duration-fast: 0ms;
     --duration-base: 0ms;
     --duration-slow: 0ms;
+    --duration-glow: 0ms;
   }
 }
