@@ -3,19 +3,23 @@
 import json
 from datetime import UTC, datetime
 
+from app import workspace
 from app.models import Profile, ProfileChange, ProfileFilters, ProfileStyle
 from app.store import db
 
 db.register_table(
     """CREATE TABLE IF NOT EXISTS profile_versions (
-        version INTEGER PRIMARY KEY,
+        workspace TEXT NOT NULL,
+        version INTEGER NOT NULL,
         profile_json TEXT NOT NULL,
-        created_at TEXT NOT NULL
+        created_at TEXT NOT NULL,
+        PRIMARY KEY (workspace, version)
     )"""
 )
 db.register_table(
     """CREATE TABLE IF NOT EXISTS profile_changes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        workspace TEXT NOT NULL,
         version INTEGER NOT NULL,
         field TEXT NOT NULL,
         before_json TEXT,
@@ -24,6 +28,8 @@ db.register_table(
         by TEXT NOT NULL
     )"""
 )
+db.drop_if_missing("profile_versions", "workspace")
+db.drop_if_missing("profile_changes", "workspace")
 
 
 def default_profile(now: datetime | None = None) -> Profile:
@@ -45,7 +51,9 @@ def default_profile(now: datetime | None = None) -> Profile:
 def current(now: datetime | None = None) -> Profile:
     with db.connect() as conn:
         row = conn.execute(
-            "SELECT profile_json FROM profile_versions ORDER BY version DESC LIMIT 1"
+            "SELECT profile_json FROM profile_versions WHERE workspace = ?"
+            " ORDER BY version DESC LIMIT 1",
+            (workspace.current(),),
         ).fetchone()
         if row:
             return Profile.model_validate_json(row["profile_json"])
@@ -63,10 +71,19 @@ def save_version(
     with db.connect() as conn:
         _insert(conn, saved)
         conn.executemany(
-            "INSERT INTO profile_changes (version, field, before_json, after_json, reason, by)"
-            " VALUES (?, ?, ?, ?, ?, ?)",
+            "INSERT INTO profile_changes"
+            " (workspace, version, field, before_json, after_json, reason, by)"
+            " VALUES (?, ?, ?, ?, ?, ?, ?)",
             [
-                (version, ch.field, json.dumps(ch.before), json.dumps(ch.after), ch.reason, ch.by)
+                (
+                    workspace.current(),
+                    version,
+                    ch.field,
+                    json.dumps(ch.before),
+                    json.dumps(ch.after),
+                    ch.reason,
+                    ch.by,
+                )
                 for ch in changes
             ],
         )
@@ -77,7 +94,8 @@ def history() -> list[ProfileChange]:
     with db.connect() as conn:
         rows = conn.execute(
             "SELECT version, field, before_json, after_json, reason, by FROM profile_changes"
-            " ORDER BY version DESC, id DESC"
+            " WHERE workspace = ? ORDER BY version DESC, id DESC",
+            (workspace.current(),),
         ).fetchall()
     return [
         ProfileChange(
@@ -98,13 +116,22 @@ def undo() -> Profile | None:
     if latest.version <= 1:
         return None
     with db.connect() as conn:
-        conn.execute("DELETE FROM profile_versions WHERE version = ?", (latest.version,))
-        conn.execute("DELETE FROM profile_changes WHERE version = ?", (latest.version,))
+        for table in ("profile_versions", "profile_changes"):
+            conn.execute(
+                f"DELETE FROM {table} WHERE workspace = ? AND version = ?",
+                (workspace.current(), latest.version),
+            )
     return current()
 
 
 def _insert(conn, profile: Profile) -> None:
     conn.execute(
-        "INSERT INTO profile_versions (version, profile_json, created_at) VALUES (?, ?, ?)",
-        (profile.version, profile.model_dump_json(), profile.updated_at.isoformat()),
+        "INSERT INTO profile_versions (workspace, version, profile_json, created_at)"
+        " VALUES (?, ?, ?, ?)",
+        (
+            workspace.current(),
+            profile.version,
+            profile.model_dump_json(),
+            profile.updated_at.isoformat(),
+        ),
     )

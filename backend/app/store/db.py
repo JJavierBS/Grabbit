@@ -13,11 +13,21 @@ from pathlib import Path
 from app.config import get_settings
 
 _table_sql: list[str] = []
+_required_columns: dict[str, tuple[str, ...]] = {}
 
 
 def register_table(sql: str) -> None:
     if sql not in _table_sql:
         _table_sql.append(sql)
+
+
+def drop_if_missing(table: str, *columns: str) -> None:
+    """Drop `table` at startup when an older database lacks `columns`, so it is recreated.
+
+    Only for per-visitor state (profile, chat, reports, alerts): it keeps the Cala cache in
+    the same file, which would otherwise need a full `make warm` after a schema change.
+    """
+    _required_columns[table] = columns
 
 
 def registered_tables() -> tuple[str, ...]:
@@ -33,6 +43,10 @@ def init_db(path: Path | None = None) -> None:
     target.parent.mkdir(parents=True, exist_ok=True)
     with connect(target) as conn:
         conn.execute("PRAGMA journal_mode=WAL")
+        for table, columns in _required_columns.items():
+            existing = {row["name"] for row in conn.execute(f"PRAGMA table_info({table})")}
+            if existing and not existing.issuperset(columns):
+                conn.execute(f"DROP TABLE {table}")
         for sql in _table_sql:
             conn.execute(sql)
 

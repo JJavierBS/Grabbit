@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
+from app import workspace
 from app.cala.client import CalaCacheMiss, CalaClient, CalaError
 from app.config import get_settings
 from app.events import publish
@@ -31,7 +32,15 @@ async def open_cala() -> AsyncIterator[tuple[CalaClient, sqlite3.Connection]]:
 
 
 async def watcher_job() -> None:
-    """Re-read the companies in the latest report and alert on what changed."""
+    """Re-read the companies in each visitor's latest report and alert on what changed."""
+    from app.store import reports as report_store
+
+    for owner in report_store.workspaces():
+        with workspace.use(owner):
+            await _watch_current_workspace()
+
+
+async def _watch_current_workspace() -> None:
     from app.store import profile as profile_store
     from app.store import reports as report_store
     from app.store.snapshots import WatchStore
@@ -55,9 +64,13 @@ async def watcher_job() -> None:
 
 async def digest_job() -> None:
     from app.reports import service
+    from app.store import reports as report_store
 
-    report = await service.run("digest")
-    log.info("digest %s stored", report.id)
+    # The cadence comes from the default workspace's profile; visitors share that schedule.
+    for owner in report_store.workspaces() or [workspace.DEFAULT]:
+        with workspace.use(owner):
+            report = await service.run("digest")
+        log.info("digest %s stored for workspace %s", report.id, owner)
 
 
 def start_scheduler() -> GrabbitScheduler:

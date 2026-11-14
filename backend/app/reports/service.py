@@ -5,7 +5,7 @@ import logging
 from collections.abc import Callable
 from datetime import datetime
 
-from app import events
+from app import events, workspace
 from app.agent.sources import candidates_for
 from app.context_dev import ContextDevClient, get_context_dev
 from app.context_dev.signals import soft_signals
@@ -20,11 +20,12 @@ from app.store import reports as report_store
 log = logging.getLogger(__name__)
 
 _pending: set[asyncio.Task] = set()
-_generation = 0
+# All keyed by workspace: one visitor's correction must never supersede another's rebuild.
+_generation: dict[str, int] = {}
 # Chat messages carry the id of the rebuild their turn scheduled. A superseded rebuild is
 # never stored, so its id is relinked to the report of the newer one.
-_dropped: list[str] = []
-_stored: tuple[int, str] | None = None  # (generation, report id) of the newest stored rebuild
+_dropped: dict[str, list[str]] = {}
+_stored: dict[str, tuple[int, str]] = {}  # (generation, report id) of the newest stored rebuild
 
 
 async def run(
@@ -66,12 +67,13 @@ def schedule_rebuild(profile: Profile, *, llm: LLM | None = None) -> str:
     The chat reply does not wait for Gemini to write the report (about 13 s). Only the newest
     rebuild is stored, so a slow older one never replaces the report of a later correction.
     """
-    global _generation
-    _generation += 1
-    generation = _generation
+    owner = workspace.current()
+    generation = _generation.get(owner, 0) + 1
+    _generation[owner] = generation
     latest = report_store.latest()
     kind: Kind = latest.kind if latest and latest.kind != "digest" else "prep"
     report_id = new_report_id()
+    # The task copies the current context, so it stores and publishes in `owner`.
     task = asyncio.create_task(_rebuild(kind, profile, llm, report_id, generation))
     _pending.add(task)
     task.add_done_callback(_pending.discard)
@@ -81,26 +83,28 @@ def schedule_rebuild(profile: Profile, *, llm: LLM | None = None) -> str:
 async def _rebuild(
     kind: Kind, profile: Profile, llm: LLM | None, report_id: str, generation: int
 ) -> None:
-    global _stored
+    owner = workspace.current()
     try:
         await run(
             kind,
             llm=llm,
             profile=profile,
             report_id=report_id,
-            superseded=lambda: generation != _generation,
+            superseded=lambda: generation != _generation.get(owner),
         )
     except Exception:
         log.exception("background report rebuild failed")
         return
+    dropped = _dropped.setdefault(owner, [])
+    stored = _stored.get(owner)
     if report_store.get(report_id) is not None:
-        _stored = (generation, report_id)
-        chat_store.relink_report(_dropped, report_id)
-        _dropped.clear()
-    elif _stored and _stored[0] > generation:
-        chat_store.relink_report([report_id], _stored[1])
+        _stored[owner] = (generation, report_id)
+        chat_store.relink_report(dropped, report_id)
+        dropped.clear()
+    elif stored and stored[0] > generation:
+        chat_store.relink_report([report_id], stored[1])
     else:
-        _dropped.append(report_id)
+        dropped.append(report_id)
 
 
 async def wait_idle() -> None:
