@@ -7,6 +7,7 @@ from datetime import date
 from typing import Any
 
 from app.discovery.build import headcount_max, issuer_round_ids
+from app.geo import hq_in
 from app.models import Candidate, Profile
 from app.signals.dates import parse_date
 
@@ -42,8 +43,8 @@ def matches_profile(candidate: Candidate, profile: Profile) -> bool:
     stage = candidate.funding_stage.value
     if f.stages and stage and str(stage).upper() not in {s.upper() for s in f.stages}:
         return False
-    hq = str(candidate.hq.value or "").lower()
-    if f.countries and hq and not any(c.lower() in hq for c in f.countries):
+    hq = str(candidate.hq.value or "")
+    if f.countries and hq and not hq_in(hq, f.countries):
         return False
     labels = " ".join(candidate.industries).lower()
     if f.sectors_out and any(s.lower() in labels for s in f.sectors_out):

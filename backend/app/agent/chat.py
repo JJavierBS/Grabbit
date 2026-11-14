@@ -132,10 +132,11 @@ async def _followup(
 
 def _compose(reply: str, outcomes: list[ToolOutcome]) -> str:
     lines = [reply.strip()] if reply.strip() else []
-    refusals = list(dict.fromkeys(o.refusal for o in outcomes if o.refusal))
+    refusals = list(dict.fromkeys(o.refusal.strip().rstrip(".") for o in outcomes if o.refusal))
     if refusals:
         lines.append(f"I can't apply that part: {'; '.join(refusals)}.")
-    reasons = list(dict.fromkeys(o.reason for o in outcomes if o.applied))
+    # Reasons often end in a full stop; strip it so the joined note does not read ".;".
+    reasons = list(dict.fromkeys(o.reason.strip().rstrip(".") for o in outcomes if o.applied))
     if reasons:
         lines.append(f"From now on: {'; '.join(reasons)}.")
     return "\n\n".join(lines) or "Noted."

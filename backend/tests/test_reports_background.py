@@ -2,6 +2,7 @@ import asyncio
 
 from app.llm.fake import FakeLLM
 from app.reports import service
+from app.store import chat as chat_store
 from app.store import reports as report_store
 from app.store.profile import default_profile
 
@@ -51,3 +52,31 @@ async def test_a_failed_rebuild_does_not_break_the_caller(now):
     service.schedule_rebuild(default_profile(now), llm=Broken())
     await service.wait_idle()
     assert report_store.latest() is None
+
+
+async def test_a_superseded_rebuild_relinks_its_chat_message(now):
+    slow, fast = GatedLLM(), FakeLLM()
+    first = service.schedule_rebuild(default_profile(now), llm=slow)
+    asking = chat_store.add("agent", "rewriting", report_id=first)
+    second = service.schedule_rebuild(default_profile(now), llm=fast)
+    await asyncio.sleep(0.05)
+    slow.gate.set()
+    await service.wait_idle()
+
+    assert report_store.get(first) is None
+    [message] = [m for m in chat_store.all_messages() if m.id == asking.id]
+    assert message.report_id == second
+
+
+async def test_a_dropped_rebuild_is_relinked_when_the_newer_one_lands_later(now):
+    fast_first, slow_second = FakeLLM(), GatedLLM()
+    first = service.schedule_rebuild(default_profile(now), llm=fast_first)
+    asking = chat_store.add("agent", "rewriting", report_id=first)
+    second = service.schedule_rebuild(default_profile(now), llm=slow_second)
+    await asyncio.sleep(0.05)
+    assert report_store.get(first) is None
+    slow_second.gate.set()
+    await service.wait_idle()
+
+    [message] = [m for m in chat_store.all_messages() if m.id == asking.id]
+    assert message.report_id == second

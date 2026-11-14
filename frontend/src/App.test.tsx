@@ -46,6 +46,37 @@ describe("App", () => {
     expect(screen.queryByRole("region", { name: "Report" })).not.toBeInTheDocument();
   });
 
+  it("shows no error before the first report exists", async () => {
+    mockApi({
+      ...base,
+      "GET /api/reports/latest": {
+        status: 404,
+        body: { error: { code: "no_report", message: "No report has been generated yet." } },
+      },
+    });
+    renderWithClient(<App />);
+    expect(await screen.findByText(/Tell me what you look for/)).toBeInTheDocument();
+    await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
+    expect(screen.queryByText("The report did not load")).not.toBeInTheDocument();
+    expect(screen.queryByText("No report has been generated yet.")).not.toBeInTheDocument();
+  });
+
+  it("renders the agent's Markdown instead of showing asterisks", async () => {
+    const reply: ChatMessage = {
+      id: "m-md",
+      role: "agent",
+      text: "**GREÏ** (Pre-Seed): lead FIRSTPICK.\n\n- Raise soon?\n- Small teams?",
+      created_at: "2026-11-14T09:00:00Z",
+      profile_changes: [],
+      report_id: null,
+    };
+    mockApi({ ...base, "GET /api/chat": () => [reply], "GET /api/reports/latest": () => reportV1 });
+    renderWithClient(<App />);
+    expect(await screen.findByText("GREÏ", { selector: "strong" })).toBeInTheDocument();
+    expect(screen.queryByText(/\*\*/)).not.toBeInTheDocument();
+    expect(screen.getByText("Small teams?", { selector: "li" })).toBeInTheDocument();
+  });
+
   it("shows an error with a retry when the report fails, never a blank screen", async () => {
     mockApi({
       ...base,

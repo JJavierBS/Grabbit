@@ -58,21 +58,21 @@ def last_round(c: Candidate) -> Round | None:
     return max(c.rounds, key=lambda r: str(r.date.value or ""), default=None)
 
 
-def placeholders(c: Candidate) -> dict[str, str]:
+def placeholders(c: Candidate, *, badge: bool = True) -> dict[str, str]:
     """Values the model may cite as {name} in a paragraph about this candidate."""
     values = {
-        "stage": render(c.funding_stage),
-        "headcount": render(c.headcount),
-        "total_funding": render(c.total_funding),
-        "hq": render(c.hq),
-        "founded": render(c.founding_date),
+        "stage": render(c.funding_stage, badge=badge),
+        "headcount": render(c.headcount, badge=badge),
+        "total_funding": render(c.total_funding, badge=badge),
+        "hq": render(c.hq, badge=badge),
+        "founded": render(c.founding_date, badge=badge),
     }
     if r := last_round(c):
         lead = next((i.name for i in r.investors if i.is_lead), None)
         values |= {
             "last_round": r.name,
-            "last_round_amount": render(r.amount),
-            "last_round_date": render(r.date),
+            "last_round_amount": render(r.amount, badge=badge),
+            "last_round_date": render(r.date, badge=badge),
             "last_round_lead": lead or "not published",
             "last_round_co_investors": ", ".join(i.name for i in r.investors if not i.is_lead)
             or "none published",

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { api, getUntyped, unwrap } from "../client";
+import { ApiError, api, unwrap } from "../client";
 import type { ChatMessage, Report } from "../types";
 
 export const keys = {
@@ -25,12 +25,23 @@ export const useProfileHistory = () =>
 export const useChat = () =>
   useQuery({ queryKey: keys.chat, queryFn: () => unwrap(api.GET("/api/chat")) });
 
+/** The latest report, or null before the first one exists (404 `no_report` is not an error). */
 export const useLatestReport = () =>
-  useQuery({ queryKey: keys.report, queryFn: () => unwrap(api.GET("/api/reports/latest")) });
+  useQuery({
+    queryKey: keys.report,
+    queryFn: async (): Promise<Report | null> => {
+      try {
+        return await unwrap(api.GET("/api/reports/latest"));
+      } catch (error) {
+        if (error instanceof ApiError && error.code === "no_report") return null;
+        throw error;
+      }
+    },
+  });
 
 /** Past reports, newest first (api.md `GET /api/reports`). */
 export const useReports = () =>
-  useQuery({ queryKey: keys.reports, queryFn: () => getUntyped<Report[]>("/api/reports") });
+  useQuery({ queryKey: keys.reports, queryFn: () => unwrap(api.GET("/api/reports")) });
 
 export const useAlerts = () =>
   useQuery({ queryKey: keys.alerts, queryFn: () => unwrap(api.GET("/api/alerts")) });

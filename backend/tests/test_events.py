@@ -50,6 +50,8 @@ async def test_event_stream_yields_sse_frames_and_unsubscribes_on_close():
     stream = event_stream(bus.subscribe())
     bus.publish("alert", {"id": "alr-1"})
 
+    opening = await asyncio.wait_for(anext(stream), timeout=1)
+    assert opening.comment == "connected"
     frame = await asyncio.wait_for(anext(stream), timeout=1)
     await stream.aclose()
 

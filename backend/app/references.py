@@ -10,12 +10,20 @@ from app.models import Candidate, Profile, ReferenceInvestor
 
 UNRESOLVED = "unresolved:"
 
+# Investors seen in any attending startup's rounds, filtered out or not (discovery fills it),
+# so a trusted investor resolves even when none of the startups it backed match the thesis.
+_seen: dict[str, str] = {}
+
+
+def remember(investors: dict[str, str]) -> None:
+    _seen.update(investors)
+
 
 def resolve_references(profile: Profile, candidates: list[Candidate]) -> Profile:
     """Profile whose unresolved reference investors carry the matching Cala entity id."""
     if not any(r.entity_id.startswith(UNRESOLVED) for r in profile.reference_investors):
         return profile
-    known = {
+    known = _seen | {
         normalise_name(investor.name): investor.entity_id
         for candidate in candidates
         for round_ in candidate.rounds

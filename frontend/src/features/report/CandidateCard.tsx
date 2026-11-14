@@ -97,8 +97,11 @@ function RoundRow({ round, trusted }: { round: Round; trusted: Set<string> }) {
         {lead.length > 0 && (
           <>
             <span className={styles.muted}>Led by </span>
-            {lead.map((i) => (
-              <InvestorName key={i.entity_id} name={i.name} trusted={trusted.has(i.entity_id)} />
+            {lead.map((i, n) => (
+              <span key={i.entity_id}>
+                {n > 0 && ", "}
+                <InvestorName name={i.name} trusted={trusted.has(i.entity_id)} />
+              </span>
             ))}
           </>
         )}
