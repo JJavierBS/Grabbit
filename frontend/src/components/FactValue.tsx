@@ -1,4 +1,5 @@
 import type { Fact, FactScalar, Source } from "../api/types";
+import { humanizeEnum } from "../lib/humanize";
 import styles from "./FactValue.module.css";
 import { TrustBadge } from "./TrustBadge";
 
@@ -44,7 +45,8 @@ function formatScalar(
   if (typeof value === "boolean") return value ? "Yes" : "No";
   if (typeof value === "number") return formatNumber(value, unit);
   if (kind === "date") return formatDate(value, strongestSource(fact)?.date_precision ?? "day");
-  return unit ? `${value} ${unit}` : value;
+  const text = humanizeEnum(value);
+  return unit ? `${text} ${unit}` : text;
 }
 
 /** Text for a fact, or null when Cala has no value (shown as "Not published", never 0). */

@@ -1,4 +1,5 @@
 import type { Candidate, HiddenLink, Round, TrustLevel } from "../../api/types";
+import { humanize } from "../../lib/humanize";
 
 /** One node of the path drawn under a candidate: each one is a Cala entity. */
 export interface PathNode {
@@ -55,12 +56,11 @@ function linkSub(link: HiddenLink): string {
 }
 
 function roundTitle(r: Round): string {
-  const label = r.label ?? r.name;
-  return label
-    .replace(/_/g, " ")
-    .toLowerCase()
-    .replace(/^\w/, (c) => c.toUpperCase());
+  return humanize(r.label ?? r.name);
 }
+
+const ATTENDS = humanize("ATTENDEE");
+const RAISED = humanize("ISSUER");
 
 function newestFirst(rounds: Round[]): Round[] {
   return [...rounds].sort((a, b) =>
@@ -125,7 +125,7 @@ export function layoutPath(c: Candidate, trusted: Set<string>, eventName: string
       edges.push({
         from: roundId,
         to: id,
-        label: inv.is_lead ? "is_lead" : inv.role.toUpperCase(),
+        label: humanize(inv.is_lead ? "is_lead" : inv.role),
         strong: isTrusted,
       });
       mine.forEach((l, li) => {
@@ -190,7 +190,7 @@ export function layoutPath(c: Candidate, trusted: Set<string>, eventName: string
     edges.push({
       from: `s:${c.entity_id}`,
       to: roundId,
-      label: "ISSUER",
+      label: RAISED,
       strong: r.investors.some((i) => trusted.has(i.entity_id)),
     });
   });
@@ -206,7 +206,7 @@ export function layoutPath(c: Candidate, trusted: Set<string>, eventName: string
     y: mid,
   });
   nodes.push({ id: "event", kind: "event", label: eventName, x: COL[0], y: mid });
-  edges.push({ from: "event", to: `s:${c.entity_id}`, label: "ATTENDEE" });
+  edges.push({ from: "event", to: `s:${c.entity_id}`, label: ATTENDS });
 
   return { nodes, edges, width: COL[placedLinks > 0 ? 4 : 3] + NODE_W, height };
 }
@@ -227,7 +227,7 @@ export function toTall(wide: PathLayout, width: number): PathLayout {
     if (!n) return;
     const x = depth * INDENT;
     const relation =
-      via && (via.dashed || ["ATTENDEE", "ISSUER"].includes(via.label)) ? via.label : undefined;
+      via && (via.dashed || [ATTENDS, RAISED].includes(via.label)) ? via.label : undefined;
     const sub = [relation, n.sub].filter(Boolean).join(" · ") || undefined;
     nodes.push({ ...n, sub, x, y: nodes.length * ROW, w: width - x });
     for (const e of kids.get(id) ?? []) visit(e.to, depth + 1, e);

@@ -39,7 +39,7 @@ describe("visual answer", () => {
     expect(
       screen.getByRole("img", { name: /walked in Cala's graph from Aurora/ }),
     ).toBeInTheDocument();
-    expect(screen.getAllByText("ISSUER")).toHaveLength(2);
+    expect(screen.getAllByText("raised")).toHaveLength(2);
     const trusted = screen.getByRole("button", { name: /North Star Capital/ });
     expect(trusted).toHaveAttribute("data-trusted", "true");
     // EntityFacts: the round's amount and date, each with a trust badge.

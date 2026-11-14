@@ -2,6 +2,7 @@ import { ExternalLink } from "lucide-react";
 import type { Candidate, Round, Signal } from "../../api/types";
 import { Badge } from "../../components/Badge";
 import { FactValue } from "../../components/FactValue";
+import { humanize } from "../../lib/humanize";
 import { CalaNews } from "./CalaNews";
 import { CalaPath } from "./CalaPath";
 import styles from "./CandidateCard.module.css";
@@ -44,7 +45,7 @@ export function CandidateCard({ candidate, trusted, mark }: CandidateCardProps) 
           <ul className={styles.tags} aria-label="Industries">
             {c.industries.map((i) => (
               <li key={i}>
-                <Badge>{i}</Badge>
+                <Badge>{humanize(i)}</Badge>
               </li>
             ))}
           </ul>
@@ -108,7 +109,7 @@ function RoundRow({ round, trusted }: { round: Round; trusted: Set<string> }) {
   return (
     <li className={styles.round}>
       <div className={styles.roundHead}>
-        <span className={styles.roundLabel}>{round.label ?? round.name}</span>
+        <span className={styles.roundLabel}>{humanize(round.label ?? round.name)}</span>
         <FactValue inline kind="date" fact={round.date} />
         <FactValue inline fact={round.amount} />
       </div>

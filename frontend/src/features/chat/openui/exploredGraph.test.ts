@@ -15,12 +15,12 @@ describe("layoutWalk", () => {
     expect(layout.width).toBe(2 * PITCH + NODE_W);
   });
 
-  it("labels lines with Cala's edge names and roles", () => {
+  it("labels lines with readable edge names and roles", () => {
     const label = (from: string, to: string) =>
       layout.edges.find((e) => e.from === from && e.to === to)?.label;
-    expect(label("i-aurora", "r-fjord-seed")).toBe("is_lead");
-    expect(label("r-fjord-seed", "c-fjord")).toBe("ISSUER");
-    expect(label("i-aurora", "p-lina")).toBe("FOUNDED");
+    expect(label("i-aurora", "r-fjord-seed")).toBe("led");
+    expect(label("r-fjord-seed", "c-fjord")).toBe("raised");
+    expect(label("i-aurora", "p-lina")).toBe("founded");
   });
 
   it("highlights investors you trust, the way to them, and leads", () => {
@@ -77,8 +77,18 @@ describe("toTallWalk", () => {
     const round = tall.nodes.find((n) => n.id === "r-fjord-seed");
     const issuer = tall.nodes.find((n) => n.id === "c-fjord");
     expect(issuer?.x).toBeGreaterThan(round?.x ?? 0);
-    expect(issuer?.sub).toMatch(/^ISSUER/);
+    expect(issuer?.sub).toMatch(/^raised/);
     expect(tall.edges.some((e) => e.cross)).toBe(false);
     expect(Math.max(...tall.nodes.map((n) => n.x + (n.w ?? 0)))).toBeLessThanOrEqual(320);
+  });
+
+  it("does not repeat the edge's word in a node's sub line", () => {
+    const tall = toTallWalk(layoutWalk(exploredAurora, "i-aurora", trusted), 320);
+    for (const n of tall.nodes) {
+      const parts = (n.sub ?? "").toLowerCase().split(" · ");
+      if (parts[0] === "led") expect(parts).not.toContain("lead investor");
+      if (parts[0] === "invested") expect(parts).not.toContain("investor");
+      expect(n.sub ?? "").not.toMatch(/is_lead|[A-Z]{3,}_/);
+    }
   });
 });
