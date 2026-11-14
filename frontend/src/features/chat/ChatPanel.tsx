@@ -11,6 +11,7 @@ import { useChat, useProfile, useSendMessage, useUndo } from "../../api/hooks/qu
 import type { ChatMessage } from "../../api/types";
 import { Button } from "../../components/Button";
 import { TextArea } from "../../components/Input";
+import { Markdown } from "../../components/Markdown";
 import { Skeleton } from "../../components/Skeleton";
 import { ChangeNote } from "./ChangeNote";
 import styles from "./ChatPanel.module.css";
@@ -192,7 +193,7 @@ function Message({ message, canUndo, undoing, onUndo }: MessageProps) {
     <article className={`${styles.message} ${isAgent ? styles.agent : styles.user}`}>
       <p className="visually-hidden">{isAgent ? "Grabbit said:" : "You said:"}</p>
       {note && <ChangeNote note={note} canUndo={canUndo} undoing={undoing} onUndo={onUndo} />}
-      {rest && <p className={styles.bubble}>{rest}</p>}
+      {rest && <div className={styles.bubble}>{isAgent ? <Markdown source={rest} /> : rest}</div>}
     </article>
   );
 }
