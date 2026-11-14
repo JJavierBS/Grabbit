@@ -97,7 +97,7 @@ export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
         aria-busy={chat.isPending}
         onScroll={follow.onScroll}
       >
-        <div className={styles.column}>
+        <div className={styles.column} data-loaded={chat.isSuccess || undefined}>
           {chat.isPending && <Skeleton lines={4} label="Loading the conversation" />}
           {chat.isError && (
             <div className={styles.error} role="alert">

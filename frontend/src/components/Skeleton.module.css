@@ -3,11 +3,21 @@
   gap: var(--space-2);
 }
 
+/* A soft light passes over the placeholder, like the working line's sweep. */
 .bone {
   display: block;
-  background: var(--color-panel-strong);
+  background:
+    linear-gradient(
+      90deg,
+      var(--color-panel-strong) 0%,
+      var(--color-panel-strong) 35%,
+      var(--color-ground) 50%,
+      var(--color-panel-strong) 65%,
+      var(--color-panel-strong) 100%
+    )
+    0 0 / 300% 100%;
   border-radius: var(--radius-sm);
-  animation: pulse 1.6s var(--ease-standard) infinite;
+  animation: shimmer var(--duration-glow) linear infinite;
 }
 
 .line {
@@ -34,9 +44,12 @@
   border-radius: var(--radius-md);
 }
 
-@keyframes pulse {
-  50% {
-    opacity: 0.55;
+@keyframes shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0 0;
   }
 }
 

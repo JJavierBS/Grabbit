@@ -10,6 +10,7 @@ import {
   useState,
 } from "react";
 import styles from "./Toast.module.css";
+import { afterExit } from "./usePresence";
 
 export interface ToastInput {
   title: string;
@@ -24,6 +25,8 @@ export interface ToastInput {
 
 interface ToastItem extends ToastInput {
   id: number;
+  /** Dismissed: it plays its exit, then leaves the list. */
+  leaving?: boolean;
 }
 
 interface ToastApi {
@@ -39,6 +42,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const nextId = useRef(1);
 
   const dismiss = useCallback((id: number) => {
+    setItems((list) => list.map((t) => (t.id === id ? { ...t, leaving: true } : t)));
+  }, []);
+
+  const remove = useCallback((id: number) => {
     setItems((list) => list.filter((t) => t.id !== id));
   }, []);
 
@@ -56,7 +63,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       <section className={styles.region} aria-label="Notifications">
         <ol className={styles.list}>
           {items.map((item) => (
-            <ToastCard key={item.id} item={item} onDismiss={dismiss} />
+            <ToastCard key={item.id} item={item} onDismiss={dismiss} onGone={remove} />
           ))}
         </ol>
       </section>
@@ -64,18 +71,36 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   );
 }
 
-function ToastCard({ item, onDismiss }: { item: ToastItem; onDismiss: (id: number) => void }) {
+interface ToastCardProps {
+  item: ToastItem;
+  onDismiss: (id: number) => void;
+  onGone: (id: number) => void;
+}
+
+function ToastCard({ item, onDismiss, onGone }: ToastCardProps) {
   const duration = item.duration === undefined ? DEFAULT_DURATION : item.duration;
+  const ref = useRef<HTMLLIElement>(null);
 
   useEffect(() => {
-    if (duration === null) return;
+    if (duration === null || item.leaving) return;
     const timer = setTimeout(() => onDismiss(item.id), duration);
     return () => clearTimeout(timer);
-  }, [duration, item.id, onDismiss]);
+  }, [duration, item.id, item.leaving, onDismiss]);
+
+  // A dismissed toast slides away before it leaves the list.
+  useEffect(() => {
+    if (!item.leaving) return;
+    return afterExit(ref.current, () => onGone(item.id));
+  }, [item.leaving, item.id, onGone]);
 
   const tone = item.tone ?? "default";
   return (
-    <li className={`${styles.toast} ${styles[tone]}`}>
+    <li
+      ref={ref}
+      className={`${styles.toast} ${styles[tone]}`}
+      data-state={item.leaving ? "leaving" : undefined}
+      aria-hidden={item.leaving || undefined}
+    >
       <div
         className={styles.body}
         role={tone === "alert" ? "alert" : "status"}

@@ -108,10 +108,23 @@
   height: 1rem;
 }
 
+/* Dismissed: it drops and fades in the time a glance takes, then leaves the list. */
+.toast[data-state="leaving"] {
+  pointer-events: none;
+  animation: leave var(--duration-fast) var(--ease-standard) forwards;
+}
+
 @keyframes enter {
   from {
     opacity: 0;
     transform: translateY(0.5rem);
+  }
+}
+
+@keyframes leave {
+  to {
+    opacity: 0;
+    transform: translateY(0.5rem) scale(0.98);
   }
 }
 

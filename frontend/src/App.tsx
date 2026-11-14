@@ -9,6 +9,7 @@ import { Button } from "./components/Button";
 import { FullscreenButton } from "./components/FullscreenButton";
 import { Logo } from "./components/Logo";
 import { Skeleton } from "./components/Skeleton";
+import { usePresence } from "./components/usePresence";
 import { AlertCard } from "./features/alerts/AlertCard";
 import { DEFAULT_DEMO_FIXTURE, DemoAlertButton } from "./features/alerts/DemoAlertButton";
 import { askNotificationPermission } from "./features/alerts/notify";
@@ -75,6 +76,8 @@ export function App() {
   // A past report opened from the sidebar; null shows the latest one.
   const [pastReport, setPastReport] = useState<Report | null>(null);
   const panelRef = useRef<HTMLElement>(null);
+  // The panel slides out before it unmounts; `shownPanel` holds what it showed meanwhile.
+  const { shown: shownPanel, leaving: panelLeaving } = usePresence(panel, panelRef);
   const returnFocus = useRef<HTMLElement | null>(null);
   // Wide screens: the sidebar sits beside the chat and can collapse. Narrow: it is a drawer.
   const [sidebarOpen, setSidebarOpen] = useState(readSidebarOpen);
@@ -246,7 +249,7 @@ export function App() {
             {STATUS_TEXT[stream]}
           </span>
           <div className={styles.actions}>
-            {demo && <DemoAlertButton fixture={demo} />}
+            {demo && <DemoAlertButton fixture={demo} labelClassName={styles.actionLabel} />}
             <Button
               variant="ghost"
               size="sm"
@@ -254,13 +257,13 @@ export function App() {
               aria-pressed={panel === "history"}
               onClick={() => (panel === "history" ? closePanel() : openPanel("history"))}
             >
-              What changed
+              <span className={styles.actionLabel}>What changed</span>
             </Button>
             <FullscreenButton />
           </div>
         </header>
 
-        <main className={styles.main} data-panel={panel ?? undefined}>
+        <main className={styles.main} data-panel={shownPanel ?? undefined}>
           <div className={styles.chat}>
             <ChatPanel
               renderAfter={(m) => (
@@ -278,9 +281,11 @@ export function App() {
               followKey={`${report.data?.id}|${reportAnchor}|${openAlert?.alert.id}`}
             />
           </div>
-          {panel && (
+          {shownPanel && (
             <section
               ref={panelRef}
+              data-state={panelLeaving ? "leaving" : undefined}
+              aria-hidden={panelLeaving || undefined}
               id="report-panel"
               className={styles.panel}
               aria-labelledby="panel-title"
@@ -289,7 +294,7 @@ export function App() {
             >
               <div className={styles.panelBar}>
                 <h2 id="panel-title" className={styles.panelTitle}>
-                  {pastReport ? "Past report" : PANEL_TITLE[panel]}
+                  {pastReport ? "Past report" : PANEL_TITLE[shownPanel]}
                 </h2>
                 <Button
                   variant="ghost"
@@ -299,28 +304,33 @@ export function App() {
                   onClick={closePanel}
                 />
               </div>
-              {panel === "history" ? (
-                <ProfileHistory />
-              ) : pastReport ? (
-                <ReportView
-                  report={pastReport}
-                  isPending={false}
-                  error={null}
-                  onRetry={() => undefined}
-                  diff={null}
-                  archived
-                />
-              ) : (
-                <ReportView
-                  report={report.data ?? undefined}
-                  isPending={report.isPending}
-                  error={report.error}
-                  onRetry={() => report.refetch()}
-                  diff={diff}
-                  onConfirm={confirm}
-                  confirmed={confirmed}
-                />
-              )}
+              <div
+                key={pastReport ? `past-${reportKey(pastReport)}` : shownPanel}
+                className={styles.panelContent}
+              >
+                {shownPanel === "history" ? (
+                  <ProfileHistory />
+                ) : pastReport ? (
+                  <ReportView
+                    report={pastReport}
+                    isPending={false}
+                    error={null}
+                    onRetry={() => undefined}
+                    diff={null}
+                    archived
+                  />
+                ) : (
+                  <ReportView
+                    report={report.data ?? undefined}
+                    isPending={report.isPending}
+                    error={report.error}
+                    onRetry={() => report.refetch()}
+                    diff={diff}
+                    onConfirm={confirm}
+                    confirmed={confirmed}
+                  />
+                )}
+              </div>
             </section>
           )}
         </main>

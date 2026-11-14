@@ -12,7 +12,13 @@
   transition:
     background-color var(--duration-fast) var(--ease-standard),
     border-color var(--duration-fast) var(--ease-standard),
-    color var(--duration-fast) var(--ease-standard);
+    color var(--duration-fast) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+/* Pressed: the button gives a little under the finger, then springs back. */
+.button:active:not(:disabled) {
+  transform: scale(var(--press-scale));
 }
 
 .button svg {
@@ -72,7 +78,7 @@
 }
 
 .spin {
-  animation: spin 900ms linear infinite;
+  animation: spin var(--duration-spin) linear infinite;
 }
 
 @keyframes spin {

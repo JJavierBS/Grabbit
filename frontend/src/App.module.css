@@ -65,7 +65,7 @@
   z-index: calc(var(--z-drawer) - 1);
   padding: 0;
   border: 0;
-  background: rgb(20 21 28 / 0.28);
+  background: var(--color-scrim);
   animation: fade var(--duration-base) var(--ease-out);
 }
 
@@ -144,6 +144,18 @@
   animation: slide-in var(--duration-slow) var(--ease-out);
 }
 
+/* Closing: it slides back out the way it came, a touch faster than it arrived. */
+.panel[data-state="leaving"] {
+  pointer-events: none;
+  animation: slide-out var(--duration-base) var(--ease-standard) forwards;
+}
+
+/* Switching between the report and What changed: the new content fades in under the bar. */
+.panelContent {
+  min-width: 0;
+  animation: fade var(--duration-base) var(--ease-out);
+}
+
 .panel:focus-visible {
   box-shadow: inset 0 0 0 2px var(--color-focus);
   border-radius: var(--radius-lg) 0 0 0;
@@ -193,6 +205,13 @@
 
 @keyframes slide-in {
   from {
+    opacity: 0;
+    transform: translateX(2rem);
+  }
+}
+
+@keyframes slide-out {
+  to {
     opacity: 0;
     transform: translateX(2rem);
   }
@@ -252,14 +271,30 @@
   }
 }
 
+/* Phones: one top bar row. The actions keep their icons and say their names to screen
+   readers only; the labels sit in `.actionLabel`. */
 @media (max-width: 40rem) {
   .topbar {
-    flex-wrap: wrap;
-    padding: var(--space-3) var(--space-4);
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
   }
 
   .actions {
-    width: 100%;
-    margin-left: 0;
+    gap: var(--space-1);
+  }
+
+  .actionLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .actions button {
+    min-width: 2rem;
+    min-height: 2rem;
   }
 }
