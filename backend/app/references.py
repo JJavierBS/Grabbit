@@ -7,23 +7,41 @@ without this a trusted investor typed in chat would never match.
 
 from app.discovery.build import normalise_name
 from app.models import Candidate, Profile, ReferenceInvestor
+from app.store import db
 
 UNRESOLVED = "unresolved:"
 
 # Investors seen in any attending startup's rounds, filtered out or not (discovery fills it),
 # so a trusted investor resolves even when none of the startups it backed match the thesis.
-_seen: dict[str, str] = {}
+# Stored, so a restart does not forget them until discovery runs again.
+_TABLE = """CREATE TABLE IF NOT EXISTS investor_names (
+    name TEXT PRIMARY KEY,
+    entity_id TEXT NOT NULL
+)"""
+db.register_table(_TABLE)
 
 
 def remember(investors: dict[str, str]) -> None:
-    _seen.update(investors)
+    with db.connect() as conn:
+        conn.execute(_TABLE)
+        conn.executemany(
+            "INSERT OR REPLACE INTO investor_names (name, entity_id) VALUES (?, ?)",
+            list(investors.items()),
+        )
+
+
+def _seen() -> dict[str, str]:
+    with db.connect() as conn:
+        conn.execute(_TABLE)
+        rows = conn.execute("SELECT name, entity_id FROM investor_names").fetchall()
+    return {row["name"]: row["entity_id"] for row in rows}
 
 
 def resolve_references(profile: Profile, candidates: list[Candidate]) -> Profile:
     """Profile whose unresolved reference investors carry the matching Cala entity id."""
     if not any(r.entity_id.startswith(UNRESOLVED) for r in profile.reference_investors):
         return profile
-    known = _seen | {
+    known = _seen() | {
         normalise_name(investor.name): investor.entity_id
         for candidate in candidates
         for round_ in candidate.rounds
@@ -36,5 +54,11 @@ def resolve_references(profile: Profile, candidates: list[Candidate]) -> Profile
 def _resolve(ref: ReferenceInvestor, known: dict[str, str]) -> ReferenceInvestor:
     if not ref.entity_id.startswith(UNRESOLVED):
         return ref
-    entity_id = known.get(normalise_name(ref.name))
+    name = normalise_name(ref.name)
+    entity_id = known.get(name)
+    if entity_id is None and len(name.split()) >= 2:  # one word ("ugly") is too loose
+        # Cala names a fund by its legal vehicle: "Ugly Duckling Ventures Management ApS",
+        # "500 Global (500 Emerging Europe)". Take the shortest one that starts with it.
+        longer = sorted((k for k in known if k.startswith(f"{name} ")), key=len)
+        entity_id = known[longer[0]] if longer else None
     return ref.model_copy(update={"entity_id": entity_id}) if entity_id else ref
