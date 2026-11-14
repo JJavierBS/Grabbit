@@ -131,6 +131,12 @@
   --press-scale: 0.98; /* a pressed button gives a little */
 
   --chat-width: 44rem;
+  --icon-size: 1.125rem;
+  --icon-stroke: 1.75;
+  --control-size: 2.25rem;
+  --touch-target: 2.75rem;
+  --header-height: 4rem;
+
   --sidebar-width: 17rem;
   --z-panel: 40;
   --z-drawer: 45;

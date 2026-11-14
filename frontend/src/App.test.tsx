@@ -16,6 +16,20 @@ const base = {
 };
 
 describe("App", () => {
+  it("omits the fullscreen action even when the browser supports it", async () => {
+    const descriptor = Object.getOwnPropertyDescriptor(document, "fullscreenEnabled");
+    Object.defineProperty(document, "fullscreenEnabled", { configurable: true, value: true });
+    try {
+      mockApi({ ...base, "GET /api/reports/latest": () => reportV1 });
+      renderWithClient(<App />);
+      expect(await screen.findByRole("button", { name: "What changed" })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: /full screen/i })).not.toBeInTheDocument();
+    } finally {
+      if (descriptor) Object.defineProperty(document, "fullscreenEnabled", descriptor);
+      else Reflect.deleteProperty(document, "fullscreenEnabled");
+    }
+  });
+
   it("shows the report as an outline in the chat, then opens it in the side panel", async () => {
     mockApi({ ...base, "GET /api/reports/latest": () => reportV1 });
     renderWithClient(<App />);

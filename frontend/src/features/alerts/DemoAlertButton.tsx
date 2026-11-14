@@ -1,4 +1,4 @@
-import { Bell } from "lucide-react";
+import { BellDot } from "lucide-react";
 import { type CSSProperties, useEffect, useState } from "react";
 import { useSimulateEvent } from "../../api/hooks/queries";
 import { Button } from "../../components/Button";
@@ -82,7 +82,7 @@ export function DemoAlertButton({ fixture, labelClassName }: DemoAlertButtonProp
               <circle cx="12" cy="12" r="10.5" pathLength={100} />
             </svg>
           )}
-          <Bell />
+          <BellDot />
         </span>
       }
     >
