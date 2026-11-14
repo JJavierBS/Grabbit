@@ -11,10 +11,8 @@ human confirms.
 | Id | Question | Why it matters | Proposal |
 | --- | --- | --- | --- |
 | D2 | Demo thesis and reference investors for the Slush angel | The shortlist comes from Slush 2026 attendees (decisions.md 03:10); the thesis decides which ones and how good the demo looks | Pull the attendee list once, then pick a thesis that yields 5-10 startups with recent rounds and a known lead |
-| D4 | Stack: language, frameworks, LLM provider and model, storage, scheduler, hosting of the demo link | architecture.md, api.md, backend.md, frontend.md, testing.md and the Makefile are all TODO; the agent and the importance check need an LLM (flow.md section 4), with no env var yet | Pick what the team knows best; one repo, one `make dev` |
 | D5 | Discovery outside events: a free thesis with no `Event` to start from | The demo discovers from the Slush `Event` (decisions.md 03:10); outside events Cala cannot list companies by criteria (cala.md) | Team talks to Cala (C1, C3). Fallback: widen through the graph from the reference investors' rounds |
 | D6 | Compete in the Context.dev challenge too? | One submission can enter several challenges (guidebook p. 11). Its criteria are not in the repo | Read its brief (hackjunction.app challenge 332 and tech challenge 44), distil it into context-dev.md, then decide |
-| D7 | Feature freeze time and explicit out-of-scope list (challenge.md) | Without them the MVP keeps growing | Freeze Sat evening; out of scope already includes portfolio watching of listed shares |
 
 ## Conflicts between docs
 | Id | Conflict | Where | To resolve |
@@ -39,7 +37,7 @@ human confirms.
 | R2 | The mocked alert is discovered by a judge and read as faked execution | Label it on screen and in the README as "simulated event" (the fixture is already separate, flow.md section 5); say it aloud in the live demo |
 | R3 | No real Cala change exists for the demo companies, so the watcher shows nothing real | Pick, during D2, at least one startup with a recent dated event (round, executive change, headcount jump) and replay it from the snapshot |
 | R4 | Deployed demo link: desktop notifications need a browser tab and permission; the Cala key must stay server-side | Server-side calls only; the deployed link can run in cached mode |
-| R5 | The video shows the least original part (digest, alert) and no "verified by Cala" moment | Fixed in this audit: the demo script now shows source labels; consider a few seconds of the thesis flow |
+| R5 | The video must show the originality: the report rewriting itself after a correction | Demo script step 4 shows it; keep the profile history one click away for Q&A |
 | R6 | Originality: no comparison with existing tools | pitch.md lists the alternatives to research; do not claim "nothing like it exists" without checking |
 | R7 | Impact and Implementation (event-wide judges) are not argued anywhere | pitch.md drafts both; needs numbers the team can defend |
 

@@ -8,8 +8,8 @@ The video script lives in challenge.md "Demo script".
 ## Punchline (draft, pick one, max one sentence)
 - "Grabbit turns a vague investment thesis into a verified shortlist, and tells you when
   something changes."
-- "Spend your time deciding, not researching: an investing agent where every fact is
-  verified by Cala."
+- "Spend your time deciding, not researching: an investing agent that learns how you want
+  your report, with every fact sourced."
 - "The research team small investors cannot afford: it asks the right questions, checks
   every number and watches your companies for you."
 - "Cala's graph finds the deal; every fact shows how much you can trust it."
@@ -30,8 +30,9 @@ The video script lives in challenge.md "Demo script".
 An agent that starts from a vague thesis, walks the Slush 2026 attendees in Cala's graph,
 asks data-backed questions, narrows them to a shortlist and a memo, and then watches those
 startups before, during and after the event until the angel finds a round. Every fact
-shows its trust level and source; web signals are labelled "web, unverified". The investor
-configures it. It never tells you what to buy.
+shows its trust level and source; web signals are labelled "web, unverified". The agent
+personalizes the report itself from the conversation, rewriting its own instructions. It
+never tells you what to buy.
 
 ## Why Cala is core (Use of Cala, 25%)
 - Every fact on screen comes from Cala's raw entity graph with source and date (cala.md).
@@ -46,12 +47,14 @@ configures it. It never tells you what to buy.
 - Pitch line: Cala's graph finds the deal; every fact shows how much you can trust it.
 
 ## Originality (draft)
+- Headline: the agent personalizes itself. Every correction or reaction in the chat makes
+  Gemini rewrite its own report instructions; the report changes on screen and the history
+  shows what it learned (agent.md "Self-personalization").
 - An agent that asks the investor questions instead of only answering them (Investor B's
   "plan mode" analogy).
 - Trust as the product: every fact shows how strong its source is (registry, company,
   press, database) and how precise its date is; "not published" is never shown as zero.
 - Meet startups before their round: "likely to raise soon", not "raised last month".
-- It adapts to you and you configure it (criteria, sources, format, alert threshold).
 - To research before claiming anything (R6 in open-questions.md): startup databases with
   saved searches and alerts (Harmonic, Specter, Crunchbase, Dealroom), generic AI chatbots.
   State the difference, not "nothing like it exists".
@@ -72,9 +75,10 @@ configures it. It never tells you what to buy.
 ## 2-minute table script for peer review (draft)
 1. 0:00-0:20 Problem in one sentence plus one number (Slush attendees vs one person).
 2. 0:20-1:20 Live: type a vague thesis and two reference investors, answer two questions,
-   see the Slush shortlist with leads and trust levels; open one source.
+   see the Slush shortlist with leads and trust levels; say "shorter, co-investors first"
+   and watch the report change; open one source.
 3. 1:20-1:45 Trigger the simulated event; the alert explains why it matters.
-4. 1:45-2:00 Punchline and what is next (Telegram or WhatsApp, more countries as Cala grows).
+4. 1:45-2:00 Punchline and what is next (messaging channels, more events as Cala grows).
 
 ## Deck outline (PDF, about 8 slides)
 1. Name, punchline, team.

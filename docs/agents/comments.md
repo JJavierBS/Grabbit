@@ -7,5 +7,5 @@
 - No emojis, no decorative separators, no commented-out code, no TODO without an issue number
   (`TODO(#23): ...`).
 - Docstrings only on public functions/components whose contract is not obvious from the
-  signature. Style: TODO (JSDoc / Google-style docstrings / ... once the stack is chosen).
+  signature. Style: Google-style docstrings in Python, TSDoc (`/** ... */`) in TypeScript.
 - English, short, one line when possible.

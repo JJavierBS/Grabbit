@@ -20,6 +20,14 @@ will be what CI/CD runs, so everything must pass through it alone, from a clean 
 - `make test` stays under ~60 s and prints only failures and a summary.
 
 ## Layout
-- Framework: TODO
-- Location and naming: TODO
-- Fixtures / seed data: TODO
+- Framework: backend pytest (+ pytest-asyncio, respx to mock httpx); frontend Vitest +
+  Testing Library (jsdom). `make test` runs both quietly (`pytest -q`, Vitest dot reporter).
+- Location and naming: `backend/tests/test_<module>.py`, mirroring `app/`;
+  `frontend/src/**/<Name>.test.tsx` next to the component.
+- Fixtures / seed data: recorded Cala responses in `backend/tests/fixtures/cala/` (real
+  shapes, trimmed); Gemini never runs in tests, use `FakeLLM` with scripted replies; API
+  fixtures in `backend/app/fixtures/` feed both the mock endpoints and frontend tests.
+  Freeze time with an injected clock, not the system clock.
+- Must-have tests: Cala normalisation to `Fact` (both `document` shapes, absent ->
+  `not_published`), each signal function, profile changes and undo, watcher diff, and the
+  trust badge rendering.

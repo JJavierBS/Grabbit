@@ -17,3 +17,12 @@ coverage/
 !/.claude/
 /.claude/*
 !/.claude/settings.json
+
+# Local data: SQLite, Cala cache
+/data/
+
+# Python
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/

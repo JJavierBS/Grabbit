@@ -17,9 +17,11 @@ a default, so the first report can always run. Ask in this order (most needed fi
 4. Preferred sources: commentators, media or influencers. They form the allow-list read
    through Context.dev, labelled "web, unverified" (research.md finding 10).
 5. Investment profile: one question, used as context. Not a feature (finding 3).
-6. Format: frequency (default weekly, finding 8), length, level of detail, alert threshold.
-   Ask lightly or skip: the first report is the better place to tune format.
-Corrections ("no B2C", "less technical") update the profile immediately.
+6. Format: length, level of detail, alert threshold. Cadence follows the event (agent.md
+   "Cadence"). Ask lightly or skip: the first report is the better place to tune format.
+Corrections ("no B2C", "less technical") update the profile immediately: Gemini edits the
+profile and its own report instructions (agent.md "Self-personalization"). Questions come
+from the question bank in agent.md.
 Voice input: browser speech-to-text into the same chat; nice to have.
 
 ## 2. First report (validation)
@@ -27,17 +29,17 @@ Voice input: browser speech-to-text into the same chat; nice to have.
   report. Candidates are the event's attendees in Cala (`Event` -> incoming
   `PARTICIPATES_IN_EVENT`, cala.md), filtered locally by founding date, funding stage and
   headcount to drop funds and corporates. Per startup: last rounds with lead and
-  co-investors, overlap with the reference investors, "likely to raise soon" (headcount
-  trend, ARR, months since last round, the lead's follow-on history).
-- Every fact shows its trust level from `source_rank` (registry, company, press,
-  database) and its date precision; an absent field reads "not published", never zero.
+  co-investors, overlap with the reference investors, "likely to raise soon" (signal
+  definitions: agent.md).
+- Every fact shows its trust badge (agent.md "Trust scale") and its date precision; an
+  absent field reads "not published", never zero.
 - The user reacts ("shorter", "drop construction"); each reaction edits the profile and the
   report is regenerated. Loop until the user confirms.
 - Confirmation schedules the recurring digest and starts the watcher. The browser asks for
   notification permission here, so alerts can reach the user later.
 
 ## 3. Steady state
-- Scheduled digest, at the chosen frequency: what changed in the shortlisted companies and
+- Scheduled digest (daily in the event week, weekly after): what changed in the shortlist and
   why (a new round, who led it, news), new candidates that match the thesis, soft signals
   apart. Facts carry their trust level, web items "web, unverified", inline. Nothing new:
   a one-line message or none. Around the event: prep before, alerts during, follow-up
@@ -55,12 +57,12 @@ reuse the concepts, not the code.
 
 | Part | Role |
 | --- | --- |
-| Profile store | Onboarding answers, thesis, shortlist as Cala entity ids, format, threshold |
-| Scheduler | Two routines per user: `digest` (cron from the profile) and `watcher` (every ~15 min). A run is skipped while the previous one is still active |
+| Profile store | Onboarding answers, thesis, shortlist as Cala entity ids, format, threshold, Gemini's own `instructions`, versions |
+| Scheduler | APScheduler in the API process (architecture.md). Two routines per user: `digest` (from the cadence) and `watcher` (every 15 min). A run is skipped while the previous one is still active |
 | Snapshot store | Last known state per watched entity and the last report sent. Each run receives them, so it reports only what is new and can explain the change |
 | Watcher | Cala has no push or webhooks: poll the watched entities, diff against the snapshot |
 | Importance check | Explicit rules first, then an LLM score with a one-line reason; alert only above the user's threshold |
-| Delivery channel | One interface: in-app chat plus browser desktop notification now; Telegram or WhatsApp later (say so in the pitch) |
+| Delivery channel | In-app chat plus browser desktop notification via `/api/events`; Telegram and WhatsApp are out of scope (may be named as future in the pitch) |
 
 What the watcher diffs in Cala (cala.md): a new `FundingRound` and its lead; an executive
 joining or leaving (`valid_since`/`valid_until` on `IS_CEO_OF`, `IS_CTO_OF`...); a
