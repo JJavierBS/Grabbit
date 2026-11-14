@@ -13,13 +13,15 @@ export const DEFAULT_DEMO_FIXTURE = "grei_seed_round";
 
 interface DemoAlertButtonProps {
   fixture: string;
+  /** Lets the top bar hide the words on phones; the button keeps them as its name. */
+  labelClassName?: string;
 }
 
 /**
  * Queues the staged alert. While it waits, a ring drains around the bell and the button
  * says how many seconds are left; a simulation that fails says why instead of going quiet.
  */
-export function DemoAlertButton({ fixture }: DemoAlertButtonProps) {
+export function DemoAlertButton({ fixture, labelClassName }: DemoAlertButtonProps) {
   const simulate = useSimulateEvent();
   const { toast } = useToast();
   const [endsAt, setEndsAt] = useState<number | null>(null);
@@ -84,7 +86,7 @@ export function DemoAlertButton({ fixture }: DemoAlertButtonProps) {
         </span>
       }
     >
-      {label}
+      <span className={labelClassName}>{label}</span>
     </Button>
   );
 }
