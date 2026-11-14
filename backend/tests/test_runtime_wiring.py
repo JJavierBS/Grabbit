@@ -86,6 +86,60 @@ async def test_watcher_job_checks_the_latest_report_shortlist(monkeypatch):
     assert calls == [(profile_store.current().version, [c.entity_id for c in report.candidates])]
 
 
+async def test_watcher_keeps_watching_after_a_digest_with_nothing_new(monkeypatch):
+    prep = fixtures.latest_report().model_copy(update={"id": "rep-prep", "kind": "prep"})
+    quiet = prep.model_copy(update={"id": "rep-quiet", "kind": "digest", "candidates": []})
+    report_store.add(prep)
+    report_store.add(quiet)
+    calls = []
+
+    class FakeWatcher:
+        def __init__(self, client, store, publish):
+            pass
+
+        async def run_once(self, profile, shortlist):
+            calls.append(shortlist)
+            return []
+
+    monkeypatch.setattr(watcher_run, "Watcher", FakeWatcher)
+
+    await runtime.watcher_job()
+
+    assert calls == [[c.entity_id for c in prep.candidates]]
+
+
+async def test_watcher_shortlist_adds_startups_from_digests_after_the_prep(monkeypatch):
+    prep = fixtures.latest_report().model_copy(update={"id": "rep-prep", "kind": "prep"})
+    first, *rest = prep.candidates
+    report_store.add(prep.model_copy(update={"id": "rep-old", "candidates": rest}))
+    report_store.add(
+        prep.model_copy(update={"id": "rep-digest", "kind": "digest", "candidates": [first]})
+    )
+    calls = []
+
+    class FakeWatcher:
+        def __init__(self, client, store, publish):
+            pass
+
+        async def run_once(self, profile, shortlist):
+            calls.append(shortlist)
+            return []
+
+    monkeypatch.setattr(watcher_run, "Watcher", FakeWatcher)
+
+    await runtime.watcher_job()
+
+    assert sorted(calls[0]) == sorted(c.entity_id for c in prep.candidates)
+
+
+def test_since_last_prep_stops_at_the_latest_prep():
+    base = fixtures.latest_report()
+    for rid, kind in [("p1", "prep"), ("d1", "digest"), ("p2", "prep"), ("d2", "digest")]:
+        report_store.add(base.model_copy(update={"id": rid, "kind": kind}))
+
+    assert [r.id for r in report_store.since_last_prep()] == ["d2", "p2"]
+
+
 async def test_watcher_job_survives_a_cache_miss(monkeypatch):
     report_store.add(fixtures.latest_report())
 
