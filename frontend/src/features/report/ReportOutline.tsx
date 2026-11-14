@@ -1,4 +1,4 @@
-import { PanelRightOpen } from "lucide-react";
+import { FileText } from "lucide-react";
 import type { Report } from "../../api/types";
 import { Badge } from "../../components/Badge";
 import { formatDate } from "../../components/FactValue";
@@ -40,7 +40,7 @@ export function ReportOutline({ report, open, rewritten, onOpen }: ReportOutline
         aria-controls="report-panel"
         onClick={onOpen}
       >
-        <PanelRightOpen aria-hidden="true" />
+        <FileText aria-hidden="true" />
         {open ? "Report is open" : "Open report"}
       </button>
     </article>

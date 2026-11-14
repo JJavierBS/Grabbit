@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, Mic, RefreshCw, Square } from "lucide-react";
+import { ArrowDown, MicVocal, RefreshCw, SendHorizontal, Square } from "lucide-react";
 import { type FormEvent, Fragment, type KeyboardEvent, type ReactNode, useState } from "react";
 import {
   useChat,
@@ -205,7 +205,11 @@ export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
               className={styles.talk}
               onClick={() => dictation.toggle(draft)}
               icon={
-                dictation.listening ? <Square aria-hidden="true" /> : <Mic aria-hidden="true" />
+                dictation.listening ? (
+                  <Square aria-hidden="true" />
+                ) : (
+                  <MicVocal aria-hidden="true" />
+                )
               }
             />
           )}
@@ -215,7 +219,7 @@ export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
             className={styles.send}
             loading={send.isPending}
             disabled={!draft.trim()}
-            icon={<ArrowUp aria-hidden="true" />}
+            icon={<SendHorizontal aria-hidden="true" />}
           />
         </div>
       </form>

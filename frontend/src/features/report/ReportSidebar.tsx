@@ -1,4 +1,4 @@
-import { PanelLeftClose, RefreshCw } from "lucide-react";
+import { PanelLeft, RefreshCw } from "lucide-react";
 import type { ReactNode } from "react";
 import { useReports } from "../../api/hooks/queries";
 import type { Report } from "../../api/types";
@@ -63,7 +63,7 @@ export function ReportSidebar({
           size="sm"
           className={styles.close}
           aria-label="Close sidebar"
-          icon={<PanelLeftClose aria-hidden="true" />}
+          icon={<PanelLeft aria-hidden="true" />}
           onClick={onClose}
         />
       </div>
