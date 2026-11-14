@@ -3,19 +3,6 @@
     @font-face{font-family:"Hanken Grotesk";src:url("assets/fonts/hanken-grotesk.woff2") format("woff2");font-weight:100 900}
     #root{position:absolute;inset:0;color:#14151c;font-family:"Hanken Grotesk",sans-serif;overflow:hidden}
     #root .clip{position:absolute;inset:0}
-    .s03-win{position:absolute;width:500px;height:310px;background:#fff;border:2px solid #e3e3ec;border-radius:22px;box-shadow:0 30px 70px rgba(20,21,28,.14);overflow:hidden}
-    .s03-bar{height:50px;background:#f0eff5;border-bottom:2px solid #e3e3ec;display:flex;align-items:flex-end;gap:6px;padding:0 16px}
-    .s03-bar i{width:12px;height:12px;border-radius:50%;background:#c9c9d6;align-self:center;flex:none}
-    .s03-bar i:nth-child(3){margin-right:10px}
-    .s03-tab{height:36px;width:62px;border-radius:10px 10px 0 0;background:#e3e3ec;flex:none}
-    .s03-tab.on{width:186px;background:#fff;padding:0 12px;font-size:20px;font-weight:500;line-height:36px;color:#5c5d6e;white-space:nowrap;overflow:hidden}
-    .s03-body{padding:26px 28px;display:flex;flex-direction:column;gap:16px}
-    .s03-body b{height:14px;border-radius:7px;background:#e3e3ec;display:block}
-    .s03-body b:first-child{height:22px;border-radius:11px;background:#c9c9d6}
-    .s03-plate{position:absolute;left:1010px;top:730px;background:#f7f7fa;border:2px solid #e3e3ec;border-radius:22px;box-shadow:0 30px 70px rgba(20,21,28,.14);padding:22px 38px 28px}
-    .s03-line{font-size:100px;font-weight:800;letter-spacing:-.04em;line-height:1.08;white-space:nowrap;font-variant-numeric:tabular-nums}
-    .s03-violet{color:#6139f8}
-    .s03-sp{position:absolute;background:#6139f8}
     .s03-card{position:absolute;left:80px;background:#f7f7fa;border:2px solid #e3e3ec;border-radius:22px;box-shadow:0 30px 70px rgba(20,21,28,.14);padding:26px 40px 32px}
     .s03-skip{font-size:112px;font-weight:800;letter-spacing:-.04em;line-height:1.06;white-space:nowrap}
     .s03-skip span{display:inline-block}
@@ -24,31 +11,7 @@
     .s03-lock b{font-family:"Outfit",sans-serif;font-weight:800;font-size:100px;letter-spacing:-.01em}
   </style>
   <div id="root" data-composition-id="s03" data-width="1920" data-height="1080">
-    <!-- the pile from s02 stays over the cut, then the speed lines of the logo take it away -->
-    <div id="s03-pile" class="clip" data-start="0" data-duration="1" data-layout-allow-overlap>
-      <div id="s03-sweep" data-layout-allow-overflow data-layout-allow-overlap>
-        <div id="s03-w1" class="s03-win" style="left:1010px;top:90px"><div class="s03-bar"><i></i><i></i><i></i><span class="s03-tab on" data-layout-ignore>seed round 2025</span><span class="s03-tab"></span><span class="s03-tab"></span><span class="s03-tab"></span></div><div class="s03-body"><b style="width:69%"></b><b style="width:75%"></b><b style="width:77%"></b><b style="width:49%"></b></div></div>
-        <div id="s03-w2" class="s03-win" style="left:1330px;top:60px"><div class="s03-bar"><i></i><i></i><i></i><span class="s03-tab on" data-layout-ignore>who invested in</span><span class="s03-tab"></span><span class="s03-tab"></span><span class="s03-tab"></span></div><div class="s03-body"><b style="width:76%"></b><b style="width:82%"></b><b style="width:84%"></b><b style="width:60%"></b></div></div>
-        <div id="s03-w3" class="s03-win" style="left:1150px;top:250px"><div class="s03-bar"><i></i><i></i><i></i><span class="s03-tab on" data-layout-ignore>founder background</span><span class="s03-tab"></span><span class="s03-tab"></span><span class="s03-tab"></span></div><div class="s03-body"><b style="width:83%"></b><b style="width:69%"></b><b style="width:91%"></b><b style="width:41%"></b></div></div>
-        <div id="s03-w4" class="s03-win" style="left:980px;top:420px"><div class="s03-bar"><i></i><i></i><i></i><span class="s03-tab on" data-layout-ignore>is it at Slush?</span><span class="s03-tab"></span><span class="s03-tab"></span><span class="s03-tab"></span></div><div class="s03-body"><b style="width:90%"></b><b style="width:76%"></b><b style="width:76%"></b><b style="width:52%"></b></div></div>
-        <div id="s03-w5" class="s03-win" style="left:1350px;top:330px"><div class="s03-bar"><i></i><i></i><i></i><span class="s03-tab on" data-layout-ignore>pitch deck pdf</span><span class="s03-tab"></span><span class="s03-tab"></span><span class="s03-tab"></span></div><div class="s03-body"><b style="width:67%"></b><b style="width:83%"></b><b style="width:83%"></b><b style="width:63%"></b></div></div>
-        <div id="s03-w6" class="s03-win" style="left:1090px;top:560px"><div class="s03-bar"><i></i><i></i><i></i><span class="s03-tab on" data-layout-ignore>team size</span><span class="s03-tab"></span><span class="s03-tab"></span><span class="s03-tab"></span></div><div class="s03-body"><b style="width:74%"></b><b style="width:70%"></b><b style="width:90%"></b><b style="width:44%"></b></div></div>
-        <div id="s03-w7" class="s03-win" style="left:1300px;top:520px"><div class="s03-bar"><i></i><i></i><i></i><span class="s03-tab on" data-layout-ignore>last valuation</span><span class="s03-tab"></span><span class="s03-tab"></span><span class="s03-tab"></span></div><div class="s03-body"><b style="width:81%"></b><b style="width:77%"></b><b style="width:75%"></b><b style="width:55%"></b></div></div>
-        <div id="s03-w8" class="s03-win" style="left:1040px;top:170px"><div class="s03-bar"><i></i><i></i><i></i><span class="s03-tab on" data-layout-ignore>press: raises</span><span class="s03-tab"></span><span class="s03-tab"></span><span class="s03-tab"></span></div><div class="s03-body"><b style="width:88%"></b><b style="width:84%"></b><b style="width:82%"></b><b style="width:66%"></b></div></div>
-        <div id="s03-w9" class="s03-win" style="left:1360px;top:150px"><div class="s03-bar"><i></i><i></i><i></i><span class="s03-tab on" data-layout-ignore>investor list</span><span class="s03-tab"></span><span class="s03-tab"></span><span class="s03-tab"></span></div><div class="s03-body"><b style="width:65%"></b><b style="width:71%"></b><b style="width:89%"></b><b style="width:47%"></b></div></div>
-        <div id="s03-w10" class="s03-win" style="left:1200px;top:400px"><div class="s03-bar"><i></i><i></i><i></i><span class="s03-tab on" data-layout-ignore>portfolio page</span><span class="s03-tab"></span><span class="s03-tab"></span><span class="s03-tab"></span></div><div class="s03-body"><b style="width:72%"></b><b style="width:78%"></b><b style="width:74%"></b><b style="width:58%"></b></div></div>
-        <div id="s03-w11" class="s03-win" style="left:960px;top:300px"><div class="s03-bar"><i></i><i></i><i></i><span class="s03-tab on" data-layout-ignore>funding news</span><span class="s03-tab"></span><span class="s03-tab"></span><span class="s03-tab"></span></div><div class="s03-body"><b style="width:79%"></b><b style="width:85%"></b><b style="width:81%"></b><b style="width:39%"></b></div></div>
-        <div id="s03-w12" class="s03-win" style="left:1320px;top:610px"><div class="s03-bar"><i></i><i></i><i></i><span class="s03-tab on" data-layout-ignore>lead investor?</span><span class="s03-tab"></span><span class="s03-tab"></span></div><div class="s03-body"><b style="width:86%"></b><b style="width:72%"></b><b style="width:88%"></b><b style="width:50%"></b></div></div>
-        <div id="s03-plate" class="s03-plate">
-          <div class="s03-line"><span id="s03-n">47</span> tabs.</div>
-          <div id="s03-zero" class="s03-line s03-violet">0 decisions.</div>
-        </div>
-      </div>
-      <div data-layout-allow-overflow>
-        <div id="s03-sp1" class="s03-sp" data-layout-ignore style="left:1000px;top:400px;width:640px;height:84px;border-radius:42px"></div>
-        <div id="s03-sp2" class="s03-sp" data-layout-ignore style="left:940px;top:520px;width:800px;height:86px;border-radius:43px"></div>
-      </div>
-    </div>
+    <!-- the pile and the speed lines that take it away: Remotion clip assets/overlays/pile.webm, mounted in index.html -->
     <div id="s03-skip" class="clip" data-start="1.75" data-duration="2.7">
       <div id="s03-skip-card" class="s03-card" style="top:330px">
         <div class="s03-skip"><span id="s03-k1">Skip</span></div>
@@ -65,15 +28,14 @@
     (() => {
       const tl = gsap.timeline({ paused: true });
       // "there's a way" 0.35 s, "skip the data" 1.8 s, "meet" 3.75 s, "Grabbit" 4.7 s
-      tl.fromTo(".s03-sp", { scaleX: 0, transformOrigin: "0% 50%" }, { scaleX: 1, duration: 0.16, ease: "power2.out", stagger: 0.04 }, 0.16);
-      tl.fromTo(".s03-sp", { x: 0 }, { x: 1100, duration: 0.4, ease: "power2.in", stagger: 0.04 }, 0.32);
-      tl.fromTo("#s03-sweep", { x: 0 }, { x: 1040, duration: 0.4, ease: "power2.in" }, 0.36);
       ["#s03-k1", "#s03-k2", "#s03-k3"].forEach((id, i) => {
         tl.fromTo(id, { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.16, ease: "power2.out" }, 1.95 + i * 0.09);
       });
-      tl.fromTo("#s03-skip-card", { opacity: 0, y: 40, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "power3.out" }, 1.8);
-      tl.to("#s03-skip-card", { opacity: 0, y: -20, duration: 0.28, ease: "power2.in" }, 4.15);
-      tl.fromTo("#s03-meet-card", { opacity: 0, x: -90 }, { opacity: 1, x: 0, duration: 0.45, ease: "power4.out" }, 4.6);
+      tl.fromTo("#s03-skip-card", { opacity: 0, y: 40, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "expo.out" }, 1.8);
+      // exits are shorter than entrances and do not move: a blur-out on the spot
+      tl.to("#s03-skip-card", { opacity: 0, filter: "blur(8px)", duration: 0.2, ease: "power2.in" }, 4.22);
+      // whip: the lockup lands blurred and sharpens
+      tl.fromTo("#s03-meet-card", { opacity: 0, x: -140, filter: "blur(10px)" }, { opacity: 1, x: 0, filter: "blur(0px)", duration: 0.45, ease: "power4.out" }, 4.6);
       tl.to("#s03-meet-card", { opacity: 0, y: -20, duration: 0.28, ease: "power2.in" }, 5.8);
       window.__timelines["s03"] = tl;
     })();

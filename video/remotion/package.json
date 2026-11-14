@@ -1,0 +1,22 @@
+{
+  "name": "grabbit-video-overlays",
+  "private": true,
+  "description": "Remotion overlay clips for the pitch video. HyperFrames stays the master: see ../SPEC.md.",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "render": "for c in Count Pile EndCard; do remotion render src/index.ts $c ../assets/overlays/$(echo $c | tr A-Z a-z).webm || exit 1; done"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.543",
+    "@remotion/fonts": "4.0.543",
+    "@remotion/google-fonts": "4.0.543",
+    "@remotion/motion-blur": "4.0.543",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.543"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.2",
+    "typescript": "5.9.3"
+  }
+}

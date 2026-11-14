@@ -1,6 +1,8 @@
 GOAL:    A judge understands in 1:56 that Grabbit gives a lone angel a sourced Slush
          shortlist and watches it, and wants to open the demo.
-OUTPUT:  HyperFrames, 1920 x 1080, 30 fps
+OUTPUT:  HyperFrames, 1920 x 1080, 30 fps. HyperFrames is the master. The fast graphics are
+         Remotion clips: source in remotion/src, `npm run render` there writes transparent
+         WebM to assets/overlays/, and index.html mounts each one as a muted video.
 TIME:    115.5 s x 30 = 3465 frames (hard limit 120 s). The presenter speaks in every filmed
          shot: the presenter's voice is the clock, and each graphic lands on its word. The ElevenLabs
          voice is only over the app captures.
@@ -22,9 +24,18 @@ OBJECTS: The presenter at Messukeskus, the Slush venue, filmed hand-held on an i
          Browser windows (title bar, three grey dots, truncated tab titles). The speed lines
          (the two violet bars of the logo): they take the tabs away (s03) and bring the end
          card in (s12). Third-party marks: the Slush logo appears once, in the s01 title.
-MOTION:  enter power3.out 12-18 frames; move power2.inOut 15 frames; exit power2.in
-         9 frames; camera punch-in power3.inOut 15 frames, then hold. Stagger 3 frames.
-         Text never moves while it is read.
+MOTION:  Ease by role: a plate arrives on expo.out in 18 frames; a move is power2.inOut,
+         15 frames; an exit is a blur-out on the spot, power2.in, 6 frames; camera punch-in
+         power3.inOut 15 frames, then hold.
+         Three entrances, not one: the rise (40 px, scale 0.96), the wipe from an edge
+         (clip-path, the answer plates "2 days" and "You: Deciding"), the whip from the left
+         (140 px, 10 px blur that clears as it lands: the lockup and the notification).
+         Text never moves while it is read. It arrives in place: letters 1.5 frames apart,
+         words 2-3 frames apart, 6 px blur to 0 in 4 frames.
+         Remotion clips: real motion blur on every fast mover (180 degree shutter, 16-32
+         samples) and closed-form springs with a damping ratio of 0.68-0.88, one for each
+         object. Numbers roll as odometer columns, they do not swap. In the end card the two
+         speed lines brake and become the two bars of the mark.
          Footage to app screen: zoom-through, 12 frames. The footage pushes in (power3.in),
          blurs and its exposure rises to the ground colour; the window grows in from 0.75 and
          18 px blur (expo.out, 15 frames). App screen to footage: the inverse, the window
@@ -32,6 +43,7 @@ MOTION:  enter power3.out 12-18 frames; move power2.inOut 15 frames; exit power2
          in the same direction. Footage to footage stays a hard cut.
 SHOTS:   s01    0-315     footage 1, the entrance, wide: "Slush 2026", counter to 3,000+, "2 days"
          s02  315-573     footage 2, medium: 12 windows pile up on the right, "47 tabs. 0 decisions."
+                          No scene file: the clip pile.webm, frames 393-603, crosses the cut
          s03  573-759     footage 3, medium: the speed lines take the pile away, "Skip the data.",
                           the presenter shows the app on the phone, the Grabbit lockup lands
          s05  759-1239    app capture (placeholder): thesis and two reference investors
@@ -43,6 +55,7 @@ SHOTS:   s01    0-315     footage 1, the entrance, wide: "Slush 2026", counter t
          s11 2883-3309    footage 4, the closing: "Other investors: Searching" against "You: Deciding",
                           then "Skip the data. Focus on what matters."
          s12 3309-3465    the speed lines bring the end card in; "Built on Cala"; demo link
+                          No scene file: the clip endcard.webm. The counter of s01 is count.webm
          Not mounted: cap.html and s04.html (the cap and into-the-screen shots are not in the cut).
 BANNED:  dark ground; glow; gradients; invented app UI; real product names on the tabs of
          shot 2; the logo before shot 3 except inside the tab; text over a dimmed capture;

@@ -18,13 +18,14 @@ each scene file. Frames 4 to 7 and frame 9 are placeholders until the app captur
 - duration: 10.5s
 - poster: 9.6s
 - spoken: "Slush 2026. In just one week, more than 3,000 startups will cross these doors, and you only have two days to find the right one."
-- reads: the Slush logo and 2026 (0.4-4.4s); the counter runs to 3,000+ (4.8-10.5s); "2 days" (8.4-10.5s)
+- reads: the Slush logo and 2026 (0.4-4.4s); the counter rolls to 3,000+ (4.8-10.5s); "2 days" (8.4-10.5s)
+- overlay: assets/overlays/count.webm (remotion/src/Count.tsx), 4.7-10.5s
 
 ## Frame 2: Tabs (10.5-19.1s)
 
 - act: Act 1: The door
 - status: built
-- src: compositions/s02.html
+- overlay: assets/overlays/pile.webm (remotion/src/Pile.tsx), 13.1-20.1s, no scene file
 - footage: assets/footage/shot-2-tabs.mp4
 - duration: 8.6s
 - poster: 8.4s
@@ -113,7 +114,7 @@ each scene file. Frames 4 to 7 and frame 9 are placeholders until the app captur
 
 - act: Act 3: It watches
 - status: built, the demo link is missing
-- src: compositions/s12.html
+- overlay: assets/overlays/endcard.webm (remotion/src/EndCard.tsx), no scene file
 - duration: 5.2s
 - poster: 2.2s
-- reads: the speed lines bring the card in (0-0.6s); the lockup, "Built on Cala" and the demo button hold (1.9-5.2s)
+- reads: the speed lines bring the card in and become the bars of the mark (0-0.9s); the lockup, "Built on Cala" and the demo button hold (2.3-5.2s)

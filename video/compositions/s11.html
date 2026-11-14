@@ -8,6 +8,7 @@
     .s11-w{font-size:80px;font-weight:800;letter-spacing:-.04em;line-height:1.1;white-space:nowrap}
     .s11-line{font-size:72px;font-weight:800;letter-spacing:-.04em;line-height:1.14;white-space:nowrap}
     .s11-violet{color:#6139f8}
+    .s11-w2{display:inline-block}
   </style>
   <div id="root" data-composition-id="s11" data-width="1920" data-height="1080">
     <div id="s11-others" class="clip" data-start="0.4" data-duration="8.95">
@@ -22,9 +23,9 @@
         <div id="s11-deciding" class="s11-w s11-violet">Deciding</div>
       </div>
     </div>
-    <div id="s11-close" class="clip" data-start="10.9" data-duration="3.3">
+    <div id="s11-close" class="clip" data-start="10.9" data-duration="4.1">
       <div id="s11-close-plate" class="s11-plate" style="left:80px;top:300px">
-        <div class="s11-line">Skip the data.</div>
+        <div id="s11-skip" class="s11-line"><span class="s11-w2">Skip</span> <span class="s11-w2">the</span> <span class="s11-w2">data.</span></div>
         <div id="s11-focus" class="s11-line">Focus on</div>
         <div id="s11-matters" class="s11-line s11-violet">what matters.</div>
       </div>
@@ -34,18 +35,21 @@
     (() => {
       const tl = gsap.timeline({ paused: true });
       const rise = { opacity: 0, y: 40, scale: 0.96 };
-      const land = { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "power3.out" };
+      const land = { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "expo.out" };
       const blurIn = [{ opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power2.out" }];
-      const leave = { opacity: 0, y: -20, duration: 0.28, ease: "power2.in" };
+      const leave = { opacity: 0, filter: "blur(8px)", duration: 0.2, ease: "power2.in" };
       // "other investors" 0.3 s, "search" 2.6 s, "you spend" 5.6 s, "deciding" 6.7 s
       tl.fromTo("#s11-others-plate", rise, land, 0.45);
       tl.fromTo("#s11-searching", ...blurIn, 2.75);
-      tl.fromTo("#s11-you-plate", rise, land, 5.55);
+      // the answer wipes in from the right edge, against the plate on the left (the inset keeps the shadow)
+      tl.fromTo("#s11-you-plate", { clipPath: "inset(-120px -120px -120px 105%)" }, { clipPath: "inset(-120px -120px -120px -120px)", duration: 0.5, ease: "expo.out" }, 5.55);
       tl.fromTo("#s11-deciding", ...blurIn, 6.7);
-      tl.to("#s11-others-plate", leave, 9.0);
-      tl.to("#s11-you-plate", leave, 9.05);
+      tl.to("#s11-others-plate", leave, 9.1);
+      tl.to("#s11-you-plate", leave, 9.15);
       // "skip the data" 11.2 s, "focus" 12.6 s, "what matters" 13.2 s
       tl.fromTo("#s11-close-plate", rise, land, 10.95);
+      tl.fromTo("#s11-skip .s11-w2", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out", stagger: 0.08 }, 11.1);
+      // the plate holds after 14.2 s: the end card panel (index.html, o3) covers it
       tl.fromTo("#s11-focus", ...blurIn, 12.55);
       tl.fromTo("#s11-matters", ...blurIn, 13.15);
       window.__timelines["s11"] = tl;
