@@ -48,7 +48,7 @@ Found while integrating and checking the three features in the browser. Not buil
 issue per item before working on it.
 | Id | Issue | Where | Fix |
 | --- | --- | --- | --- |
-| P1 | The whole page scrolls (document about 11,000 px tall) and the top bar is cut off: the chat's visually hidden "You said:" labels escape the scroll container | `frontend/src/features/chat/ChatPanel.module.css` `.log` | Add `position: relative` to `.log` |
+| P1 | Fixed in #107: the shell clips (`overflow: clip`) and the chat log and side panel are positioned, so visually hidden labels no longer grow the document | `App.module.css`, `ChatPanel.module.css` | Pinned by `frontend/src/layout.test.ts` |
 | P2 | In the explored graph, Cala's two entities "500 Global" and "500 Global (500 Emerging Europe)" both show, and only the second is marked "you trust" | `frontend/src/features/chat/openui/ExploredGraphView.tsx`, trusted set | Match trusted investors by normalised fund name as `app/discovery/links.py` does, not only by entity id |
 | P3 | Edge labels show raw Cala values ("is_lead") | explored graph labels (`exploredGraph.ts`) | Map to readable words ("lead", "invested", "raised") |
 | P4 | At 1920 px, edge labels such as ISSUER and GRANTOR overlap the lines in the explored graph | `ExploredGraphView` | Give labels a background or offset them from the curve |
