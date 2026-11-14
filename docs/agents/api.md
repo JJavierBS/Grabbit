@@ -69,5 +69,5 @@ work in parallel against mocks.
 | GET | `/api/reports` | Past `Report[]`, newest first, at most 20 (#54) | mock |
 | POST | `/api/reports/run` | `{kind}` -> new `Report` ("run now" for the demo) | mock |
 | GET | `/api/alerts` | `Alert[]`, newest first | mock |
-| GET | `/api/events` | SSE stream: `alert` (Alert), `report` ({id}), `profile` (Profile) | mock |
+| GET | `/api/events` | SSE stream: `alert` (Alert), `report` ({id}), `profile` (Profile); opens with a `: connected` comment | mock |
 | POST | `/api/demo/simulate-event` | `{fixture}` -> `Alert` through the real watcher path; only with `DEMO_MODE=1` | mock |
