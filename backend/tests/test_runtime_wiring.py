@@ -223,3 +223,88 @@ def test_cadence_change_reschedules_the_digest_and_undo_restores_it(client):
 
 async def test_reschedule_without_a_running_scheduler_is_a_no_op():
     runtime.reschedule(profile_store.current())
+
+
+def _counting_discovery(monkeypatch, found):
+    calls = []
+
+    async def fake_get_candidates(client, profile, today=None, limits=None):
+        calls.append(profile.event_id)
+        return DiscoveryResult(candidates=found, stats=DiscoveryStats())
+
+    monkeypatch.setattr(sources, "get_candidates", fake_get_candidates)
+    return calls
+
+
+async def test_one_event_walk_serves_every_profile(monkeypatch):
+    found = sources.fixture_candidates()
+    calls = _counting_discovery(monkeypatch, found)
+    base = profile_store.current()
+    narrow = base.model_copy(deep=True)
+    narrow.filters.countries = ["Finland"]
+
+    everyone = await sources.candidates_for(base)
+    finns = await sources.candidates_for(narrow)
+    again = await sources.candidates_for(base)
+
+    assert len(calls) == 1
+    assert len(everyone) == len(found) == len(again)
+    assert 0 < len(finns) < len(found)
+    assert all("Finland" in str(c.hq.value) for c in finns)
+
+
+async def test_event_walk_expires_after_the_ttl(monkeypatch):
+    from datetime import UTC, datetime
+
+    calls = _counting_discovery(monkeypatch, sources.fixture_candidates())
+    clock = {"now": datetime(2026, 11, 14, 12, tzinfo=UTC)}
+    monkeypatch.setattr(sources, "_now", lambda: clock["now"])
+    await sources.candidates_for(profile_store.current())
+    clock["now"] += sources.DISCOVERY_TTL
+    await sources.candidates_for(profile_store.current())
+    assert len(calls) == 2
+
+
+async def test_reference_investors_apply_on_top_of_the_cached_walk(monkeypatch):
+    from app.models import ReferenceInvestor
+
+    found = sources.fixture_candidates()
+    _counting_discovery(monkeypatch, found)
+    lead = next(i for c in found for r in c.rounds for i in r.investors if i.is_lead)
+    await sources.candidates_for(profile_store.current())  # fills the cache without refs
+    with_ref = profile_store.current().model_copy(
+        update={
+            "reference_investors": [ReferenceInvestor(entity_id=lead.entity_id, name=lead.name)]
+        }
+    )
+    result = await sources.candidates_for(with_ref)
+    matched = [c for c in result for s in c.signals if s.kind == "co_invest" and s.value]
+    assert matched and all(
+        lead.name in s.value for c in matched for s in c.signals if s.kind == "co_invest"
+    )
+
+
+async def test_a_failed_walk_is_not_cached(monkeypatch):
+    attempts = []
+
+    async def flaky(client, profile, today=None, limits=None):
+        attempts.append(1)
+        if len(attempts) == 1:
+            raise CalaCacheMiss("cold")
+        return DiscoveryResult(candidates=[], stats=DiscoveryStats())
+
+    monkeypatch.setattr(sources, "get_candidates", flaky)
+    first = await sources.candidates_for(profile_store.current())
+    second = await sources.candidates_for(profile_store.current())
+    assert first == sources.fixture_candidates()  # fallback, not cached
+    assert second == [] and len(attempts) == 2
+
+
+def test_chat_turns_and_the_rebuild_share_one_event_walk(client, monkeypatch):
+    from app.reports import service
+
+    calls = _counting_discovery(monkeypatch, sources.fixture_candidates())
+    client.post("/api/chat", json={"text": "hello"})
+    client.post("/api/chat", json={"text": "No B2C please"})
+    client.portal.call(service.wait_idle)
+    assert len(calls) == 1
