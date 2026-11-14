@@ -24,6 +24,7 @@ from app.discovery.links import LinkLimits
 from app.discovery.pipeline import SLUSH_2026, Limits, get_candidates, neutral_profile
 from app.models import Candidate
 from app.store.cala_cache import CalaCache
+from app.store.valkey import valkey_from_settings
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -43,7 +44,7 @@ def dump_raw(raw: dict[str, dict[str, Any]], directory: Path) -> int:
 async def main(args: argparse.Namespace) -> None:
     db = database_path()
     db.parent.mkdir(parents=True, exist_ok=True)
-    cache = CalaCache(sqlite3.connect(db))
+    cache = CalaCache(sqlite3.connect(db), valkey_from_settings())
     client = CalaClient(
         os.environ.get("CALA_API_KEY"),
         cache,

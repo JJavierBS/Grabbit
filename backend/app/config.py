@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     llm_mode: LLMMode = "gemini"
     demo_mode: bool = False
     database_path: Path = Path("data/grabbit.db")
+    valkey_url: str = ""
 
     @property
     def database_file(self) -> Path:

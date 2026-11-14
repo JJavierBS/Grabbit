@@ -24,6 +24,7 @@ def offline_settings(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Iterato
     monkeypatch.setenv("CALA_MODE", "replay")
     monkeypatch.setenv("LLM_MODE", "fake")
     monkeypatch.setenv("DEMO_MODE", "1")
+    monkeypatch.setenv("VALKEY_URL", "")
     get_settings.cache_clear()
     from app.agent.sources import clear_discovery_cache
 
