@@ -36,6 +36,20 @@ Offline (no keys): set `CALA_MODE=replay` and `LLM_MODE=fake` in `.env`.
 
 API docs while `make dev` runs: http://localhost:8000/api/docs
 
+## Deploy
+The demo runs on an AWS Lightsail container service (one container, port 8000, HTTPS
+endpoint from Lightsail). One-time: install the aws CLI v2 and the `lightsailctl` plugin,
+and run `aws configure` with an IAM user allowed to use Lightsail. Then:
+```sh
+make warm      # fill data/grabbit.db so the image ships the Cala cache
+make deploy    # builds the image, pushes it and deploys; prints the public URL
+```
+Secrets (`GEMINI_API_KEY`, `GEMINI_MODEL`, `CALA_API_KEY`, `CONTEXT_DEV_API_KEY`) are read
+from `.env` and set as service environment variables, never baked into the image. The
+deployed app runs with `CALA_MODE=replay` and `DEMO_MODE=1`; override with
+`DEPLOY_CALA_MODE=live make deploy`. Other knobs: `LIGHTSAIL_SERVICE` (default `grabbit`),
+`LIGHTSAIL_POWER` (default `micro`), `AWS_REGION` (default `eu-north-1`).
+
 ## Contributing
 After cloning, run `bash scripts/setup.sh` once (hooks, local exclusions, `.env`).
 Then follow `AGENTS.md`: one issue, one branch, one PR; never push to `main`.
