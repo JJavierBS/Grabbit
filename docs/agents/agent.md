@@ -62,9 +62,14 @@ asked (#165). Numbers in the question come from Cala, not from the model.
 | "Headquarters: anywhere, or only some countries?" | `HAS_HEADQUARTERS_IN` |
 
 ## Signals (v1, pure functions, tuned in code with tests)
-- `co_invest`: a reference investor (deduplicated by entity id) took part in one of the
-  startup's rounds. Value: their names, leads first, then most recent (`Signal.value` holds
-  scalars only); the explanation says who led or joined which round.
+- `co_invest`: a reference investor took part in one of the startup's rounds. A participant
+  is that investor when it has its entity id or its fund name (`app/trusted.py`: same
+  normalised name, or one name followed by more words when the shorter has two words at
+  least), because one fund is several Cala entities; a fund counts once per round. Value:
+  the reference investors' names, leads first, then most recent (`Signal.value` holds
+  scalars only); the explanation says who led or joined which round. The report sections,
+  the writer's prompt, the first-turn investor question and the watcher's "led by a
+  reference investor" rule use the same match.
 - `lead_follow_on`: for the lead of the startup's last round, the share of the lead's other
   portfolio companies where it also joined a later round. Needs 3+ companies, else null.
 - `likely_to_raise`: up to three checks, each only if the data exists:
@@ -78,7 +83,7 @@ asked (#165). Numbers in the question come from Cala, not from the model.
 ## Proximity (report order)
 `app/discovery/proximity.py`, pure. Each candidate gets a score: the sum of the paths that
 join it, through funding rounds, to the reference investors (matched by id or fund name,
-`links.Trusted`). Up to 5 paths are kept, each with a plain sentence and its sourced facts.
+`app/trusted.py`). Up to 5 paths are kept, each with a plain sentence and its sourced facts.
 - Ring 1: a trusted investor took part in one of its rounds. Ring 2: one of its investors
   shared another round with a trusted investor (the `trusted_co_investor` hidden link).
 - Path strength = distance (ring 1 = 1.0, ring 2 = 0.3) x role (lead 1.0, participant 0.6;
