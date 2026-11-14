@@ -1,0 +1,141 @@
+/*
+ * Grabbit design tokens. The only file with raw colour, size and motion values.
+ * Afterglow, light (DESIGN.md): a near-white room, dark ink, and one violet light from the logo.
+ */
+:root {
+  color-scheme: light;
+
+  /* The logo's violet. 6.1:1 on white, so it works as text and as a button fill. */
+  --color-violet: #6139f8;
+  --color-violet-light: #5530e8; /* violet as small text or a thin line */
+  --color-glow: rgb(97 57 248 / 0.32);
+
+  /* Ground and surfaces. */
+  --color-ground: #f7f7fa;
+  --color-surface: #ffffff;
+  --color-surface-raised: #ffffff;
+  --color-panel: #f7f7fa;
+  --color-panel-strong: #ecebf3;
+  /* The history sidebar: one step quieter than the ground. */
+  --color-sidebar: #f0eff5;
+  --color-sidebar-hover: #e6e5ef;
+
+  /* Ink: the logo's night ink, the strongest foreground. */
+  --color-ink: #14151c;
+  --color-text: #2a2b36;
+  --color-text-muted: #5c5d6e;
+  --color-text-faint: #737485;
+  --color-on-ink: #ffffff;
+
+  /* Lines: --color-border keeps 3:1 on white for field edges. */
+  --color-border: #8e8fa3;
+  --color-border-soft: #e3e3ec;
+  --color-border-strong: #14151c;
+  --color-focus: var(--color-violet);
+
+  /* Info stays cool and quiet. The marker is the violet light: "look here now". */
+  --color-info: #1f5fbf;
+  --color-info-bg: #e6efff;
+  --color-marker: var(--color-violet);
+  --color-marker-soft: #ece7ff;
+  --color-warning-ink: #4b25d6;
+  --color-danger: #b42318;
+  --color-danger-bg: #fde8e6;
+
+  /* Trust scale: strength reads from line form first (fill, outline, tint, dashed), hue second. */
+  --trust-filing-bg: var(--color-ink);
+  --trust-filing-fg: var(--color-on-ink);
+  --trust-filing-border: var(--color-ink);
+  --trust-primary-bg: transparent;
+  --trust-primary-fg: var(--color-ink);
+  --trust-primary-border: var(--color-ink);
+  --trust-press-bg: var(--color-info-bg);
+  --trust-press-fg: var(--color-info);
+  --trust-press-border: transparent;
+  --trust-aggregator-bg: var(--color-panel-strong);
+  --trust-aggregator-fg: var(--color-text-muted);
+  --trust-aggregator-border: transparent;
+  --trust-web-bg: var(--color-marker-soft);
+  --trust-web-fg: var(--color-warning-ink);
+  --trust-web-border: var(--color-warning-ink);
+  --trust-absent-bg: transparent;
+  --trust-absent-fg: var(--color-text-muted);
+  --trust-absent-border: var(--color-border);
+
+  /* Typography: one workhorse sans. Rank comes from weight and size, never a second face. */
+  --font-ui:
+    "Hanken Grotesk Variable", "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-ui);
+  /* The wordmark only: Outfit is the closest open face to the logo lettering. */
+  --font-logo: "Outfit Variable", "Outfit", var(--font-ui);
+
+  --text-xs: 0.75rem; /* 12px labels, badges */
+  --text-sm: 0.875rem; /* 14px meta */
+  --text-md: 1rem; /* 16px body, chat */
+  --text-lg: 1.25rem; /* 20px lead */
+  --text-xl: 1.5rem; /* 24px section title */
+  --text-2xl: 2rem; /* 32px report title */
+
+  --leading-tight: 1.2;
+  --leading-snug: 1.375;
+  --leading-body: 1.5;
+  --leading-prose: 1.625;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+
+  --tracking-display: -0.02em;
+  --tracking-label: 0.08em;
+
+  /* Spacing: one 4px-based scale. */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 24px;
+  --radius-pill: 999px;
+
+  --border-width: 1px;
+  --focus-ring: 0 0 0 2px var(--color-ground), 0 0 0 4px var(--color-focus);
+
+  /* Elevation: soft ink shadows. */
+  --shadow-sm: 0 1px 2px 0 rgb(20 21 28 / 0.06);
+  --shadow-md: 0 4px 12px -2px rgb(20 21 28 / 0.1);
+  --shadow-lg: 0 16px 40px -12px rgb(20 21 28 / 0.22), 0 0 0 1px var(--color-border-soft);
+  /* The light: violet that falls from below, like the logo's glow. */
+  --glow-rest: 0 10px 30px -14px rgb(97 57 248 / 0.28);
+  --glow-work: 0 14px 44px -10px var(--color-glow);
+
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 150ms;
+  --duration-base: 200ms;
+  --duration-slow: 280ms;
+  --duration-glow: 1600ms; /* the working light breathes; it is a state, not a decoration */
+
+  --chat-width: 44rem;
+  --sidebar-width: 17rem;
+  --z-panel: 40;
+  --z-drawer: 45;
+  --z-toast: 50;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+    --duration-slow: 0ms;
+    --duration-glow: 0ms;
+  }
+}

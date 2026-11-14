@@ -1,0 +1,19 @@
+.card {
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border-soft);
+  border-radius: var(--radius-md);
+}
+
+.md {
+  padding: var(--space-5);
+}
+
+.lg {
+  padding: var(--space-6) var(--space-8);
+}
+
+@media (max-width: 40rem) {
+  .lg {
+    padding: var(--space-5);
+  }
+}
