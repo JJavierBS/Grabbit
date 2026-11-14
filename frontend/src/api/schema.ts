@@ -864,7 +864,7 @@ export interface components {
        * Kind
        * @enum {string}
        */
-      kind: "search" | "expand" | "thought" | "rewrite";
+      kind: "search" | "expand" | "thought" | "rewrite" | "report";
       /** Text */
       text: string;
       /**

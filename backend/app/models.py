@@ -237,7 +237,8 @@ class ExploredGraph(ApiModel):
     edges: list[GraphEdge]
 
 
-WalkStepKind = Literal["search", "expand", "thought", "rewrite"]
+# `report`: a step answered from the report or the cache, with no Cala call (#184).
+WalkStepKind = Literal["search", "expand", "thought", "rewrite", "report"]
 
 
 class WalkStep(ApiModel):
