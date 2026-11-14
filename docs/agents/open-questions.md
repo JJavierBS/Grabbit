@@ -26,8 +26,7 @@ human confirms.
 ## Questions for Cala (workshop Sat 11:00 or mentors)
 - C1 May `knowledge/query` be used only to obtain seed ids? (cala.md)
 - C2 Exact rate limit, whether it is raised for the hackathon, and whether multi-minute latency on hub nodes is expected (cala.md "Rate limits and latency").
-- C3 A recommended way to list companies by industry or country from the graph.
-- C4 `FundingRound` vs `PrivateCompanyFundingRound`: which to rely on.
+- C3 A recommended way to list companies by industry or country from the graph. Partly answered by the field guide: an `Event` entity (Slush 2026) lists its attendees (cala.md "Traversal flow"); industry and country listing still open.
 - C5 Do they object to Context.dev as a discovery and soft-signal source next to Cala?
 - C6 How fresh is new data (a new filing or ownership change): hours, days? The watcher depends on it.
 - C7 Do they hold funds' public-equity holdings (Investor A's "big fish" idea)?

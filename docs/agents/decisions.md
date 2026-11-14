@@ -21,3 +21,4 @@ Format: `YYYY-MM-DD HH:MM | area | decision | why`
 2026-11-14 02:45 | product | Hero signal from Cala's funding-round graph (lead investors and co-investors of similar companies, round dates) instead of succession risk | succession risk only applies to mature SMEs, not to startups
 2026-11-14 02:45 | data | Country coverage is not a product constraint; the demo picks companies where Cala has data | Cala is the audience to impress and its coverage keeps growing
 2026-11-14 02:45 | product | Alert triggers are chosen when the demo is recorded | depends on which real events exist for the demo companies (open-questions R3)
+2026-11-14 02:48 | data | Investors and leads come from `FundingRound` participants (`role`, `is_lead`); `PrivateCompanyFundingRound` (filings) only adds dated amounts, matched by date and amount before summing | Cala field guide (docs/reference/cala-field-guide.md); answers open-questions C4
