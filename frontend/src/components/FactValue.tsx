@@ -23,7 +23,8 @@ export function formatDate(iso: string, precision: Source["date_precision"] = "d
   return `${Number(day)} ${monthName} ${year}`;
 }
 
-function formatNumber(value: number, unit?: string | null): string {
+/** A number with its unit; currencies read compact from 10,000 on ("€650K"). */
+export function formatNumber(value: number, unit?: string | null): string {
   if (unit && /^[A-Z]{3}$/.test(unit)) {
     return new Intl.NumberFormat("en", {
       style: "currency",
@@ -44,10 +45,15 @@ function formatScalar(
 ): string {
   if (typeof value === "boolean") return value ? "Yes" : "No";
   if (typeof value === "number") return formatNumber(value, unit);
-  if (kind === "date") return formatDate(value, strongestSource(fact)?.date_precision ?? "day");
+  // A date is a date whoever renders it: callers need not guess the kind (#146).
+  if (kind === "date" || ISO_DATE.test(value)) {
+    return formatDate(value, strongestSource(fact)?.date_precision ?? "day");
+  }
   const text = humanizeEnum(value);
   return unit ? `${text} ${unit}` : text;
 }
+
+const ISO_DATE = /^\d{4}-\d{2}(?:-\d{2})?(?:T[\d:.]+Z?)?$/;
 
 /** Text for a fact, or null when Cala has no value (shown as "Not published", never 0). */
 export function formatFact(fact: Fact, kind: FactKind = "auto"): string | null {

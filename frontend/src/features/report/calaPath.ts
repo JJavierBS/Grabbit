@@ -1,4 +1,5 @@
 import type { Candidate, HiddenLink, Round, TrustLevel } from "../../api/types";
+import { formatDate } from "../../components/FactValue";
 import { humanize } from "../../lib/humanize";
 
 /** One node of the path drawn under a candidate: each one is a Cala entity. */
@@ -111,7 +112,7 @@ export function layoutPath(c: Candidate, trusted: Set<string>, eventName: string
         sub:
           [
             isTrusted && "you trust",
-            inv.is_lead && "lead",
+            inv.is_lead && "lead investor",
             !isTrusted && inv.is_lead && ri === 0 && followText,
           ]
             .filter(Boolean)
@@ -177,7 +178,8 @@ export function layoutPath(c: Candidate, trusted: Set<string>, eventName: string
     }
     const y = ((first + row - 1) / 2) * ROW;
     roundRows.push(y);
-    const when = typeof r.date.value === "string" ? r.date.value.slice(0, 7) : undefined;
+    // Month precision is enough on a graph node: "Jun 2023".
+    const when = typeof r.date.value === "string" ? formatDate(r.date.value, "month") : undefined;
     nodes.push({
       id: roundId,
       kind: "round",

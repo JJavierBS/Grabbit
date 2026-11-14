@@ -93,6 +93,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/transcribe": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Post Transcribe */
+    post: operations["post_transcribe_api_transcribe_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/reports": {
     parameters: {
       query?: never;
@@ -210,6 +227,18 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
+    /**
+     * AgentQuestion
+     * @description A question the agent asks with clickable answers (#153).
+     */
+    AgentQuestion: {
+      /** Key */
+      key: string;
+      /** Text */
+      text: string;
+      /** Options */
+      options: components["schemas"]["QuestionOption"][];
+    };
     /** Alert */
     Alert: {
       /** Id */
@@ -301,6 +330,18 @@ export interface components {
       ui: string | null;
       /** @description Cala entities and edges the agent walked for this answer */
       graph: components["schemas"]["ExploredGraph"] | null;
+      /** @description How the agent walked Cala for this answer, step by step */
+      walk: components["schemas"]["WalkSummary"] | null;
+      /**
+       * Sources
+       * @description Sources of the facts about each startup the reply text names
+       */
+      sources: components["schemas"]["ReplySource"][];
+      /**
+       * Questions
+       * @description Questions the reply asks, each with clickable answers
+       */
+      questions: components["schemas"]["AgentQuestion"][];
     };
     /** ChatRequest */
     ChatRequest: {
@@ -610,9 +651,24 @@ export interface components {
       /** Headcount Max */
       headcount_max: number | null;
       ticket: components["schemas"]["Fact"] | null;
+      /**
+       * Fundraising
+       * @default any
+       * @enum {string}
+       */
+      fundraising: "any" | "recent" | "likely_to_raise";
+      /**
+       * Raised Within Months
+       * @default 12
+       */
+      raised_within_months: number;
+      /** Required Backers */
+      required_backers: string[];
     };
     /** ProfileStyle */
     ProfileStyle: {
+      /** Max Candidates */
+      max_candidates: number | null;
       /**
        * Length
        * @enum {string}
@@ -628,12 +684,40 @@ export interface components {
       /** Sections */
       sections: string[];
     };
+    /** QuestionOption */
+    QuestionOption: {
+      /**
+       * Label
+       * @description Short text on the button
+       */
+      label: string;
+      /**
+       * Answer
+       * @description The sentence sent to the agent when chosen
+       */
+      answer: string;
+    };
     /** ReferenceInvestor */
     ReferenceInvestor: {
       /** Entity Id */
       entity_id: string;
       /** Name */
       name: string;
+    };
+    /**
+     * ReplySource
+     * @description Where the facts about one startup named in a chat reply come from (#141).
+     */
+    ReplySource: {
+      /** Entity Id */
+      entity_id: string;
+      /** Name */
+      name: string;
+      /**
+       * Sources
+       * @description Each source once, strongest trust level first
+       */
+      sources: components["schemas"]["Source"][];
     };
     /** Report */
     Report: {
@@ -739,6 +823,14 @@ export interface components {
         | "not_published";
     };
     /**
+     * Transcript
+     * @description What the user said in a Talk recording; empty when nobody spoke.
+     */
+    Transcript: {
+      /** Text */
+      text: string;
+    };
+    /**
      * TurnProgress
      * @description What a chat turn is doing right now, sent as a `progress` event on /api/events.
      */
@@ -785,6 +877,24 @@ export interface components {
        * @default false
        */
       done: boolean;
+    };
+    /**
+     * WalkSummary
+     * @description How the agent found an answer in Cala, kept on the chat message (#138).
+     */
+    WalkSummary: {
+      /**
+       * Steps
+       * @description The walk's steps, without the model's reasoning
+       */
+      steps: components["schemas"]["WalkStep"][];
+      /**
+       * Checked
+       * @description Cala entities the walk reached
+       */
+      checked: number;
+      /** Seconds */
+      seconds: number;
     };
     /**
      * WalkTrace
@@ -1048,6 +1158,48 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ChatMessage"];
+        };
+      };
+      /** @description Not Found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Unprocessable Entity */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  post_transcribe_api_transcribe_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "audio/*": string;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["Transcript"];
         };
       };
       /** @description Not Found */

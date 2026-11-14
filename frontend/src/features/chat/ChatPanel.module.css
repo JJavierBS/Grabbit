@@ -99,6 +99,11 @@
   text-wrap: balance;
 }
 
+/* Two deliberate lines on wide screens; narrow ones wrap the halves on their own. */
+.welcomeHint span {
+  display: inline-block;
+}
+
 .welcomeHint {
   max-width: 44ch;
   font-size: var(--text-sm);

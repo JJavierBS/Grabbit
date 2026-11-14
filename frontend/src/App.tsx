@@ -1,10 +1,11 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { PanelLeft, RefreshCw, SlidersHorizontal, X } from "lucide-react";
+import { PanelLeft, RefreshCw, SlidersHorizontal, SquarePen, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./App.module.css";
-import { keys, useChat, useLatestReport, useSendMessage } from "./api/hooks/queries";
+import { keys, useChat, useLatestReport, useProfile, useSendMessage } from "./api/hooks/queries";
 import { type StreamStatus, useEvents } from "./api/hooks/useEvents";
 import type { Alert, ChatMessage, Report } from "./api/types";
+import { nameResearch, startResearch, switchResearch, workspaceId } from "./api/workspace";
 import { Button } from "./components/Button";
 import { Logo } from "./components/Logo";
 import { Skeleton } from "./components/Skeleton";
@@ -19,6 +20,9 @@ import { ReportOutline } from "./features/report/ReportOutline";
 import { ReportSidebar, reportKey } from "./features/report/ReportSidebar";
 import { ReportView } from "./features/report/ReportView";
 import { useReportChanges } from "./features/report/useReportChanges";
+import { useReportRewriting } from "./features/report/useReportRewriting";
+import { ResearchList } from "./features/research/ResearchList";
+import { useResearches } from "./features/research/useResearches";
 
 type Panel = "report" | "history";
 
@@ -61,12 +65,24 @@ function demoFixture(): string | null {
   return import.meta.env.VITE_FAKE_API === "1" ? DEFAULT_DEMO_FIXTURE : null;
 }
 
+/**
+ * The app for the current research. Switching research remounts it with an empty query
+ * cache, so nothing of the previous one (panel, alert, live walk, chat) carries over (#145).
+ */
+export function Grabbit() {
+  const { current } = useResearches();
+  return <App key={current} />;
+}
+
 export function App() {
   const [panel, setPanel] = useState<Panel | null>(null);
   const [demo] = useState(demoFixture);
   const [confirmed, setConfirmed] = useState(false);
   const report = useLatestReport();
   const diff = useReportChanges(report.data ?? undefined);
+  const profile = useProfile();
+  // The turn ends before the background rebuild lands; until then the report says so.
+  const rewriting = useReportRewriting(profile.data, report.data);
   const send = useSendMessage();
   const client = useQueryClient();
   const chat = useChat();
@@ -82,6 +98,23 @@ export function App() {
   const [sidebarOpen, setSidebarOpen] = useState(readSidebarOpen);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const isNarrow = () => window.matchMedia?.(NARROW).matches ?? false;
+  const research = useResearches();
+
+  // A research from before the list existed takes its name from its first message.
+  const firstAsk = chat.data?.find((m) => m.role === "user")?.text;
+  useEffect(() => {
+    if (firstAsk) nameResearch(firstAsk);
+  }, [firstAsk]);
+
+  /** Leaves this research: every cached query belongs to it, so none may survive. */
+  const leave = (go: () => void) => {
+    const before = workspaceId();
+    go();
+    setDrawerOpen(false);
+    if (workspaceId() !== before) client.clear();
+  };
+  const newResearch = () => leave(startResearch);
+  const openResearch = (id: string) => leave(() => switchResearch(id));
 
   const openSidebar = () => {
     if (isNarrow()) return setDrawerOpen(true);
@@ -117,16 +150,24 @@ export function App() {
   const deliver = useAlertDelivery(showAlert);
   const stream = useEvents(deliver);
 
+  // Opened by the app, not by the reader: focus moves without a focus frame around it.
+  const openedByApp = useRef(false);
+
   // A rewrite is the moment to watch: open the report on the change.
   useEffect(() => {
     if (!diff) return;
     setPastReport(null);
+    openedByApp.current = true;
     setPanel("report");
   }, [diff]);
 
   useEffect(() => {
     if (!panel) return;
-    panelRef.current?.focus();
+    // `focusVisible: false` keeps the ring for keyboard opens only (supported in Chromium).
+    panelRef.current?.focus(
+      openedByApp.current ? ({ focusVisible: false } as FocusOptions) : undefined,
+    );
+    openedByApp.current = false;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") closePanel();
     };
@@ -173,6 +214,7 @@ export function App() {
       key={report.data.id}
       report={report.data}
       open={panel === "report" && pastReport === null}
+      rewriting={rewriting}
       rewritten={diff !== null}
       onOpen={() => openPanel("report")}
     />
@@ -194,7 +236,10 @@ export function App() {
   // The outline follows the agent turn that wrote this report; a report from elsewhere
   // (Run now, the schedule) has no such turn and goes after the conversation.
   const messages = chat.data ?? [];
+  // While it rewrites, the outline waits under the turn that asked for the new report.
+  const lastLinked = messages.findLast((m) => m.role === "agent" && m.report_id);
   const reportAnchor =
+    (rewriting && lastLinked && lastLinked.report_id !== report.data?.id && lastLinked.id) ||
     (report.data &&
       messages.findLast((m) => m.role === "agent" && m.report_id === report.data?.id)?.id) ||
     null;
@@ -216,6 +261,14 @@ export function App() {
         onOpen={openReport}
         onClose={closeSidebar}
         brand={<Logo />}
+        top={
+          <ResearchList
+            current={research.current}
+            list={research.list}
+            onNew={newResearch}
+            onOpen={openResearch}
+          />
+        }
       />
       {drawerOpen && (
         <button
@@ -252,6 +305,15 @@ export function App() {
             <Button
               variant="ghost"
               size="sm"
+              className={styles.newResearch}
+              icon={<SquarePen aria-hidden="true" />}
+              onClick={newResearch}
+            >
+              <span className={styles.actionLabel}>New research</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
               icon={<SlidersHorizontal aria-hidden="true" />}
               aria-pressed={panel === "history"}
               onClick={() => (panel === "history" ? closePanel() : openPanel("history"))}
@@ -276,7 +338,7 @@ export function App() {
                   {!alertAnchored && alertInChat}
                 </>
               }
-              followKey={`${report.data?.id}|${reportAnchor}|${openAlert?.alert.id}`}
+              followKey={`${report.data?.id}|${reportAnchor}|${openAlert?.alert.id}|${rewriting}`}
             />
           </div>
           {shownPanel && (
@@ -326,6 +388,7 @@ export function App() {
                     diff={diff}
                     onConfirm={confirm}
                     confirmed={confirmed}
+                    rewriting={rewriting}
                   />
                 )}
               </div>

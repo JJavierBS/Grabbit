@@ -56,7 +56,7 @@ Offline (no keys): set `CALA_MODE=replay` and `LLM_MODE=fake` in `.env`.
 | `make lint` | ruff, Biome and the TypeScript check |
 | `make fmt` | Formats only the files changed on your branch |
 | `make gen-api` | Regenerates `frontend/src/api/schema.ts` from the running API |
-| `make warm` | Fills the Cala cache for the demo (`ARGS="--limit 150"` to sample) |
+| `make warm` | Fills the Cala cache for the demo and checks the first chat turn hits it; `ARGS=--check` only checks. Run it before presenting (docs/agents/pitch.md "Demo checklist") |
 | `make docker` | Builds the production image (frontend served by FastAPI on :8000) |
 
 API docs while `make dev` runs: http://localhost:8000/api/docs

@@ -10,6 +10,7 @@ import {
   NODE_H,
   NODE_PAD,
   SUB_PX,
+  subLine,
 } from "../../components/GraphText";
 import { TrustBadge } from "../../components/TrustBadge";
 import styles from "./CalaPath.module.css";
@@ -152,7 +153,7 @@ export function CalaPath({ candidate, trusted, eventName = "Slush 2026" }: CalaP
                 </text>
                 {n.sub && (
                   <text x={NODE_PAD} y={30} className={styles.nodeSub}>
-                    {clip(n.sub, fits(inner, SUB_PX))}
+                    {clip(subLine(n.sub), fits(inner, SUB_PX))}
                   </text>
                 )}
               </g>
@@ -207,7 +208,7 @@ function FullName({ node }: { node: PathNode }) {
       </text>
       {node.sub && (
         <text x={NODE_PAD} y={30} className={styles.nodeSub}>
-          {node.sub}
+          {subLine(node.sub)}
         </text>
       )}
     </g>

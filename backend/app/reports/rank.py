@@ -1,14 +1,18 @@
 """Filter and order candidates by the profile."""
 
+from datetime import date
+
 from app.discovery.filters import matches_profile
 from app.models import Candidate, Profile
 from app.reports.facts import last_round
 
 
-def rank(candidates: list[Candidate], profile: Profile) -> list[Candidate]:
+def rank(
+    candidates: list[Candidate], profile: Profile, *, today: date | None = None
+) -> list[Candidate]:
     """Default order: a reference investor led a round, then joined one, then likely to raise."""
     # The same filters as discovery (app.discovery.filters), so the two never disagree.
-    kept = [c for c in candidates if matches_profile(c, profile)]
+    kept = [c for c in candidates if matches_profile(c, profile, today=today)]
     refs = {r.entity_id for r in profile.reference_investors}
     return sorted(kept, key=lambda c: _key(c, refs))
 

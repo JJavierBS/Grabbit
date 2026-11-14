@@ -8,9 +8,11 @@ import { formatDate } from "../../components/FactValue";
 import { Markdown } from "../../components/Markdown";
 import { Skeleton } from "../../components/Skeleton";
 import { useSettled } from "../../lib/useSettled";
+import { WorkingLine } from "../chat/WorkingLine";
 import { CandidateCard } from "./CandidateCard";
 import styles from "./ReportView.module.css";
 import { type ChangeMark, describeDiff, type ReportDiff } from "./reportDiff";
+import { REWRITING_TEXT } from "./useReportRewriting";
 
 export const KIND_TITLE: Record<Report["kind"], string> = {
   prep: "Slush 2026 prep report",
@@ -34,6 +36,8 @@ interface ReportViewProps {
   confirmed?: boolean;
   /** A past report: read only, without the confirm and run actions. */
   archived?: boolean;
+  /** A newer profile's report is being written: say so above this one. */
+  rewriting?: boolean;
 }
 
 export function ReportView({
@@ -45,6 +49,7 @@ export function ReportView({
   onConfirm,
   confirmed,
   archived,
+  rewriting,
 }: ReportViewProps) {
   const profile = useProfile();
   const run = useRunReport();
@@ -90,7 +95,12 @@ export function ReportView({
   const lines = diff ? describeDiff(diff) : [];
 
   return (
-    <article className={styles.sheet} aria-labelledby="report-title">
+    <article
+      className={styles.sheet}
+      aria-labelledby="report-title"
+      aria-busy={rewriting || undefined}
+    >
+      {rewriting && <WorkingLine hasReport phase={REWRITING_TEXT} />}
       <header className={styles.header}>
         <div className={styles.meta}>
           <span>{formatDate(report.created_at, "day")}</span>

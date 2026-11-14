@@ -4,16 +4,17 @@ import asyncio
 import json
 import logging
 from collections.abc import Awaitable, Callable
-from datetime import datetime
+from datetime import UTC, datetime
 
 from app import events
 from app.agent import learn, onboarding
+from app.agent.citations import reply_sources
 from app.agent.progress import report_phase
 from app.agent.rules import FIXED_RULES
 from app.agent.tools import TOOL_SPECS, ToolOutcome, apply_tool_call
 from app.agent.visual import visual_answer
 from app.llm import LLM, LLMError, Message, ToolCall
-from app.models import Candidate, ChatMessage, Profile
+from app.models import AgentQuestion, Candidate, ChatMessage, Profile, QuestionOption
 from app.store import chat as chat_store
 from app.store import profile as profile_store
 
@@ -32,8 +33,19 @@ Cala's company graph, show each fact with how much it can be trusted, and adapt 
 to this investor through conversation. There is no settings screen: when the investor corrects
 you or states a preference, call update_profile for structured fields and rewrite_instructions
 for how reports should read. Do not call a tool when nothing should change.
+A research question (who backed a company, explore connections, show a graph) is not a
+lasting preference. Never rewrite instructions or change language just because a question
+uses another language. Answer in that language without changing the profile.
+Use structured filters.fundraising for recent raises or may raise soon, required_backers
+for must be backed by an investor, and style.max_candidates for an explicit count.
+Do not merely promise these constraints in instructions. When changing filters, acknowledge
+the change without listing candidates from the previous selection: the rebuilt report shows matches.
+Today's date is {datetime.now(UTC).date().isoformat()}. Never call an older round recent.
 Reply in the investor's language, in at most three short sentences. Do not say "From now on":
 the app adds that line itself after a change.
+The app rebuilds the report on screen by itself after every profile change. Never offer to
+prepare, run or send a report and never ask whether to go ahead. When the investor's answers
+keep the search open, say the current report already covers that.
 
 {FIXED_RULES}
 
@@ -58,13 +70,14 @@ async def handle_message(
     report_summary: str | None = None,
     on_profile_change: ReportHook | None = None,
     now: datetime | None = None,
+    load_candidates: Callable[[Profile], Awaitable[list[Candidate]]] | None = None,
 ) -> ChatMessage:
     """Store the user message, run one agent turn, store and return the agent reply."""
     chat_store.add("user", text, now=now)
     first_turn = chat_store.count_user_messages() == 1
     profile = profile_store.current(now)
     history = [
-        Message(role="user" if m.role == "user" else "model", text=m.text)
+        Message(role="user" if m.role == "user" else "model", text=_with_questions(m))
         for m in chat_store.last(HISTORY_TURNS)
     ]
     system = system_prompt(profile, report_summary, candidates)
@@ -107,18 +120,48 @@ async def handle_message(
             report_id = await on_profile_change(saved)
         updated = saved
 
-    if first_turn:
-        questions = onboarding.pick_questions(candidates, updated, now)
-        if questions:
-            reply += "\n\n" + "\n".join(f"- {q.text}" for q in questions)
+    if changes:
+        from app.discovery.filters import matches_profile
+
+        candidates = (
+            await load_candidates(updated)
+            if load_candidates
+            else [
+                c
+                for c in candidates
+                if matches_profile(c, updated, today=now.date() if now else None)
+            ]
+        )
+    # Worded by the model while the report is built, so the first turn takes no longer.
+    wording = (
+        asyncio.create_task(
+            onboarding.word_questions(
+                llm, text, onboarding.pick_questions(candidates, updated, now, limit=None)
+            )
+        )
+        if first_turn
+        else None
+    )
+
+    # Asked as a form under the reply (#153), not as bullets in its text.
+    asked = [
+        AgentQuestion(
+            key=q.key,
+            text=q.text,
+            options=[QuestionOption(label=label, answer=answer) for label, answer in q.options],
+        )
+        for q in (await wording if wording else [])
+    ]
 
     drawn = None
-    if visual and changes:
+    if visual and any(c.field != "style.language" for c in changes):
         visual.cancel()
     elif visual:
         if not visual.done():
             report_phase("graph")
         drawn = await visual
+    # A visual answer badges each value itself; prose gets its sources from the app (#141).
+    sources = [] if drawn and drawn.ui else reply_sources(reply, candidates)
     return chat_store.add(
         "agent",
         reply,
@@ -126,8 +169,18 @@ async def handle_message(
         report_id=report_id,
         ui=drawn and drawn.ui,
         graph=drawn and drawn.graph,
+        walk=drawn and drawn.walk,
+        sources=sources,
+        questions=asked,
         now=now,
     )
+
+
+def _with_questions(m: ChatMessage) -> str:
+    """The model's own turn as it asked it: its text and the questions shown under it."""
+    if not m.questions:
+        return m.text
+    return m.text + "\n\n" + "\n".join(f"- {q.text}" for q in m.questions)
 
 
 def _apply_all(profile: Profile, calls: list[ToolCall]) -> list[ToolOutcome]:
@@ -170,6 +223,12 @@ def _compose(reply: str, outcomes: list[ToolOutcome]) -> str:
     return "\n\n".join(lines) or "Noted."
 
 
+def _trim(text: str | None, limit: int = 160) -> str | None:
+    if not text or len(text) <= limit:
+        return text
+    return text[: limit - 1].rsplit(" ", 1)[0] + "…"
+
+
 def _candidate_lines(candidates: list[Candidate], limit: int = 25) -> str:
     if not candidates:
         return "(none loaded)"
@@ -181,10 +240,15 @@ def _candidate_lines(candidates: list[Candidate], limit: int = 25) -> str:
                 {
                     "id": c.entity_id,
                     "name": c.name,
+                    "description": _trim(c.description),
                     "stage": c.funding_stage.value,
                     "hq": c.hq.value,
                     "industries": c.industries,
                     "headcount": c.headcount.value,
+                    # Every fact a card shows, so the agent never calls it "not published" (#147).
+                    "founded": c.founding_date.value,
+                    "total_raised": c.total_funding.value is not None
+                    and {"amount": c.total_funding.value, "unit": c.total_funding.unit},
                     "last_round": last
                     and {
                         "name": last.name,

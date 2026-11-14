@@ -141,10 +141,17 @@ def likely_to_raise(
         low, high = RAISE_WINDOW_MONTHS
         ok = low <= months <= high
         passed += ok
-        checks.append(f"{'yes' if ok else 'no'}: {months} months since its {round_.name}")
+        ago = f"Its {round_.name} was {_months(months)} ago"
+        usual = f"the usual {low} to {high} months between rounds"
+        if ok:
+            checks.append(f"{ago}, inside {usual}.")
+        elif months < low:
+            checks.append(f"{ago}, sooner than {usual}.")
+        else:
+            checks.append(f"{ago}, past {usual}.")
         facts.append(round_.date)
     else:
-        checks.append("no data: no dated round")
+        checks.append("No dated round is published.")
 
     growth = _growth_last_year(headcount_series, today)
     if growth is not None:
@@ -152,27 +159,37 @@ def likely_to_raise(
         with_data += 1
         ok = rate >= HEADCOUNT_GROWTH
         passed += ok
-        checks.append(f"{'yes' if ok else 'no'}: headcount {start:g} -> {end:g} in a year")
+        team = f"The team went from {start:g} to {end:g} people in a year ({rate:+.0%})"
+        bar = f"{HEADCOUNT_GROWTH:.0%} growth that often comes before a round"
+        checks.append(f"{team}, {'above' if ok else 'under'} the {bar}.")
         facts.append(Fact(value=end, unit="people", trust=sources[-1].rank, sources=sources))
     else:
-        checks.append("no data: headcount history under a year")
+        checks.append("Team size history covers less than a year.")
 
     if follow_on.value is not None:
         with_data += 1
         ok = follow_on.value >= FOLLOW_ON_RATIO
         passed += ok
-        checks.append(f"{'yes' if ok else 'no'}: lead follow-on ratio {follow_on.value}")
+        share = f"{follow_on.value:.0%} of its other startups"
+        checks.append(
+            f"Its lead investor came back for a later round in {share}"
+            f"{'' if ok else f', under {FOLLOW_ON_RATIO:.0%}'}."
+        )
     else:
-        checks.append("no data: lead follow-on unknown")
+        checks.append("Whether its lead investor follows on is not known.")
 
     value = None if with_data < 2 else passed >= 2
     return Signal(
         kind="likely_to_raise",
         label=label,
         value=value,
-        explanation="; ".join(checks) + ".",
+        explanation=" ".join(checks),
         facts=facts,
     )
+
+
+def _months(n: int) -> str:
+    return "1 month" if n == 1 else f"{n} months"
 
 
 def _growth_last_year(

@@ -20,7 +20,8 @@ from app.agent.trace import Tracer
 from app.cala.client import CalaClient
 from app.config import get_settings
 from app.llm import LLM, LLMError
-from app.models import Candidate, ExploredGraph, Profile
+from app.models import Candidate, ExploredGraph, Profile, WalkSummary
+from app.references import resolve_references
 
 log = logging.getLogger(__name__)
 
@@ -34,6 +35,7 @@ _TEXT = re.compile(r'Text\("((?:[^"\\]|\\.)*)"\)')
 class Visual:
     ui: str
     graph: ExploredGraph | None = None
+    walk: WalkSummary | None = None
 
 
 @asynccontextmanager
@@ -83,8 +85,9 @@ async def visual_answer(
     open_client: ClientFactory = _shared_cala,
 ) -> Visual | None:
     """OpenUI Lang for the reply plus the Cala subgraph it draws, or None when nothing fits."""
-    if not candidates:
-        return None
+    # Investors typed in chat are stored by name; the walk compares Cala ids (as the profile
+    # endpoint does), or it never marks them as trusted.
+    profile = resolve_references(profile, candidates)
     trusted = {r.entity_id for r in profile.reference_investors}
 
     def problem(text: str, graph: ExploredGraph | None) -> str | None:
@@ -110,6 +113,8 @@ async def visual_answer(
             trusted=trusted,
             check=problem,
             tracer=tracer,
+            names={c.entity_id: c.name for c in candidates}
+            | {r.entity_id: r.name for r in profile.reference_investors},
         )
     except LLMError as exc:
         log.info("no visual answer: %s", exc)
@@ -120,6 +125,8 @@ async def visual_answer(
         tracer.close(None)
         raise
     visual = _checked(_strip_fence(text), graph, problem)
+    if visual:
+        visual.walk = tracer.summary()
     tracer.close(visual and visual.ui)
     return visual
 

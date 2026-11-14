@@ -11,6 +11,11 @@ from app.llm.types import ChatResult, LLMError, Message, OnText, T, ToolCall, To
 
 log = logging.getLogger(__name__)
 
+TRANSCRIBE_SYSTEM = (
+    "Transcribe the speech in this recording word for word, in the language it is spoken in. "
+    "Return only the transcript: no notes, labels or quotes. If nobody speaks, return nothing."
+)
+
 
 class GeminiLLM:
     def __init__(
@@ -72,18 +77,32 @@ class GeminiLLM:
         ]
         return ChatResult(text=_text(parts), tool_calls=calls, thoughts=_thoughts(parts))
 
-    async def generate(self, *, task: str, system: str, prompt: str, schema: type[T]) -> T:
+    async def generate(
+        self, *, task: str, system: str, prompt: str, schema: type[T], quick: bool = False
+    ) -> T:
         config = types.GenerateContentConfig(
             system_instruction=system,
             temperature=0.2,
             response_mime_type="application/json",
             response_json_schema=schema.model_json_schema(),
         )
+        if quick:
+            # Picking and wording a few lines needs no deep reasoning: ~2 s instead of ~13 s.
+            config.thinking_config = types.ThinkingConfig(thinking_level="minimal")
         response = await self._call(task, _contents([Message(role="user", text=prompt)]), config)
         try:
             return schema.model_validate_json(_text(_parts_of(response)))
         except ValidationError as exc:
             raise LLMError(f"{task}: structured output did not validate") from exc
+
+    async def transcribe(self, *, audio: bytes, mime_type: str) -> str:
+        config = types.GenerateContentConfig(system_instruction=TRANSCRIBE_SYSTEM, temperature=0.0)
+        contents = [
+            types.Content(
+                role="user", parts=[types.Part.from_bytes(data=audio, mime_type=mime_type)]
+            )
+        ]
+        return _text(_parts_of(await self._call("transcribe", contents, config)))
 
     async def _stream(self, task: str, contents, config, on_text: OnText) -> list[types.Part]:
         """Stream the reply, telling `on_text` the answer so far; returns every part seen."""

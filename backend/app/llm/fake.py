@@ -59,12 +59,19 @@ class FakeLLM:
                 on_text("".join(lines[:i]))
         return ChatResult(text=script.text, tool_calls=script.tool_calls if tools else [])
 
-    async def generate(self, *, task: str, system: str, prompt: str, schema: type[T]) -> T:
+    async def generate(
+        self, *, task: str, system: str, prompt: str, schema: type[T], quick: bool = False
+    ) -> T:
         self.calls.append((task, prompt))
         script = self._find(task, prompt)
         if script is None or script.output is None:
             raise LLMError(f"FakeLLM has no script for task {task!r}")
         return schema.model_validate(script.output)
+
+    async def transcribe(self, *, audio: bytes, mime_type: str) -> str:
+        self.calls.append(("transcribe", mime_type))
+        script = self._find("transcribe", "")
+        return script.text if script else ""
 
     def _find(self, task: str, text: str) -> Script | None:
         lowered = text.lower()

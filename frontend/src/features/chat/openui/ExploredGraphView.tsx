@@ -11,6 +11,7 @@ import {
   NODE_H,
   NODE_PAD,
   SUB_PX,
+  subLine,
 } from "../../../components/GraphText";
 import styles from "./ExploredGraphView.module.css";
 import { layoutWalk, NODE_W, ROW, toTallWalk, typeLabel, type WalkNode } from "./exploredGraph";
@@ -152,7 +153,7 @@ export function ExploredGraphView({ graph, rootId, trusted, live = false }: Prop
                 </text>
                 {n.sub && (
                   <text x={NODE_PAD} y={30} className={styles.nodeSub}>
-                    {clip(n.sub, fits(inner, SUB_PX))}
+                    {clip(subLine(n.sub), fits(inner, SUB_PX))}
                   </text>
                 )}
               </g>
@@ -206,7 +207,7 @@ function FullName({ node }: { node: WalkNode }) {
       </text>
       {node.sub && (
         <text x={NODE_PAD} y={30} className={styles.nodeSub}>
-          {node.sub}
+          {subLine(node.sub)}
         </text>
       )}
     </g>

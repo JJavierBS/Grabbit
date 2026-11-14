@@ -79,22 +79,3 @@ def placeholders(c: Candidate, *, badge: bool = True) -> dict[str, str]:
             or "none published",
         }
     return values
-
-
-def facts_line(c: Candidate, *, short: bool) -> str:
-    v = placeholders(c)
-    parts = []
-    if "last_round" in v:
-        parts.append(
-            f"Last round: {v['last_round']}, {v['last_round_amount']}, {v['last_round_date']}, "
-            f"lead {v['last_round_lead']}"
-        )
-    if not short:
-        parts += [
-            f"Stage: {v['stage']}",
-            f"Team: {v['headcount']}",
-            f"Total raised: {v['total_funding']}",
-            f"HQ: {v['hq']}",
-            f"Founded: {v['founded']}",
-        ]
-    return " · ".join(parts)

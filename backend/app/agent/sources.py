@@ -22,6 +22,12 @@ log = logging.getLogger(__name__)
 MAX_ATTENDEES = 150
 
 
+def event_walk_limits() -> Limits:
+    """The limits of the event walk every chat turn starts with; `make warm` replays exactly
+    this walk so the first turn on the demo never misses the cache (#119)."""
+    return Limits(max_attendees=MAX_ATTENDEES)
+
+
 def fixture_candidates() -> list[Candidate]:
     return TypeAdapter(list[Candidate]).validate_python(fixtures.load_json("candidates.json"))
 
@@ -46,9 +52,11 @@ async def _event_candidates(event_id: str) -> tuple[list[Candidate], LinkGraph]:
     if hit and _now() - hit[0] < DISCOVERY_TTL:
         return hit[1], hit[2]
     async with open_cala() as (client, _):
-        limits = Limits(max_attendees=MAX_ATTENDEES)
         result = await get_candidates(
-            client, neutral_profile(event_id), limits=limits, on_progress=report_attendees
+            client,
+            neutral_profile(event_id),
+            limits=event_walk_limits(),
+            on_progress=report_attendees,
         )
     remember(result.investors)
     _discoveries[event_id] = (_now(), result.candidates, result.links)
@@ -68,7 +76,7 @@ async def candidates_for(profile: Profile) -> list[Candidate]:
         candidates = [c for c in found if matches_profile(c, profile)]
     except (CalaError, CalaCacheMiss) as err:
         log.warning("discovery unavailable, using fixture candidates: %s", err)
-        candidates = fixture_candidates()
+        candidates = [c for c in fixture_candidates() if matches_profile(c, profile)]
     return _with_resolved_references(candidates, profile, graph)
 
 

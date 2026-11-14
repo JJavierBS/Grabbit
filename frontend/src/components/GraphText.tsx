@@ -25,6 +25,11 @@ export function fits(width: number, px: number, bold = false): number {
   return Math.max(4, Math.floor(width / (px * (bold ? ADVANCE.label : ADVANCE.text))));
 }
 
+/** A node's sub line starts with a capital, whatever word comes first ("You trust · lead"). */
+export function subLine(text: string): string {
+  return text.replace(/^\p{Ll}/u, (c) => c.toUpperCase());
+}
+
 export function clip(text: string, max: number): string {
   return text.length > max ? `${text.slice(0, max - 1)}…` : text;
 }

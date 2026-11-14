@@ -10,6 +10,7 @@ model as text: `Message` carries no function parts (app/llm/types.py).
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import time
 from collections.abc import Callable
@@ -123,7 +124,9 @@ ClientFactory = Callable[[], AbstractAsyncContextManager[CalaClient]]
 class Walk:
     """The subgraph reached so far, and the Cala session that grows it."""
 
-    def __init__(self, open_client: ClientFactory, trusted: set[str]):
+    def __init__(
+        self, open_client: ClientFactory, trusted: set[str], names: dict[str, str] | None = None
+    ):
         self._open_client = open_client
         self._stack = AsyncExitStack()
         self._client: CalaClient | None = None
@@ -131,9 +134,11 @@ class Walk:
         self.nodes: dict[str, GraphNode] = {}
         self.edges: dict[tuple[str, str, str], GraphEdge] = {}
         self.seen_types: dict[str, str] = {}
-        self.seen_names: dict[str, str] = {}
+        # Names of ids the model may expand before Cala has named them (report startups).
+        self.seen_names: dict[str, str] = dict(names or {})
         self.last_hits: list[dict[str, Any]] = []
         self.unavailable = False
+        self.failure: str | None = None
         self.cala_calls = 0
 
     async def __aenter__(self) -> Walk:
@@ -166,7 +171,16 @@ class Walk:
                 return f"Cala rejected that request ({err.status}); check the id or name."
             log.info("explore: cala failed: %s", err)
             self.unavailable = True
-            return "Cala is unavailable right now."
+            self.failure = {
+                402: (
+                    "Cala has insufficient balance. Recharge the connected account to "
+                    "explore new connections."
+                ),
+                401: "Cala rejected the API credentials. Check the configured API key.",
+                403: "Cala denied access to this data. Check the account permissions.",
+                429: "Cala is rate limited. Try the research again in a moment.",
+            }.get(err.status, "Cala is unavailable right now. Try the research again later.")
+            return self.failure
 
     async def _cala(self, method: str, *args: Any, **kwargs: Any) -> Any:
         if self._client is None:
@@ -243,6 +257,10 @@ class Walk:
         except TimeoutError:
             return f"{entity_id}: Cala did not answer in time."
         facts = {p: property_fact(data, p) for p in props}
+        if "employee_count_range" in facts:
+            from app.discovery.build import headcount_fact
+
+            facts["employee_count_range"] = headcount_fact(data)
         facts = {p: f for p, f in facts.items() if f.value is not None}
         node = self._add_node(entity_id, data.get("name") or entity_id, data.get("entity_type"))
         if node is None:
@@ -375,6 +393,7 @@ async def walk(
     check: Callable[[str, ExploredGraph | None], str | None] | None = None,
     clock: Callable[[], float] = time.monotonic,
     tracer: Tracer | None = None,
+    names: dict[str, str] | None = None,
 ) -> tuple[str, ExploredGraph | None]:
     """Let the model call Cala tools for a few rounds, then return its answer and the walk.
 
@@ -384,7 +403,7 @@ async def walk(
     started = clock()
     messages = [Message(role="user", text=question)]
     on_text = tracer.answer if tracer else None
-    async with Walk(open_client, trusted) as state:
+    async with Walk(open_client, trusted, names) as state:
         rounds = 0
         tools: list[ToolSpec] | None = TOOLS
         while True:
@@ -447,7 +466,7 @@ async def walk(
             if tracer:
                 # The streamed draft broke a rule; say so instead of swapping it silently.
                 tracer.drop_answer()
-                tracer.note("rewrite", f"Rewriting the answer: {_plain(problem)}")
+                tracer.note("rewrite", "Rewriting the answer so every number comes from Cala")
             result = await llm.chat(system=system, messages=messages, on_text=on_text)
         log.info(
             "explore: %d tool rounds, %d cala calls, %d nodes, %d edges, %.1fs",
@@ -457,11 +476,18 @@ async def walk(
             len(state.edges),
             clock() - started,
         )
+        if state.failure:
+            text = (
+                state.failure
+                + " No new connections could be verified beyond the data already retrieved."
+            )
+            ui = f"root = Answer([t])\nt = Text({json.dumps(text)})"
+            return ui, graph
         return result.text, graph
 
 
 async def _traced(state: Walk, call: ToolCall, tracer: Tracer) -> str:
-    before_nodes, before_edges = len(state.nodes), len(state.edges)
+    before = set(state.nodes)
     kind = "search" if call.name == "cala_search" else "expand"
     step = tracer.start(kind, _step_text(call, state))
     output = await state.run(call)
@@ -469,8 +495,14 @@ async def _traced(state: Walk, call: ToolCall, tracer: Tracer) -> str:
         ids = [str(i) for i in call.args.get("entity_ids") or [] if i]
         root = next((i for i in ids if i in state.nodes), None)
         tracer.graph(state.graph(), root)
-    await tracer.finish(step, _step_result(call, state, before_nodes, before_edges, output))
+    await tracer.finish(step, _step_result(call, state, before, output))
     return output
+
+
+# Plain words for the live walk (#138): what a person would call each thing, no graph jargon.
+FOUND_ORDER = ["startup", "investor", "founder", "person", "funding round", "company"]
+PLURALS = {"person": "people", "company": "companies"}
+SEARCH_KINDS = {"Person": "person", "Event": "event", "Industry": "sector"}
 
 
 def _step_text(call: ToolCall, state: Walk) -> str:
@@ -478,38 +510,77 @@ def _step_text(call: ToolCall, state: Walk) -> str:
         name = str(call.args.get("name") or "").strip()[:100]
         return f"Searching Cala for “{name}”"
     ids = [str(i) for i in call.args.get("entity_ids") or [] if i][:MAX_EXPAND]
-    names = [state.seen_names.get(i) or f"entity {i[:8]}" for i in ids]
-    shown = ", ".join(names[:3]) + (f" and {len(names) - 3} more" if len(names) > 3 else "")
-    rels = [str(r).replace("_", " ").lower() for r in call.args.get("relationships") or []]
-    return f"Expanding {shown}" + (f" over {', '.join(rels)}" if rels else "")
+    rounds = [i for i in ids if state.seen_types.get(i) in ROUND_TYPES]
+    others = [i for i in ids if i not in rounds]
+    if not others:
+        if len(rounds) == 1:
+            return "Opening a funding round to see who raised and who invested"
+        return f"Opening {len(rounds)} funding rounds to see who raised and who invested"
+    names = [state.seen_names.get(i) or "a company from your report" for i in others]
+    if len(others) == 1 and not rounds:
+        if state.seen_types.get(others[0]) == "Person":
+            return f"Looking at what {names[0]} founded and where they work"
+        return f"Looking at {_possessive(names[0])} funding rounds and people"
+    parts = names[:2] + ([f"{len(names) - 2} more"] if len(names) > 2 else [])
+    if rounds:
+        parts.append(_count(len(rounds), "funding round"))
+    return f"Looking at {_join(parts)}"
 
 
-def _step_result(
-    call: ToolCall, state: Walk, before_nodes: int, before_edges: int, output: str
-) -> str:
+def _step_result(call: ToolCall, state: Walk, before: set[str], output: str) -> str:
     if state.unavailable:
-        return "Cala is unavailable right now"
+        return state.failure or "Cala is not reachable right now"
     if "did not answer in time" in output:
-        return "Cala did not answer in time"
+        return "Cala took too long, moving on"
     if call.name == "cala_search":
         hits = state.last_hits
         if not hits:
-            return "No match"
-        first = f"{hits[0].get('name')} ({hits[0].get('entity_type') or 'entity'})"
-        return f"{len(hits)} match{'es' if len(hits) > 1 else ''}, first {first}"
-    new_nodes = len(state.nodes) - before_nodes
-    new_edges = len(state.edges) - before_edges
-    if "hub node" in output and not new_nodes:
-        return "A hub with thousands of edges: not expanded"
-    if not new_nodes and not new_edges:
-        return "Nothing new"
-    return f"+{new_nodes} entities, +{new_edges} links"
+            return "nothing by that name"
+        kind = SEARCH_KINDS.get(hits[0].get("entity_type") or "")
+        return f"found {hits[0].get('name')}" + (f" ({kind})" if kind else "")
+    # What the step reached, not the entities it opened (those were found earlier).
+    opened = {str(i) for i in call.args.get("entity_ids") or []}
+    new = [state.nodes[i] for i in state.nodes if i not in before and i not in opened]
+    if not new:
+        if "hub node" in output:
+            return "too big to open: thousands of connections"
+        return "nothing new"
+    counts: dict[str, int] = {}
+    for node in new:
+        what = _what(node.entity_id, node.entity_type, state)
+        counts[what] = counts.get(what, 0) + 1
+    found = [_count(counts[w], w) for w in FOUND_ORDER if w in counts]
+    # Cala names funds by their vehicle: "500 Global (500 Emerging Europe)" reads "500 Global".
+    trusted = [n.name.split(" (")[0] for n in new if n.entity_id in state.trusted]
+    note = f", including {_join(trusted[:2])}, whom you trust" if trusted else ""
+    return f"found {_join(found)}{note}"
 
 
-def _plain(problem: str) -> str:
-    """The first clause of a check problem, as the end of a sentence."""
-    first = problem.split(";")[0].rstrip(".")
-    return first[:1].lower() + first[1:]
+def _what(entity_id: str, entity_type: str, state: Walk) -> str:
+    """What a person would call an entity, from its type and how the walk reached it."""
+    if entity_type in ROUND_TYPES:
+        return "funding round"
+    edges = [e for e in state.edges.values() if entity_id in (e.source, e.target)]
+    if entity_type == "Person":
+        return "founder" if any(e.relationship == "FOUNDED" for e in edges) else "person"
+    roles = {e.role for e in edges}
+    if "ISSUER" in roles:
+        return "startup"
+    if "INVESTOR" in roles or any(e.relationship == "PARTICIPATES_IN_FUNDING_ROUND" for e in edges):
+        return "investor"
+    return "company"
+
+
+def _possessive(name: str) -> str:
+    return f"{name}’" if name.endswith("s") else f"{name}’s"
+
+
+def _count(n: int, what: str) -> str:
+    return f"{n} {what if n == 1 else PLURALS.get(what, what + 's')}"
+
+
+def _join(parts: list[str]) -> str:
+    return parts[0] if len(parts) == 1 else f"{', '.join(parts[:-1])} and {parts[-1]}"
 
 
 def _stop_reason(state: Walk, rounds: int, elapsed: float) -> str | None:

@@ -207,6 +207,13 @@ round dates (still active?).
 - Rules for the wrapper (architecture.md): one shared queue, no parallel bursts, wait and
   retry on 429 with backoff, a per-call timeout, and every response cached by
   `(entity id, request body)`. The demo reads from the cache and is pre-warmed.
+- The queue is process-wide (`CalaLimiter` in `app/cala/client.py`, #119): every client
+  shares `CALA_MAX_CONCURRENCY` (1) requests in flight, starts at least
+  `CALA_MIN_INTERVAL_MS` (250) apart, and a 429 pauses all of them for the backoff. Cached
+  reads never wait. `make warm` ends with the first chat turn's own walk and counts its
+  cache misses; `make warm ARGS=--check` only counts them (pitch.md "Demo checklist").
+- A 404 is cached too, as `{"__cala_status__": 404}`, and read back as the same `CalaError`
+  (`lookup` returns `None`); other errors are never cached, and `fresh=True` asks again (#149).
 
 ## Traversal flow
 Shared core, whatever the seed source:

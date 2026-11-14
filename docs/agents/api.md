@@ -57,17 +57,26 @@ work in parallel against mocks.
 - `LinkNode`: `entity_id, name, entity_type`. `LinkEdge`: `source, target, relationship,
   role?` (Cala's direction: participant -> round).
 - `Profile`: `version, event_id?, thesis, filters {stages[], sectors_in[], sectors_out[],
-  countries[], headcount_max?, ticket?: Fact}, reference_investors [{entity_id, name}],
-  style {length (short|medium|long), detail (plain|technical), language, sections[]},
+  countries[], headcount_max?, ticket?: Fact, fundraising (any|recent|likely_to_raise),
+  raised_within_months (default 12), required_backers[] (any named backer required)}, reference_investors [{entity_id, name}],
+  style {length (short|medium|long), detail (plain|technical), language, sections[], max_candidates? (1-20)},
   cadence (event|daily|weekly), alert_threshold (low|medium|high), sources[] (publisher
   domains the angel trusts, the Context.dev allow-list; up to 3 are queried), instructions,
   updated_at`.
 - `ProfileChange`: `version, field, before, after, reason, by (user|agent)`.
 - `ChatMessage`: `id, role (user|agent), text, created_at, profile_changes: ProfileChange[],
-  report_id?, ui?, graph?`. `ui` is OpenUI Lang drawn with the Cala components in
+  report_id?, ui?, graph?, walk?, sources, questions`. `ui` is OpenUI Lang drawn with the Cala components in
   `frontend/src/features/chat/openui/`; when set, the chat shows it instead of `text`.
   `graph` is the part of Cala's graph the agent walked for that answer (`ExploredGraph`),
-  drawn by the `ExploredGraph` and `EntityFacts` components.
+  drawn by the `ExploredGraph` and `EntityFacts` components. `walk` (`WalkSummary`: `steps:
+  WalkStep[]`, `checked`, `seconds`) is how the agent walked Cala for it, in plain words,
+  without the model's reasoning; the chat shows it folded as "How I found this" (#138).
+  `sources` (`ReplySource[]`: `entity_id, name, sources: Source[]`, strongest first) lists,
+  for each candidate startup the reply text names, where its facts come from; computed by
+  the app from the `Fact`s, empty for a visual answer, which badges each value (#141).
+  `questions` (`AgentQuestion[]`: `key, text, options: {label, answer}[]`) are the first-turn
+  questions, asked as a form under the reply; a click sends the chosen `answer` sentences as
+  the next user message (#153).
 - `ExploredGraph`: `nodes: GraphNode[], edges: GraphEdge[]`. `GraphNode`: `entity_id, name,
   entity_type, facts: {property: Fact}` (only for nodes the agent expanded).
   `GraphEdge`: `source, target, relationship (Cala name), role?, is_lead, facts: {event_date|
@@ -78,11 +87,13 @@ work in parallel against mocks.
   headcount_jump|acquisition|status_change|web_news), title, why_it_matters,
   importance (0-1), facts: Fact[], simulated: bool`. `simulated=true` is shown on screen.
 - `Health`: `status ("ok"), cala_mode (live|replay), llm_mode (gemini|fake), demo_mode: bool`.
+- `Transcript`: `text` (empty when nobody spoke).
 - Request bodies: `ChatRequest {text}` (1-4000 chars), `ReportRunRequest {kind}`,
   `SimulateEventRequest {fixture}` (a file name in `backend/app/fixtures/demo_events/`).
 - `ErrorResponse`: `{error: {code, message}}`. Codes so far: `not_found`,
   `validation_error`, `internal_error`, `demo_mode_disabled`, `fixture_not_found`,
-  `invalid_workspace`.
+  `invalid_workspace`, `unsupported_media_type`, `empty_audio`, `audio_too_large`,
+  `transcription_failed`.
 
 ## Endpoints
 | Method | Path | Purpose | Status |
@@ -93,6 +104,7 @@ work in parallel against mocks.
 | POST | `/api/profile/undo` | Revert the last change, returns `Profile` | mock |
 | GET | `/api/chat` | `ChatMessage[]` of the conversation | mock |
 | POST | `/api/chat` | `{text}` -> agent `ChatMessage` (may change the profile and regenerate the report) | mock |
+| POST | `/api/transcribe` | Raw `audio/*` body (a `MediaRecorder` recording, at most 10 MB) -> `Transcript`, written down by Gemini; Talk in the chat uses it in every browser (#161). 415 not audio, 400 empty, 413 too large, 502 Gemini failed | live |
 | GET | `/api/reports/latest` | Latest `Report` | mock |
 | GET | `/api/reports` | Past `Report[]`, newest first, at most 20 (#54) | mock |
 | POST | `/api/reports/run` | `{kind}` -> new `Report` ("run now" for the demo) | mock |

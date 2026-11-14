@@ -15,11 +15,14 @@ import { TextArea } from "../../components/Input";
 import { Logo } from "../../components/Logo";
 import { Markdown } from "../../components/Markdown";
 import { Skeleton } from "../../components/Skeleton";
+import { AgentQuestions } from "./AgentQuestions";
 import { ChangeNote } from "./ChangeNote";
 import styles from "./ChatPanel.module.css";
+import { HowIFound } from "./HowIFound";
 import { LiveWalk } from "./LiveWalk";
 import { changeNoteText, isUndoable } from "./noteText";
 import { VisualAnswer } from "./openui/VisualAnswer";
+import { ReplySources } from "./ReplySources";
 import { useDictation } from "./useDictation";
 import { useFollowLog } from "./useFollowLog";
 import { WorkingLine } from "./WorkingLine";
@@ -68,7 +71,7 @@ export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
   const submit = (text: string) => {
     const value = text.trim();
     if (!value || send.isPending) return;
-    if (dictation.listening) dictation.toggle("");
+    dictation.cancel();
     // The message leaves the composer at once; if it is not sent, it comes back to edit.
     setDraft("");
     send.mutate(value, { onError: () => setDraft((current) => current || value) });
@@ -124,7 +127,8 @@ export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
               <Logo stacked className={styles.welcomeLogo} />
               <p className={styles.welcomeLead}>Tell me what you look for at Slush 2026.</p>
               <p className={styles.welcomeHint}>
-                A sector, a stage, investors you trust: however vague. I ask the rest.
+                <span>A sector, a stage, investors you trust:</span>{" "}
+                <span>however vague, I ask the rest.</span>
               </p>
             </div>
           )}
@@ -136,6 +140,8 @@ export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
                 canUndo={isUndoable(m.profile_changes, profile.data?.version)}
                 undoing={undo.isPending}
                 onUndo={() => undo.mutate()}
+                onAnswer={m.id === messages.at(-1)?.id ? submit : undefined}
+                busy={send.isPending}
               />
               {renderAfter?.(m)}
             </Fragment>
@@ -196,9 +202,11 @@ export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
             placeholder={
               dictation.listening
                 ? "Listening… press Stop when you are done"
-                : hasReport
-                  ? PLACEHOLDER_REPORT
-                  : PLACEHOLDER_FIRST
+                : dictation.transcribing
+                  ? "Writing down what you said…"
+                  : hasReport
+                    ? PLACEHOLDER_REPORT
+                    : PLACEHOLDER_FIRST
             }
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
@@ -211,7 +219,8 @@ export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
               aria-label={dictation.listening ? "Stop talking" : "Talk"}
               aria-pressed={dictation.listening}
               className={styles.talk}
-              onClick={() => dictation.toggle(draft)}
+              loading={dictation.transcribing}
+              onClick={dictation.toggle}
               icon={
                 dictation.listening ? (
                   <Square aria-hidden="true" />
@@ -242,9 +251,12 @@ interface MessageProps {
   canUndo: boolean;
   undoing: boolean;
   onUndo: () => void;
+  /** Answers its questions with a click; only the latest reply's are still open (#153). */
+  onAnswer?: (text: string) => void;
+  busy: boolean;
 }
 
-function Message({ message, entering, canUndo, undoing, onUndo }: MessageProps) {
+function Message({ message, entering, canUndo, undoing, onUndo, onAnswer, busy }: MessageProps) {
   const isAgent = message.role === "agent";
   const { note, rest } = isAgent
     ? changeNoteText(message.text, message.profile_changes)
@@ -261,9 +273,18 @@ function Message({ message, entering, canUndo, undoing, onUndo }: MessageProps) 
       {message.ui ? (
         <div className={styles.visual}>
           <VisualAnswer ui={message.ui} graph={message.graph} />
+          {message.walk && <HowIFound walk={message.walk} />}
         </div>
       ) : (
-        rest && <div className={styles.bubble}>{isAgent ? <Markdown source={rest} /> : rest}</div>
+        rest && (
+          <div className={styles.bubble}>
+            {isAgent ? <Markdown source={rest} /> : rest}
+            {isAgent && message.sources.length > 0 && <ReplySources cited={message.sources} />}
+          </div>
+        )
+      )}
+      {isAgent && message.questions.length > 0 && (
+        <AgentQuestions questions={message.questions} onAnswer={onAnswer} busy={busy} />
       )}
     </article>
   );

@@ -8,11 +8,13 @@ import type {
   Profile,
   ProfileChange,
   Report,
+  WalkSummary,
 } from "../api/types";
 import {
   chatV2,
   exploredAnswerUi,
   exploredAurora,
+  exploredAuroraWalk,
   historyV2,
   profileV2,
   reportV1,
@@ -32,6 +34,7 @@ interface Script {
   next?: (v: Version) => Version;
   ui?: string;
   graph?: ExploredGraph;
+  walk?: WalkSummary;
 }
 
 const now = () => new Date().toISOString();
@@ -96,6 +99,7 @@ const scripts: Script[] = [
     reply: "Aurora Ventures also led the seed of Fjordlight Robotics.",
     ui: exploredAnswerUi,
     graph: exploredAurora,
+    walk: exploredAuroraWalk,
   },
   {
     match: /confirm|looks right|keep me posted/i,
@@ -128,7 +132,13 @@ export async function fakeTransport(request: Request): Promise<Response> {
   const { method } = request;
   const path = new URL(request.url).pathname;
   const text = await request.text();
-  const body = text ? JSON.parse(text) : undefined;
+  // Talk sends audio, every other call JSON.
+  const body =
+    text && request.headers.get("content-type")?.startsWith("audio/")
+      ? text
+      : text
+        ? JSON.parse(text)
+        : undefined;
   await delay(method === "GET" ? 150 : 900);
 
   if (method === "GET") {
@@ -140,6 +150,8 @@ export async function fakeTransport(request: Request): Promise<Response> {
     if (path === "/api/reports") return json([...state.reports].reverse().slice(0, 20));
     if (path === "/api/alerts") return json(state.alerts);
   }
+  if (method === "POST" && path === "/api/transcribe")
+    return json({ text: "Drop consumer health" });
   if (method === "POST" && path === "/api/chat") {
     const text = String(body?.text ?? "").trim();
     if (!text)
@@ -150,6 +162,9 @@ export async function fakeTransport(request: Request): Promise<Response> {
       report_id: null,
       ui: null,
       graph: null,
+      walk: null,
+      sources: [],
+      questions: [],
       text,
       created_at: now(),
       profile_changes: [],
@@ -170,6 +185,9 @@ export async function fakeTransport(request: Request): Promise<Response> {
       report_id: after === before ? null : after.report.id,
       ui: script?.ui ?? null,
       graph: script?.graph ?? null,
+      walk: script?.walk ?? null,
+      sources: [],
+      questions: [],
     };
     state.chat.push(reply);
     return json(reply);
@@ -188,6 +206,9 @@ export async function fakeTransport(request: Request): Promise<Response> {
       report_id: null,
       ui: null,
       graph: null,
+      walk: null,
+      sources: [],
+      questions: [],
       text: "Undone. I went back to the previous version of your report.",
       created_at: now(),
       profile_changes: [],

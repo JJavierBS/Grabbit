@@ -19,6 +19,9 @@ Gemini personalizes the report itself, through the conversation. No settings scr
   profile version. The reply says what changed in one line ("From now on: co-investors
   first.") and the report is regenerated at once, so the change is visible. Undo reverts
   one version.
+- Selection constraints use structured fields: `filters.fundraising`, `raised_within_months`,
+  `required_backers`; `style.max_candidates` limits cards and prose together. A required
+  signal/backer needs positive evidence. Trust alone changes ranking, not eligibility.
 - The fixed system prompt holds what self-edits can never change: never recommend what to
   buy, show every fact with its trust badge, never invent a value, absent is "not
   published", Cala facts and web signals stay apart. Instructions that conflict are
@@ -40,8 +43,13 @@ From Cala `source_rank` (cala.md). A fact with several sources shows the stronge
 Dates show only their precision: a `year` date reads "2019", not "2019-01-01".
 
 ## Question bank (onboarding and thesis flow)
-Each question is backed by data from the current candidate set; ask the 2-3 that split it
-best, never all of them. Numbers in the question come from Cala, not from the model.
+Each question is backed by data from the current candidate set; ask 2-3, never all of them.
+Apply the updated profile before counting or asking. Code builds every question with its numbers and options (`app/agent/onboarding.py`); Gemini
+(minimal thinking, alongside the report build) picks the ones that fit the investor's first
+message and words them and their options in its language. A worded question whose numbers or
+option count differ keeps the bank's wording; on failure the 3 that split the set best are
+asked (#165). Numbers in the question come from Cala, not from the model.
+
 | Question | Cala field |
 | --- | --- |
 | "Of the N startups that match, X are pre-seed or seed and Y Series A or later. Which stage?" | `funding_stage` |
