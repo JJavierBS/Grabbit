@@ -91,3 +91,25 @@ def test_diff_ignores_version_and_timestamp(now):
     a = _profile(now)
     b = a.model_copy(update={"version": 5})
     assert diff(a, b) == []
+
+
+def test_sources_are_normalised_to_domains(now):
+    call = ToolCall(
+        name="update_profile",
+        args={
+            "patch": {
+                "sources": ["https://www.TechCrunch.com/startups", "techcrunch.com", "sifted.eu"]
+            },
+            "reason": "read TechCrunch and Sifted",
+        },
+    )
+    outcome = apply_tool_call(default_profile(now), call, by="agent")
+    assert outcome.profile.sources == ["techcrunch.com", "sifted.eu"]
+    assert [c.field for c in outcome.changes] == ["sources"]
+
+
+def test_sources_that_are_not_domains_are_rejected(now):
+    call = ToolCall(
+        name="update_profile", args={"patch": {"sources": ["my friend Pekka"]}, "reason": "x"}
+    )
+    assert apply_tool_call(default_profile(now), call, by="agent").error

@@ -1,12 +1,20 @@
 """Tools the agent may call to edit the profile and its own instructions."""
 
+import re
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
 from app.agent.rules import violations
 from app.llm import ToolCall, ToolSpec
 from app.models import Fact, Profile, ProfileChange, ReferenceInvestor, Source
+
+DOMAIN = re.compile(r"(?:[a-z0-9-]+\.)+[a-z]{2,}")
+
+
+def _domain(value: str) -> str:
+    value = value.strip().lower().removeprefix("https://").removeprefix("http://")
+    return value.removeprefix("www.").split("/")[0]
 
 
 class _Strict(BaseModel):
@@ -47,6 +55,17 @@ class ProfilePatch(_Strict):
     style: StylePatch | None = None
     cadence: Literal["event", "daily", "weekly"] | None = None
     alert_threshold: Literal["low", "medium", "high"] | None = None
+    sources: list[str] | None = None
+
+    @field_validator("sources")
+    @classmethod
+    def _domains(cls, value: list[str] | None) -> list[str] | None:
+        if value is None:
+            return None
+        domains = [_domain(v) for v in value]
+        if not all(DOMAIN.fullmatch(d) for d in domains):
+            raise ValueError("sources must be publisher domains like techcrunch.com")
+        return list(dict.fromkeys(domains))
 
 
 class UpdateProfileArgs(_Strict):
@@ -115,6 +134,11 @@ TOOL_SPECS = [
                         },
                         "cadence": {"type": "string", "enum": ["event", "daily", "weekly"]},
                         "alert_threshold": {"type": "string", "enum": ["low", "medium", "high"]},
+                        "sources": {
+                            **_STRINGS,
+                            "description": "Publisher domains the investor trusts for news "
+                            "(e.g. techcrunch.com); read as web, unverified signals",
+                        },
                     },
                 },
                 "reason": _REASON,

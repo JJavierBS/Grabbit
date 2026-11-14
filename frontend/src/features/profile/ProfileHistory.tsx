@@ -10,6 +10,7 @@ const FIELD_LABELS: Record<string, string> = {
   instructions: "Its own report instructions",
   thesis: "Thesis",
   reference_investors: "Reference investors",
+  sources: "News sources",
   "filters.stages": "Stages",
   "filters.sectors_in": "Sectors to include",
   "filters.sectors_out": "Sectors to leave out",

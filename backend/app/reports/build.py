@@ -1,13 +1,14 @@
 """Assemble a Report from candidates, the profile and Gemini's prose."""
 
+import re
 import uuid
 from datetime import UTC, datetime
 from typing import Literal
 
 from app.llm import LLM
-from app.models import Candidate, Profile, Report, ReportSection
+from app.models import Candidate, Fact, Profile, Report, ReportSection
 from app.reports import write
-from app.reports.facts import facts_line
+from app.reports.facts import BADGES, facts_line, render_date
 from app.reports.rank import co_invest, rank
 
 Kind = Literal["prep", "digest", "memo"]
@@ -113,3 +114,29 @@ def _entry(c: Candidate, paragraph: str | None, refs: dict[str, str], short: boo
     if facts := facts_line(c, short=short):
         lines.append(facts)
     return "\n\n".join(lines)
+
+
+WEB_SECTION = "Web signals (unverified)"
+
+
+def with_web_signals(report: Report, signals: dict[str, list[Fact]]) -> Report:
+    """Append web news in its own section; it never enters the Cala facts or the model's prose."""
+    names = {c.entity_id: c.name for c in report.candidates}
+    ids = [i for i in names if signals.get(i)]
+    if not ids:
+        return report
+    blocks = []
+    for entity_id in ids:
+        items = "\n".join(f"- {_web_item(f)}" for f in signals[entity_id])
+        blocks.append(f"**{names[entity_id]}**\n\n{items}")
+    section = ReportSection(title=WEB_SECTION, body_md="\n\n".join(blocks), candidate_ids=ids)
+    return report.model_copy(update={"sections": [*report.sections, section]})
+
+
+def _web_item(fact: Fact) -> str:
+    # Headlines are third-party text: keep them from breaking the Markdown link.
+    title = " ".join(re.sub(r"[\[\]()]", " ", str(fact.value)).split())
+    source = fact.sources[0] if fact.sources else None
+    link = f"[{title}]({source.url})" if source and source.url else title
+    where = ", ".join(x for x in (source and source.name, source and render_date(source)) if x)
+    return f"{link} ({where + ', ' if where else ''}{BADGES['web_unverified']})"

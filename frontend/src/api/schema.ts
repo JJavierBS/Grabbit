@@ -131,7 +131,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** Get Alerts */
+    /**
+     * Get Alerts
+     * @description Alerts the watcher stored, newest first; the fixtures until it has produced any.
+     */
     get: operations["get_alerts_api_alerts_get"];
     put?: never;
     post?: never;
@@ -349,6 +352,11 @@ export interface components {
        * @enum {string}
        */
       alert_threshold: "low" | "medium" | "high";
+      /**
+       * Sources
+       * @description Publisher domains the angel trusts; Context.dev allow-list (web, unverified)
+       */
+      sources: string[];
       /** Instructions */
       instructions: string;
       /**
@@ -939,6 +947,15 @@ export interface operations {
       };
       /** @description Not Found */
       404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Conflict */
+      409: {
         headers: {
           [name: string]: unknown;
         };

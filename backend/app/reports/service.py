@@ -7,9 +7,11 @@ from datetime import datetime
 
 from app import events
 from app.agent.sources import candidates_for
+from app.context_dev import ContextDevClient, get_context_dev
+from app.context_dev.signals import soft_signals
 from app.llm import LLM, get_llm
 from app.models import Profile, Report, ReportRef
-from app.reports.build import Kind, build, new_report_id
+from app.reports.build import Kind, build, new_report_id, with_web_signals
 from app.store import profile as profile_store
 from app.store import reports as report_store
 
@@ -24,6 +26,7 @@ async def run(
     *,
     llm: LLM | None = None,
     profile: Profile | None = None,
+    web: ContextDevClient | None = None,
     now: datetime | None = None,
     report_id: str | None = None,
     superseded: Callable[[], bool] = lambda: False,
@@ -39,6 +42,8 @@ async def run(
         now=now,
         report_id=report_id,
     )
+    signals = await soft_signals(web or get_context_dev(), report.candidates, profile, now)
+    report = with_web_signals(report, signals)
     if superseded():
         log.info("report %s dropped: a newer profile version is being reported", report.id)
         return report
