@@ -86,6 +86,15 @@ never tells you what to buy.
 7. Business model and what is next.
 8. Technologies and links (demo, repo, video).
 
+## Demo checklist (before every live demo, rehearsal or recording)
+- [ ] `make warm` with live Cala on the laptop or server that will present (without
+  `--limit`). It ends with the first chat turn's own walk and prints
+  `first chat turn: N Cala calls, 0 cache misses`. A cold first turn took about 200 s in
+  the 14 Nov audit, because Cala answered 429 about 100 times; warmed, it reads only the cache.
+- [ ] `make warm ARGS=--check` right before presenting: it exits 1 on any miss.
+- [ ] Start from a fresh workspace (new browser profile or cleared site data) and type the
+  demo thesis (decisions.md "demo thesis").
+
 ## Submission checklist (challenge.md "Submission form needs")
 - [ ] Punchline chosen and identical in README and form.
 - [ ] README: Problem, Solution, Demo links, Technologies used, Team roles.
