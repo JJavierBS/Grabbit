@@ -2,11 +2,12 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.api import chat, errors, profile
+from app.api import chat, errors, profile, reports
 from app.config import get_settings
 from app.store import chat as _chat_tables  # noqa: F401  registers tables
 from app.store import db
 from app.store import profile as _profile_tables  # noqa: F401
+from app.store import reports as _report_tables  # noqa: F401
 
 
 @asynccontextmanager
@@ -20,6 +21,7 @@ app = FastAPI(title="Grabbit", lifespan=lifespan, openapi_url="/api/openapi.json
 errors.install(app)
 app.include_router(profile.router)
 app.include_router(chat.router)
+app.include_router(reports.router)
 
 
 @app.get("/api/health")

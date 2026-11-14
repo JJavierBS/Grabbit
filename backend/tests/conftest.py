@@ -14,6 +14,7 @@ from app.llm import get_llm  # noqa: E402
 from app.store import chat as _chat  # noqa: E402, F401
 from app.store import db  # noqa: E402
 from app.store import profile as _profile  # noqa: E402, F401
+from app.store import reports as _reports  # noqa: E402, F401
 
 NOW = datetime(2026, 11, 14, 12, 0, tzinfo=UTC)
 
