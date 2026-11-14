@@ -27,6 +27,7 @@ export type WalkTrace = Schemas["WalkTrace"];
 export type WalkStep = Schemas["WalkStep"];
 export type WalkSummary = Schemas["WalkSummary"];
 export type ReplySource = Schemas["ReplySource"];
+export type AgentQuestion = Schemas["AgentQuestion"];
 export type Health = Schemas["Health"];
 export type ErrorResponse = Schemas["ErrorResponse"];
 

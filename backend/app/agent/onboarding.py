@@ -16,6 +16,8 @@ class Question:
     text: str
     split: float
     """0 = asking tells us nothing about these candidates, 1 = halves them."""
+    options: tuple[tuple[str, str], ...] = ()
+    """(label on the button, sentence sent to the agent), so a click answers it (#153)."""
 
 
 def pick_questions(
@@ -43,6 +45,11 @@ def _stage(cs: list[Candidate], _p: Profile, _n: datetime) -> Question | None:
         f"Of the {len(cs)} startups that match, {early} are pre-seed or seed and {later} "
         "Series A or later. Which stage?",
         _balance(early, later),
+        (
+            ("Pre-seed and seed", "Only pre-seed and seed startups."),
+            ("Series A or later", "Only Series A or later."),
+            ("Any stage", "Keep every stage."),
+        ),
     )
 
 
@@ -67,6 +74,17 @@ def _ticket(cs: list[Candidate], profile: Profile, _n: datetime) -> Question | N
         f"Rounds here range from {money(low, unit)} to {money(high, unit)}. What ticket do you "
         "write?",
         0.6,
+        (
+            (
+                f"Small, near {money(low, unit)}",
+                f"I invest in small rounds, near {money(low, unit)}.",
+            ),
+            (
+                f"Large, near {money(high, unit)}",
+                f"I invest in larger rounds, near {money(high, unit)}.",
+            ),
+            ("Any size", "Round size does not matter to me."),
+        ),
     )
 
 
@@ -80,10 +98,14 @@ def _investors(cs: list[Candidate], profile: Profile, _n: datetime) -> Question 
         if not backers:
             return None
         top = [name for name, _ in backers.most_common(2)]
+        options = [(name, f"I trust {name}.") for name in top]
+        if len(top) == 2:
+            options.append(("Both", f"I trust {top[0]} and {top[1]}."))
         return Question(
             "investors",
             f"Which investors do you trust? {' and '.join(top)} back the most attendees here.",
             0.5,
+            tuple(options),
         )
     refs = {r.entity_id for r in profile.reference_investors}
     backed = sum(1 for c in cs if any(i.entity_id in refs for r in c.rounds for i in r.investors))
@@ -92,6 +114,7 @@ def _investors(cs: list[Candidate], profile: Profile, _n: datetime) -> Question 
         "investors",
         f"{backed} attendees are backed by {names}. Any other investors you trust?",
         0.3,
+        (("Just these", "No other investors for now."),),
     )
 
 
@@ -106,6 +129,11 @@ def _industries(cs: list[Candidate], profile: Profile, _n: datetime) -> Question
         "industries",
         f"Most matches are in {first} ({a}) and {second} ({b}). Keep both?",
         _balance(a, b) * 0.9,
+        (
+            ("Keep both", f"Keep both {first} and {second}."),
+            (f"Only {first}", f"Only {first}."),
+            (f"Only {second}", f"Only {second}."),
+        ),
     )
 
 
@@ -120,6 +148,10 @@ def _team(cs: list[Candidate], profile: Profile, _n: datetime) -> Question | Non
         "team",
         f"Teams range from {min(sizes)} to {max(sizes)} people. Prefer small teams?",
         _balance(small, len(sizes) - small) * 0.8,
+        (
+            ("Small teams, up to 20", "Prefer small teams, up to 20 people."),
+            ("Any size", "Team size does not matter to me."),
+        ),
     )
 
 
@@ -133,6 +165,11 @@ def _recency(cs: list[Candidate], _p: Profile, now: datetime) -> Question | None
         f"{recent} raised in the last 12 months and {len(last_dates) - recent} earlier. "
         "Startups that just raised, or ones that may raise soon?",
         _balance(recent, len(last_dates) - recent),
+        (
+            ("Just raised", "Show me startups that raised in the last 12 months."),
+            ("May raise soon", "Show me startups that may raise soon."),
+            ("Both", "Show me both: recent raises and startups that may raise soon."),
+        ),
     )
 
 
@@ -148,6 +185,10 @@ def _hq(cs: list[Candidate], profile: Profile, _n: datetime) -> Question | None:
         f"{n} of {sum(counts.values())} are headquartered in {top}. Anywhere, or only some "
         "countries?",
         1 - n / sum(counts.values()),
+        (
+            ("Anywhere", "Any country is fine."),
+            (f"Only {top}", f"Only startups headquartered in {top}."),
+        ),
     )
 
 

@@ -15,6 +15,7 @@ import { TextArea } from "../../components/Input";
 import { Logo } from "../../components/Logo";
 import { Markdown } from "../../components/Markdown";
 import { Skeleton } from "../../components/Skeleton";
+import { AgentQuestions } from "./AgentQuestions";
 import { ChangeNote } from "./ChangeNote";
 import styles from "./ChatPanel.module.css";
 import { HowIFound } from "./HowIFound";
@@ -139,6 +140,8 @@ export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
                 canUndo={isUndoable(m.profile_changes, profile.data?.version)}
                 undoing={undo.isPending}
                 onUndo={() => undo.mutate()}
+                onAnswer={m.id === messages.at(-1)?.id ? submit : undefined}
+                busy={send.isPending}
               />
               {renderAfter?.(m)}
             </Fragment>
@@ -245,9 +248,12 @@ interface MessageProps {
   canUndo: boolean;
   undoing: boolean;
   onUndo: () => void;
+  /** Answers its questions with a click; only the latest reply's are still open (#153). */
+  onAnswer?: (text: string) => void;
+  busy: boolean;
 }
 
-function Message({ message, entering, canUndo, undoing, onUndo }: MessageProps) {
+function Message({ message, entering, canUndo, undoing, onUndo, onAnswer, busy }: MessageProps) {
   const isAgent = message.role === "agent";
   const { note, rest } = isAgent
     ? changeNoteText(message.text, message.profile_changes)
@@ -273,6 +279,9 @@ function Message({ message, entering, canUndo, undoing, onUndo }: MessageProps) 
             {isAgent && message.sources.length > 0 && <ReplySources cited={message.sources} />}
           </div>
         )
+      )}
+      {isAgent && message.questions.length > 0 && (
+        <AgentQuestions questions={message.questions} onAnswer={onAnswer} busy={busy} />
       )}
     </article>
   );

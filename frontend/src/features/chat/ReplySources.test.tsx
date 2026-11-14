@@ -73,6 +73,7 @@ describe("Sources under a reply", () => {
       graph: null,
       walk: null,
       sources: [],
+      questions: [],
       ...over,
     });
     mockApi({

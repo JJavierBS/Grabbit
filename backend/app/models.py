@@ -262,6 +262,19 @@ class ReplySource(ApiModel):
     sources: list[Source] = Field(description="Each source once, strongest trust level first")
 
 
+class QuestionOption(ApiModel):
+    label: str = Field(description="Short text on the button")
+    answer: str = Field(description="The sentence sent to the agent when chosen")
+
+
+class AgentQuestion(ApiModel):
+    """A question the agent asks with clickable answers (#153)."""
+
+    key: str
+    text: str
+    options: list[QuestionOption]
+
+
 class ChatMessage(ApiModel):
     id: str
     role: ChatRole
@@ -281,6 +294,9 @@ class ChatMessage(ApiModel):
     sources: list[ReplySource] = Field(
         default_factory=list,
         description="Sources of the facts about each startup the reply text names",
+    )
+    questions: list[AgentQuestion] = Field(
+        default_factory=list, description="Questions the reply asks, each with clickable answers"
     )
 
 

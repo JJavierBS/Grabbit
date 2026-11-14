@@ -210,6 +210,18 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
+    /**
+     * AgentQuestion
+     * @description A question the agent asks with clickable answers (#153).
+     */
+    AgentQuestion: {
+      /** Key */
+      key: string;
+      /** Text */
+      text: string;
+      /** Options */
+      options: components["schemas"]["QuestionOption"][];
+    };
     /** Alert */
     Alert: {
       /** Id */
@@ -308,6 +320,11 @@ export interface components {
        * @description Sources of the facts about each startup the reply text names
        */
       sources: components["schemas"]["ReplySource"][];
+      /**
+       * Questions
+       * @description Questions the reply asks, each with clickable answers
+       */
+      questions: components["schemas"]["AgentQuestion"][];
     };
     /** ChatRequest */
     ChatRequest: {
@@ -634,6 +651,19 @@ export interface components {
       language: string;
       /** Sections */
       sections: string[];
+    };
+    /** QuestionOption */
+    QuestionOption: {
+      /**
+       * Label
+       * @description Short text on the button
+       */
+      label: string;
+      /**
+       * Answer
+       * @description The sentence sent to the agent when chosen
+       */
+      answer: string;
     };
     /** ReferenceInvestor */
     ReferenceInvestor: {

@@ -61,6 +61,7 @@ function heldTurns() {
         graph: null,
         walk: null,
         sources: [],
+        questions: [],
         created_at: "2026-11-14T09:00:00Z",
         profile_changes: [],
       };
