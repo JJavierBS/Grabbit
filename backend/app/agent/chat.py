@@ -98,6 +98,17 @@ async def handle_message(
     changes = [c for o in outcomes for c in o.changes]
     reply = _compose(reply, outcomes)
 
+    # Worded by the model while the report is built, so the first turn takes no longer.
+    wording = (
+        asyncio.create_task(
+            onboarding.word_questions(
+                llm, text, onboarding.pick_questions(candidates, updated, now, limit=None)
+            )
+        )
+        if first_turn
+        else None
+    )
+
     report_id = None
     if changes:
         saved = profile_store.save_version(updated, changes, now)
@@ -108,17 +119,15 @@ async def handle_message(
             report_id = await on_profile_change(saved)
         updated = saved
 
-    asked: list[AgentQuestion] = []
-    if first_turn:
-        # Asked as a form under the reply (#153), not as bullets in its text.
-        asked = [
-            AgentQuestion(
-                key=q.key,
-                text=q.text,
-                options=[QuestionOption(label=label, answer=answer) for label, answer in q.options],
-            )
-            for q in onboarding.pick_questions(candidates, updated, now)
-        ]
+    # Asked as a form under the reply (#153), not as bullets in its text.
+    asked = [
+        AgentQuestion(
+            key=q.key,
+            text=q.text,
+            options=[QuestionOption(label=label, answer=answer) for label, answer in q.options],
+        )
+        for q in (await wording if wording else [])
+    ]
 
     drawn = None
     if visual and changes:

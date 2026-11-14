@@ -77,13 +77,18 @@ class GeminiLLM:
         ]
         return ChatResult(text=_text(parts), tool_calls=calls, thoughts=_thoughts(parts))
 
-    async def generate(self, *, task: str, system: str, prompt: str, schema: type[T]) -> T:
+    async def generate(
+        self, *, task: str, system: str, prompt: str, schema: type[T], quick: bool = False
+    ) -> T:
         config = types.GenerateContentConfig(
             system_instruction=system,
             temperature=0.2,
             response_mime_type="application/json",
             response_json_schema=schema.model_json_schema(),
         )
+        if quick:
+            # Picking and wording a few lines needs no deep reasoning: ~2 s instead of ~13 s.
+            config.thinking_config = types.ThinkingConfig(thinking_level="minimal")
         response = await self._call(task, _contents([Message(role="user", text=prompt)]), config)
         try:
             return schema.model_validate_json(_text(_parts_of(response)))
