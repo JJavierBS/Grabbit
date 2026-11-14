@@ -29,6 +29,8 @@ Grabbit is a proactive agent, not a dashboard.
 
 How it searches Cala's graph, and what that was measured to find:
 [docs/algorithm.md](docs/algorithm.md).
+What Cala gave us as a platform, and the limits we hit, in numbers (Spanish):
+[docs/research/valoracion-cala.md](docs/research/valoracion-cala.md).
 
 Grabbit never tells you what to buy. The alert in the demo is a simulated event, labelled
 on screen; it goes through the real diff, importance check and delivery path.
