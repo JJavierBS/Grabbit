@@ -21,7 +21,7 @@ Owners are assigned on the issues; the board is the source of truth.
 | Cala client | `backend/app/cala/` | Only door to Cala: queue, timeout, retry on 429, cache, normalise to `Fact` |
 | Context.dev client | `backend/app/context_dev/` | Soft signals only, labelled "web, unverified" |
 | LLM client | `backend/app/llm/` | Only door to Gemini; `FakeLLM` for tests and offline demo |
-| Event pipeline | `backend/app/discovery/` | Event attendees -> local startup filter -> candidates with rounds |
+| Discovery | `backend/app/discovery/` | Event walk plus reverse walk from the trusted investors -> candidates with rounds, hidden links and a proximity score; whole algorithm and its measured results in `docs/algorithm.md` |
 | Signals | `backend/app/signals/` | Pure functions: co-invest, lead follow-on, likely to raise soon |
 | Agent | `backend/app/agent/` | Chat, question bank, tools that edit the profile and its own instructions |
 | Reports | `backend/app/reports/` | Builds `Report` from candidates, signals, profile and instructions |
