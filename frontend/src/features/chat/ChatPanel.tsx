@@ -5,6 +5,7 @@ import {
   useLatestReport,
   useProfile,
   useSendMessage,
+  useTurnProgress,
   useUndo,
 } from "../../api/hooks/queries";
 import type { ChatMessage } from "../../api/types";
@@ -47,6 +48,7 @@ export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
   const chat = useChat();
   const profile = useProfile();
   const report = useLatestReport();
+  const progress = useTurnProgress();
   const send = useSendMessage();
   const undo = useUndo();
   const [draft, setDraft] = useState("");
@@ -135,7 +137,7 @@ export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
           ))}
           {footer}
           {/* The working line is always the last thing in the log, under any card. */}
-          {send.isPending && <WorkingLine hasReport={hasReport} />}
+          {send.isPending && <WorkingLine hasReport={hasReport} phase={progress.data?.label} />}
         </div>
       </div>
 

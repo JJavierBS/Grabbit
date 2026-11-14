@@ -14,7 +14,7 @@ from pydantic import BaseModel
 
 from app import workspace
 
-EventKind = Literal["alert", "report", "profile"]
+EventKind = Literal["alert", "report", "profile", "progress"]
 EVENT_KINDS: tuple[str, ...] = get_args(EventKind)
 
 

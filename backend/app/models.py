@@ -300,6 +300,16 @@ class ReportRef(ApiModel):
     id: str
 
 
+TurnPhase = Literal["cala", "llm", "report", "graph"]
+
+
+class TurnProgress(ApiModel):
+    """What a chat turn is doing right now, sent as a `progress` event on /api/events."""
+
+    phase: TurnPhase
+    label: str
+
+
 class ErrorDetail(ApiModel):
     code: str
     message: str
