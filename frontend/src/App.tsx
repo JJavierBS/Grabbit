@@ -2,7 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { PanelLeft, RefreshCw, SlidersHorizontal, SquarePen, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./App.module.css";
-import { keys, useChat, useLatestReport, useSendMessage } from "./api/hooks/queries";
+import { keys, useChat, useLatestReport, useProfile, useSendMessage } from "./api/hooks/queries";
 import { type StreamStatus, useEvents } from "./api/hooks/useEvents";
 import type { Alert, ChatMessage, Report } from "./api/types";
 import { nameResearch, startResearch, switchResearch, workspaceId } from "./api/workspace";
@@ -20,6 +20,7 @@ import { ReportOutline } from "./features/report/ReportOutline";
 import { ReportSidebar, reportKey } from "./features/report/ReportSidebar";
 import { ReportView } from "./features/report/ReportView";
 import { useReportChanges } from "./features/report/useReportChanges";
+import { useReportRewriting } from "./features/report/useReportRewriting";
 import { ResearchList } from "./features/research/ResearchList";
 import { useResearches } from "./features/research/useResearches";
 
@@ -79,6 +80,9 @@ export function App() {
   const [confirmed, setConfirmed] = useState(false);
   const report = useLatestReport();
   const diff = useReportChanges(report.data ?? undefined);
+  const profile = useProfile();
+  // The turn ends before the background rebuild lands; until then the report says so.
+  const rewriting = useReportRewriting(profile.data, report.data);
   const send = useSendMessage();
   const client = useQueryClient();
   const chat = useChat();
@@ -210,6 +214,7 @@ export function App() {
       key={report.data.id}
       report={report.data}
       open={panel === "report" && pastReport === null}
+      rewriting={rewriting}
       rewritten={diff !== null}
       onOpen={() => openPanel("report")}
     />
@@ -231,7 +236,10 @@ export function App() {
   // The outline follows the agent turn that wrote this report; a report from elsewhere
   // (Run now, the schedule) has no such turn and goes after the conversation.
   const messages = chat.data ?? [];
+  // While it rewrites, the outline waits under the turn that asked for the new report.
+  const lastLinked = messages.findLast((m) => m.role === "agent" && m.report_id);
   const reportAnchor =
+    (rewriting && lastLinked && lastLinked.report_id !== report.data?.id && lastLinked.id) ||
     (report.data &&
       messages.findLast((m) => m.role === "agent" && m.report_id === report.data?.id)?.id) ||
     null;
@@ -330,7 +338,7 @@ export function App() {
                   {!alertAnchored && alertInChat}
                 </>
               }
-              followKey={`${report.data?.id}|${reportAnchor}|${openAlert?.alert.id}`}
+              followKey={`${report.data?.id}|${reportAnchor}|${openAlert?.alert.id}|${rewriting}`}
             />
           </div>
           {shownPanel && (
@@ -380,6 +388,7 @@ export function App() {
                     diff={diff}
                     onConfirm={confirm}
                     confirmed={confirmed}
+                    rewriting={rewriting}
                   />
                 )}
               </div>
