@@ -68,4 +68,5 @@ Owners are assigned on the issues; the board is the source of truth.
 - Cala must be core to the product, not an add-on (25% of the partner score).
 - All Cala calls go through one wrapper with timeout and a response cache.
 - One uvicorn worker only: the scheduler lives in the process, more workers would duplicate
-  jobs. The watcher and digest loop over every workspace with a report.
+  jobs. The watcher and digest loop over every workspace with a report; only the default
+  workspace sets the shared digest cadence.
