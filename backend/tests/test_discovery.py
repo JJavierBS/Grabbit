@@ -272,6 +272,13 @@ def test_lenders_are_marked_and_round_amount_has_units():
 
 def test_normalise_name_strips_legal_suffixes():
     assert normalise_name("Northwind Robotics Oy") == normalise_name("northwind robotics")
+    assert normalise_name("Acme Oy Ltd.") == "acme"
+
+
+def test_legal_forms_inside_a_name_are_words():
+    assert normalise_name("Same As Ventures") == "same as ventures"
+    assert normalise_name("Co Founders Capital") == "co founders capital"
+    assert normalise_name("AB") == "ab"
 
 
 def test_matches_profile_lets_unpublished_fields_pass(graph):

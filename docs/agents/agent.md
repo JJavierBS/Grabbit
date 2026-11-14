@@ -91,6 +91,8 @@ join it, through funding rounds, to the reference investors (matched by id or fu
   no date = 0.5; in ring 2 the older of the two rounds) x source (filing 1.0, primary 0.9,
   press 0.75, aggregator 0.6; the weakest edge on the path) x, ring 2 only, selectivity of
   the intermediary, `1 / log2(2 + its rounds in the walked graph)`.
+- One ring 1 path per (round, trusted fund), the strongest entity of the fund counted; a
+  trusted GRANTOR on the raw round counts too. At most 2 ring 2 paths per intermediary.
 - `rank()` orders by score, then likely to raise, then newest round, then name. No reference
   investors: `proximity` is null and the order is the last three.
 - The weights are a first calibration, named constants at the top of the module.
