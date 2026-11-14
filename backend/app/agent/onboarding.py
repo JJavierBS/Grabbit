@@ -11,6 +11,7 @@ from pydantic import BaseModel
 
 from app.llm import LLM, LLMError
 from app.models import Candidate, Profile
+from app.trusted import Trusted
 
 log = logging.getLogger(__name__)
 
@@ -209,8 +210,12 @@ def _investors(cs: list[Candidate], profile: Profile, _n: datetime) -> Question 
             0.5,
             tuple(options),
         )
-    refs = {r.entity_id for r in profile.reference_investors}
-    backed = sum(1 for c in cs if any(i.entity_id in refs for r in c.rounds for i in r.investors))
+    trusted = Trusted(profile.reference_investors)
+    backed = sum(
+        1
+        for c in cs
+        if any(trusted.match(i.entity_id, i.name) for r in c.rounds for i in r.investors)
+    )
     names = ", ".join(r.name for r in profile.reference_investors)
     return Question(
         "investors",
