@@ -1,0 +1,22 @@
+[
+ {
+  "task": "learn",
+  "match": [
+   "too long",
+   "too much text",
+   "demasiado largo"
+  ],
+  "output": {
+   "rewrite": true,
+   "text": "Keep each startup to two lines and lead with the signal, not the background.",
+   "reason": "two lines per startup"
+  }
+ },
+ {
+  "task": "learn",
+  "match": [],
+  "output": {
+   "rewrite": false
+  }
+ }
+]
