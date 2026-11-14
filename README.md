@@ -11,8 +11,8 @@ tired at the only part that matters: the decision. The same pain reaches every i
 decides alone and cannot build a research system: search funds, small private equity,
 individual investors.
 
-Two investor interviews (pseudonymised) shaped the product. One said: "If a tool
-pre-selects and I review each pick by hand, I have already won." Findings:
+Two investor interviews (pseudonymised) shaped the product. One said: "I have no time to
+scout; if a tool pre-selects and I review each pick by hand, I've already won." Findings:
 [docs/agents/research.md](docs/agents/research.md).
 
 ## Solution
