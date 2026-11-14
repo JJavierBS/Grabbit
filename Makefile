@@ -1,7 +1,7 @@
 # Single entry points for humans, agents and CI. Keep output short.
 SHELL := bash
 .SHELLFLAGS := -eu -o pipefail -c
-.PHONY: setup dev test lint fmt warm gen-api docker deploy
+.PHONY: setup dev test lint fmt warm gen-api docker deploy server-init
 
 BASE = $(shell git merge-base origin/main HEAD 2>/dev/null || echo HEAD)
 CHANGED = $(shell { git diff --name-only --diff-filter=ACMR $(BASE); \
@@ -50,6 +50,11 @@ docker:
 		"import sqlite3; sqlite3.connect('../data/grabbit.db').execute('PRAGMA wal_checkpoint(TRUNCATE)')"; fi
 	docker build --platform linux/amd64 -t grabbit .
 
-# Builds, pushes and deploys to AWS Lightsail (README "Deploy").
+# Runs the deploy workflow on main: tests, image to GHCR, blue/green rollout on EC2 (README "Deploy").
 deploy:
-	bash scripts/deploy.sh
+	gh workflow run deploy.yml --ref main
+	@sleep 5; gh run watch "$$(gh run list --workflow deploy.yml --branch main --limit 1 --json databaseId --jq '.[0].databaseId')" --exit-status
+
+# One-time EC2 setup: secrets, warmed cache and deploy key (scripts/server-init.sh).
+server-init:
+	bash scripts/server-init.sh

@@ -39,7 +39,7 @@ TODO: screenshot or GIF here.
 ## Technologies used
 Cala entity API, Gemini (`google-genai`), Context.dev, FastAPI (Python, uv), React and
 TypeScript (Vite), OpenUI (`@openuidev/react-lang`, generative UI in chat answers), SQLite,
-APScheduler, Server-Sent Events, Docker on AWS Lightsail.
+APScheduler, Server-Sent Events, Docker on AWS EC2 behind Caddy, deployed by GitHub Actions.
 
 ## Run locally
 Needs `uv`, Node 24 and npm.
@@ -61,18 +61,29 @@ Offline (no keys): set `CALA_MODE=replay` and `LLM_MODE=fake` in `.env`.
 API docs while `make dev` runs: http://localhost:8000/api/docs
 
 ## Deploy
-The demo runs on an AWS Lightsail container service (one container, port 8000, HTTPS
-endpoint from Lightsail). One-time: install the aws CLI v2 and the `lightsailctl` plugin,
-and run `aws configure` with an IAM user allowed to use Lightsail. Then:
+The demo runs on one AWS EC2 host: a Caddy edge on port 80 proxies to one app container,
+and each deploy starts the new image next to the old one (blue/green), moves traffic only
+once it is healthy, then stops the old one. No downtime; a broken image never goes live.
+`.github/workflows/deploy.yml` runs on every push to `main`: `make test lint`, image to
+GHCR, then `deploy/rollout.sh` on the host over SSH. PRs run only the tests.
+
+One-time setup (needs `DEPLOY_HOST` and `SSH_KEY`, the AWS `.pem`, in `.env`):
 ```sh
-make warm      # fill data/grabbit.db so the image ships the Cala cache
-make deploy    # builds the image, pushes it and deploys; prints the public URL
+make warm          # fill data/grabbit.db so the server starts with the Cala cache
+make server-init   # uploads the server .env and the cache, installs a deploy key
 ```
-Secrets (`GEMINI_API_KEY`, `GEMINI_MODEL`, `CALA_API_KEY`, `CONTEXT_DEV_API_KEY`) are read
-from `.env` and set as service environment variables, never baked into the image. The
-deployed app runs with `CALA_MODE=replay` and `DEMO_MODE=1`; override with
-`DEPLOY_CALA_MODE=live make deploy`. Other knobs: `LIGHTSAIL_SERVICE` (default `grabbit`),
-`LIGHTSAIL_POWER` (default `micro`), `AWS_REGION` (default `eu-north-1`).
+`server-init` prints the `gh secret set` / `gh variable set` commands for
+`DEPLOY_SSH_KEY`, `DEPLOY_KNOWN_HOSTS`, `DEPLOY_HOST` and `DEPLOY_USER`; repo secrets need
+the repo owner. The security group must allow inbound TCP 80. Until `DEPLOY_HOST` is set
+the workflow builds the image and skips the deploy.
+
+App secrets live only in `/opt/junction/.env` on the host (`server-init` writes it once
+from your `.env`, with `CALA_MODE=replay` unless `DEPLOY_CALA_MODE` says otherwise, and
+`DEMO_MODE=1`); edit it there and redeploy to change them. SQLite lives in
+`/opt/junction/data` and survives deploys; `SYNC_DB=1 make server-init` replaces it.
+`make deploy` reruns the workflow on `main`. HTTP only for now: set `SITE_ADDRESS` to a
+domain pointed at the host in the server `.env`, open port 443 and remove the
+`grabbit-edge` container once, and the next deploy restarts it with automatic HTTPS.
 
 ## Contributing
 After cloning, run `bash scripts/setup.sh` once (hooks, local exclusions, `.env`).
