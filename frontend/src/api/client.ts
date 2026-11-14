@@ -22,8 +22,11 @@ export type Transport = (request: Request) => Promise<Response>;
 
 let transport: Transport = (request) => globalThis.fetch(request);
 
-export function setTransport(next: Transport) {
+/** Swaps the transport and returns the one it replaced, so a caller can put it back. */
+export function setTransport(next: Transport): Transport {
+  const previous = transport;
   transport = next;
+  return previous;
 }
 
 /** The single API client. Same origin: Vite proxies `/api` locally, FastAPI serves it deployed. */
@@ -71,10 +74,15 @@ export interface EventStream {
   close(): void;
 }
 
-let streamFactory: (url: string) => EventStream = (url) => new EventSource(withWorkspace(url));
+export type EventStreamFactory = (url: string) => EventStream;
 
-export function setEventStreamFactory(next: (url: string) => EventStream) {
+let streamFactory: EventStreamFactory = (url) => new EventSource(withWorkspace(url));
+
+/** Swaps the event stream factory and returns the one it replaced. */
+export function setEventStreamFactory(next: EventStreamFactory): EventStreamFactory {
+  const previous = streamFactory;
   streamFactory = next;
+  return previous;
 }
 
 export const openEventStream = (url: string) => streamFactory(url);

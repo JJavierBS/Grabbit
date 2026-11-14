@@ -1,5 +1,13 @@
 import { ArrowDown, MicVocal, RefreshCw, SendHorizontal, Square } from "lucide-react";
-import { type FormEvent, Fragment, type KeyboardEvent, type ReactNode, useState } from "react";
+import {
+  type FormEvent,
+  Fragment,
+  type KeyboardEvent,
+  type ReactNode,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   useChat,
   useLatestReport,
@@ -15,6 +23,8 @@ import { TextArea } from "../../components/Input";
 import { Logo } from "../../components/Logo";
 import { Markdown } from "../../components/Markdown";
 import { Skeleton } from "../../components/Skeleton";
+import { DemoLauncher } from "../demo/DemoLauncher";
+import { useDemo } from "../demo/DemoRoot";
 import { AgentQuestions } from "./AgentQuestions";
 import { ChangeNote } from "./ChangeNote";
 import styles from "./ChatPanel.module.css";
@@ -47,17 +57,21 @@ interface ChatPanelProps {
   renderAfter?: (message: ChatMessage) => ReactNode;
   /** Changes when the anchored or footer items change, so the log can follow them. */
   followKey?: string;
+  /** The guided demo's card, docked on the composer (#184); it sends through this composer. */
+  coach?: (send: (text: string) => void, busy: boolean) => ReactNode;
 }
 
-export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
+export function ChatPanel({ footer, renderAfter, followKey, coach }: ChatPanelProps) {
   const chat = useChat();
   const profile = useProfile();
   const report = useLatestReport();
   const progress = useTurnProgress();
   const trace = useWalkTrace().data;
-  const send = useSendMessage();
+  const demo = useDemo();
+  const send = useSendMessage({ sandbox: demo?.active });
   const undo = useUndo();
   const [draft, setDraft] = useState("");
+  const field = useRef<HTMLTextAreaElement>(null);
   const dictation = useDictation(setDraft);
   const messages = chat.data ?? [];
   const hasReport = Boolean(report.data);
@@ -68,9 +82,17 @@ export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
   const growth = trace ? `${trace.steps.length}|${trace.nodes}|${trace.answer?.length ?? 0}` : "";
   const follow = useFollowLog(messages, chat.isSuccess, `${followKey}|${send.isPending}|${growth}`);
 
+  // Back from the guided demo: the visitor's own research starts at the composer.
+  const returning = demo?.returning;
+  useEffect(() => {
+    if (returning) field.current?.focus();
+  }, [returning]);
+
   const submit = (text: string) => {
     const value = text.trim();
     if (!value || send.isPending) return;
+    // Starting their own research answers the demo invitation.
+    if (demo && !demo.active && !demo.seen) demo.dismiss();
     dictation.cancel();
     // The message leaves the composer at once; if it is not sent, it comes back to edit.
     setDraft("");
@@ -130,6 +152,7 @@ export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
                 <span>A sector, a stage, investors you trust:</span>{" "}
                 <span>however vague, I ask the rest.</span>
               </p>
+              <DemoLauncher place="welcome" />
             </div>
           )}
           {messages.map((m) => (
@@ -154,6 +177,7 @@ export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
       </div>
 
       <form className={styles.composer} onSubmit={onSubmit}>
+        {coach?.(submit, send.isPending)}
         {follow.behind && (
           <Button
             variant="secondary"
@@ -212,6 +236,7 @@ export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={onKeyDown}
             rows={1}
+            ref={field}
           />
           {dictation.supported && (
             <Button

@@ -15,6 +15,9 @@ import { DEFAULT_DEMO_FIXTURE, DemoAlertButton } from "./features/alerts/DemoAle
 import { askNotificationPermission } from "./features/alerts/notify";
 import { useAlertDelivery } from "./features/alerts/useAlertDelivery";
 import { ChatPanel } from "./features/chat/ChatPanel";
+import { CoachCard } from "./features/demo/CoachCard";
+import { DemoLauncher } from "./features/demo/DemoLauncher";
+import { useDemo } from "./features/demo/DemoRoot";
 import { ProfileHistory } from "./features/profile/ProfileHistory";
 import { ReportOutline } from "./features/report/ReportOutline";
 import { ReportSidebar, reportKey } from "./features/report/ReportSidebar";
@@ -77,13 +80,16 @@ export function Grabbit() {
 export function App() {
   const [panel, setPanel] = useState<Panel | null>(null);
   const [demo] = useState(demoFixture);
+  // Inside the guided demo (#184): sample data, nothing may touch the visitor's research.
+  const guided = useDemo()?.active ?? false;
+  const [alertsDelivered, setAlertsDelivered] = useState(0);
   const [confirmed, setConfirmed] = useState(false);
   const report = useLatestReport();
   const diff = useReportChanges(report.data ?? undefined);
   const profile = useProfile();
   // The turn ends before the background rebuild lands; until then the report says so.
   const rewriting = useReportRewriting(profile.data, report.data);
-  const send = useSendMessage();
+  const send = useSendMessage({ sandbox: guided });
   const client = useQueryClient();
   const chat = useChat();
   // An opened alert stays where it was opened: after the last message at that moment.
@@ -103,8 +109,8 @@ export function App() {
   // A research from before the list existed takes its name from its first message.
   const firstAsk = chat.data?.find((m) => m.role === "user")?.text;
   useEffect(() => {
-    if (firstAsk) nameResearch(firstAsk);
-  }, [firstAsk]);
+    if (firstAsk && !guided) nameResearch(firstAsk);
+  }, [firstAsk, guided]);
 
   /** Leaves this research: every cached query belongs to it, so none may survive. */
   const leave = (go: () => void) => {
@@ -147,7 +153,14 @@ export function App() {
     },
     [client],
   );
-  const deliver = useAlertDelivery(showAlert);
+  const deliverAlert = useAlertDelivery(showAlert, { desktop: !guided });
+  const deliver = useCallback(
+    (alert: Alert) => {
+      deliverAlert(alert);
+      setAlertsDelivered((n) => n + 1);
+    },
+    [deliverAlert],
+  );
   const stream = useEvents(deliver);
 
   // Opened by the app, not by the reader: focus moves without a focus frame around it.
@@ -160,6 +173,16 @@ export function App() {
     openedByApp.current = true;
     setPanel("report");
   }, [diff]);
+
+  // The demo shows the first report as soon as it lands: its trust badges are the step.
+  const firstReport = guided ? (report.data?.id ?? null) : null;
+  const shownFirst = useRef(false);
+  useEffect(() => {
+    if (!firstReport || shownFirst.current) return;
+    shownFirst.current = true;
+    openedByApp.current = true;
+    setPanel("report");
+  }, [firstReport]);
 
   useEffect(() => {
     if (!panel) return;
@@ -203,9 +226,29 @@ export function App() {
 
   const confirm = () => {
     setConfirmed(true);
-    void askNotificationPermission();
+    if (!guided) void askNotificationPermission();
     send.mutate(CONFIRM_MESSAGE);
   };
+
+  const coach = (submit: (text: string) => void, busy: boolean) => (
+    <CoachCard
+      signals={{
+        agentReplies: messages.filter((m) => m.role === "agent").length,
+        hasReport: Boolean(report.data),
+        profileVersion: profile.data?.version ?? 0,
+        alerts: alertsDelivered,
+      }}
+      actions={{
+        send: submit,
+        confirm: () => {
+          setConfirmed(true);
+          submit(CONFIRM_MESSAGE);
+        },
+      }}
+      busy={busy}
+      floating={panel !== null}
+    />
+  );
 
   const reportInChat = report.isPending ? (
     <Skeleton block="card" label="Loading the report" />
@@ -253,6 +296,7 @@ export function App() {
       className={styles.app}
       data-sidebar={sidebarOpen ? "open" : "closed"}
       data-drawer={drawerOpen ? "open" : undefined}
+      data-guided={guided || undefined}
     >
       <ReportSidebar
         id="report-sidebar"
@@ -262,13 +306,16 @@ export function App() {
         onClose={closeSidebar}
         brand={<Logo />}
         top={
-          <ResearchList
-            current={research.current}
-            list={research.list}
-            onNew={newResearch}
-            onOpen={openResearch}
-          />
+          guided ? undefined : (
+            <ResearchList
+              current={research.current}
+              list={research.list}
+              onNew={newResearch}
+              onOpen={openResearch}
+            />
+          )
         }
+        foot={guided ? undefined : <DemoLauncher place="sidebar" />}
       />
       {drawerOpen && (
         <button
@@ -301,16 +348,20 @@ export function App() {
             <span className={styles.statusLabel}>{STATUS_TEXT[stream]}</span>
           </span>
           <div className={styles.actions}>
-            {demo && <DemoAlertButton fixture={demo} labelClassName={styles.actionLabel} />}
-            <Button
-              variant="ghost"
-              size="sm"
-              className={styles.newResearch}
-              icon={<SquarePen aria-hidden="true" />}
-              onClick={newResearch}
-            >
-              <span className={styles.actionLabel}>New research</span>
-            </Button>
+            {demo && !guided && (
+              <DemoAlertButton fixture={demo} labelClassName={styles.actionLabel} />
+            )}
+            {!guided && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className={styles.newResearch}
+                icon={<SquarePen aria-hidden="true" />}
+                onClick={newResearch}
+              >
+                <span className={styles.actionLabel}>New research</span>
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="sm"
@@ -339,6 +390,7 @@ export function App() {
                 </>
               }
               followKey={`${report.data?.id}|${reportAnchor}|${openAlert?.alert.id}|${rewriting}`}
+              coach={guided ? coach : undefined}
             />
           </div>
           {shownPanel && (
