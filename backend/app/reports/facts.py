@@ -3,7 +3,7 @@
 import re
 
 from app.agent.onboarding import money
-from app.models import Candidate, Fact, Round
+from app.models import Candidate, Fact, Round, Source
 
 BADGES = {
     "filing": "Official filing",
@@ -47,6 +47,13 @@ def _date(value: str, fact: Fact) -> str | None:
     return f"{int(day)} {name} {year}"
 
 
+def render_date(source: Source) -> str | None:
+    if not source.date:
+        return None
+    fact = Fact(value=source.date, trust=source.rank, sources=[source])
+    return _date(source.date, fact)
+
+
 def last_round(c: Candidate) -> Round | None:
     return max(c.rounds, key=lambda r: str(r.date.value or ""), default=None)
 
@@ -67,7 +74,8 @@ def placeholders(c: Candidate) -> dict[str, str]:
             "last_round_amount": render(r.amount),
             "last_round_date": render(r.date),
             "last_round_lead": lead or "not published",
-            "last_round_investors": ", ".join(i.name for i in r.investors) or "not published",
+            "last_round_co_investors": ", ".join(i.name for i in r.investors if not i.is_lead)
+            or "none published",
         }
     return values
 
