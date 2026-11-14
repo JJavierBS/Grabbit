@@ -15,6 +15,8 @@ Owners are assigned on the issues; the board is the source of truth.
 | --- | --- | --- |
 | API routes | `backend/app/api/` | Thin handlers for the endpoints in api.md |
 | Shared models | `backend/app/models.py` | Pydantic types in api.md; the frontend types are generated from them |
+| Event bus | `backend/app/events.py` | `publish(kind, payload)` fans out to every `/api/events` SSE subscriber |
+| API fixtures | `backend/app/fixtures/` | Mock data for the endpoints and frontend tests; `demo_events/` for the simulated alert |
 | Cala client | `backend/app/cala/` | Only door to Cala: queue, timeout, retry on 429, cache, normalise to `Fact` |
 | Context.dev client | `backend/app/context_dev/` | Soft signals only, labelled "web, unverified" |
 | LLM client | `backend/app/llm/` | Only door to Gemini; `FakeLLM` for tests and offline demo |
@@ -24,7 +26,7 @@ Owners are assigned on the issues; the board is the source of truth.
 | Reports | `backend/app/reports/` | Builds `Report` from candidates, signals, profile and instructions |
 | Watcher | `backend/app/watcher/` | Snapshots, diff, importance check, `Alert` |
 | Scheduler | `backend/app/scheduler.py` | APScheduler jobs: digest and watcher per profile |
-| Store | `backend/app/store/` | SQLite access: profile and its versions, snapshots, reports, alerts, cache |
+| Store | `backend/app/store/` | SQLite access: `db.py` (connection, `register_table`), one `<domain>.py` per team |
 | Web app | `frontend/src/` | Chat, report with trust badges, alerts, desktop notifications |
 
 ## Data
