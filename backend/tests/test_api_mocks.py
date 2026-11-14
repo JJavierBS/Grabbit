@@ -27,14 +27,14 @@ def test_chat_endpoints(client):
 
 
 def test_reports_endpoints(client):
-    latest = Report.model_validate(client.get("/api/reports/latest").json())
+    # Real since #26: no report until one runs.
+    assert client.get("/api/reports/latest").status_code == 404
     run = client.post("/api/reports/run", json={"kind": "digest"})
 
-    assert latest.candidates
     assert run.status_code == 200
     new_report = Report.model_validate(run.json())
     assert new_report.kind == "digest"
-    assert new_report.id != latest.id
+    assert client.get("/api/reports/latest").json()["id"] == new_report.id
 
 
 def test_reports_run_publishes_report_event(client):

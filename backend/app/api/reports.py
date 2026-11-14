@@ -1,28 +1,21 @@
-from datetime import UTC, datetime
-from uuid import uuid4
-
 from fastapi import APIRouter
 
-from app import fixtures
-from app.events import publish
-from app.models import Report, ReportRef, ReportRunRequest
+from app.api.errors import ApiError
+from app.models import Report, ReportRunRequest
+from app.reports import service
+from app.store import reports as report_store
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
 
 @router.get("/latest")
 def get_latest_report() -> Report:
-    return fixtures.latest_report()
+    report = report_store.latest()
+    if report is None:
+        raise ApiError(404, "no_report", "No report has been generated yet.")
+    return report
 
 
 @router.post("/run")
-def run_report(request: ReportRunRequest) -> Report:
-    report = fixtures.latest_report().model_copy(
-        update={
-            "id": f"rep-{uuid4().hex[:12]}",
-            "kind": request.kind,
-            "created_at": datetime.now(UTC),
-        }
-    )
-    publish("report", ReportRef(id=report.id))
-    return report
+async def run_report(request: ReportRunRequest) -> Report:
+    return await service.run(request.kind)

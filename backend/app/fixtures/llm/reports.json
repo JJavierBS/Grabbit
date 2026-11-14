@@ -1,0 +1,88 @@
+[
+ {
+  "task": "report_write",
+  "match": [
+   "two lines per startup"
+  ],
+  "output": {
+   "summary": "Co-investments first: {count} startups, kept short.",
+   "paragraphs": [
+    {
+     "candidate_id": "cand-kiln",
+     "text": "Led by {last_round_lead} in {last_round_date}; {last_round_amount} {last_round}."
+    },
+    {
+     "candidate_id": "cand-ledgerly",
+     "text": "{last_round_lead} led the {last_round} in {last_round_date}."
+    },
+    {
+     "candidate_id": "cand-mossa",
+     "text": "Raised {last_round_amount} in {last_round_date}."
+    },
+    {
+     "candidate_id": "cand-tundra",
+     "text": "{last_round_lead} led the {last_round} in {last_round_date}."
+    },
+    {
+     "candidate_id": "cand-brikk",
+     "text": "{last_round_lead} led the {last_round} in {last_round_date}."
+    },
+    {
+     "candidate_id": "cand-sauna",
+     "text": "{last_round_lead} led the {last_round} in {last_round_date}."
+    }
+   ]
+  }
+ },
+ {
+  "task": "report_write",
+  "match": [],
+  "output": {
+   "summary": "{count} Slush attendees match your thesis.",
+   "paragraphs": [
+    {
+     "candidate_id": "cand-kiln",
+     "text": "Energy analytics for kilns, at {stage} with a team of {headcount}. Its {last_round} of {last_round_amount} closed in {last_round_date}, led by {last_round_lead}."
+    },
+    {
+     "candidate_id": "cand-ledgerly",
+     "text": "Finance close automation from {hq}, now {stage}. {last_round_lead} led its {last_round} of {last_round_amount} in {last_round_date}."
+    },
+    {
+     "candidate_id": "cand-mossa",
+     "text": "Consumer physiotherapy app from {hq}. Team size is {headcount}; it raised {last_round_amount} in {last_round_date}."
+    },
+    {
+     "candidate_id": "cand-tundra",
+     "text": "Grid-balancing software from {hq} with {headcount} people. The {last_round} amount is {last_round_amount}; {last_round_lead} led it in {last_round_date}."
+    },
+    {
+     "candidate_id": "cand-brikk",
+     "text": "Construction scheduling at {stage}, {headcount} people. {last_round_lead} led a {last_round_amount} {last_round} in {last_round_date}."
+    },
+    {
+     "candidate_id": "cand-sauna",
+     "text": "Sauna booking marketplace founded in {founded}, {headcount} people. {last_round_lead} led its {last_round} in {last_round_date}."
+    }
+   ]
+  }
+ },
+ {
+  "task": "score_alert",
+  "match": [
+   "new_round"
+  ],
+  "output": {
+   "score": 0.9,
+   "reason": "A reference investor led a new round in a shortlisted startup."
+  }
+ },
+ {
+  "task": "score_alert",
+  "match": [],
+  "output": {
+   "score": 0.4,
+   "reason": "Relevant to the shortlist but not urgent."
+  }
+ }
+]

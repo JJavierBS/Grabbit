@@ -32,16 +32,19 @@ def offline_settings(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Iterato
 @pytest.fixture
 def client() -> Iterator[TestClient]:
     from app.main import create_app
+    from app.reports.service import wait_idle
 
     with TestClient(create_app()) as test_client:
         yield test_client
+        # Background report rebuilds must finish before the app and its loop shut down.
+        test_client.portal.call(wait_idle)
 
 
 @pytest.fixture(autouse=True)
 def agent_db(offline_settings: None) -> Iterator[None]:
     """Agent and report stores on the throwaway database, a fresh FakeLLM per test."""
     from app.llm import get_llm
-    from app.store import chat, profile  # noqa: F401  registers tables
+    from app.store import chat, profile, reports  # noqa: F401  registers tables
     from app.store.db import init_db
 
     get_llm.cache_clear()
