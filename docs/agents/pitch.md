@@ -5,21 +5,17 @@ final pitch. Everything marked "draft" needs a human to confirm. Facts come from
 research.md and cala.md; never add figures that are not sourced there.
 The video script lives in challenge.md "Demo script".
 
-## Punchline (draft, pick one, max one sentence)
-- "Grabbit turns a vague investment thesis into a verified shortlist, and tells you when
-  something changes."
-- "Spend your time deciding, not researching: an investing agent that learns how you want
-  your report, with every fact sourced."
-- "The research team small investors cannot afford: it asks the right questions, checks
-  every number and watches your companies for you."
-- "Cala's graph finds the deal; every fact shows how much you can trust it."
+## Punchline (chosen 2026-11-14, identical in README and form)
+"Slush has 2,989 attendees and you are one person. Grabbit finds the startups backed by
+the investors you trust, shows the source of every fact, and alerts you when one of them
+moves."
 
 ## Problem (sourced)
 - User: an investor who decides alone and has neither the time nor the means to build
   automated research systems, from small private equity down (challenge.md "Who the user
   is"). The demo follows a business angel preparing Slush 2026.
-- The angel's number: Slush attendees in Cala versus what one person can research by hand
-  before the event. Count the attendees from the graph before quoting it; no figure yet.
+- The angel's number: Slush 2026 has 2,989 attendees in Cala (2,980 companies), against one
+  person. Source: warm-up of 2026-11-14 (issue #30); rerun `make warm` before quoting it.
 - Same pain higher up the segment: a PE sourcing process can take three months and an
   external due diligence costs around EUR 150k (Investor B, research.md). Use as backup,
   not as the headline.

@@ -1,6 +1,9 @@
 # Grabbit
 
-Junction 2026 hackathon project. Track: "Make Unicorns Real" by Cala. Pitch: TODO (one sentence).
+Junction 2026 hackathon project. Track: "Make Unicorns Real" by Cala.
+Pitch: "Slush has 2,989 attendees and you are one person.
+Grabbit finds the startups backed by the investors you trust, shows the source of every
+fact, and alerts you when one of them moves."
 Team of 4 humans, each driving AI agents in parallel on separate branches.
 Lines marked TODO are unknown: ask a human, do not guess.
 

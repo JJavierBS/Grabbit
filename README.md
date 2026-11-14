@@ -1,21 +1,44 @@
 # Grabbit
 
-TODO punchline: one sentence, the same as in the submission form.
+Slush has 2,989 attendees and you are one person. Grabbit finds the startups backed by the investors you trust, shows the source of every fact, and alerts you when one of them moves.
 
 Built at Junction 2026 for the "Make Unicorns Real" challenge by Cala.
 
 ## Problem
-TODO: who has it, how big it is.
+Slush 2026 has 2,989 attendees in Cala's graph. A business angel has one calendar and no
+analyst. The angel opens tab after tab, reads databases that are months old, and arrives
+tired at the only part that matters: the decision. The same pain reaches every investor who
+decides alone and cannot build a research system: search funds, small private equity,
+individual investors.
+
+Two investor interviews (pseudonymised) shaped the product. One said: "I have no time to
+scout; if a tool pre-selects and I review each pick by hand, I've already won." Findings:
+[docs/agents/research.md](docs/agents/research.md).
 
 ## Solution
-TODO: what it does, in 3-5 lines. Screenshot or GIF here.
+Grabbit is a proactive agent, not a dashboard.
+1. **You give a vague thesis.** "AI, pre-seed or seed, backed by people I trust."
+2. **It asks before it answers.** Two or three questions, each with numbers from Cala.
+3. **You get a Slush shortlist.** Who led each round and which of your trusted investors
+   joined it. Each fact shows a trust badge from Cala's `source_rank`: Official filing,
+   Company or investor, Press, Database. An absent field reads "Not published", never zero.
+4. **You correct it in plain words.** "Shorter, co-investors first." The agent rewrites its
+   own instructions and the report changes on screen. A history shows what it learned.
+5. **You leave. It watches.** A desktop notification tells you what changed on your
+   shortlist and why it matters.
+
+Grabbit never tells you what to buy. The alert in the demo is a simulated event, labelled
+on screen; it goes through the real diff, importance check and delivery path.
+
+TODO: screenshot or GIF here.
 
 ## Demo
 - Live: TODO link
 - Video (2 min): TODO link
 
 ## Technologies used
-TODO: keep in sync with the submission form.
+Cala entity API, Gemini (`google-genai`), Context.dev, FastAPI (Python, uv), React and
+TypeScript (Vite), SQLite, APScheduler, Server-Sent Events, Docker on AWS Lightsail.
 
 ## Run locally
 Needs `uv`, Node 24 and npm.
