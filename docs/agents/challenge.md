@@ -11,9 +11,9 @@ file, not the raw PDFs or slides. Keep it under 100 lines. All times Europe/Hels
   for founders, investors or both. Focus beats breadth. Target: usable at Slush, right after.
 - Who the user is: an investor who makes their own decisions and has neither the time nor the
   means to build automated research systems, so every hour spent researching is an hour not
-  spent deciding. They need to get the most out of their time. Ranges from small private
-  equity firms and search funds to individual investors; the demo follows one investor and
-  one thesis. Evidence: `docs/agents/research.md`.
+  spent deciding. They need to get the most out of their time. Segment: from small private
+  equity down (search funds, business angels, individual investors). The demo follows one
+  business angel preparing Slush 2026, with one thesis (research.md, decisions.md).
 - Partner judging, 25% each, in their words:
   - Real need: a clear user with a problem worth solving.
   - Execution: it works smoothly, end to end.
@@ -68,31 +68,32 @@ Context.dev: hackerpack (50k credits, `context-dev.md`) and its own challenge, "
 Real-Time Database"; one submission may enter several (open-questions.md D6).
 
 ## Scope
-- MVP (must demo): a proactive agent that turns a vague thesis into a short list of real
-  companies and a memo by asking data-backed questions; the investor keeps asking to refine
-  or broaden the report. Facts come from Cala's raw graph, labelled "verified by Cala";
-  Context.dev adds soft signals (social trends, fund commentary), labelled "web, unverified".
-  The agent reads Cala's introspection per entity, so its questions grow with Cala's coverage.
-- MVP, also must demo: conversational onboarding, first report validated by the user, then
-  a scheduled digest and urgent alerts about the portfolio by desktop notification.
-  Full flow: `flow.md`.
+- MVP (must demo), one flow: a proactive agent takes a vague thesis, walks the Slush 2026
+  attendees in Cala's graph, asks data-backed questions and returns a shortlist and a memo,
+  then keeps sending reports and alerts on it until the angel finds a round. Each fact shows
+  its trust level (Cala `source_rank`: registry, company, press, database). Signals: lead
+  and co-investors of each round, "co-invest with who you trust", "likely to raise soon".
+  Context.dev adds soft signals ("web, unverified"). The investor configures it.
+- Steps: conversational onboarding, first report validated, scheduled digest and urgent
+  alerts on the shortlist by desktop notification. Full flow: `flow.md`, decisions.md.
 - Nice to have: voice input in onboarding and chat; Telegram or WhatsApp channel.
-- Explicitly out of scope: recommending what to buy or executing trades (decisions.md);
-  regulatory data from Cala (not in the graph). Rest: TODO (open-questions.md D1, D7).
+- Out of scope: recommending what to buy or executing trades (decisions.md); watching a
+  portfolio of listed shares; regulatory data from Cala. Rest: TODO (open-questions D7).
 - Undecided points and conflicts: `open-questions.md`. Pitch, deck, README: `pitch.md`.
 
 ## Demo script
 Video, max 2:00 (times approximate). Features not in this list are low priority.
-1. 0:00-0:15 An investor drowns in open tabs; however much time he spends, he finds
-   little of value and has no energy left to judge well.
-2. 0:15-0:20 He opens Grabbit and closes every other tab.
-3. 0:20-0:55 Onboarding by conversation; he makes two or three corrections.
-4. 0:55-1:15 The first report arrives in his chosen format, each fact labelled "verified by
-   Cala" or "web, unverified"; he opens one source and validates it.
-5. 1:15-1:25 He leaves the computer.
+1. 0:00-0:15 A business angel preparing Slush drowns in open tabs and the attendee list;
+   however much time they spend, they find little of value and have no energy left to judge.
+2. 0:15-0:20 They open Grabbit and close every other tab.
+3. 0:20-0:55 Onboarding by conversation: a vague thesis, two reference investors, two or
+   three data-backed questions and corrections.
+4. 0:55-1:15 The Slush prep report: a shortlist with who led each round, co-investors they
+   trust and "likely to raise soon"; each fact shows its trust level. They open one source.
+5. 1:15-1:25 They leave the computer.
 6. 1:25-1:40 Seconds later, an urgent desktop notification (simulated event, labelled on
-   screen; open-questions.md R2) about his portfolio. He comes
-   back, relieved, reads why it matters and can act on it.
+   screen; open-questions.md R2) about a shortlisted startup, e.g. a new round or an
+   executive leaving. They come back, read why it matters and can act on it.
 7. 1:40-2:00 Voice-over pitch: Grabbit saves your time, lets you focus on deciding, and
    tells you when something changes.
-The live demo and Q&A also show the thesis flow in the chat (MVP above).
+The live demo and Q&A go deeper into the thesis questions and the memo.

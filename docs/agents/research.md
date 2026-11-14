@@ -70,6 +70,11 @@ Read this before deciding the target user, product behaviour, demo script or pit
   the most out of their time. Small private equity firms, search funds and individual
   investors are examples. Both interviewees fit: A has the skills but not the time, B's fund
   builds by hand because most cannot. See `decisions.md` and challenge.md "Who the user is".
+- Decided 2026-11-14, after Cala asked for one concrete problem: segment from small private
+  equity down; the demo persona is a business angel investing in startup rounds, with one
+  flow (thesis to shortlist, then reports until they find the company). This goes against
+  B's advice on startups above; the team assumes Cala covers the startups (decisions.md).
+  Later the same day the demo persona became an angel preparing Slush 2026 (decisions.md).
 
 ## Cala coverage (probed 2026-11-14 on the entity endpoints, 56 calls)
 Findings come from name search, introspection and entity retrieval, not from the
