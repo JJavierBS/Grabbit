@@ -13,6 +13,8 @@ export function workingText(hasReport: boolean): string {
 interface WorkingLineProps {
   /** With no report yet, the agent is walking Cala for the first one. */
   hasReport: boolean;
+  /** The phase the backend reports for this turn, when it has said one. */
+  phase?: string | null;
 }
 
 /**
@@ -20,7 +22,7 @@ interface WorkingLineProps {
  * A live turn can take minutes with Cala, so from 10 s it also counts the seconds. The count
  * is hidden from screen readers; they hear the sentence once, not every second.
  */
-export function WorkingLine({ hasReport }: WorkingLineProps) {
+export function WorkingLine({ hasReport, phase }: WorkingLineProps) {
   const [startedAt] = useState(() => Date.now());
   const [now, setNow] = useState(startedAt);
 
@@ -36,7 +38,9 @@ export function WorkingLine({ hasReport }: WorkingLineProps) {
         <span />
         <span />
       </span>
-      <span className={styles.text}>{workingText(hasReport)}</span>
+      <span key={phase ?? "default"} className={styles.text}>
+        {phase || workingText(hasReport)}
+      </span>
       {elapsed >= ELAPSED_AFTER_MS && (
         <span className={styles.elapsed} aria-hidden="true">
           · {Math.floor(elapsed / 1000)} s

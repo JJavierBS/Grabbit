@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { openEventStream } from "../client";
-import type { Alert, Profile } from "../types";
+import type { Alert, Profile, TurnProgress } from "../types";
 import { keys } from "./queries";
 
 export type StreamStatus = "connecting" | "open" | "retrying";
@@ -14,7 +14,8 @@ export const backoff = (attempt: number) => Math.min(1000 * 2 ** attempt, MAX_BA
 
 /**
  * Listens to /api/events (api.md): `alert` adds to the alerts list and calls onAlert,
- * `report` refreshes the report, `profile` replaces the profile. The browser retries a
+ * `report` refreshes the report, `profile` replaces the profile, `progress` says what the
+ * running chat turn is doing. The browser retries a
  * dropped stream itself; when it gives up (CLOSED) this hook opens a new one with backoff.
  */
 export function useEvents(onAlert: (alert: Alert) => void): StreamStatus {
@@ -63,6 +64,10 @@ export function useEvents(onAlert: (alert: Alert) => void): StreamStatus {
         client.invalidateQueries({ queryKey: keys.reportsAll });
         // The new report may link chat-typed investor names to Cala ids.
         client.invalidateQueries({ queryKey: keys.profile });
+      });
+      stream.addEventListener("progress", (ev) => {
+        const progress = parse<TurnProgress>(ev);
+        if (progress) client.setQueryData(keys.progress, progress);
       });
       stream.addEventListener("profile", (ev) => {
         const profile = parse<Profile>(ev);

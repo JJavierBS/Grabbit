@@ -1,3 +1,5 @@
+import asyncio
+
 import pytest
 
 from app.agent import chat
@@ -23,6 +25,7 @@ async def _say(text, candidates, now, llm=None, hook=None):
 
 async def test_correction_edits_profile_and_rewrites_instructions(candidates, now, published):
     await _say("hello", candidates, now)
+    published.clear()
     rebuilt = []
 
     async def hook(profile):
@@ -41,7 +44,8 @@ async def test_correction_edits_profile_and_rewrites_instructions(candidates, no
         "From now on: shorter reports; co-investors first, two lines per startup."
     )
     assert rebuilt == [2] and reply.report_id == "report-2"
-    assert [kind for kind, _ in published] == ["profile"]
+    # Reading, then the saved profile, then the report rewrite it triggers.
+    assert [kind for kind, _ in published] == ["progress", "profile", "progress"]
 
 
 async def test_forbidden_instruction_is_refused_and_nothing_changes(candidates, now):
@@ -184,3 +188,39 @@ async def test_the_walked_graph_is_stored_with_the_answer(candidates, now, monke
 
     assert reply.graph == graph
     assert chat_store.all_messages()[-1].graph == graph
+
+
+async def test_a_turn_reports_each_phase_it_enters_in_order(
+    candidates, now, monkeypatch, published
+):
+    started = asyncio.Event()
+
+    async def slow_visual(llm, question, profile, candidates):
+        await started.wait()
+        return Visual(ui='root = Answer([t])\nt = Text("Aurora.")')
+
+    monkeypatch.setattr(chat, "visual_answer", slow_visual)
+    await _say("hello", candidates, now)
+    published.clear()
+
+    async def release_visual_soon():
+        await asyncio.sleep(0)
+        started.set()
+
+    asyncio.get_running_loop().create_task(release_visual_soon())
+    await _say("Who backs Mossa?", candidates, now)
+
+    progress = [payload for kind, payload in published if kind == "progress"]
+    assert [p.phase for p in progress] == ["llm", "graph"]
+    assert all(p.label for p in progress)
+
+
+async def test_a_correction_skips_the_graph_phase(candidates, now, published):
+    await _say("hello", candidates, now)
+    published.clear()
+
+    async def hook(profile):
+        return "report-2"
+
+    await _say("Shorter, co-investors first", candidates, now, hook=hook)
+    assert [p.phase for kind, p in published if kind == "progress"] == ["llm", "report"]

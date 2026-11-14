@@ -8,6 +8,7 @@ from datetime import datetime
 
 from app import events
 from app.agent import learn, onboarding
+from app.agent.progress import report_phase
 from app.agent.rules import FIXED_RULES
 from app.agent.tools import TOOL_SPECS, ToolOutcome, apply_tool_call
 from app.agent.visual import visual_answer
@@ -74,6 +75,7 @@ async def handle_message(
         None if first_turn else asyncio.create_task(visual_answer(llm, text, profile, candidates))
     )
 
+    report_phase("llm")
     try:
         result = await llm.chat(system=system, messages=history, tools=TOOL_SPECS)
     except LLMError as exc:
@@ -101,6 +103,7 @@ async def handle_message(
         changes = [c.model_copy(update={"version": saved.version}) for c in changes]
         events.publish("profile", saved)
         if on_profile_change:
+            report_phase("report")
             report_id = await on_profile_change(saved)
         updated = saved
 
@@ -113,6 +116,8 @@ async def handle_message(
     if visual and changes:
         visual.cancel()
     elif visual:
+        if not visual.done():
+            report_phase("graph")
         drawn = await visual
     return chat_store.add(
         "agent",
