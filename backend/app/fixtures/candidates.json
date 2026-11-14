@@ -1,0 +1,683 @@
+[
+ {
+  "entity_id": "cand-kiln",
+  "name": "Kiln Analytics",
+  "website": "https://example.com/kiln",
+  "description": "Energy analytics for industrial kilns (fixture).",
+  "founding_date": {
+   "value": "2021",
+   "trust": "filing",
+   "sources": [
+    {
+     "name": "Trade register",
+     "rank": "filing",
+     "date": "2021",
+     "date_precision": "year"
+    }
+   ]
+  },
+  "funding_stage": {
+   "value": "seed",
+   "trust": "aggregator",
+   "sources": [
+    {
+     "name": "Funding database",
+     "rank": "aggregator"
+    }
+   ]
+  },
+  "headcount": {
+   "value": 14,
+   "trust": "primary",
+   "sources": [
+    {
+     "name": "Company website",
+     "rank": "primary"
+    }
+   ]
+  },
+  "total_funding": {
+   "value": 2400000,
+   "trust": "aggregator",
+   "sources": [
+    {
+     "name": "Funding database",
+     "rank": "aggregator"
+    }
+   ],
+   "unit": "EUR"
+  },
+  "hq": {
+   "value": "Finland",
+   "trust": "filing",
+   "sources": [
+    {
+     "name": "Trade register",
+     "rank": "filing"
+    }
+   ]
+  },
+  "industries": [
+   "Climate tech",
+   "B2B software"
+  ],
+  "rounds": [
+   {
+    "entity_id": "r-kiln-seed",
+    "name": "Seed",
+    "label": "Seed",
+    "amount": {
+     "value": 2000000,
+     "trust": "press",
+     "sources": [
+      {
+       "name": "Press release",
+       "rank": "press"
+      }
+     ],
+     "unit": "EUR"
+    },
+    "date": {
+     "value": "2024-05",
+     "trust": "filing",
+     "sources": [
+      {
+       "name": "Trade register",
+       "rank": "filing",
+       "date": "2024-05",
+       "date_precision": "month"
+      }
+     ]
+    },
+    "investors": [
+     {
+      "entity_id": "inv-north-pine",
+      "name": "North Pine Ventures",
+      "is_lead": true,
+      "role": "investor"
+     },
+     {
+      "entity_id": "inv-aurora",
+      "name": "Aurora Angels",
+      "is_lead": false,
+      "role": "investor"
+     }
+    ]
+   },
+   {
+    "entity_id": "r-kiln-pre",
+    "name": "Pre-seed",
+    "label": "Pre-seed",
+    "amount": {
+     "value": 400000,
+     "trust": "press",
+     "sources": [
+      {
+       "name": "Press release",
+       "rank": "press"
+      }
+     ],
+     "unit": "EUR"
+    },
+    "date": {
+     "value": "2022-09",
+     "trust": "filing",
+     "sources": [
+      {
+       "name": "Trade register",
+       "rank": "filing",
+       "date": "2022-09",
+       "date_precision": "month"
+      }
+     ]
+    },
+    "investors": [
+     {
+      "entity_id": "inv-aurora",
+      "name": "Aurora Angels",
+      "is_lead": true,
+      "role": "investor"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "entity_id": "cand-ledgerly",
+  "name": "Ledgerly",
+  "website": "https://example.com/ledgerly",
+  "description": "Close automation for mid-size finance teams (fixture).",
+  "founding_date": {
+   "value": "2019",
+   "trust": "filing",
+   "sources": [
+    {
+     "name": "Trade register",
+     "rank": "filing",
+     "date": "2019",
+     "date_precision": "year"
+    }
+   ]
+  },
+  "funding_stage": {
+   "value": "series_a",
+   "trust": "aggregator",
+   "sources": [
+    {
+     "name": "Funding database",
+     "rank": "aggregator"
+    }
+   ]
+  },
+  "headcount": {
+   "value": 48,
+   "trust": "aggregator",
+   "sources": [
+    {
+     "name": "Funding database",
+     "rank": "aggregator"
+    }
+   ]
+  },
+  "total_funding": {
+   "value": 9500000,
+   "trust": "aggregator",
+   "sources": [
+    {
+     "name": "Funding database",
+     "rank": "aggregator"
+    }
+   ],
+   "unit": "EUR"
+  },
+  "hq": {
+   "value": "Sweden",
+   "trust": "filing",
+   "sources": [
+    {
+     "name": "Trade register",
+     "rank": "filing"
+    }
+   ]
+  },
+  "industries": [
+   "Fintech",
+   "B2B software"
+  ],
+  "rounds": [
+   {
+    "entity_id": "r-ledg-a",
+    "name": "Series A",
+    "label": "Series A",
+    "amount": {
+     "value": 8000000,
+     "trust": "press",
+     "sources": [
+      {
+       "name": "Press release",
+       "rank": "press"
+      }
+     ],
+     "unit": "EUR"
+    },
+    "date": {
+     "value": "2025-02",
+     "trust": "filing",
+     "sources": [
+      {
+       "name": "Trade register",
+       "rank": "filing",
+       "date": "2025-02",
+       "date_precision": "month"
+      }
+     ]
+    },
+    "investors": [
+     {
+      "entity_id": "inv-fjord",
+      "name": "Fjord Capital",
+      "is_lead": true,
+      "role": "investor"
+     },
+     {
+      "entity_id": "inv-north-pine",
+      "name": "North Pine Ventures",
+      "is_lead": false,
+      "role": "investor"
+     }
+    ]
+   },
+   {
+    "entity_id": "r-ledg-seed",
+    "name": "Seed",
+    "label": "Seed",
+    "amount": {
+     "value": 1500000,
+     "trust": "press",
+     "sources": [
+      {
+       "name": "Press release",
+       "rank": "press"
+      }
+     ],
+     "unit": "EUR"
+    },
+    "date": {
+     "value": "2021-03",
+     "trust": "filing",
+     "sources": [
+      {
+       "name": "Trade register",
+       "rank": "filing",
+       "date": "2021-03",
+       "date_precision": "month"
+      }
+     ]
+    },
+    "investors": [
+     {
+      "entity_id": "inv-birch",
+      "name": "Birch Seed Fund",
+      "is_lead": true,
+      "role": "investor"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "entity_id": "cand-mossa",
+  "name": "Mossa Health",
+  "description": "Remote physiotherapy app for consumers (fixture).",
+  "founding_date": {
+   "value": "2022",
+   "trust": "filing",
+   "sources": [
+    {
+     "name": "Trade register",
+     "rank": "filing",
+     "date": "2022",
+     "date_precision": "year"
+    }
+   ]
+  },
+  "funding_stage": {
+   "value": "pre_seed",
+   "trust": "aggregator",
+   "sources": [
+    {
+     "name": "Funding database",
+     "rank": "aggregator"
+    }
+   ]
+  },
+  "headcount": {
+   "value": null,
+   "trust": "not_published",
+   "sources": []
+  },
+  "total_funding": {
+   "value": 600000,
+   "trust": "aggregator",
+   "sources": [
+    {
+     "name": "Funding database",
+     "rank": "aggregator"
+    }
+   ],
+   "unit": "EUR"
+  },
+  "hq": {
+   "value": "Estonia",
+   "trust": "filing",
+   "sources": [
+    {
+     "name": "Trade register",
+     "rank": "filing"
+    }
+   ]
+  },
+  "industries": [
+   "Healthtech",
+   "B2C"
+  ],
+  "rounds": [
+   {
+    "entity_id": "r-mossa-pre",
+    "name": "Pre-seed",
+    "label": "Pre-seed",
+    "amount": {
+     "value": 600000,
+     "trust": "press",
+     "sources": [
+      {
+       "name": "Press release",
+       "rank": "press"
+      }
+     ],
+     "unit": "EUR"
+    },
+    "date": {
+     "value": "2025-08",
+     "trust": "filing",
+     "sources": [
+      {
+       "name": "Trade register",
+       "rank": "filing",
+       "date": "2025-08",
+       "date_precision": "month"
+      }
+     ]
+    },
+    "investors": [
+     {
+      "entity_id": "inv-aurora",
+      "name": "Aurora Angels",
+      "is_lead": true,
+      "role": "investor"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "entity_id": "cand-tundra",
+  "name": "Tundra Grid",
+  "description": "Grid-balancing software for utilities (fixture).",
+  "founding_date": {
+   "value": "2020",
+   "trust": "filing",
+   "sources": [
+    {
+     "name": "Trade register",
+     "rank": "filing",
+     "date": "2020",
+     "date_precision": "year"
+    }
+   ]
+  },
+  "funding_stage": {
+   "value": "seed",
+   "trust": "aggregator",
+   "sources": [
+    {
+     "name": "Funding database",
+     "rank": "aggregator"
+    }
+   ]
+  },
+  "headcount": {
+   "value": 22,
+   "trust": "primary",
+   "sources": [
+    {
+     "name": "Company website",
+     "rank": "primary"
+    }
+   ]
+  },
+  "total_funding": {
+   "value": null,
+   "trust": "not_published",
+   "sources": []
+  },
+  "hq": {
+   "value": "Finland",
+   "trust": "filing",
+   "sources": [
+    {
+     "name": "Trade register",
+     "rank": "filing"
+    }
+   ]
+  },
+  "industries": [
+   "Climate tech",
+   "B2B software"
+  ],
+  "rounds": [
+   {
+    "entity_id": "r-tundra-seed",
+    "name": "Seed",
+    "label": "Seed",
+    "amount": {
+     "value": null,
+     "trust": "not_published",
+     "sources": []
+    },
+    "date": {
+     "value": "2023-11",
+     "trust": "filing",
+     "sources": [
+      {
+       "name": "Trade register",
+       "rank": "filing",
+       "date": "2023-11",
+       "date_precision": "month"
+      }
+     ]
+    },
+    "investors": [
+     {
+      "entity_id": "inv-birch",
+      "name": "Birch Seed Fund",
+      "is_lead": true,
+      "role": "investor"
+     },
+     {
+      "entity_id": "inv-north-pine",
+      "name": "North Pine Ventures",
+      "is_lead": false,
+      "role": "investor"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "entity_id": "cand-brikk",
+  "name": "Brikk",
+  "description": "Scheduling software for construction sites (fixture).",
+  "founding_date": {
+   "value": "2018",
+   "trust": "filing",
+   "sources": [
+    {
+     "name": "Trade register",
+     "rank": "filing",
+     "date": "2018",
+     "date_precision": "year"
+    }
+   ]
+  },
+  "funding_stage": {
+   "value": "series_b",
+   "trust": "aggregator",
+   "sources": [
+    {
+     "name": "Funding database",
+     "rank": "aggregator"
+    }
+   ]
+  },
+  "headcount": {
+   "value": 120,
+   "trust": "aggregator",
+   "sources": [
+    {
+     "name": "Funding database",
+     "rank": "aggregator"
+    }
+   ]
+  },
+  "total_funding": {
+   "value": 31000000,
+   "trust": "aggregator",
+   "sources": [
+    {
+     "name": "Funding database",
+     "rank": "aggregator"
+    }
+   ],
+   "unit": "EUR"
+  },
+  "hq": {
+   "value": "Norway",
+   "trust": "filing",
+   "sources": [
+    {
+     "name": "Trade register",
+     "rank": "filing"
+    }
+   ]
+  },
+  "industries": [
+   "Construction",
+   "B2B software"
+  ],
+  "rounds": [
+   {
+    "entity_id": "r-brikk-b",
+    "name": "Series B",
+    "label": "Series B",
+    "amount": {
+     "value": 22000000,
+     "trust": "press",
+     "sources": [
+      {
+       "name": "Press release",
+       "rank": "press"
+      }
+     ],
+     "unit": "EUR"
+    },
+    "date": {
+     "value": "2024-01",
+     "trust": "filing",
+     "sources": [
+      {
+       "name": "Trade register",
+       "rank": "filing",
+       "date": "2024-01",
+       "date_precision": "month"
+      }
+     ]
+    },
+    "investors": [
+     {
+      "entity_id": "inv-fjord",
+      "name": "Fjord Capital",
+      "is_lead": true,
+      "role": "investor"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "entity_id": "cand-sauna",
+  "name": "Saunaverse",
+  "description": "Booking marketplace for public saunas (fixture).",
+  "founding_date": {
+   "value": "2023",
+   "trust": "filing",
+   "sources": [
+    {
+     "name": "Trade register",
+     "rank": "filing",
+     "date": "2023",
+     "date_precision": "year"
+    }
+   ]
+  },
+  "funding_stage": {
+   "value": "seed",
+   "trust": "aggregator",
+   "sources": [
+    {
+     "name": "Funding database",
+     "rank": "aggregator"
+    }
+   ]
+  },
+  "headcount": {
+   "value": 6,
+   "trust": "primary",
+   "sources": [
+    {
+     "name": "Company website",
+     "rank": "primary"
+    }
+   ]
+  },
+  "total_funding": {
+   "value": 900000,
+   "trust": "aggregator",
+   "sources": [
+    {
+     "name": "Funding database",
+     "rank": "aggregator"
+    }
+   ],
+   "unit": "EUR"
+  },
+  "hq": {
+   "value": "Finland",
+   "trust": "filing",
+   "sources": [
+    {
+     "name": "Trade register",
+     "rank": "filing"
+    }
+   ]
+  },
+  "industries": [
+   "B2C",
+   "Marketplaces"
+  ],
+  "rounds": [
+   {
+    "entity_id": "r-sauna-seed",
+    "name": "Seed",
+    "label": "Seed",
+    "amount": {
+     "value": 900000,
+     "trust": "press",
+     "sources": [
+      {
+       "name": "Press release",
+       "rank": "press"
+      }
+     ],
+     "unit": "EUR"
+    },
+    "date": {
+     "value": "2025-10",
+     "trust": "filing",
+     "sources": [
+      {
+       "name": "Trade register",
+       "rank": "filing",
+       "date": "2025-10",
+       "date_precision": "month"
+      }
+     ]
+    },
+    "investors": [
+     {
+      "entity_id": "inv-aurora",
+      "name": "Aurora Angels",
+      "is_lead": true,
+      "role": "investor"
+     },
+     {
+      "entity_id": "inv-north-pine",
+      "name": "North Pine Ventures",
+      "is_lead": false,
+      "role": "investor"
+     }
+    ]
+   }
+  ]
+ }
+]
