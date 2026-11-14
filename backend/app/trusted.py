@@ -8,16 +8,26 @@ the watcher all match through `Trusted`: by id or by fund name.
 from __future__ import annotations
 
 import re
+from functools import lru_cache
 
 from app.models import ReferenceInvestor
 
-LEGAL_SUFFIXES = r"\b(oy|oyj|ab|as|aps|gmbh|ltd|limited|llc|inc|sa|sas|bv|nv|plc|co|corp)\b"
+LEGAL_SUFFIXES = frozenset(
+    {"oy", "oyj", "ab", "as", "aps", "gmbh", "ltd", "limited", "llc", "inc", "sa", "sas", "bv"}
+    | {"nv", "plc", "co", "corp"}
+)
 
 
+@lru_cache(maxsize=65536)  # called per round edge, per candidate and investor, every turn
 def normalise_name(name: str | None) -> str:
-    text = re.sub(r"[^\w\s]", " ", (name or "").lower())
-    text = re.sub(LEGAL_SUFFIXES, " ", text)
-    return " ".join(text.split())
+    """Lowercase words without punctuation or trailing legal forms ("Acme Oy Ltd" -> "acme").
+
+    Legal forms are dropped only at the end: inside a name they are words ("Same As Ventures").
+    """
+    words = re.sub(r"[^\w\s]", " ", (name or "").lower()).split()
+    while len(words) > 1 and words[-1] in LEGAL_SUFFIXES:
+        words.pop()
+    return " ".join(words)
 
 
 class Trusted:
