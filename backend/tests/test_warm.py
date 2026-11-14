@@ -8,8 +8,17 @@ import respx
 from app.agent.sources import MAX_ATTENDEES, event_walk_limits
 from app.cala.client import BASE_URL, CalaClient, CalaLimiter
 from app.discovery.pipeline import SLUSH_2026
-from scripts.warm import first_turn_misses, warm_first_turn
-from tests.test_discovery import FakeCala, graph  # noqa: F401  (graph is a fixture)
+from app.models import ReferenceInvestor
+from scripts.warm import (
+    first_turn_misses,
+    reverse_walk_misses,
+    warm_first_turn,
+    warm_references,
+    warm_reverse_walk,
+)
+from tests.test_discovery import AURORA, FakeCala, graph  # noqa: F401  (graph is a fixture)
+
+AURORA_REF = ReferenceInvestor(entity_id="unresolved:aurora ventures", name="Aurora Ventures")
 
 
 def serve(nodes: dict) -> None:
@@ -64,7 +73,9 @@ async def test_check_exits_non_zero_on_a_cold_cache(monkeypatch, tmp_path, capsy
     monkeypatch.setenv("DATABASE_PATH", str(tmp_path / "cold.db"))
     code = await warm.main(argparse.Namespace(check=True, event=SLUSH_2026))
     assert code == 1
-    assert "cache misses" in capsys.readouterr().out
+    out = capsys.readouterr().out
+    assert "cache misses" in out
+    assert "reverse walk: 1 Cala calls, 1 cache misses" in out
 
 
 @respx.mock
@@ -81,3 +92,40 @@ async def test_an_entity_cala_does_not_know_is_no_miss_after_warm(cache, graph):
     assert gone.call_count == 1
     calls, misses = await first_turn_misses(cache, SLUSH_2026)
     assert calls > 0 and misses == 0
+
+
+@respx.mock
+async def test_after_warm_the_reverse_walk_has_no_cache_miss(cache, graph):  # noqa: F811
+    serve(graph)
+    stubs = [{"id": AURORA, "name": "Aurora Ventures", "entity_type": "Organization"}]
+    respx.get(f"{BASE_URL}/v1/entities").mock(
+        return_value=httpx.Response(200, json={"entities": stubs})
+    )
+    calls, misses = await reverse_walk_misses(cache, SLUSH_2026, [AURORA_REF])
+    assert misses > 0
+
+    live = CalaClient("key", cache, limiter=CalaLimiter())
+    reached = await warm_reverse_walk(live, SLUSH_2026, [AURORA_REF])
+    await live.aclose()
+
+    assert [c.name for c in reached.candidates] == ["Northwind Robotics"]
+    assert reached.stats.startups == 1
+    calls, misses = await reverse_walk_misses(cache, SLUSH_2026, [AURORA_REF])
+    assert calls > 0
+    assert misses == 0
+
+
+def test_warm_covers_the_demo_investors_and_the_stored_profile_once_each():
+    from app.store import profile as profile_store
+
+    stored = profile_store.current().model_copy(
+        update={
+            "reference_investors": [
+                ReferenceInvestor(entity_id="inv-1", name="y combinator"),
+                AURORA_REF,
+            ]
+        }
+    )
+    profile_store.save_version(stored, [])
+
+    assert [r.name for r in warm_references()] == ["Y Combinator", "500 Global", "Aurora Ventures"]
