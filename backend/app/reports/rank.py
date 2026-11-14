@@ -1,15 +1,14 @@
 """Filter and order candidates by the profile."""
 
-from app.geo import hq_in
+from app.discovery.filters import matches_profile
 from app.models import Candidate, Profile
 from app.reports.facts import last_round
-
-EARLY = ("pre_seed", "pre-seed", "seed", "angel")
 
 
 def rank(candidates: list[Candidate], profile: Profile) -> list[Candidate]:
     """Default order: a reference investor led a round, then joined one, then likely to raise."""
-    kept = [c for c in candidates if _matches(c, profile)]
+    # The same filters as discovery (app.discovery.filters), so the two never disagree.
+    kept = [c for c in candidates if matches_profile(c, profile)]
     refs = {r.entity_id for r in profile.reference_investors}
     return sorted(kept, key=lambda c: _key(c, refs))
 
@@ -34,25 +33,3 @@ def _key(c: Candidate, refs: set[str]) -> tuple:
         [-ord(ch) for ch in recency],
         c.name,
     )
-
-
-def _matches(c: Candidate, profile: Profile) -> bool:
-    f = profile.filters
-    industries = {i.lower() for i in c.industries}
-    if any(s.lower() in industries for s in f.sectors_out):
-        return False
-    if f.sectors_in and not any(s.lower() in industries for s in f.sectors_in):
-        return False
-    if f.countries and c.hq.value is not None and not hq_in(str(c.hq.value), f.countries):
-        return False
-    # An unknown headcount is kept: absent is "not published", never a reason to drop.
-    headcount = c.headcount.value
-    too_big = isinstance(headcount, int | float) and headcount > (f.headcount_max or headcount)
-    if too_big:
-        return False
-    if f.stages and c.funding_stage.value is not None:
-        stage = str(c.funding_stage.value).lower()
-        wanted = {s.lower() for s in f.stages}
-        if stage not in wanted and not ("early" in wanted and stage in EARLY):
-            return False
-    return True
