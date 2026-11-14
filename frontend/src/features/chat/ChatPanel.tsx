@@ -1,4 +1,4 @@
-import { ArrowUp, RefreshCw } from 'lucide-react';
+import { ArrowUp, Mic, RefreshCw, Square } from 'lucide-react';
 import {
   type FormEvent,
   type KeyboardEvent,
@@ -15,6 +15,7 @@ import { Skeleton } from '../../components/Skeleton';
 import styles from './ChatPanel.module.css';
 import { ChangeNote } from './ChangeNote';
 import { changeNoteText, isUndoable } from './noteText';
+import { useDictation } from './useDictation';
 
 const SUGGESTIONS = ['Shorter, co-investors first', 'Drop consumer health'];
 
@@ -29,6 +30,7 @@ export function ChatPanel({ footer }: ChatPanelProps) {
   const send = useSendMessage();
   const undo = useUndo();
   const [draft, setDraft] = useState('');
+  const dictation = useDictation(setDraft);
   const endRef = useRef<HTMLDivElement>(null);
   const messages = chat.data ?? [];
 
@@ -40,6 +42,7 @@ export function ChatPanel({ footer }: ChatPanelProps) {
   const submit = (text: string) => {
     const value = text.trim();
     if (!value || send.isPending) return;
+    if (dictation.listening) dictation.toggle('');
     send.mutate(value, { onSuccess: () => setDraft('') });
   };
 
@@ -60,6 +63,7 @@ export function ChatPanel({ footer }: ChatPanelProps) {
       className={styles.panel}
       aria-labelledby="chat-title"
       data-working={send.isPending || undefined}
+      data-listening={dictation.listening || undefined}
     >
       <h2 id="chat-title" className="visually-hidden">
         Chat with Grabbit
@@ -114,6 +118,11 @@ export function ChatPanel({ footer }: ChatPanelProps) {
             Undo failed: {undo.error.message}
           </p>
         )}
+        {dictation.error && (
+          <p className={styles.sendError} role="alert">
+            {dictation.error}
+          </p>
+        )}
         <div className={styles.suggestions}>
           {SUGGESTIONS.map((s) => (
             <Button
@@ -131,12 +140,28 @@ export function ChatPanel({ footer }: ChatPanelProps) {
           <TextArea
             label="Message Grabbit"
             hideLabel
-            placeholder="Correct the report or ask a question"
+            placeholder={
+              dictation.listening
+                ? 'Listening… press Stop when you are done'
+                : 'Correct the report or ask a question'
+            }
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={onKeyDown}
             rows={1}
           />
+          {dictation.supported && (
+            <Button
+              variant={dictation.listening ? 'primary' : 'ghost'}
+              aria-label={dictation.listening ? 'Stop talking' : 'Talk'}
+              aria-pressed={dictation.listening}
+              className={styles.talk}
+              onClick={() => dictation.toggle(draft)}
+              icon={
+                dictation.listening ? <Square aria-hidden="true" /> : <Mic aria-hidden="true" />
+              }
+            />
+          )}
           <Button
             type="submit"
             aria-label="Send"
