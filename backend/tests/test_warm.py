@@ -65,3 +65,19 @@ async def test_check_exits_non_zero_on_a_cold_cache(monkeypatch, tmp_path, capsy
     code = await warm.main(argparse.Namespace(check=True, event=SLUSH_2026))
     assert code == 1
     assert "cache misses" in capsys.readouterr().out
+
+
+@respx.mock
+async def test_an_entity_cala_does_not_know_is_no_miss_after_warm(cache, graph):  # noqa: F811
+    """#149: a 404 met while warming is cached, so the check does not count it."""
+    # Registered first, so it wins over the catch-all routes of `serve`.
+    gone = respx.get(f"{BASE_URL}/v1/entities/kide/introspection").mock(
+        return_value=httpx.Response(404, json={"error": "not_found"})
+    )
+    serve(graph)
+    live = CalaClient("key", cache, limiter=CalaLimiter())
+    await warm_first_turn(live, SLUSH_2026)
+    await live.aclose()
+    assert gone.call_count == 1
+    calls, misses = await first_turn_misses(cache, SLUSH_2026)
+    assert calls > 0 and misses == 0

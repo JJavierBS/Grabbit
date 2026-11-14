@@ -212,6 +212,8 @@ round dates (still active?).
   `CALA_MIN_INTERVAL_MS` (250) apart, and a 429 pauses all of them for the backoff. Cached
   reads never wait. `make warm` ends with the first chat turn's own walk and counts its
   cache misses; `make warm ARGS=--check` only counts them (pitch.md "Demo checklist").
+- A 404 is cached too, as `{"__cala_status__": 404}`, and read back as the same `CalaError`
+  (`lookup` returns `None`); other errors are never cached, and `fresh=True` asks again (#149).
 
 ## Traversal flow
 Shared core, whatever the seed source:

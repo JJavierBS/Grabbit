@@ -23,6 +23,8 @@ log = logging.getLogger(__name__)
 
 BASE_URL = "https://api.cala.ai"
 RETRY_STATUSES = {429, 500, 502, 503, 504}
+# A 404 is cached as this marker, so a warmed demo never asks Cala about it again (#149).
+MISSING = "__cala_status__"
 Mode = Literal["live", "replay"]
 
 
@@ -227,12 +229,21 @@ class CalaClient:
             cached = self._cache.get(key)
             if cached is not None:
                 self.cache_hits += 1
+                if isinstance(cached, dict) and cached.get(MISSING) == 404:
+                    raise CalaError(404, cached.get("message", "not found (cached)"))
                 return cached
         self.cache_misses += 1
         if self.mode == "replay" or cache_only:
             raise CalaCacheMiss(f"{method} {path} is not in the cache")
-        data = await self._send(method, path, params, body, http_timeout, max_retries)
-        self._cache.put(key, method, path, {"params": params, "body": body}, data)
+        request = {"params": params, "body": body}
+        try:
+            data = await self._send(method, path, params, body, http_timeout, max_retries)
+        except CalaError as err:
+            if err.status == 404:
+                message = str(err).removeprefix("Cala 404: ")
+                self._cache.put(key, method, path, request, {MISSING: 404, "message": message})
+            raise
+        self._cache.put(key, method, path, request, data)
         return data
 
     async def _send(
