@@ -36,6 +36,20 @@ def recent(limit: int = 20) -> list[Report]:
     return [Report.model_validate_json(r["report_json"]) for r in rows]
 
 
+def since_last_prep(limit: int = 200) -> list[Report]:
+    """Reports from the newest back to the latest prep report included, newest first.
+
+    A digest only holds what changed, so "what the investor has seen" and "what to watch"
+    are all reports since the last full prep report, not just the latest one.
+    """
+    reports: list[Report] = []
+    for report in recent(limit):
+        reports.append(report)
+        if report.kind == "prep":
+            break
+    return reports
+
+
 def get(report_id: str) -> Report | None:
     with db.connect() as conn:
         row = conn.execute("SELECT report_json FROM reports WHERE id = ?", (report_id,)).fetchone()
