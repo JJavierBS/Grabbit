@@ -1,0 +1,129 @@
+/*
+ * Grabbit design tokens. The only file with raw colour, size and motion values.
+ * Tone measured on cala.ai (DESIGN.md); light only, because cala.ai ships no dark theme.
+ */
+:root {
+  color-scheme: light;
+
+  /* Ground and surfaces: warm cream paper, from cala.ai's beige family. */
+  --color-ground: #f6e8cd;
+  --color-surface: #fcf8f0;
+  --color-surface-raised: #ffffff;
+  /* shortcut: beige-100/200 are derived, not measured; re-sample if cala.ai exposes them. */
+  --color-panel: #faefda;
+  --color-panel-strong: #f1dfc0;
+
+  /* Ink: brown-black, never pure black. */
+  --color-ink: #2e2723;
+  --color-text: #39312c;
+  --color-text-muted: #64574f;
+  /* Large text (>= 18px) or on --color-surface only: 4.15:1 on the ground. */
+  --color-text-faint: #7c6c63;
+  --color-on-ink: #fcf8f0;
+
+  /* Lines */
+  --color-border: #968378;
+  --color-border-soft: #d8c9c1;
+  --color-border-strong: #2e2723;
+  --color-focus: #075a8e;
+
+  /* Accents measured on cala.ai: info blue, marker yellow. */
+  --color-info: #075a8e;
+  --color-info-bg: #d6f0ff;
+  --color-marker: #ffda7c;
+  --color-marker-soft: #fee5b3;
+  --color-warning-ink: #814d00;
+  --color-danger: #a9241b;
+  --color-danger-bg: #fbe4df;
+
+  /* Trust scale: strength reads from fill weight first, colour second. */
+  --trust-filing-bg: var(--color-ink);
+  --trust-filing-fg: var(--color-on-ink);
+  --trust-filing-border: var(--color-ink);
+  --trust-primary-bg: transparent;
+  --trust-primary-fg: var(--color-ink);
+  --trust-primary-border: var(--color-ink);
+  --trust-press-bg: var(--color-info-bg);
+  --trust-press-fg: var(--color-info);
+  --trust-press-border: transparent;
+  --trust-aggregator-bg: var(--color-panel-strong);
+  --trust-aggregator-fg: var(--color-text-muted);
+  --trust-aggregator-border: transparent;
+  --trust-web-bg: var(--color-marker-soft);
+  --trust-web-fg: var(--color-warning-ink);
+  --trust-web-border: var(--color-warning-ink);
+  --trust-absent-bg: transparent;
+  --trust-absent-fg: var(--color-text-muted);
+  --trust-absent-border: var(--color-border);
+
+  /* Typography. Source Serif 4 stands in for cala.ai's Tiempos, Hanken Grotesk for Waldenburg. */
+  --font-display: "Source Serif 4 Variable", "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-ui:
+    "Hanken Grotesk Variable", "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --text-xs: 0.75rem; /* 12px labels, badges */
+  --text-sm: 0.875rem; /* 14px meta, chat */
+  --text-md: 1rem; /* 16px body */
+  --text-lg: 1.25rem; /* 20px lead */
+  --text-xl: 1.875rem; /* 30px section title, serif */
+  --text-2xl: 2.5rem; /* 40px report title, serif */
+
+  --leading-tight: 1.2;
+  --leading-snug: 1.375;
+  --leading-body: 1.5;
+  --leading-prose: 1.625;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+
+  --tracking-display: -0.025em;
+  --tracking-label: 0.08em;
+
+  /* Spacing: one 4px-based scale. */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* Radius: cala.ai uses 6 / 10 / 14 and full pills. */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-pill: 999px;
+
+  --border-width: 1px;
+  --focus-ring: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-focus);
+
+  /* Elevation: flat by default, brown-tinted when lifted. */
+  --shadow-sm: 0 1px 3px 0 rgb(46 39 35 / 0.1), 0 1px 2px -1px rgb(46 39 35 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(46 39 35 / 0.1), 0 2px 4px -2px rgb(46 39 35 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(46 39 35 / 0.12), 0 4px 6px -4px rgb(46 39 35 / 0.12);
+
+  /* Motion: cala.ai's 150ms standard curve; nothing above 300ms. */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --duration-fast: 150ms;
+  --duration-base: 200ms;
+  --duration-slow: 280ms;
+  /* How long a "changed" mark stays before it fades (the fade itself is --duration-slow). */
+  --changed-hold: 4s;
+
+  --layout-max: 1600px;
+  --chat-width: 26rem;
+  --z-toast: 50;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+    --duration-slow: 0ms;
+  }
+}

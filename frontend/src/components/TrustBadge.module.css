@@ -1,0 +1,68 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 1px var(--space-2);
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-body);
+  white-space: nowrap;
+  vertical-align: middle;
+  text-decoration: none;
+}
+
+.icon {
+  width: 0.875em;
+  height: 0.875em;
+  flex: none;
+}
+
+.link {
+  cursor: pointer;
+  transition: box-shadow var(--duration-fast) var(--ease-standard);
+}
+
+.link:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+.filing {
+  background: var(--trust-filing-bg);
+  color: var(--trust-filing-fg);
+  border-color: var(--trust-filing-border);
+}
+
+.primary {
+  background: var(--trust-primary-bg);
+  color: var(--trust-primary-fg);
+  border-color: var(--trust-primary-border);
+}
+
+.press {
+  background: var(--trust-press-bg);
+  color: var(--trust-press-fg);
+  border-color: var(--trust-press-border);
+}
+
+.aggregator {
+  background: var(--trust-aggregator-bg);
+  color: var(--trust-aggregator-fg);
+  border-color: var(--trust-aggregator-border);
+}
+
+.web_unverified {
+  background: var(--trust-web-bg);
+  color: var(--trust-web-fg);
+  border-color: var(--trust-web-border);
+  border-style: dashed;
+}
+
+.not_published {
+  background: var(--trust-absent-bg);
+  color: var(--trust-absent-fg);
+  border-color: var(--trust-absent-border);
+  border-style: dashed;
+}
