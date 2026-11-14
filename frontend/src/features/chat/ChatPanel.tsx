@@ -91,8 +91,6 @@ export function ChatPanel({ footer, renderAfter, followKey, coach }: ChatPanelPr
   const submit = (text: string) => {
     const value = text.trim();
     if (!value || send.isPending) return;
-    // Starting their own research answers the demo invitation.
-    if (demo && !demo.active && !demo.seen) demo.dismiss();
     dictation.cancel();
     // The message leaves the composer at once; if it is not sent, it comes back to edit.
     setDraft("");

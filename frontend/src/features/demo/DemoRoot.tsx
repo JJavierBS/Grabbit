@@ -22,12 +22,8 @@ import { DEMO_TIMING, type DemoTiming, readDemoSeen, saveDemoSeen } from "./step
 export interface DemoContextValue {
   /** True inside the guided demo, false in the visitor's own research. */
   active: boolean;
-  /** The visitor started or dismissed the demo before; the invitation stops calling. */
-  seen: boolean;
   start: () => void;
   exit: () => void;
-  /** The visitor began their own research instead: the invitation counts as answered. */
-  dismiss: () => void;
   /** Just back from the demo: the composer takes focus. */
   returning: boolean;
   /** How long a finished step stays on screen before the guide moves on. */
@@ -64,7 +60,6 @@ interface DemoRootProps {
 export function DemoRoot({ children, demo, timing }: DemoRootProps) {
   const [run, setRun] = useState<Run | null>(null);
   const current = useRef<Run | null>(null);
-  const [seen, setSeen] = useState(readDemoSeen);
   const [returning, setReturning] = useState(false);
   const saved = useRef<{ transport: Transport; stream: EventStreamFactory } | null>(null);
   const runs = useRef(0);
@@ -72,7 +67,6 @@ export function DemoRoot({ children, demo, timing }: DemoRootProps) {
 
   const start = useCallback(async () => {
     saveDemoSeen();
-    setSeen(true);
     const { createDemoApi } = await import("./demoApi");
     const api = createDemoApi(timing);
     const transport = setTransport(api.transport);
@@ -108,11 +102,6 @@ export function DemoRoot({ children, demo, timing }: DemoRootProps) {
     }
   }, [toasts]);
 
-  const dismiss = useCallback(() => {
-    saveDemoSeen();
-    setSeen(true);
-  }, []);
-
   // Unmounted mid-demo (e.g. a hot reload): the visitor's app must never keep the fake API.
   useEffect(
     () => () => {
@@ -127,24 +116,24 @@ export function DemoRoot({ children, demo, timing }: DemoRootProps) {
     [],
   );
 
-  // `?tour` opens straight on the demo, e.g. for the pitch.
+  // A first visit opens on the demo, and so does `?tour` (e.g. for the pitch). Starting it
+  // marks it seen, so it opens by itself once per browser.
   const startRef = useRef(start);
   startRef.current = start;
   useEffect(() => {
-    if (new URLSearchParams(location.search).has(TOUR_PARAM)) void startRef.current();
+    const tour = new URLSearchParams(location.search).has(TOUR_PARAM);
+    if (tour || readDemoSeen() === false) void startRef.current();
   }, []);
 
   const value = useMemo<DemoContextValue>(
     () => ({
       active: run !== null,
-      seen,
       start: () => void start(),
       exit,
-      dismiss,
       returning: returning && run === null,
       advanceMs: (timing ?? DEMO_TIMING).advance,
     }),
-    [run, seen, start, exit, dismiss, returning, timing],
+    [run, start, exit, returning, timing],
   );
 
   return (

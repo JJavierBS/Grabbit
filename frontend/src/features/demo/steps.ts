@@ -84,12 +84,15 @@ export const DEMO_TIMING: DemoTiming = { get: 120, post: 700, alert: 2500, advan
 
 const SEEN_KEY = "grabbit.demo.seen:v1";
 
-/** Seen or dismissed in this browser; storage may be blocked, then the invitation stays. */
-export function readDemoSeen(): boolean {
+/**
+ * Whether this browser has seen the demo; null when storage is blocked, since then it cannot
+ * remember and the demo must not open by itself on every visit.
+ */
+export function readDemoSeen(): boolean | null {
   try {
     return localStorage.getItem(SEEN_KEY) === "1";
   } catch {
-    return false;
+    return null;
   }
 }
 
@@ -97,6 +100,6 @@ export function saveDemoSeen() {
   try {
     localStorage.setItem(SEEN_KEY, "1");
   } catch {
-    // Blocked storage: the invitation shows again next time, nothing else depends on it.
+    // Blocked storage: readDemoSeen() reports it, so the demo does not reopen by itself.
   }
 }

@@ -16,7 +16,6 @@ export function DemoLauncher({ place }: DemoLauncherProps) {
       <CirclePlay aria-hidden="true" />
       <span>{place === "welcome" ? "See how it works" : "How Grabbit works"}</span>
       {place === "welcome" && <span className={styles.length}>1 min</span>}
-      {place === "welcome" && !demo.seen && <span className={styles.fresh} aria-hidden="true" />}
     </button>
   );
 }

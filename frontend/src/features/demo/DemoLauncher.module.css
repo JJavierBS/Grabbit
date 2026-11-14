@@ -37,14 +37,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Until the visitor has seen or dismissed the demo, one small light says it is new. */
-.fresh {
-  width: 0.375rem;
-  height: 0.375rem;
-  border-radius: var(--radius-pill);
-  background: var(--color-violet);
-}
-
 /* The sidebar's last row: as quiet as a report row, pinned under the list. */
 .launcher[data-place="sidebar"] {
   justify-content: start;

@@ -45,8 +45,10 @@ async function step(title: string) {
   await screen.findByRole("heading", { level: 3, name: title });
 }
 
+// Most tests start from a browser that has seen the demo, so it waits for a click.
 beforeEach(() => {
   localStorage.clear();
+  localStorage.setItem(SEEN, "1");
   history.replaceState(null, "", "/");
 });
 
@@ -87,25 +89,32 @@ describe("demo backend", () => {
 });
 
 describe("guided demo", () => {
-  it("invites a first-time visitor from the empty chat, with a marker until seen", async () => {
+  it("opens by itself on a first visit, and only once per browser", async () => {
+    localStorage.removeItem(SEEN);
     realApi();
-    renderWithDemo();
-    const invite = await screen.findByRole("button", { name: /See how it works/ });
-    expect(invite.querySelector("[class*=fresh]")).not.toBeNull();
-    await userEvent.click(invite);
+    const { unmount } = renderWithDemo();
     await step(DEMO_STEPS[0].title);
     expect(localStorage.getItem(SEEN)).toBe("1");
+    await userEvent.click(screen.getByRole("button", { name: "Exit the demo" }));
+    unmount();
+
+    renderWithDemo();
+    expect(await screen.findByRole("button", { name: /See how it works/ })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { level: 3 })).not.toBeInTheDocument();
   });
 
-  it("drops the marker once the visitor sends their own first message", async () => {
-    const calls = realApi();
-    renderWithDemo();
-    await userEvent.type(
-      await screen.findByRole("textbox", { name: "Message Grabbit" }),
-      "Climate at seed{Enter}",
-    );
-    await waitFor(() => expect(calls.some((c) => c.key === "POST /api/chat")).toBe(true));
-    expect(localStorage.getItem(SEEN)).toBe("1");
+  it("does not open by itself when the browser cannot remember it was seen", async () => {
+    const blocked = vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+      throw new Error("blocked");
+    });
+    try {
+      realApi();
+      renderWithDemo();
+      expect(await screen.findByRole("button", { name: /See how it works/ })).toBeInTheDocument();
+      expect(screen.queryByRole("heading", { level: 3 })).not.toBeInTheDocument();
+    } finally {
+      blocked.mockRestore();
+    }
   });
 
   it("walks every step on sample data with Show me, then hands back the real chat", async () => {
