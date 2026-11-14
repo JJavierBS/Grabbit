@@ -46,9 +46,16 @@ class GeminiLLM:
             ]
             config.automatic_function_calling = types.AutomaticFunctionCallingConfig(disable=True)
         response = await self._call("chat", _contents(messages), config)
+        parts = response.candidates[0].content.parts if response.candidates else None
         calls = [
-            ToolCall(name=c.name or "", args=dict(c.args or {}))
-            for c in response.function_calls or []
+            ToolCall(
+                name=p.function_call.name or "",
+                args=dict(p.function_call.args or {}),
+                id=p.function_call.id,
+                signature=p.thought_signature,
+            )
+            for p in parts or []
+            if p.function_call
         ]
         return ChatResult(text=_text(response), tool_calls=calls)
 
@@ -82,7 +89,28 @@ class GeminiLLM:
 
 
 def _contents(messages: list[Message]) -> list[types.Content]:
-    return [types.Content(role=m.role, parts=[types.Part(text=m.text)]) for m in messages]
+    return [types.Content(role=m.role, parts=_parts(m)) for m in messages]
+
+
+def _parts(m: Message) -> list[types.Part]:
+    parts = [
+        types.Part(
+            function_response=types.FunctionResponse(
+                id=r.id, name=r.name, response={"result": r.output}
+            )
+        )
+        for r in m.tool_results
+    ]
+    if m.text or not (m.tool_calls or m.tool_results):
+        parts.append(types.Part(text=m.text))
+    parts += [
+        types.Part(
+            function_call=types.FunctionCall(id=c.id, name=c.name, args=c.args),
+            thought_signature=c.signature,
+        )
+        for c in m.tool_calls
+    ]
+    return parts
 
 
 def _text(response) -> str:

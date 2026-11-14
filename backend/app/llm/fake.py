@@ -31,9 +31,19 @@ class FakeLLM:
     async def chat(
         self, *, system: str, messages: list[Message], tools: list[ToolSpec] | None = None
     ) -> ChatResult:
-        last_user = next((m.text for m in reversed(messages) if m.role == "user"), "")
+        last_user = next(
+            (
+                "\n".join([*(r.output for r in m.tool_results), m.text])
+                for m in reversed(messages)
+                if m.role == "user"
+            ),
+            "",
+        )
         self.calls.append(("chat", last_user))
         task = "chat" if tools else "chat_followup"
+        # The Cala walk in app/agent/explore.py has its own scripts.
+        if tools and any(t.name.startswith("cala_") for t in tools):
+            task = "explore"
         script = self._find(task, last_user) or self._find("chat", last_user)
         if script is None:
             return ChatResult(text="Noted.")

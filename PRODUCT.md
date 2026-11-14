@@ -51,7 +51,7 @@ the angel finds a round. Success: the angel spends their time on deciding, not o
   decides.
 - Absent data is "not published", never 0. Dates show only their precision ("2019").
 - Simulated events are labelled "simulated event" on screen.
-- Single user, no auth in the MVP. Stack: React 18 + TypeScript + Vite, TanStack Query
+- No auth in the MVP; each browser gets its own anonymous workspace. Stack: React 18 + TypeScript + Vite, TanStack Query
   (frontend.md).
 
 ## Brand Commitments

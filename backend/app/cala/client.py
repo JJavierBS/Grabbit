@@ -34,6 +34,14 @@ class CalaCacheMiss(Exception):
     """Replay mode asked for a call that was never cached; run `make warm` first."""
 
 
+class CalaKeyMissing(CalaError, ValueError):
+    """Live mode without `CALA_API_KEY`. A `CalaError`, so every caller's Cala fallback
+    (fixture candidates, skipping a watcher run) also covers a fresh checkout."""
+
+    def __init__(self) -> None:
+        super().__init__(401, "CALA_API_KEY is required when CALA_MODE=live")
+
+
 class CalaClient:
     def __init__(
         self,
@@ -50,7 +58,7 @@ class CalaClient:
         http: httpx.AsyncClient | None = None,
     ):
         if mode == "live" and not api_key:
-            raise ValueError("CALA_API_KEY is required when CALA_MODE=live")
+            raise CalaKeyMissing()
         self.mode = mode
         self._cache = cache
         self._sem = asyncio.Semaphore(max_concurrency)

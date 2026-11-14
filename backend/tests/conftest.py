@@ -25,8 +25,12 @@ def offline_settings(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Iterato
     monkeypatch.setenv("LLM_MODE", "fake")
     monkeypatch.setenv("DEMO_MODE", "1")
     get_settings.cache_clear()
+    from app.agent.sources import clear_discovery_cache
+
+    clear_discovery_cache()  # in-process event walk: never shared between tests
     yield
     get_settings.cache_clear()
+    clear_discovery_cache()
 
 
 @pytest.fixture

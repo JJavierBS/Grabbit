@@ -1,9 +1,18 @@
 from functools import lru_cache
 
 from app.config import get_settings
-from app.llm.types import LLM, ChatResult, LLMError, Message, ToolCall, ToolSpec
+from app.llm.types import LLM, ChatResult, LLMError, Message, ToolCall, ToolResult, ToolSpec
 
-__all__ = ["LLM", "ChatResult", "LLMError", "Message", "ToolCall", "ToolSpec", "get_llm"]
+__all__ = [
+    "LLM",
+    "ChatResult",
+    "LLMError",
+    "Message",
+    "ToolCall",
+    "ToolResult",
+    "ToolSpec",
+    "get_llm",
+]
 
 
 @lru_cache

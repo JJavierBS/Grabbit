@@ -171,6 +171,11 @@ round dates (still active?).
   `Event` (default Slush 2026), introspects each attendee, keeps startups
   (`filters.is_startup`), reads their `ISSUER` rounds and each last-round lead's other
   rounds, applies the profile filters and attaches the three signals.
+- `app/agent/explore.py`: the chat agent's own walk (#73). Gemini calls `cala_search` and
+  `cala_neighbours` (introspect, then retrieve only listed edges, 6 per type, issuers and
+  trusted investors first) for at most 4 rounds and 25 entities; a hub type (`Event`,
+  `Industry`, `Country`) is never expanded. Every response is cached like any other, so a
+  walk that ran once replays offline.
 - Warm the cache and get the pitch counts, from `backend/`:
   `uv run --env-file ../.env python -m scripts.warm [--limit N] [--dump DIR]`.
 
@@ -178,6 +183,9 @@ round dates (still active?).
 - `429 {"error":"rate_limit_exceeded",...}` with no `Retry-After` header. Limits are not
   documented. Seen: 4 parallel requests trip it; a serial burst tripped it after about 12
   calls, later after 3-4; another serial run of 56 calls did not. Ask Cala for the number.
+- `403` with an HTML body (nginx "403 Forbidden", not JSON) on every call, for minutes,
+  seen 2026-11-14 ~11:40 while several agents shared the key; even a single request got
+  it. Treat it as Cala unavailable (no retry) and rely on the cache.
 - Latency is usually under 1 s for one node. Outliers: introspection 4-11 s, a round with
   15 participants 12 s, and two retrievals took about 7 minutes each (a round, and an
   investor with four relationship types). The incoming `OPERATES_IN_INDUSTRY` edges of an

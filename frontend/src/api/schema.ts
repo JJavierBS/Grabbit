@@ -295,6 +295,8 @@ export interface components {
        * @description OpenUI Lang drawn with Cala components under the text
        */
       ui: string | null;
+      /** @description Cala entities and edges the agent walked for this answer */
+      graph: components["schemas"]["ExploredGraph"] | null;
     };
     /** ChatRequest */
     ChatRequest: {
@@ -311,6 +313,16 @@ export interface components {
     /** ErrorResponse */
     ErrorResponse: {
       error: components["schemas"]["ErrorDetail"];
+    };
+    /**
+     * ExploredGraph
+     * @description The part of Cala's graph the agent walked for one chat answer.
+     */
+    ExploredGraph: {
+      /** Nodes */
+      nodes: components["schemas"]["GraphNode"][];
+      /** Edges */
+      edges: components["schemas"]["GraphEdge"][];
     };
     /**
      * Fact
@@ -335,6 +347,54 @@ export interface components {
         | "not_published";
       /** Sources */
       sources: components["schemas"]["Source"][];
+    };
+    /**
+     * GraphEdge
+     * @description A Cala relationship, pointing the way Cala stores it (investor -> round).
+     */
+    GraphEdge: {
+      /** Source */
+      source: string;
+      /** Target */
+      target: string;
+      /**
+       * Relationship
+       * @description Cala relationship name, e.g. FOUNDED
+       */
+      relationship: string;
+      /** Role */
+      role: string | null;
+      /**
+       * Is Lead
+       * @default false
+       */
+      is_lead: boolean;
+      /**
+       * Facts
+       * @description Dated edge attributes (event_date, valid_since...)
+       */
+      facts: {
+        [key: string]: components["schemas"]["Fact"];
+      };
+    };
+    /**
+     * GraphNode
+     * @description A Cala entity the agent reached while answering in chat.
+     */
+    GraphNode: {
+      /** Entity Id */
+      entity_id: string;
+      /** Name */
+      name: string;
+      /** Entity Type */
+      entity_type: string;
+      /**
+       * Facts
+       * @description Key properties, only for nodes the agent expanded
+       */
+      facts: {
+        [key: string]: components["schemas"]["Fact"];
+      };
     };
     /** Health */
     Health: {
