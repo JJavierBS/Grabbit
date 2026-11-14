@@ -22,7 +22,6 @@ from typing import Any
 
 from app.cala.client import CalaCacheMiss, CalaError
 from app.cala.normalize import STRENGTH, UNRANKED, edge_attr, relationships, strongest, to_source
-from app.discovery.build import normalise_name
 from app.models import (
     Candidate,
     Fact,
@@ -35,6 +34,7 @@ from app.models import (
     Source,
     TrustLevel,
 )
+from app.trusted import Trusted, normalise_name
 
 log = logging.getLogger(__name__)
 
@@ -154,30 +154,6 @@ async def _bounded[R](call: Awaitable[R], seconds: float, entity_id: str) -> R |
         return None
     except (TimeoutError, CalaError) as err:
         log.warning("hidden links: skipping %s: %s", entity_id, err or "timeout")
-        return None
-
-
-class Trusted:
-    """Reference investors matched by Cala id or by name: one fund is often several entities."""
-
-    def __init__(self, reference: list[ReferenceInvestor]):
-        self.by_id = {r.entity_id: r for r in reference}
-        self.by_name = {normalise_name(r.name): r for r in reference if normalise_name(r.name)}
-
-    def match(self, entity_id: str, name: str | None) -> ReferenceInvestor | None:
-        if entity_id in self.by_id:
-            return self.by_id[entity_id]
-        key = normalise_name(name)
-        if not key:
-            return None
-        if key in self.by_name:
-            return self.by_name[key]
-        # "500 Global" vs "500 Global (500 Emerging Europe)": same rule as app/references.py,
-        # two words at least so one common word never matches.
-        for ref_key, ref in self.by_name.items():
-            short, long_ = sorted((key, ref_key), key=len)
-            if len(short.split()) >= 2 and long_.startswith(f"{short} "):
-                return ref
         return None
 
 
