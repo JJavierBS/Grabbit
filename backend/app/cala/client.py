@@ -88,8 +88,12 @@ class CalaClient:
     async def introspect(self, entity_id: str) -> dict[str, Any]:
         return await self._call("GET", f"/v1/entities/{entity_id}/introspection")
 
-    async def retrieve(self, entity_id: str, body: dict[str, Any] | None = None) -> dict[str, Any]:
-        return await self._call("POST", f"/v1/entities/{entity_id}", body=body or {})
+    async def retrieve(
+        self, entity_id: str, body: dict[str, Any] | None = None, *, fresh: bool = False
+    ) -> dict[str, Any]:
+        """`fresh=True` skips the cached copy (the watcher needs today's state) and
+        stores the new one; in replay mode the cache is still the only source."""
+        return await self._call("POST", f"/v1/entities/{entity_id}", body=body or {}, fresh=fresh)
 
     async def _call(
         self,
@@ -98,12 +102,14 @@ class CalaClient:
         *,
         params: dict[str, Any] | None = None,
         body: Any = None,
+        fresh: bool = False,
     ) -> Any:
         key = cache_key(method, path, params, body)
-        cached = self._cache.get(key)
-        if cached is not None:
-            self.cache_hits += 1
-            return cached
+        if not fresh or self.mode == "replay":
+            cached = self._cache.get(key)
+            if cached is not None:
+                self.cache_hits += 1
+                return cached
         if self.mode == "replay":
             raise CalaCacheMiss(f"{method} {path} is not in the cache")
         async with self._sem:
