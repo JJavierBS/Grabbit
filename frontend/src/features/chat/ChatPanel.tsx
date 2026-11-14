@@ -1,11 +1,13 @@
-import { ArrowDown, ArrowUp, Mic, RefreshCw, Square } from "lucide-react";
+import { ArrowDown, MicVocal, RefreshCw, SendHorizontal, Square } from "lucide-react";
 import { type FormEvent, Fragment, type KeyboardEvent, type ReactNode, useState } from "react";
 import {
   useChat,
   useLatestReport,
   useProfile,
   useSendMessage,
+  useTurnProgress,
   useUndo,
+  useWalkTrace,
 } from "../../api/hooks/queries";
 import type { ChatMessage } from "../../api/types";
 import { Button } from "../../components/Button";
@@ -15,6 +17,7 @@ import { Markdown } from "../../components/Markdown";
 import { Skeleton } from "../../components/Skeleton";
 import { ChangeNote } from "./ChangeNote";
 import styles from "./ChatPanel.module.css";
+import { LiveWalk } from "./LiveWalk";
 import { changeNoteText, isUndoable } from "./noteText";
 import { VisualAnswer } from "./openui/VisualAnswer";
 import { useDictation } from "./useDictation";
@@ -47,6 +50,8 @@ export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
   const chat = useChat();
   const profile = useProfile();
   const report = useLatestReport();
+  const progress = useTurnProgress();
+  const trace = useWalkTrace().data;
   const send = useSendMessage();
   const undo = useUndo();
   const [draft, setDraft] = useState("");
@@ -56,7 +61,9 @@ export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
   const firstRun = chat.isSuccess && messages.length === 0;
   // Corrections need a report; examples help only before the first message.
   const suggestions = hasReport ? CORRECTIONS : firstRun ? THESIS_EXAMPLES : [];
-  const follow = useFollowLog(messages, chat.isSuccess, `${followKey}|${send.isPending}`);
+  // The live walk grows under the working line; follow it like a new message.
+  const growth = trace ? `${trace.steps.length}|${trace.nodes}|${trace.answer?.length ?? 0}` : "";
+  const follow = useFollowLog(messages, chat.isSuccess, `${followKey}|${send.isPending}|${growth}`);
 
   const submit = (text: string) => {
     const value = text.trim();
@@ -135,7 +142,8 @@ export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
           ))}
           {footer}
           {/* The working line is always the last thing in the log, under any card. */}
-          {send.isPending && <WorkingLine hasReport={hasReport} />}
+          {send.isPending && <WorkingLine hasReport={hasReport} phase={progress.data?.label} />}
+          {send.isPending && trace && trace.steps.length > 0 && <LiveWalk trace={trace} />}
         </div>
       </div>
 
@@ -205,7 +213,11 @@ export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
               className={styles.talk}
               onClick={() => dictation.toggle(draft)}
               icon={
-                dictation.listening ? <Square aria-hidden="true" /> : <Mic aria-hidden="true" />
+                dictation.listening ? (
+                  <Square aria-hidden="true" />
+                ) : (
+                  <MicVocal aria-hidden="true" />
+                )
               }
             />
           )}
@@ -215,7 +227,7 @@ export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
             className={styles.send}
             loading={send.isPending}
             disabled={!draft.trim()}
-            icon={<ArrowUp aria-hidden="true" />}
+            icon={<SendHorizontal aria-hidden="true" />}
           />
         </div>
       </form>

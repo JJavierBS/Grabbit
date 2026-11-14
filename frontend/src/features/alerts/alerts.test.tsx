@@ -134,4 +134,9 @@ describe("alerts", () => {
     expect(screen.getByRole("link", { name: /press/i })).toBeInTheDocument();
     expect(screen.getByText("Simulated event")).toBeInTheDocument();
   });
+
+  it("spells out each fact's source badge instead of a bare icon", () => {
+    render(<AlertCard alert={alert(false)} />);
+    expect(screen.getByText("Press")).not.toHaveClass("visually-hidden");
+  });
 });

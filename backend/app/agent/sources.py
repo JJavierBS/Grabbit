@@ -6,6 +6,7 @@ from datetime import UTC, datetime, timedelta
 from pydantic import TypeAdapter
 
 from app import fixtures
+from app.agent.progress import report_attendees
 from app.cala.client import CalaCacheMiss, CalaError
 from app.discovery.filters import matches_profile
 from app.discovery.links import LinkGraph, attach_links
@@ -46,7 +47,9 @@ async def _event_candidates(event_id: str) -> tuple[list[Candidate], LinkGraph]:
         return hit[1], hit[2]
     async with open_cala() as (client, _):
         limits = Limits(max_attendees=MAX_ATTENDEES)
-        result = await get_candidates(client, neutral_profile(event_id), limits=limits)
+        result = await get_candidates(
+            client, neutral_profile(event_id), limits=limits, on_progress=report_attendees
+        )
     remember(result.investors)
     _discoveries[event_id] = (_now(), result.candidates, result.links)
     return result.candidates, result.links

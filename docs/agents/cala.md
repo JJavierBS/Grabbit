@@ -181,7 +181,7 @@ round dates (still active?).
   rounds, applies the profile filters and attaches the three signals.
 - `app/agent/explore.py`: the chat agent's own walk (#73). Gemini calls `cala_search` and
   `cala_neighbours` (introspect, then retrieve only listed edges, 6 per type, issuers and
-  trusted investors first) for at most 4 rounds and 25 entities; a hub type (`Event`,
+  trusted investors first) for at most 6 rounds and 30 entities; a hub type (`Event`,
   `Industry`, `Country`) is never expanded. Every response is cached like any other, so a
   walk that ran once replays offline.
 - `app/discovery/links.py`: hidden links (#75). After the profile filters, walks each

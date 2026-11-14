@@ -34,6 +34,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
         .filter(Boolean)
         .join(" ")}
       disabled={disabled || loading}
+      data-icon-only={!children || undefined}
       aria-busy={loading || undefined}
       {...rest}
     >

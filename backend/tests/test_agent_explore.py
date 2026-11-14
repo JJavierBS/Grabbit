@@ -112,7 +112,7 @@ class Recording:
         self.offered = []
         self.last = []
 
-    async def chat(self, *, system, messages, tools=None):
+    async def chat(self, *, system, messages, tools=None, on_text=None):
         self.offered.append(tools is not None)
         self.last.append(messages[-1])
         return self.replies.pop(0) if len(self.replies) > 1 else self.replies[0]

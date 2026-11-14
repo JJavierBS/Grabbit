@@ -19,15 +19,20 @@ interface CandidateCardProps {
   candidate: Candidate;
   trusted: Set<string>;
   mark?: ChangeMark;
+  /** The change highlight has had its moment: the mark badge stays, the tint fades. */
+  settled?: boolean;
 }
 
-export function CandidateCard({ candidate, trusted, mark }: CandidateCardProps) {
+export function CandidateCard({ candidate, trusted, mark, settled }: CandidateCardProps) {
   const c = candidate;
+  // Cala can list one industry twice in different spellings ("fintech", "FINTECH").
+  const industries = [...new Set(c.industries.map(humanize))];
   return (
     <article
       id={`candidate-${c.entity_id}`}
       className={styles.card}
       data-changed={mark ?? undefined}
+      data-settled={(mark && settled) || undefined}
     >
       <header className={styles.header}>
         <div className={styles.titleRow}>
@@ -41,11 +46,11 @@ export function CandidateCard({ candidate, trusted, mark }: CandidateCardProps) 
           )}
         </div>
         {c.description && <p className={styles.description}>{c.description}</p>}
-        {c.industries.length > 0 && (
+        {industries.length > 0 && (
           <ul className={styles.tags} aria-label="Industries">
-            {c.industries.map((i) => (
+            {industries.map((i) => (
               <li key={i}>
-                <Badge>{humanize(i)}</Badge>
+                <Badge>{i}</Badge>
               </li>
             ))}
           </ul>

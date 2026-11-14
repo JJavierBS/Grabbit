@@ -13,16 +13,13 @@
   background: var(--color-panel);
 }
 
+/* Drawn at its own size (width and height attributes): text never shrinks below 12px;
+   when the walk is wider than the chat, this frame scrolls sideways instead. */
 .svg {
   display: block;
-  width: 100%;
-  min-width: 36rem; /* legible in the chat column; the frame scrolls */
-  height: auto;
+  max-width: none;
+  overflow: visible;
   font-family: var(--font-ui);
-}
-
-.figure[data-tall] .svg {
-  min-width: 0;
 }
 
 .edge path {
@@ -42,9 +39,12 @@
 }
 
 .edgeLabel {
-  font-size: 9px;
-  letter-spacing: 0.04em;
-  fill: var(--color-text-faint);
+  font-size: 12px;
+  fill: var(--color-text-muted);
+}
+
+.edgeLabelBg {
+  fill: var(--color-panel);
 }
 
 .strong .edgeLabel {
@@ -98,14 +98,29 @@
   stroke-width: 2.5;
 }
 
+/* The full-name overlay of the hovered or focused node: on top, not a target. */
+.node[data-overlay] {
+  pointer-events: none;
+}
+
+.node[data-overlay] rect {
+  stroke: var(--color-focus);
+  stroke-width: 2;
+}
+
+/* Some node fills are translucent; the overlay must hide the clipped name under it. */
+.node[data-overlay] .overlayBase {
+  fill: var(--color-surface);
+}
+
 .nodeLabel {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   fill: var(--color-ink);
 }
 
 .nodeSub {
-  font-size: 10px;
+  font-size: 12px;
   fill: var(--color-text-muted);
 }
 
@@ -125,6 +140,11 @@
   color: var(--color-text-muted);
 }
 
+/* Source badges here are links: keep them a comfortable target. */
+.caption [data-trust] {
+  min-height: 24px;
+}
+
 .caption code {
   font-size: var(--text-xs);
 }
@@ -139,4 +159,17 @@
 /* The root keeps its ink so its white label stays readable when you trust it. */
 .node[data-kind="root"][data-trusted] rect {
   fill: var(--color-ink);
+}
+
+/* Live walk (#134): each entity and edge fades in once, when the agent reaches it. Keys are
+   entity ids, so what is already drawn does not replay; reduced motion zeroes the duration. */
+.figure[data-live] .node:not([data-overlay]),
+.figure[data-live] .edge {
+  animation: reach var(--duration-slow) var(--ease-out);
+}
+
+@keyframes reach {
+  from {
+    opacity: 0;
+  }
 }

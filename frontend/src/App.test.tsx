@@ -4,6 +4,7 @@ import { ALERT_DELAY_MS, App, CONFIRM_MESSAGE } from "./App";
 import type { ChatMessage } from "./api/types";
 import { chatV2, historyV2, profileV2, reportV1, reportV2 } from "./dev/fixtures";
 import { formatChangeValue } from "./features/profile/ProfileHistory";
+import { shortTitle } from "./features/report/ReportSidebar";
 import { mockApi, renderWithClient } from "./test/renderApp";
 
 const base = {
@@ -15,6 +16,20 @@ const base = {
 };
 
 describe("App", () => {
+  it("omits the fullscreen action even when the browser supports it", async () => {
+    const descriptor = Object.getOwnPropertyDescriptor(document, "fullscreenEnabled");
+    Object.defineProperty(document, "fullscreenEnabled", { configurable: true, value: true });
+    try {
+      mockApi({ ...base, "GET /api/reports/latest": () => reportV1 });
+      renderWithClient(<App />);
+      expect(await screen.findByRole("button", { name: "What changed" })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: /full screen/i })).not.toBeInTheDocument();
+    } finally {
+      if (descriptor) Object.defineProperty(document, "fullscreenEnabled", descriptor);
+      else Reflect.deleteProperty(document, "fullscreenEnabled");
+    }
+  });
+
   it("shows the report as an outline in the chat, then opens it in the side panel", async () => {
     mockApi({ ...base, "GET /api/reports/latest": () => reportV1 });
     renderWithClient(<App />);
@@ -198,14 +213,16 @@ describe("App", () => {
     const nav = screen.getByRole("navigation", { name: "Reports" });
     const items = await within(nav).findAllByRole("button");
     expect(items).toHaveLength(2);
-    expect(items[0]).toHaveTextContent(reportV2.summary);
+    expect(items[0]).toHaveTextContent(shortTitle(reportV2));
+    expect(items[0]).toHaveAttribute("title", reportV2.summary);
     expect(items[0]).toHaveTextContent("Latest");
+    // The time follows the browser locale: "09:34" or "09:34 AM".
+    expect(items[0]).toHaveTextContent(/ startups · \d{1,2}[:.]\d{2}/);
+    expect(items[0].textContent).not.toMatch(/\bv\d/);
 
     await userEvent.click(items[1]);
     const past = screen.getByRole("region", { name: "Past report" });
-    expect(
-      within(past).getByText(`Profile version ${reportV1.profile_version}`),
-    ).toBeInTheDocument();
+    expect(within(past).getByText(reportV1.summary)).toBeInTheDocument();
     expect(within(past).queryByRole("button", { name: "Run now" })).not.toBeInTheDocument();
     expect(items[1]).toHaveAttribute("aria-current", "true");
 

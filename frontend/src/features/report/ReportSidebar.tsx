@@ -1,10 +1,11 @@
-import { PanelLeftClose, RefreshCw } from "lucide-react";
+import { PanelLeft, RefreshCw } from "lucide-react";
 import type { ReactNode } from "react";
 import { useReports } from "../../api/hooks/queries";
 import type { Report } from "../../api/types";
 import { Button } from "../../components/Button";
 import { formatDate } from "../../components/FactValue";
 import { Skeleton } from "../../components/Skeleton";
+import { humanize } from "../../lib/humanize";
 import styles from "./ReportSidebar.module.css";
 import { KIND_TITLE } from "./ReportView";
 
@@ -14,6 +15,30 @@ export const reportKey = (r: Pick<Report, "id" | "profile_version">) =>
 
 const time = (iso: string) =>
   new Date(iso).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+
+const startups = (n: number) => `${n} ${n === 1 ? "startup" : "startups"}`;
+
+/** An industry inside a sentence: "fintech", but "AI" and "SaaS" keep their capitals. */
+function inSentence(word: string): string {
+  return /^\p{Lu}[^\p{Lu}]*$/u.test(word.split(" ")[0])
+    ? word.replace(/^./, (c) => c.toLowerCase())
+    : word;
+}
+
+/**
+ * A short name for a report in the list: "8 AI startups" when at least half of them share
+ * an industry, else "8 startups". The full summary stays in the item's tooltip.
+ */
+export function shortTitle(report: Pick<Report, "candidates">): string {
+  const n = report.candidates.length;
+  const counts = new Map<string, number>();
+  for (const c of report.candidates) {
+    for (const i of new Set(c.industries.map(humanize))) counts.set(i, (counts.get(i) ?? 0) + 1);
+  }
+  const [top, hits] = [...counts].sort((a, b) => b[1] - a[1])[0] ?? ["", 0];
+  if (!n || hits * 2 < n) return startups(n);
+  return `${n} ${inSentence(top)} ${n === 1 ? "startup" : "startups"}`;
+}
 
 /** "Today", "Yesterday" or the date, like a conversation list. */
 export function dayLabel(iso: string, now = new Date()): string {
@@ -63,7 +88,7 @@ export function ReportSidebar({
           size="sm"
           className={styles.close}
           aria-label="Close sidebar"
-          icon={<PanelLeftClose aria-hidden="true" />}
+          icon={<PanelLeft aria-hidden="true" />}
           onClick={onClose}
         />
       </div>
@@ -109,14 +134,14 @@ export function ReportSidebar({
                       type="button"
                       className={styles.item}
                       aria-current={key === activeKey ? "true" : undefined}
+                      title={r.summary}
                       onClick={() => onOpen(r, latest)}
                     >
-                      <span className={styles.summary}>{r.summary}</span>
+                      <span className={styles.summary}>{shortTitle(r)}</span>
                       <span className="visually-hidden">{KIND_TITLE[r.kind]}</span>
                       <span className={styles.meta}>
                         {latest && "Latest · "}
-                        {time(r.created_at)} · {count} {count === 1 ? "startup" : "startups"} · v
-                        {r.profile_version}
+                        {startups(count)} · {time(r.created_at)}
                       </span>
                     </button>
                   </li>

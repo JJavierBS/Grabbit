@@ -48,8 +48,8 @@
   align-items: flex-start;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
-  background: var(--color-marker);
-  color: var(--color-on-ink);
+  background: var(--color-marker-soft);
+  color: var(--color-violet-light);
   border-radius: var(--radius-md);
   font-size: var(--text-md);
   animation: arrive var(--duration-slow) var(--ease-out);
@@ -102,8 +102,9 @@
   composes: title from "../../styles/shared.module.css";
 }
 
-.section[data-changed],
-.summary[data-changed] {
+/* What changed is tinted for about 4 s (useSettled), then the tint fades; the badges stay. */
+.section[data-changed]:not([data-settled]),
+.summary[data-changed]:not([data-settled]) {
   background: var(--color-marker-soft);
 }
 
@@ -120,6 +121,31 @@
 
 .stateTitle {
   composes: title from "../../styles/shared.module.css";
+}
+
+.empty {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border: var(--border-width) dashed var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-panel);
+  color: var(--color-text-muted);
+}
+
+.emptyIcon {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex: none;
+  color: var(--color-text-faint);
+}
+
+.emptyTitle {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  color: var(--color-ink);
+  margin-bottom: var(--space-1);
 }
 
 @keyframes arrive {
