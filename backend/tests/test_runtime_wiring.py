@@ -50,11 +50,11 @@ async def test_cold_replay_cache_falls_back_to_fixture_candidates():
     assert [c.entity_id for c in result] == [c.entity_id for c in sources.fixture_candidates()]
 
 
-def test_lifespan_schedules_watcher_and_digest(client):
+def test_lifespan_schedules_watcher_digest_and_news(client):
     scheduler = client.app.state.scheduler
 
     assert scheduler.running
-    assert {job.id for job in scheduler.get_jobs()} == {"watcher", "digest"}
+    assert {job.id for job in scheduler.get_jobs()} == {"watcher", "digest", "news"}
 
 
 async def test_watcher_job_needs_a_report_first(monkeypatch):
@@ -118,3 +118,22 @@ def test_simulated_event_is_scored_against_the_stored_profile(client, monkeypatc
 
     assert response.json()["error"]["code"] == "no_alert"
     assert seen == [profile_store.current()]
+
+
+async def test_news_job_warms_the_latest_report_shortlist(monkeypatch):
+    from app.cala import news
+
+    seen = []
+
+    async def fake_warm(client, candidates, retry_empty=False):
+        seen.append([c.entity_id for c in candidates])
+        return {}
+
+    monkeypatch.setattr(news, "warm_news", fake_warm)
+    await runtime.news_job()
+    assert seen == []  # no report yet, nothing to fetch
+
+    report = fixtures.latest_report()
+    report_store.add(report)
+    await runtime.news_job()
+    assert seen == [[c.entity_id for c in report.candidates]]

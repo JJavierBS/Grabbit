@@ -7,12 +7,15 @@ from datetime import datetime
 
 from app import events
 from app.agent.sources import candidates_for
+from app.cala.client import CalaCacheMiss, CalaError
+from app.cala.news import attach_news
 from app.context_dev import ContextDevClient, get_context_dev
 from app.context_dev.signals import soft_signals
 from app.llm import LLM, get_llm
 from app.models import Profile, Report, ReportRef
 from app.references import resolve_references
 from app.reports.build import Kind, build, new_report_id, with_web_signals
+from app.runtime import open_cala
 from app.store import chat as chat_store
 from app.store import profile as profile_store
 from app.store import reports as report_store
@@ -52,12 +55,30 @@ async def run(
     )
     signals = await soft_signals(web or get_context_dev(), report.candidates, profile, now)
     report = with_web_signals(report, signals)
+    report = await with_cala_news(report)
     if superseded():
         log.info("report %s dropped: a newer profile version is being reported", report.id)
         return report
     report_store.add(report)
     events.publish("report", ReportRef(id=report.id))
     return report
+
+
+async def with_cala_news(report: Report) -> Report:
+    """Attach the cached Cala news to the report's startups; never calls Cala live.
+
+    The news job and `scripts.warm --news` fill the cache (about 45 s per startup). A
+    missing key, a cache miss or an error leaves the startup without news.
+    """
+    if not report.candidates:
+        return report
+    try:
+        async with open_cala() as (client, _):
+            candidates = await attach_news(client, report.candidates, cache_only=True)
+    except (CalaError, CalaCacheMiss, ValueError) as err:
+        log.warning("cala news skipped: %s", err)
+        return report
+    return report.model_copy(update={"candidates": candidates})
 
 
 def schedule_rebuild(profile: Profile, *, llm: LLM | None = None) -> str:

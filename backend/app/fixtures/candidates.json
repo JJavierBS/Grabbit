@@ -141,7 +141,35 @@
     ]
    }
   ],
-  "signals": []
+  "signals": [],
+  "news": [
+   {
+    "title": "Kiln Analytics signs a pilot with a cement plant",
+    "summary": "The startup will monitor kiln temperatures at a plant in Finland.",
+    "date": {
+     "value": "2026-10-21",
+     "unit": null,
+     "trust": "cala_news",
+     "sources": [
+      {
+       "name": "Cala knowledge query",
+       "url": null,
+       "date": "2026-10-21",
+       "date_precision": "day",
+       "rank": "cala_news"
+      }
+     ]
+    },
+    "entities": [
+     {
+      "entity_id": "ent-nordcem",
+      "name": "Nordcem",
+      "entity_type": "Company"
+     }
+    ],
+    "trust": "cala_news"
+   }
+  ]
  },
  {
   "entity_id": "cand-ledgerly",

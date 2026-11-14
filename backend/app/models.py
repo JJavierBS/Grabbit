@@ -9,7 +9,9 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-TrustLevel = Literal["filing", "primary", "press", "aggregator", "web_unverified", "not_published"]
+TrustLevel = Literal[
+    "filing", "primary", "press", "aggregator", "cala_news", "web_unverified", "not_published"
+]
 DatePrecision = Literal["day", "month", "year"]
 InvestorRole = Literal["investor", "lender"]
 SignalKind = Literal["co_invest", "lead_follow_on", "likely_to_raise"]
@@ -85,6 +87,22 @@ class Signal(ApiModel):
     facts: list[Fact]
 
 
+class NewsEntity(ApiModel):
+    entity_id: str
+    name: str
+    entity_type: str
+
+
+class NewsItem(ApiModel):
+    """A news row from Cala's knowledge query: no per-item source, so trust is `cala_news`."""
+
+    title: str
+    summary: str | None = None
+    date: Fact = Field(description="Read at its source's date_precision; absent when Cala has none")
+    entities: list[NewsEntity] = Field(default_factory=list, description="Mentioned in the item")
+    trust: TrustLevel = "cala_news"
+
+
 class Candidate(ApiModel):
     entity_id: str
     name: str
@@ -98,6 +116,9 @@ class Candidate(ApiModel):
     industries: list[str]
     rounds: list[Round]
     signals: list[Signal]
+    news: list[NewsItem] = Field(
+        default_factory=list, description="Latest news from Cala, newest first (cala_news)"
+    )
 
 
 class ProfileFilters(ApiModel):

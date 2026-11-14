@@ -94,6 +94,17 @@ def test_profile_history_is_newest_first():
     assert versions[0] == fixtures.profile().version
 
 
+def test_cala_news_covers_each_date_precision_and_entity_chips():
+    news = [item for c in fixtures.latest_report().candidates for item in c.news]
+
+    assert news and all(item.trust == "cala_news" for item in news)
+    precisions = {s.date_precision for item in news for s in item.date.sources}
+    assert precisions == {"day", "month"}
+    assert any(item.date.trust == "not_published" for item in news)
+    assert any(item.entities for item in news)
+    assert all(not s.url for item in news for s in item.date.sources)
+
+
 def test_demo_events_are_valid_alert_payloads():
     assert fixtures.demo_event_names()
     assert fixtures.demo_event("missing") is None
