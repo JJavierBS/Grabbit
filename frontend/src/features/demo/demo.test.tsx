@@ -194,10 +194,10 @@ describe("guided demo", () => {
     expect(screen.getByRole("button", { name: "Close sidebar" })).toBeDisabled();
     await userEvent.click(showMe());
 
-    // 2. Answer: the question's options and Undo are locked too.
+    // 2. Answer: the question's choices are open (#190); Undo stays locked.
     await step(DEMO_STEPS[1].title);
     expect(await screen.findByRole("button", { name: "Send answers" })).toBeDisabled();
-    expect(screen.getAllByRole("radio")[0]).toBeDisabled();
+    expect(screen.getAllByRole("radio")[0]).toBeEnabled();
     expect(screen.getByRole("button", { name: "Undo" })).toBeDisabled();
     await userEvent.click(showMe());
 
@@ -215,6 +215,21 @@ describe("guided demo", () => {
     expect(screen.getByRole("button", { name: "Looks right, keep me posted" })).toBeDisabled();
     expect(composer()).toBeDisabled();
     expect(showMe()).toBeEnabled();
+  });
+
+  it("lets the visitor answer the question by hand instead of Show me (#190)", async () => {
+    realApi();
+    renderWithDemo();
+    await userEvent.click(await screen.findByRole("button", { name: /See how it works/ }));
+    await step(DEMO_STEPS[0].title);
+    await userEvent.click(screen.getByRole("button", { name: "Show me" }));
+
+    await step(DEMO_STEPS[1].title);
+    await userEvent.click(await screen.findByRole("radio", { name: "Only Aurora Ventures" }));
+    await userEvent.click(screen.getByRole("button", { name: "Send answers" }));
+    expect(await screen.findByText("I trust Aurora Ventures.")).toBeInTheDocument();
+    await step(DEMO_STEPS[2].title);
+    expect(screen.getByRole("textbox", { name: "Message Grabbit" })).toBeDisabled();
   });
 
   it("leaves with Escape from the card, and with its close button", async () => {
