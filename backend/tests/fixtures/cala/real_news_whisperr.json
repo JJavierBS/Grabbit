@@ -1,0 +1,28 @@
+{
+ "results": [
+  {
+   "title": "New Research: Language Barriers Cost Businesses Deals",
+   "date": "2026-11-08",
+   "summary": "Whisperr published a survey of 633 business leaders and workers examining how language differences affect international growth and everyday meetings. Key findings include that 1 in 5 business leaders say their company has lost a deal, client, or partner because of a language barrier, and 65% of workers who attend multilingual meetings have pretended to understand a conversation.",
+   "survey_sample_size": 633,
+   "survey_focus": "impact of language barriers on business deals and meetings"
+  },
+  {
+   "title": "Study: 56% of Multilingual Workers Secretly Translate Their Workday",
+   "date": "2026-10-01",
+   "summary": "In a separate survey of 736 U.S. workers who regularly use a non-native language on the job, Whisperr found that 56% secretly translate during their workday. The study explored the workarounds multilingual employees rely on, moments they fake understanding, and what language barriers cost them in time, money, and confidence.",
+   "survey_sample_size": 736,
+   "survey_focus": "behaviors of multilingual workers during workday"
+  }
+ ],
+ "entities": [
+  {
+   "id": "895498aa-40ea-4706-be59-d119abfc5c9c",
+   "name": "Whisper",
+   "entity_type": "Product",
+   "mentions": [
+    "Whisperr"
+   ]
+  }
+ ]
+}

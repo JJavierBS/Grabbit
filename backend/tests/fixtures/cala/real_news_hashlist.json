@@ -1,0 +1,45 @@
+{
+ "results": [
+  {
+   "title": "Engineering briefs for AI training",
+   "date": null,
+   "description": "Hashlist's Data Operations Platform (DOP) hosts engineering briefs where embedded, hardware, and controls engineers write problems that current AI models get wrong. Contributors package real projects — with datasheets, source code, logs, and tools — into environments on the platform, then create tasks with reference answers and naive answers scored against hidden marking scripts."
+  },
+  {
+   "title": "New creative roles",
+   "date": "2026-11-04",
+   "description": "Hashlist opened 3 new roles focused on 3D design, 3D modeling, and video editing. These roles involve recording yourself completing a finished scene, model, or video in tools like Blender, Maya, or DaVinci Resolve while explaining each step — a shift from its earlier embedded-engineering focus."
+  },
+  {
+   "title": "Earlier briefs",
+   "date": "2026-10-19",
+   "description": "Six briefs were opened covering driver and peripheral bring-up, hardware and electrical design, PLC control logic, real-time timing budgets, sensor configuration faults, and general embedded systems."
+  }
+ ],
+ "entities": [
+  {
+   "id": "03bf849a-7179-55c4-aacd-1bfcc50e97bf",
+   "name": "Hashlist",
+   "entity_type": "Company",
+   "mentions": [
+    "Hashlist"
+   ]
+  },
+  {
+   "id": "1d715102-b3f4-4485-a4ca-481877f1bfa3",
+   "name": "Blender",
+   "entity_type": "Product",
+   "mentions": [
+    "Blender"
+   ]
+  },
+  {
+   "id": "411fb432-0b00-4dd8-9318-6d0823c0b169",
+   "name": "DaVinci Resolve",
+   "entity_type": "Product",
+   "mentions": [
+    "DaVinci Resolve"
+   ]
+  }
+ ]
+}

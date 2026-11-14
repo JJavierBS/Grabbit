@@ -2,6 +2,7 @@ import { ExternalLink } from "lucide-react";
 import type { Candidate, Round, Signal } from "../../api/types";
 import { Badge } from "../../components/Badge";
 import { FactValue } from "../../components/FactValue";
+import { CalaNews } from "./CalaNews";
 import { CalaPath } from "./CalaPath";
 import styles from "./CandidateCard.module.css";
 import { HiddenLinkList } from "./HiddenLinkList";
@@ -82,6 +83,8 @@ export function CandidateCard({ candidate, trusted, mark }: CandidateCardProps) 
           </ul>
         </section>
       )}
+
+      <CalaNews items={c.news} name={c.name} />
 
       <section className={styles.block} aria-label={`Rounds of ${c.name}`}>
         <h5 className={styles.blockTitle}>Rounds</h5>

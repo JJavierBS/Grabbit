@@ -10,6 +10,7 @@ BADGES = {
     "primary": "Company or investor",
     "press": "Press",
     "aggregator": "Database",
+    "cala_news": "Cala news",
     "web_unverified": "Web, unverified",
     "not_published": "Not published",
 }

@@ -2,8 +2,10 @@ import pytest
 
 from app.agent import chat
 from app.agent.sources import fixture_candidates
+from app.agent.visual import Visual
 from app.llm import ChatResult, LLMError
 from app.llm.fake import FakeLLM
+from app.models import ExploredGraph, GraphNode
 from app.store import chat as chat_store
 from app.store import profile as profile_store
 
@@ -155,7 +157,7 @@ async def test_a_question_gets_a_visual_answer_and_a_correction_does_not(
     drawn = 'root = Answer([t])\nt = Text("Aurora led it.")'
 
     async def visual(llm, question, profile, candidates):
-        return drawn
+        return Visual(ui=drawn)
 
     monkeypatch.setattr(chat, "visual_answer", visual)
     await _say("hello", candidates, now)
@@ -165,3 +167,20 @@ async def test_a_question_gets_a_visual_answer_and_a_correction_does_not(
 
     assert question.ui == drawn
     assert correction.profile_changes and correction.ui is None
+
+
+async def test_the_walked_graph_is_stored_with_the_answer(candidates, now, monkeypatch):
+    graph = ExploredGraph(
+        nodes=[GraphNode(entity_id="i-1", name="Aurora", entity_type="Organization")],
+        edges=[],
+    )
+
+    async def visual(llm, question, profile, candidates):
+        return Visual(ui='root = Answer([t])\nt = Text("Aurora.")', graph=graph)
+
+    monkeypatch.setattr(chat, "visual_answer", visual)
+    await _say("hello", candidates, now)
+    reply = await _say("What else did Aurora back?", candidates, now)
+
+    assert reply.graph == graph
+    assert chat_store.all_messages()[-1].graph == graph

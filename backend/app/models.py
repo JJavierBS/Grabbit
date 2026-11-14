@@ -9,7 +9,9 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-TrustLevel = Literal["filing", "primary", "press", "aggregator", "web_unverified", "not_published"]
+TrustLevel = Literal[
+    "filing", "primary", "press", "aggregator", "cala_news", "web_unverified", "not_published"
+]
 DatePrecision = Literal["day", "month", "year"]
 InvestorRole = Literal["investor", "lender"]
 SignalKind = Literal["co_invest", "lead_follow_on", "likely_to_raise"]
@@ -86,12 +88,28 @@ class Signal(ApiModel):
     facts: list[Fact]
 
 
+class NewsEntity(ApiModel):
+    entity_id: str
+    name: str
+    entity_type: str
+
+
 class LinkNode(ApiModel):
     """A Cala entity on the path that proves a hidden link."""
 
     entity_id: str
     name: str
     entity_type: str
+
+
+class NewsItem(ApiModel):
+    """A news row from Cala's knowledge query: no per-item source, so trust is `cala_news`."""
+
+    title: str
+    summary: str | None = None
+    date: Fact = Field(description="Read at its source's date_precision; absent when Cala has none")
+    entities: list[NewsEntity] = Field(default_factory=list, description="Mentioned in the item")
+    trust: TrustLevel = "cala_news"
 
 
 class LinkEdge(ApiModel):
@@ -131,6 +149,9 @@ class Candidate(ApiModel):
     industries: list[str]
     rounds: list[Round]
     signals: list[Signal]
+    news: list[NewsItem] = Field(
+        default_factory=list, description="Latest news from Cala, newest first (cala_news)"
+    )
     links: list[HiddenLink] = Field(default_factory=list)
 
 
@@ -181,6 +202,37 @@ class ProfileChange(ApiModel):
     by: ChangeAuthor
 
 
+class GraphNode(ApiModel):
+    """A Cala entity the agent reached while answering in chat."""
+
+    entity_id: str
+    name: str
+    entity_type: str
+    facts: dict[str, Fact] = Field(
+        default_factory=dict, description="Key properties, only for nodes the agent expanded"
+    )
+
+
+class GraphEdge(ApiModel):
+    """A Cala relationship, pointing the way Cala stores it (investor -> round)."""
+
+    source: str
+    target: str
+    relationship: str = Field(description="Cala relationship name, e.g. FOUNDED")
+    role: str | None = None
+    is_lead: bool = False
+    facts: dict[str, Fact] = Field(
+        default_factory=dict, description="Dated edge attributes (event_date, valid_since...)"
+    )
+
+
+class ExploredGraph(ApiModel):
+    """The part of Cala's graph the agent walked for one chat answer."""
+
+    nodes: list[GraphNode]
+    edges: list[GraphEdge]
+
+
 class ChatMessage(ApiModel):
     id: str
     role: ChatRole
@@ -190,6 +242,9 @@ class ChatMessage(ApiModel):
     report_id: str | None = None
     ui: str | None = Field(
         default=None, description="OpenUI Lang drawn with Cala components under the text"
+    )
+    graph: ExploredGraph | None = Field(
+        default=None, description="Cala entities and edges the agent walked for this answer"
     )
 
 

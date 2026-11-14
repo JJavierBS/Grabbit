@@ -67,8 +67,9 @@ async def handle_message(
         for m in chat_store.last(HISTORY_TURNS)
     ]
     system = system_prompt(profile, report_summary, candidates)
-    # Drawn alongside the turn to save a round trip; dropped if the turn turns out to be a
-    # correction, which already changes the report on screen.
+    # Drawn alongside the turn to save a round trip, walking Cala when the report is not
+    # enough; dropped if the turn turns out to be a correction, which already changes the
+    # report on screen.
     visual = (
         None if first_turn else asyncio.create_task(visual_answer(llm, text, profile, candidates))
     )
@@ -108,13 +109,19 @@ async def handle_message(
         if questions:
             reply += "\n\n" + "\n".join(f"- {q.text}" for q in questions)
 
-    ui = None
+    drawn = None
     if visual and changes:
         visual.cancel()
     elif visual:
-        ui = await visual
+        drawn = await visual
     return chat_store.add(
-        "agent", reply, profile_changes=changes, report_id=report_id, ui=ui, now=now
+        "agent",
+        reply,
+        profile_changes=changes,
+        report_id=report_id,
+        ui=drawn and drawn.ui,
+        graph=drawn and drawn.graph,
+        now=now,
     )
 
 

@@ -53,6 +53,14 @@
   border-color: var(--trust-aggregator-border);
 }
 
+/* From Cala but summarised, with no per-item source: the database tint, dashed. */
+.cala_news {
+  background: var(--trust-news-bg);
+  color: var(--trust-news-fg);
+  border-color: var(--trust-news-border);
+  border-style: dashed;
+}
+
 .web_unverified {
   background: var(--trust-web-bg);
   color: var(--trust-web-fg);
