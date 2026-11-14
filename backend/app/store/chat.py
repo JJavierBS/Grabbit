@@ -4,7 +4,14 @@ import uuid
 from datetime import UTC, datetime
 
 from app import workspace
-from app.models import ChatMessage, ChatRole, ExploredGraph, ProfileChange, WalkSummary
+from app.models import (
+    ChatMessage,
+    ChatRole,
+    ExploredGraph,
+    ProfileChange,
+    ReplySource,
+    WalkSummary,
+)
 from app.store import db
 
 db.register_table(
@@ -28,6 +35,7 @@ def add(
     ui: str | None = None,
     graph: ExploredGraph | None = None,
     walk: WalkSummary | None = None,
+    sources: list[ReplySource] | None = None,
     now: datetime | None = None,
 ) -> ChatMessage:
     message = ChatMessage(
@@ -40,6 +48,7 @@ def add(
         ui=ui,
         graph=graph,
         walk=walk,
+        sources=sources or [],
     )
     with db.connect() as conn:
         conn.execute(

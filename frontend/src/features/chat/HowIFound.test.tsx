@@ -37,6 +37,7 @@ describe("How I found this", () => {
       ui: exploredAnswerUi,
       graph: exploredAurora,
       walk,
+      sources: [],
     });
     mockApi({ "GET /api/chat": () => [answer("a1", exploredAuroraWalk), answer("a2", null)] });
     renderWithClient(<ChatPanel />);

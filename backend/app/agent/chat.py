@@ -8,6 +8,7 @@ from datetime import datetime
 
 from app import events
 from app.agent import learn, onboarding
+from app.agent.citations import reply_sources
 from app.agent.progress import report_phase
 from app.agent.rules import FIXED_RULES
 from app.agent.tools import TOOL_SPECS, ToolOutcome, apply_tool_call
@@ -119,6 +120,8 @@ async def handle_message(
         if not visual.done():
             report_phase("graph")
         drawn = await visual
+    # A visual answer badges each value itself; prose gets its sources from the app (#141).
+    sources = [] if drawn and drawn.ui else reply_sources(reply, candidates)
     return chat_store.add(
         "agent",
         reply,
@@ -127,6 +130,7 @@ async def handle_message(
         ui=drawn and drawn.ui,
         graph=drawn and drawn.graph,
         walk=drawn and drawn.walk,
+        sources=sources,
         now=now,
     )
 
