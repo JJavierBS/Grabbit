@@ -180,8 +180,9 @@ this file and the code differ.
 changed the report, it raised an alert, it hears you. Never use it for decoration.
 
 **The Trust Ladder Rule.** Trust strength reads from fill weight before hue: solid ink,
-ink outline, blue tint, grey tint, dashed violet, dashed empty. A judge on a washed-out
-projector, or without colour vision, must still rank the six badges.
+ink outline, blue tint, grey tint, dashed grey tint (Cala news), dashed violet, dashed
+empty. A judge on a washed-out projector, or without colour vision, must still rank the
+seven badges.
 
 ## Typography
 
@@ -275,7 +276,15 @@ you" banner names the changes, changed parts get the marker-soft wash and a "New
 "Moved" or "Rewritten" badge, removed parts are struck through. The marks hold 4s.
 
 ### Trust Badge
-Six pills with a Lucide icon and the agent.md label, ranked by the Trust Ladder Rule.
+Seven pills with a Lucide icon and the agent.md label, ranked by the Trust Ladder Rule.
+
+### Cala News
+On a candidate card and in the chat `News` component: "Latest news" with one Cala news
+badge for the block, then a quiet timeline (faint rule, hollow dots). Each item: the date
+as a small uppercase label at its precision ("Date not published" in italics when absent),
+the title in semibold ink, the summary on one line with "More" to expand, and mentioned
+Cala entities as white outline chips (name, then type in muted text; the Cala id in the
+tooltip). No links: Cala gives no per-item source.
 
 ### Alert Toast
 Bottom right, white, violet edge, large shadow plus the full glow, ink text, "Open in

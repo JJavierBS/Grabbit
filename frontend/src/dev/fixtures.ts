@@ -5,6 +5,7 @@ import type {
   ChatMessage,
   ExploredGraph,
   Fact,
+  NewsItem,
   Profile,
   ProfileChange,
   Report,
@@ -48,6 +49,36 @@ const fact = (value: Fact["value"], source: Source, unit?: string): Fact => ({
 });
 const absent: Fact = { value: null, unit: null, trust: "not_published", sources: [] };
 
+/** A Cala news row: a date at its precision, no per-item source link. */
+const newsItem = (
+  title: string,
+  summary: string,
+  date: string | null,
+  precision: Source["date_precision"],
+  entities: NewsItem["entities"],
+): NewsItem => ({
+  title,
+  summary,
+  date: date
+    ? {
+        value: date,
+        unit: null,
+        trust: "cala_news",
+        sources: [
+          {
+            name: "Cala knowledge query",
+            url: null,
+            date: precision === "month" ? `${date}-01` : date,
+            date_precision: precision,
+            rank: "cala_news",
+          },
+        ],
+      }
+    : absent,
+  entities,
+  trust: "cala_news",
+});
+
 export const candidates: Candidate[] = [
   {
     entity_id: "c-northwind",
@@ -89,6 +120,19 @@ export const candidates: Candidate[] = [
           "2 of 3 checks pass: 14 months since the seed round; headcount grew from 11 to 18 in 12 months. Lead follow-on: not enough data.",
         facts: [fact(18, company, "people")],
       },
+    ],
+    news: [
+      newsItem(
+        "Northwind Labs opens a pilot with a Baltic ferry operator",
+        "Northwind Labs will measure fuel use and emissions across a ferry fleet for six months, its first customer outside road logistics, with reporting shared with the port authority.",
+        "2026-11-03",
+        "day",
+        [
+          { entity_id: "e-baltic-ferries", name: "Baltic Ferries", entity_type: "Company" },
+          { entity_id: "e-tallinn", name: "Tallinn", entity_type: "Municipality" },
+        ],
+      ),
+      newsItem("Hiring a head of sales for Germany", "Two open roles in Hamburg.", null, null, []),
     ],
   },
   {
@@ -136,6 +180,15 @@ export const candidates: Candidate[] = [
         facts: [],
       },
     ],
+    news: [
+      newsItem(
+        "Lumen Ledger adds invoice financing for exporters",
+        "The company said small exporters can now finance open invoices inside its treasury app, starting with Swedish and Finnish banks.",
+        "2026-10",
+        "month",
+        [{ entity_id: "e-nordbank", name: "Nordbank", entity_type: "Company" }],
+      ),
+    ],
   },
   {
     entity_id: "c-kettle",
@@ -170,6 +223,7 @@ export const candidates: Candidate[] = [
         facts: [],
       },
     ],
+    news: [],
   },
   {
     entity_id: "c-saltmarsh",
@@ -194,6 +248,7 @@ export const candidates: Candidate[] = [
     industries: ["Health", "Consumer"],
     rounds: [],
     signals: [],
+    news: [],
   },
 ];
 

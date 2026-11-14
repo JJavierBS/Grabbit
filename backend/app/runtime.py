@@ -68,6 +68,33 @@ async def _watch_current_workspace() -> None:
     log.info("watcher checked %d companies, %d alerts", len(shortlist), len(alerts))
 
 
+async def news_job() -> None:
+    """Fetch Cala news for the startups in each visitor's latest report that have none
+    cached yet.
+
+    About 45 s per startup, strictly serial, outside any request; reports then read it
+    from the cache (`reports.service.with_cala_news`).
+    """
+    from app.cala.news import warm_news
+    from app.store import reports as report_store
+
+    candidates = {}
+    for owner in report_store.workspaces():
+        with workspace.use(owner):
+            report = report_store.latest()
+        for candidate in report.candidates if report else []:
+            candidates.setdefault(candidate.entity_id, candidate)
+    if not candidates:
+        return
+    try:
+        async with open_cala() as (client, _):
+            counts = await warm_news(client, list(candidates.values()))
+    except (CalaError, CalaCacheMiss, ValueError) as err:
+        log.warning("news job skipped: %s", err)
+        return
+    log.info("cala news: %s", counts)
+
+
 async def digest_job() -> None:
     from app.reports import service
     from app.store import reports as report_store
@@ -84,7 +111,9 @@ def start_scheduler() -> GrabbitScheduler:
 
     # One worker only: a second process would run every job twice (architecture.md).
     global _jobs
-    scheduler = GrabbitScheduler(watcher_job, digest_job, AsyncIOScheduler(timezone="UTC"))
+    scheduler = GrabbitScheduler(
+        watcher_job, digest_job, AsyncIOScheduler(timezone="UTC"), news_job=news_job
+    )
     scheduler.apply(profile_store.current())
     scheduler.start()
     _jobs = scheduler

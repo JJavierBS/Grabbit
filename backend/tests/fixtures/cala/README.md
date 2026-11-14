@@ -18,6 +18,8 @@ Two kinds:
 | `round_seed.json` | Hand-written `FundingRound` with its issuer and participants, one lead |
 | `real_company_rupert.json` | Recorded Slush attendee (seed startup): no founding date, no headcount series |
 | `real_round_rupert_seed.json` | Recorded seed round: no `event_date` (only `announcement_date`), two leads, `is_lead` absent on the others |
+| `real_news_hashlist.json` | Recorded `POST /v1/knowledge/query` "latest news regarding Hashlist": summaries under `description`, one undated item, mentioned products |
+| `real_news_whisperr.json` | Same for whisperr: summaries under `summary`, Cala links the mention "Whisperr" to the product "Whisper" |
 
 What the recordings taught us (2026-11-14): rounds may lack `event_date`; most startups
 have no `employee_count` series, so `likely_to_raise` is often null; Cala answered 429

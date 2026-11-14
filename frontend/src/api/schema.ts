@@ -264,6 +264,11 @@ export interface components {
       rounds: components["schemas"]["Round"][];
       /** Signals */
       signals: components["schemas"]["Signal"][];
+      /**
+       * News
+       * @description Latest news from Cala, newest first (cala_news)
+       */
+      news: components["schemas"]["NewsItem"][];
     };
     /** ChatMessage */
     ChatMessage: {
@@ -332,7 +337,14 @@ export interface components {
        * Trust
        * @enum {string}
        */
-      trust: "filing" | "primary" | "press" | "aggregator" | "web_unverified" | "not_published";
+      trust:
+        | "filing"
+        | "primary"
+        | "press"
+        | "aggregator"
+        | "cala_news"
+        | "web_unverified"
+        | "not_published";
       /** Sources */
       sources: components["schemas"]["Source"][];
     };
@@ -417,6 +429,45 @@ export interface components {
        * @enum {string}
        */
       role: "investor" | "lender";
+    };
+    /** NewsEntity */
+    NewsEntity: {
+      /** Entity Id */
+      entity_id: string;
+      /** Name */
+      name: string;
+      /** Entity Type */
+      entity_type: string;
+    };
+    /**
+     * NewsItem
+     * @description A news row from Cala's knowledge query: no per-item source, so trust is `cala_news`.
+     */
+    NewsItem: {
+      /** Title */
+      title: string;
+      /** Summary */
+      summary: string | null;
+      /** @description Read at its source's date_precision; absent when Cala has none */
+      date: components["schemas"]["Fact"];
+      /**
+       * Entities
+       * @description Mentioned in the item
+       */
+      entities: components["schemas"]["NewsEntity"][];
+      /**
+       * Trust
+       * @default cala_news
+       * @enum {string}
+       */
+      trust:
+        | "filing"
+        | "primary"
+        | "press"
+        | "aggregator"
+        | "cala_news"
+        | "web_unverified"
+        | "not_published";
     };
     /** Profile */
     Profile: {
@@ -603,7 +654,14 @@ export interface components {
        * Rank
        * @enum {string}
        */
-      rank: "filing" | "primary" | "press" | "aggregator" | "web_unverified" | "not_published";
+      rank:
+        | "filing"
+        | "primary"
+        | "press"
+        | "aggregator"
+        | "cala_news"
+        | "web_unverified"
+        | "not_published";
     };
   };
   responses: never;
