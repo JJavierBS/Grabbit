@@ -14,15 +14,35 @@ const base = {
 };
 
 describe('App', () => {
-  it('shows the report with trust badges beside the chat', async () => {
+  it('shows the report as an outline in the chat, then opens it in the side panel', async () => {
     mockApi({ ...base, 'GET /api/reports/latest': () => reportV1 });
     renderWithClient(<App />);
-    expect(
-      await screen.findByRole('heading', { name: 'Slush 2026 prep report' }),
-    ).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Northwind Labs' })).toBeInTheDocument();
-    expect(screen.getAllByText('Official filing').length).toBeGreaterThan(0);
     expect(await screen.findByText(/Tell me what you look for/)).toBeInTheDocument();
+    const outline = await screen.findByRole('article', { name: 'Slush 2026 prep report outline' });
+    expect(
+      within(outline).getByText(new RegExp(`${reportV1.candidates.length} startups`)),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Northwind Labs' })).not.toBeInTheDocument();
+
+    await userEvent.click(within(outline).getByRole('button', { name: 'Open report' }));
+    const panel = screen.getByRole('region', { name: 'Report' });
+    expect(
+      within(panel).getByRole('heading', { name: 'Slush 2026 prep report' }),
+    ).toBeInTheDocument();
+    expect(within(panel).getByRole('heading', { name: 'Northwind Labs' })).toBeInTheDocument();
+    expect(within(panel).getAllByText('Official filing').length).toBeGreaterThan(0);
+
+    await userEvent.keyboard('{Escape}');
+    expect(screen.queryByRole('region', { name: 'Report' })).not.toBeInTheDocument();
+    expect(within(outline).getByRole('button', { name: 'Open report' })).toHaveFocus();
+  });
+
+  it('closes the side panel with its close button', async () => {
+    mockApi({ ...base, 'GET /api/reports/latest': () => reportV1 });
+    renderWithClient(<App />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Open report' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Close panel' }));
+    expect(screen.queryByRole('region', { name: 'Report' })).not.toBeInTheDocument();
   });
 
   it('shows an error with a retry when the report fails, never a blank screen', async () => {
@@ -57,7 +77,7 @@ describe('App', () => {
       },
     });
     renderWithClient(<App />);
-    await screen.findByRole('heading', { name: 'Slush 2026 prep report' });
+    await screen.findByRole('button', { name: 'Open report' });
 
     await userEvent.type(
       screen.getByRole('textbox', { name: 'Message Grabbit' }),
@@ -86,9 +106,8 @@ describe('App', () => {
       'POST /api/chat': () => ({ ...chatV2[0], id: 'm10' }),
     });
     renderWithClient(<App />);
-    await userEvent.click(
-      await screen.findByRole('button', { name: 'Looks right, keep me posted' }),
-    );
+    await userEvent.click(await screen.findByRole('button', { name: 'Open report' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Looks right, keep me posted' }));
     expect(calls.find((c) => c.key === 'POST /api/chat')?.body).toEqual({ text: CONFIRM_MESSAGE });
     expect(await screen.findByRole('button', { name: 'Watching your shortlist' })).toBeDisabled();
     expect(requestPermission).toHaveBeenCalledOnce();
@@ -98,7 +117,7 @@ describe('App', () => {
   it('opens an alert from the event stream in the chat, labelled as simulated', async () => {
     const calls = mockApi({ ...base, 'GET /api/reports/latest': () => reportV1 });
     renderWithClient(<App />);
-    await screen.findByRole('heading', { name: 'Slush 2026 prep report' });
+    await screen.findByRole('button', { name: 'Open report' });
     calls.streams[0].open();
     calls.streams[0].push('alert', {
       id: 'al-7',

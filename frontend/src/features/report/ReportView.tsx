@@ -10,7 +10,7 @@ import { CandidateCard } from './CandidateCard';
 import { type ChangeMark, describeDiff, type ReportDiff } from './reportDiff';
 import styles from './ReportView.module.css';
 
-const KIND_TITLE: Record<Report['kind'], string> = {
+export const KIND_TITLE: Record<Report['kind'], string> = {
   prep: 'Slush 2026 prep report',
   digest: 'Digest',
   memo: 'Investment memo',

@@ -27,10 +27,12 @@
   animation: enter var(--duration-base) var(--ease-out);
 }
 
+/* An alert is the light arriving: raised night panel, violet edge, glow from below. */
 .alert {
-  background: var(--color-ink);
-  border-color: var(--color-ink);
-  color: var(--color-on-ink);
+  background: var(--color-surface-raised);
+  border-color: var(--color-violet);
+  color: var(--color-ink);
+  box-shadow: var(--shadow-lg), var(--glow-work);
 }
 
 .body {
@@ -60,16 +62,15 @@
 }
 
 .alert .description {
-  color: var(--color-on-ink);
-  opacity: 0.85;
+  color: var(--color-text);
 }
 
 .action {
   justify-self: start;
   margin-top: var(--space-1);
   padding: var(--space-1) var(--space-3);
-  background: var(--color-surface);
-  color: var(--color-ink);
+  background: var(--color-ink);
+  color: var(--color-on-ink);
   border: 0;
   border-radius: var(--radius-pill);
   font-size: var(--text-xs);

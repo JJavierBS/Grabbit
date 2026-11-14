@@ -56,7 +56,11 @@ export function ChatPanel({ footer }: ChatPanelProps) {
   };
 
   return (
-    <section className={styles.panel} aria-labelledby="chat-title">
+    <section
+      className={styles.panel}
+      aria-labelledby="chat-title"
+      data-working={send.isPending || undefined}
+    >
       <h2 id="chat-title" className="visually-hidden">
         Chat with Grabbit
       </h2>
