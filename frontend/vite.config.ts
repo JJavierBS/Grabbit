@@ -12,7 +12,8 @@ export default defineConfig({
   },
   test: {
     environment: "jsdom",
-    globals: false,
+    // Our component tests use the describe/it/vi globals.
+    globals: true,
     setupFiles: ["./src/test/setup.ts"],
     css: false,
     reporters: ["dot"],

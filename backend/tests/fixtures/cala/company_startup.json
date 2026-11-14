@@ -1,0 +1,102 @@
+{
+  "id": "c0000000-0000-4000-8000-000000000001",
+  "name": "Northwind Robotics Oy",
+  "entity_type": "Company",
+  "description": "Helsinki startup building warehouse picking robots.",
+  "properties": {
+    "name": {
+      "value": "Northwind Robotics",
+      "sources": [
+        {"name": "northwind.example", "document": "https://northwind.example/about", "date": "2026-10-01", "date_precision": "day", "source_rank": "PRIMARY"}
+      ]
+    },
+    "legal_name": {
+      "value": "Northwind Robotics Oy",
+      "sources": [
+        {"name": "tietopalvelu.ytj.fi", "document": "https://tietopalvelu.ytj.fi/yritys/0000000-1", "date": "2026-10-15", "date_precision": "day", "source_rank": "FILING"},
+        {"name": "Crunchbase", "document": {"endpoint": "https://api.example-aggregator.com/org/northwind", "params": {}, "response_hash": "abc123"}, "date": "2026-09-01", "source_rank": "AGGREGATOR"}
+      ]
+    },
+    "website": {"value": "northwind.example", "sources": []},
+    "founding_date": {
+      "value": "2021-01-01",
+      "sources": [
+        {"name": "tietopalvelu.ytj.fi", "document": "https://tietopalvelu.ytj.fi/yritys/0000000-1", "date": "2026-10-15", "date_precision": "year", "source_rank": "FILING"}
+      ]
+    },
+    "funding_stage": {
+      "value": "SEED",
+      "sources": [
+        {"name": "TechCrunch", "document": "https://press.example/northwind-seed", "date": "2024-11-20", "date_precision": "day", "source_rank": "PRESS"}
+      ]
+    },
+    "total_funding": {
+      "value": 4500000,
+      "sources": [
+        {"name": "Dealroom", "document": "https://aggregator.example/northwind", "date": "2026-08-01", "date_precision": "day", "source_rank": "AGGREGATOR"}
+      ]
+    },
+    "total_funding_units": {"value": "EUR", "sources": []},
+    "employee_count_range": {
+      "value": [18],
+      "sources": [
+        {"name": "LinkedIn", "document": "https://aggregator.example/northwind/people", "date": "2026-10-01", "date_precision": "month", "source_rank": "AGGREGATOR"}
+      ]
+    },
+    "headquarters_address": {
+      "value": "Helsinki, FI",
+      "sources": [
+        {"name": "tietopalvelu.ytj.fi", "document": "https://tietopalvelu.ytj.fi/yritys/0000000-1", "date": "2026-10-15", "date_precision": "day", "source_rank": "FILING"}
+      ]
+    },
+    "operational_status": {"value": "ACTIVE", "sources": []}
+  },
+  "relationships": {
+    "outgoing": {
+      "PARTICIPATES_IN_FUNDING_ROUND": [
+        {
+          "id": "r0000000-0000-4000-8000-000000000001",
+          "name": "Seed",
+          "entity_type": "FundingRound",
+          "properties": {
+            "id": "e1",
+            "role": "ISSUER",
+            "event_date": "2024-11-15",
+            "sources": [
+              {"name": "TechCrunch", "document": "https://press.example/northwind-seed", "date": "2024-11-20", "date_precision": "day", "source_rank": "PRESS"}
+            ]
+          }
+        },
+        {
+          "id": "r0000000-0000-4000-8000-000000000009",
+          "name": "Funding round",
+          "entity_type": "FundingRound",
+          "properties": {"id": "e2", "role": "INVESTOR", "event_date": "2025-06-01", "sources": []}
+        }
+      ],
+      "OPERATES_IN_INDUSTRY": [
+        {"id": "i1", "name": "INDUSTRIALS", "entity_type": "Industry", "properties": {"id": "e3", "original_label": "Robotics", "sources": []}}
+      ]
+    },
+    "incoming": {
+      "IS_CEO_OF": [
+        {"id": "p1", "name": "Aino Virtanen", "entity_type": "Person", "properties": {"id": "e4", "valid_since": "2021-02-01", "sources": []}}
+      ],
+      "IS_CTO_OF": [
+        {"id": "p2", "name": "Mikko Laine", "entity_type": "Person", "properties": {"id": "e5", "valid_since": "2021-02-01", "valid_until": "2026-09-30", "sources": []}}
+      ]
+    }
+  },
+  "numerical_observations": [
+    {
+      "id": "m-employees",
+      "name": "Number of employees",
+      "type": "ObservableProperty",
+      "properties": {"unit": "people", "cadence": "i", "code": "employee_count"},
+      "data": [
+        {"time": "2025-09-01", "value": 12, "origin": {"name": "LinkedIn", "source": "aggregator", "url": "https://aggregator.example/n/2025", "published_time": "2025-09-02"}},
+        {"time": "2026-10-01", "value": 18, "origin": {"name": "LinkedIn", "source": "aggregator", "url": "https://aggregator.example/n/2026", "published_time": "2026-10-02"}}
+      ]
+    }
+  ]
+}

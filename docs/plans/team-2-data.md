@@ -67,6 +67,20 @@ an explanation that says what is missing. One test per check, per missing-data c
   path, `simulated=true`.
 - Tests: one per alert kind, threshold, dedupe, simulate-event end to end with FakeLLM.
 
-## Interfaces you provide
-`get_candidates(profile)`, `compute_signals(candidate, profile)`, `watcher.run_once()`,
-the normalised `Fact`. Changing a signature: tell Team 3 first.
+## Interfaces you provide (as built in #22, #23, #24, #28)
+Changing a signature: tell the consuming team first.
+- Cala client (everyone): `CalaClient(api_key, CalaCache(conn), mode=CALA_MODE)` from
+  `app.cala.client` and `app.store.cala_cache`.
+- Candidates (Team 3): `await get_candidates(client, profile, today=None) ->
+  DiscoveryResult` (`.candidates` with rounds and signals, `.stats`), `app.discovery.pipeline`.
+- Signals (Team 3): already on each `Candidate.signals`; `compute_signals(candidate,
+  SignalInputs, today)` in `app.signals.core` to recompute.
+- Watcher (Team 1 wires it): `Watcher(client, WatchStore(conn), publish=events.publish,
+  scorer=llm.score_alert)` from `app.watcher.run` and `app.store.snapshots`.
+  `await watcher.run_once(profile, shortlist_ids)` for the scheduled job;
+  `await watcher.simulate(fixture, profile)` behind `POST /api/demo/simulate-event`
+  (fixtures in `app/fixtures/demo_events/`); `WatchStore.alerts()` behind `GET /api/alerts`.
+- Scorer contract (Team 3): `scorer(change: Change, profile) -> (score 0-1, reason)`, sync
+  or async; called only when the rules are not decisive (`app.watcher.importance`).
+- Scheduler (Team 1 starts it in the lifespan): `GrabbitScheduler(watcher_job, digest_job)`,
+  `.apply(profile)` on every profile change, `.start()`, `.shutdown()`, `app.scheduler`.

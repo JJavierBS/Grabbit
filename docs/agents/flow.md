@@ -79,7 +79,8 @@ is mid-conversation.
   diff, importance check and delivery path the real watcher uses. The scripted change lives
   in its own fixture loaded by a "simulate event" action, never in the Cala response cache,
   so staged data stays separate from real data and can be shown if a judge asks.
-- The demo shortlist comes from real Slush 2026 attendees in Cala (team picks the thesis, D2).
+- The demo shortlist: real Slush 2026 AI startups at pre-seed and seed; staged alert
+  `grei_seed_round` (decisions.md 2026-11-14 09:40).
 - The Slush attendee list and the demo path pre-warmed in the cache (architecture.md
   "Constraints"); Cala will raise the rate limit, the cache is for resilience.
 - The Grabbit tab stays open in the browser so desktop notifications fire.
