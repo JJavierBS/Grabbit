@@ -54,7 +54,7 @@ Peer review happens at tables: a stranger must get the point and see it work in 
 - Sat 12:00: submissions open.
 - Feature freeze: TODO (team decides).
 - Sun 10:00: final submission. Form closes automatically; DRAFT projects are not reviewed.
-- Sun 10:30-13:00: live peer review; all 4 present or no main prize.
+- Sun 10:30-14:00: live peer review (guidebook p. 7); all 4 present or no main prize.
 - Top 5: 3 min pitch with live demo from our own laptop, then 3 min questions.
 
 ## Submission form needs
@@ -63,11 +63,9 @@ strictly; public on YouTube/Vimeo), demo link, source link, source publicity, cr
 pitch deck PDF, team phone numbers and Discord usernames. README.md mirrors the text fields.
 
 ## Partner tech on site (check each track's terms)
-Google DeepMind (Gemini), NVIDIA, Verda, Modal (GPU/compute), Exa (search API), Cala
-(company/investor data, "Make Unicorns Real"), Hostinger (hosting), Arduino and Intel
-(hardware lab), MLH x GitHub.
-Hackerpack we may use: Context.dev web data API (companies, people, news, scrape), 50k
-credits per team; see `context-dev.md`.
+Google DeepMind (Gemini), NVIDIA, Verda, Modal, Exa, Cala, Hostinger, Arduino, Intel, MLH x GitHub.
+Context.dev: hackerpack (50k credits, `context-dev.md`) and its own challenge, "Web Is Your
+Real-Time Database"; one submission may enter several (open-questions.md D6).
 
 ## Scope
 - MVP (must demo): a proactive agent that turns a vague thesis into a short list of real
@@ -79,7 +77,9 @@ credits per team; see `context-dev.md`.
   a scheduled digest and urgent alerts about the portfolio by desktop notification.
   Full flow: `flow.md`.
 - Nice to have: voice input in onboarding and chat; Telegram or WhatsApp channel.
-- Explicitly out of scope: TODO
+- Explicitly out of scope: recommending what to buy or executing trades (decisions.md);
+  regulatory data from Cala (not in the graph). Rest: TODO (open-questions.md D1, D7).
+- Undecided points and conflicts: `open-questions.md`. Pitch, deck, README: `pitch.md`.
 
 ## Demo script
 Video, max 2:00 (times approximate). Features not in this list are low priority.
@@ -87,9 +87,11 @@ Video, max 2:00 (times approximate). Features not in this list are low priority.
    little of value and has no energy left to judge well.
 2. 0:15-0:20 He opens Grabbit and closes every other tab.
 3. 0:20-0:55 Onboarding by conversation; he makes two or three corrections.
-4. 0:55-1:15 The first report arrives in his chosen format; he validates it.
+4. 0:55-1:15 The first report arrives in his chosen format, each fact labelled "verified by
+   Cala" or "web, unverified"; he opens one source and validates it.
 5. 1:15-1:25 He leaves the computer.
-6. 1:25-1:40 Seconds later, an urgent desktop notification about his portfolio. He comes
+6. 1:25-1:40 Seconds later, an urgent desktop notification (simulated event, labelled on
+   screen; open-questions.md R2) about his portfolio. He comes
    back, relieved, reads why it matters and can act on it.
 7. 1:40-2:00 Voice-over pitch: Grabbit saves your time, lets you focus on deciding, and
    tells you when something changes.

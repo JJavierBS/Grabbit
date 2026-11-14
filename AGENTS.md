@@ -50,3 +50,5 @@ Read only what the current step needs. Do not preload these files.
 | use or evaluate Context.dev (web data API, hackerpack) | `docs/agents/context-dev.md` |
 | turn the challenge into backlog issues | `docs/agents/planning.md` |
 | make a design choice (check first, log after) | `docs/agents/decisions.md` |
+| plan or build anything not yet decided, or prepare questions for Cala | `docs/agents/open-questions.md` |
+| write the README, punchline, deck, table pitch or submission | `docs/agents/pitch.md` |

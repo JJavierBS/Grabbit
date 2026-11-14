@@ -106,14 +106,16 @@ LLM-processed methods. Sample sizes are small: treat them as a first look.
   data, labelled "web, unverified", and used to suggest a new question to the investor.
 
 ## Business model ideas (for the pitch, B)
+The first idea conflicts with "the agent never recommends what to buy" (decisions.md):
+see open-questions.md K1 and pitch.md before using it.
 - Commission only on analyses that end in a purchase.
 - Upsell for hobby investors: "what did reference investor X do in situation Y", per query.
 - Include the business view in the pitch even if not required: B's team won a previous
   hackathon partly because of it.
 
 ## Pitch and video notes (team)
-- Opening scene: a stressed investor lost in browser tabs and charts asks a generic chatbot
-  "which startup should I invest in?" and gets a useless answer.
+- Opening scene: superseded by the video script in challenge.md "Demo script" (investor
+  drowning in tabs). The generic-chatbot answer can still appear inside that scene.
 - Hook (team, 2026-11-14): these investors cannot afford automated systems and spend their
   time and energy on research. With Grabbit they spend it on deciding and on refining the
   search.
@@ -122,6 +124,7 @@ LLM-processed methods. Sample sizes are small: treat them as a first look.
   investors (pseudonymised).
 
 ## Open questions
+Team decisions, questions for Cala and conflicts: `open-questions.md`. Research-only:
 - What share of UK companies with GBP 10-50M revenue has revenue and operating profit in
   Cala? Only two were checked. Ask Cala; also ask for UK activity codes and directors.
 - Does Cala hold funds' public-equity holdings (the "big fish" feature, finding 11)? Not

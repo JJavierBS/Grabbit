@@ -1,8 +1,9 @@
 # Context.dev (hackerpack tool)
 
-Web data API: scrape, search, crawl, plus company, people and news search. Status: being
-evaluated, not yet a product dependency (no env var in `.env.example` yet). Cala stays the
-core data source (challenge.md); Context.dev can add fresh web evidence around it.
+Web data API: scrape, search, crawl, plus company, people and news search. Status: used in
+the MVP (challenge.md "Scope"), key `CONTEXT_DEV_API_KEY` in `.env.example`. Its exact role
+(soft signals only, or also company discovery) is open: open-questions.md D5. Cala stays the
+only source of facts (decisions.md). Its own challenge, possibly a second prize: D6.
 Full docs: `docs/reference/context-dev/` (index in its `README.md`, spec in `openapi.json`).
 Read only the page you need. Refresh with `bash scripts/fetch-docs.sh`. Checked 2026-11-13.
 
