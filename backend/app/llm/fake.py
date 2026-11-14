@@ -59,7 +59,9 @@ class FakeLLM:
                 on_text("".join(lines[:i]))
         return ChatResult(text=script.text, tool_calls=script.tool_calls if tools else [])
 
-    async def generate(self, *, task: str, system: str, prompt: str, schema: type[T]) -> T:
+    async def generate(
+        self, *, task: str, system: str, prompt: str, schema: type[T], quick: bool = False
+    ) -> T:
         self.calls.append((task, prompt))
         script = self._find(task, prompt)
         if script is None or script.output is None:

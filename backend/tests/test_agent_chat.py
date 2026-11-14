@@ -317,6 +317,28 @@ async def test_a_visual_answer_keeps_its_own_badges_and_cites_nothing_more(
     assert reply.sources == []
 
 
+async def test_the_first_turn_asks_the_questions_the_model_worded(candidates, now):
+    """#165: worded for this investor while the report is built."""
+    from app.llm.fake import load_scripts
+
+    worded = {
+        "key": "stage",
+        "text": "De las 6 startups, 4 son pre-semilla o semilla y 2 Serie A o más. ¿Qué etapa?",
+        "options": [
+            {"label": "Pre-semilla y semilla", "answer": "Solo pre-semilla y semilla."},
+            {"label": "Serie A o más", "answer": "Solo Serie A o más."},
+            {"label": "Cualquiera", "answer": "Cualquier etapa."},
+        ],
+    }
+    llm = FakeLLM([*load_scripts(), Script(task="questions", output={"questions": [worded]})])
+
+    reply = await _say("Invierto en software B2B", candidates, now, llm=llm)
+
+    assert [q.key for q in reply.questions] == ["stage"]
+    assert reply.questions[0].text == worded["text"]
+    assert reply.questions[0].options[2].answer == "Cualquier etapa."
+
+
 async def test_the_agent_knows_the_app_rebuilds_the_report_itself(candidates, now):
     """#163: it asked "shall I prepare the report?" after the report was already rebuilt."""
     prompt = chat.system_prompt(profile_store.current(now), "8 startups", candidates)

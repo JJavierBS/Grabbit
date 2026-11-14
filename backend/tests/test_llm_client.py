@@ -76,3 +76,34 @@ async def test_a_streamed_reply_tells_on_text_the_answer_so_far_and_keeps_its_pa
     assert result.text == 'root = Answer([t])\nt = Text("Here.")'
     assert result.thoughts == "Looking for the fund"
     assert [(c.name, c.signature) for c in result.tool_calls] == [("cala_search", b"sig")]
+
+
+async def test_a_quick_structured_call_asks_for_minimal_thinking():
+    """#165: wording the first-turn questions took ~13 s with default thinking."""
+    from google.genai import types
+    from pydantic import BaseModel
+
+    from app.llm.client import GeminiLLM
+
+    class Out(BaseModel):
+        ok: bool
+
+    configs = []
+
+    async def generate_content(**kwargs):
+        configs.append(kwargs["config"])
+        part = types.Part(text='{"ok": true}')
+        return types.GenerateContentResponse(
+            candidates=[types.Candidate(content=types.Content(role="model", parts=[part]))]
+        )
+
+    llm = GeminiLLM(api_key="k", model="m")
+    llm._client.aio.models.generate_content = generate_content
+
+    assert await llm.generate(task="t", system="s", prompt="p", schema=Out, quick=True) == Out(
+        ok=True
+    )
+    await llm.generate(task="t", system="s", prompt="p", schema=Out)
+
+    assert configs[0].thinking_config.thinking_level == types.ThinkingLevel.MINIMAL
+    assert configs[1].thinking_config is None
