@@ -5,11 +5,16 @@
   no other state library. Alerts through `EventSource` on `/api/events` and the browser
   Notification API when the tab is hidden.
 - Run: `make dev` (URL `http://localhost:5173`, proxies `/api` to `:8000`).
+- Without a backend: `cd frontend && npm run dev:fake` serves the whole demo path from
+  synthetic fixtures (`src/dev/fakeApi.ts`, `src/dev/fixtures.ts`) and shows a "Demo data"
+  badge. Dev only; tests use `src/test/renderApp.tsx` (`mockApi`) instead.
+- Design system reference: open `/?gallery`.
 
 ## Structure
-- `src/api/`: generated `schema.ts` (api.md), the single client `client.ts`, query hooks.
-- `src/features/chat/`, `src/features/report/`, `src/features/alerts/`: one folder per area,
-  each with its components, hooks and tests.
+- `src/api/`: generated `schema.ts` (api.md), the single client `client.ts`, query hooks in
+  `src/api/hooks/`. Until #21 generates `schema.ts`, `types.ts` holds a hand copy of api.md.
+- `src/features/chat/`, `src/features/report/`, `src/features/profile/`, `src/features/alerts/`:
+  one folder per area, each with its components, hooks and tests.
 - `src/components/`: shared pieces, e.g. `TrustBadge` (agent.md "Trust scale"), `FactValue`
   (value, date with its precision, "not published").
 - `src/App.tsx`: layout. One screen: chat beside the current report; alerts as toasts and

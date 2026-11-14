@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "vite",
+    "dev:fake": "VITE_FAKE_API=1 vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run --reporter=dot",
