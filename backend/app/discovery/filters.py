@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from datetime import date
 from typing import Any
@@ -37,21 +38,54 @@ def is_startup(company: dict[str, Any], today: date, rules: StartupRules = Start
     return not (size is not None and size > rules.max_headcount)
 
 
+EARLY_STAGES = {"pre_seed", "seed", "angel"}
+
+
+def normalise_stage(stage: object) -> str:
+    """'Pre-Seed', 'PRE_SEED' and 'pre seed' are the same stage."""
+    return re.sub(r"[\s\-]+", "_", str(stage).strip().lower())
+
+
+def wanted_stages(stages: list[str]) -> set[str]:
+    wanted = {normalise_stage(s) for s in stages}
+    if "early" in wanted:
+        wanted |= EARLY_STAGES
+    return wanted
+
+
+def _words(text: str) -> set[str]:
+    return set(re.findall(r"[a-z0-9]+", text.lower()))
+
+
+def sector_matches(sector: str, industries: list[str]) -> bool:
+    """A sector matches a whole industry label or one of its words ('AI' never 'retail')."""
+    target = sector.strip().lower()
+    return any(target == label.lower() or target in _words(label) for label in industries)
+
+
+def headcount_upper(value: object) -> float | None:
+    """Upper bound of a headcount: 18, '18', or a range like '51-200' -> 200."""
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int | float):
+        return float(value)
+    numbers = re.findall(r"\d+", str(value or ""))
+    return float(numbers[-1]) if numbers else None
+
+
 def matches_profile(candidate: Candidate, profile: Profile) -> bool:
     """Profile filters; a filter on a field the candidate does not publish lets it pass."""
     f = profile.filters
     stage = candidate.funding_stage.value
-    if f.stages and stage and str(stage).upper() not in {s.upper() for s in f.stages}:
+    if f.stages and stage and normalise_stage(stage) not in wanted_stages(f.stages):
         return False
     hq = str(candidate.hq.value or "")
     if f.countries and hq and not hq_in(hq, f.countries):
         return False
-    labels = " ".join(candidate.industries).lower()
-    if f.sectors_out and any(s.lower() in labels for s in f.sectors_out):
+    industries = candidate.industries
+    if f.sectors_out and any(sector_matches(s, industries) for s in f.sectors_out):
         return False
-    if f.sectors_in and labels and not any(s.lower() in labels for s in f.sectors_in):
+    if f.sectors_in and industries and not any(sector_matches(s, industries) for s in f.sectors_in):
         return False
-    size = candidate.headcount.value
-    if f.headcount_max is not None and isinstance(size, int | float):
-        return size <= f.headcount_max
-    return True
+    size = headcount_upper(candidate.headcount.value)
+    return f.headcount_max is None or size is None or size <= f.headcount_max
