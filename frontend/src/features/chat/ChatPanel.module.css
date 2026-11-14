@@ -40,6 +40,11 @@
   gap: var(--space-2);
 }
 
+/* A message that arrives during the visit rises into place; history loads still. */
+.message[data-enter] {
+  animation: enter var(--duration-base) var(--ease-out) both;
+}
+
 .agent {
   align-self: stretch;
 }
@@ -85,12 +90,24 @@
 }
 
 .composer {
+  position: relative;
   display: grid;
   gap: var(--space-3);
   width: 100%;
   max-width: var(--chat-width);
   margin: 0 auto;
   padding: var(--space-2) var(--space-6) var(--space-6);
+}
+
+/* Offered when a reply lands while the reader is scrolled up; it floats over the log's edge. */
+.jump {
+  position: absolute;
+  bottom: calc(100% + var(--space-2));
+  left: 50%;
+  z-index: 1;
+  box-shadow: var(--shadow-md);
+  translate: -50% 0;
+  animation: enter var(--duration-base) var(--ease-out) both;
 }
 
 .suggestions {
@@ -155,6 +172,13 @@
   font-weight: var(--weight-medium);
 }
 
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-1));
+  }
+}
+
 @keyframes breathe {
   from {
     box-shadow: var(--glow-rest);
@@ -165,6 +189,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .message[data-enter],
+  .jump {
+    animation: none;
+  }
+
   .panel[data-working] .inputRow,
   .panel[data-listening] .inputRow {
     animation: none;

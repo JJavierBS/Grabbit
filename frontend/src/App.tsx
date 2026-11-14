@@ -1,12 +1,14 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { History, PanelLeftOpen, RefreshCw, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./App.module.css";
-import { useLatestReport, useSendMessage } from "./api/hooks/queries";
+import { keys, useChat, useLatestReport, useSendMessage } from "./api/hooks/queries";
 import { type StreamStatus, useEvents } from "./api/hooks/useEvents";
-import type { Alert, Report } from "./api/types";
+import type { Alert, ChatMessage, Report } from "./api/types";
 import { Button } from "./components/Button";
 import { FullscreenButton } from "./components/FullscreenButton";
 import { Logo } from "./components/Logo";
+import { Skeleton } from "./components/Skeleton";
 import { AlertCard } from "./features/alerts/AlertCard";
 import { DEFAULT_DEMO_FIXTURE, DemoAlertButton } from "./features/alerts/DemoAlertButton";
 import { askNotificationPermission } from "./features/alerts/notify";
@@ -66,7 +68,10 @@ export function App() {
   const report = useLatestReport();
   const diff = useReportChanges(report.data ?? undefined);
   const send = useSendMessage();
-  const [openAlert, setOpenAlert] = useState<Alert | null>(null);
+  const client = useQueryClient();
+  const chat = useChat();
+  // An opened alert stays where it was opened: after the last message at that moment.
+  const [openAlert, setOpenAlert] = useState<{ alert: Alert; after: string | null } | null>(null);
   // A past report opened from the sidebar; null shows the latest one.
   const [pastReport, setPastReport] = useState<Report | null>(null);
   const panelRef = useRef<HTMLElement>(null);
@@ -98,11 +103,15 @@ export function App() {
     returnFocus.current?.focus();
   }, []);
 
-  const showAlert = useCallback((alert: Alert) => {
-    setOpenAlert(alert);
-    // The alert opens in the chat; on narrow screens the panel would hide it.
-    if (window.matchMedia?.(NARROW).matches) setPanel(null);
-  }, []);
+  const showAlert = useCallback(
+    (alert: Alert) => {
+      const shown = client.getQueryData<ChatMessage[]>(keys.chat) ?? [];
+      setOpenAlert({ alert, after: shown.at(-1)?.id ?? null });
+      // The alert opens in the chat; on narrow screens the panel would hide it.
+      if (window.matchMedia?.(NARROW).matches) setPanel(null);
+    },
+    [client],
+  );
   const deliver = useAlertDelivery(showAlert);
   const stream = useEvents(deliver);
 
@@ -155,7 +164,9 @@ export function App() {
     send.mutate(CONFIRM_MESSAGE);
   };
 
-  const reportInChat = report.data ? (
+  const reportInChat = report.isPending ? (
+    <Skeleton block="card" label="Loading the report" />
+  ) : report.data ? (
     <ReportOutline
       key={report.data.id}
       report={report.data}
@@ -177,6 +188,18 @@ export function App() {
       </Button>
     </div>
   ) : null;
+
+  // The outline follows the agent turn that wrote this report; a report from elsewhere
+  // (Run now, the schedule) has no such turn and goes after the conversation.
+  const messages = chat.data ?? [];
+  const reportAnchor =
+    (report.data &&
+      messages.findLast((m) => m.role === "agent" && m.report_id === report.data?.id)?.id) ||
+    null;
+  const alertAnchored = Boolean(openAlert?.after && messages.some((m) => m.id === openAlert.after));
+  const alertInChat = openAlert && (
+    <AlertCard alert={openAlert.alert} onClose={() => setOpenAlert(null)} />
+  );
 
   return (
     <div
@@ -240,12 +263,19 @@ export function App() {
         <main className={styles.main} data-panel={panel ?? undefined}>
           <div className={styles.chat}>
             <ChatPanel
+              renderAfter={(m) => (
+                <>
+                  {m.id === reportAnchor && reportInChat}
+                  {alertAnchored && m.id === openAlert?.after && alertInChat}
+                </>
+              )}
               footer={
                 <>
-                  {reportInChat}
-                  {openAlert && <AlertCard alert={openAlert} onClose={() => setOpenAlert(null)} />}
+                  {!reportAnchor && reportInChat}
+                  {!alertAnchored && alertInChat}
                 </>
               }
+              followKey={`${report.data?.id}|${reportAnchor}|${openAlert?.alert.id}`}
             />
           </div>
           {panel && (
