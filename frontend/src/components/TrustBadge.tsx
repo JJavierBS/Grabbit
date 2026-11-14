@@ -1,4 +1,4 @@
-import { Building2, CircleDashed, Database, Globe, Landmark, Newspaper } from "lucide-react";
+import { Building2, CircleDashed, Database, Globe, Landmark, Newspaper, Rss } from "lucide-react";
 import type { TrustLevel } from "../api/types";
 import styles from "./TrustBadge.module.css";
 
@@ -7,6 +7,7 @@ export const TRUST_LABELS: Record<TrustLevel, string> = {
   primary: "Company or investor",
   press: "Press",
   aggregator: "Database",
+  cala_news: "Cala news",
   web_unverified: "Web, unverified",
   not_published: "Not published",
 };
@@ -16,6 +17,7 @@ const ICONS = {
   primary: Building2,
   press: Newspaper,
   aggregator: Database,
+  cala_news: Rss,
   web_unverified: Globe,
   not_published: CircleDashed,
 } satisfies Record<TrustLevel, unknown>;

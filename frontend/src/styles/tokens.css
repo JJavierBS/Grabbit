@@ -55,6 +55,9 @@
   --trust-aggregator-bg: var(--color-panel-strong);
   --trust-aggregator-fg: var(--color-text-muted);
   --trust-aggregator-border: transparent;
+  --trust-news-bg: var(--color-panel-strong);
+  --trust-news-fg: var(--color-text);
+  --trust-news-border: var(--color-text-faint);
   --trust-web-bg: var(--color-marker-soft);
   --trust-web-fg: var(--color-warning-ink);
   --trust-web-border: var(--color-warning-ink);

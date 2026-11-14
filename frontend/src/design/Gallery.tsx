@@ -14,6 +14,7 @@ const LEVELS: TrustLevel[] = [
   "primary",
   "press",
   "aggregator",
+  "cala_news",
   "web_unverified",
   "not_published",
 ];

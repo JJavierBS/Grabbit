@@ -4,6 +4,7 @@ import { z } from "zod/v4";
 import type { Candidate } from "../../../api/types";
 import { FactValue } from "../../../components/FactValue";
 import { Markdown } from "../../../components/Markdown";
+import { CalaNews } from "../../report/CalaNews";
 import { CalaPath } from "../../report/CalaPath";
 import styles from "./library.module.css";
 
@@ -134,11 +135,33 @@ const Compare = defineComponent({
   },
 });
 
+const News = defineComponent({
+  name: "News",
+  description:
+    "Latest news about one startup from Cala (title, date, summary, who is mentioned). " +
+    "Use it when the investor asks what is new or recent about a startup.",
+  props: z.object({ entityId: z.string().describe("Cala entity id of the startup") }),
+  component: function NewsView({ props }) {
+    const c = useCandidate(props.entityId);
+    if (!c) return <Missing id={props.entityId} />;
+    return (
+      <div className={styles.block}>
+        <h6 className={styles.title}>{c.name}</h6>
+        {c.news.length > 0 ? (
+          <CalaNews items={c.news} name={c.name} heading="h6" />
+        ) : (
+          <p className={styles.missing}>No news about {c.name} in Cala yet.</p>
+        )}
+      </div>
+    );
+  },
+});
+
 const Answer = defineComponent({
   name: "Answer",
   description: "The whole reply, top to bottom.",
   props: z.object({
-    children: z.array(z.union([Text.ref, CompanyGraph.ref, FactGrid.ref, Compare.ref])),
+    children: z.array(z.union([Text.ref, CompanyGraph.ref, FactGrid.ref, Compare.ref, News.ref])),
   }),
   component: ({ props, renderNode }) => (
     <div className={styles.answer}>{renderNode(props.children)}</div>
@@ -147,7 +170,7 @@ const Answer = defineComponent({
 
 export const answerLibrary = createLibrary({
   root: "Answer",
-  components: [Answer, Text, CompanyGraph, FactGrid, Compare],
+  components: [Answer, Text, CompanyGraph, FactGrid, Compare, News],
 });
 
 /** Options of the prompt in `backend/app/agent/openui_prompt.txt` (prompt.test.ts keeps them in sync). */
@@ -158,6 +181,7 @@ export const PROMPT_OPTIONS = {
     "Use only entity ids listed in the context.",
     "Never write a number, amount or date in Text; show it with FactGrid or Compare.",
     "To explain why a startup is on the list, use CompanyGraph.",
+    "For what is new about a startup, use News; never retell a headline in Text.",
     "Start with one Text that answers the question in one or two sentences; it replaces the text reply.",
     "Keep every Text to two sentences at most.",
   ],
