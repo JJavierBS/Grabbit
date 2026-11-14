@@ -13,6 +13,7 @@ TrustLevel = Literal["filing", "primary", "press", "aggregator", "web_unverified
 DatePrecision = Literal["day", "month", "year"]
 InvestorRole = Literal["investor", "lender"]
 SignalKind = Literal["co_invest", "lead_follow_on", "likely_to_raise"]
+LinkKind = Literal["trusted_co_investor", "shared_investor"]
 StyleLength = Literal["short", "medium", "long"]
 StyleDetail = Literal["plain", "technical"]
 Cadence = Literal["event", "daily", "weekly"]
@@ -85,6 +86,38 @@ class Signal(ApiModel):
     facts: list[Fact]
 
 
+class LinkNode(ApiModel):
+    """A Cala entity on the path that proves a hidden link."""
+
+    entity_id: str
+    name: str
+    entity_type: str
+
+
+class LinkEdge(ApiModel):
+    """A Cala relationship between two path nodes, in Cala's own direction."""
+
+    source: str
+    target: str
+    relationship: str
+    role: str | None = None
+
+
+class HiddenLink(ApiModel):
+    """A second-degree relationship in Cala's graph that one company page does not show."""
+
+    kind: LinkKind
+    label: str
+    explanation: str
+    via_entity_id: str = Field(description="Investor on the candidate's own path it branches from")
+    target: LinkNode
+    count: int = Field(description="Rounds that prove it")
+    trust: TrustLevel = Field(description="Weakest edge in the path: the link holds only if all do")
+    nodes: list[LinkNode]
+    edges: list[LinkEdge]
+    facts: list[Fact]
+
+
 class Candidate(ApiModel):
     entity_id: str
     name: str
@@ -98,6 +131,7 @@ class Candidate(ApiModel):
     industries: list[str]
     rounds: list[Round]
     signals: list[Signal]
+    links: list[HiddenLink] = Field(default_factory=list)
 
 
 class ProfileFilters(ApiModel):

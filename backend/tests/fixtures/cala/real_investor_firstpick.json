@@ -1,0 +1,300 @@
+{
+  "id": "88b67750-caa3-40ca-bfde-8eb88aa48ae4",
+  "name": "FIRSTPICK",
+  "entity_type": "Company",
+  "description": "Vilnius-based first-check VC fund backing Baltic founders at inception and pre-seed with €25M fund, investing €100K-500K initially.",
+  "properties": {
+    "name": {
+      "value": "FIRSTPICK",
+      "sources": [
+        {
+          "name": "FIRSTPICK VC | High-speed VC fund",
+          "document": "https://firstpick.vc",
+          "date": "2026-06-03"
+        },
+        {
+          "name": "FIRSTPICK: €25 Million Fund Launched To Back Early-Stage Baltic Startup Founders",
+          "document": "https://pulse2.com/firstpick-e25-million-fund-launched-to-back-early-stage-baltic-startup-founders",
+          "date": "2026-03-06"
+        },
+        {
+          "name": "balsio.com",
+          "document": "https://www.balsio.com/blog/balsio-is-now-live-in-europe",
+          "date": "2026-05-05",
+          "date_precision": "day",
+          "source_rank": "PRIMARY"
+        },
+        {
+          "name": "techfundingnews.com",
+          "document": "https://techfundingnews.com/birdychat-1-7m-dig-ventures-work-personal-chat-app/",
+          "date": "2026-05-05",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+        },
+        {
+          "name": "data.gov.lv",
+          "document": "https://data.gov.lv/dati/api/3/action/datastore_search?resource_id=837b451a-4833-4fd1-bfdd-b45b35a994fd&q=40203455420",
+          "date": "2025-09-30",
+          "date_precision": "day",
+          "source_rank": "FILING"
+        },
+        {
+          "name": "firstpick.vc",
+          "document": "https://firstpick.vc/blog/firstpick-ai-accelerator-2025-batch/",
+          "date": "2025-06-06",
+          "date_precision": "day",
+          "source_rank": "PRIMARY"
+        },
+        {
+          "name": "callsy.ai",
+          "document": "https://www.callsy.ai/insights/how-we-got-funded-500-global-firstpick",
+          "date": "2026-05-10",
+          "date_precision": "day",
+          "source_rank": "PRIMARY"
+        },
+        {
+          "name": "bouncewatch.com",
+          "document": "https://bouncewatch.com/company/callsy-ai",
+          "date": "2025-11-13",
+          "date_precision": "day",
+          "source_rank": "AGGREGATOR"
+        },
+        {
+          "name": "startuphub.ai",
+          "document": "https://www.startuphub.ai/news/lithuanian-deeptech-grei-raises-e650k-for-ai-industrial-monitoring",
+          "date": "2025-08-11",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+        },
+        {
+          "name": "itkey.media",
+          "document": "https://itkey.media/latvian-traveltech-rebookify-secures-eur-200k-to-bring-ai-automation-to-agency-bookings/",
+          "date": "2025-11-28",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+        },
+        {
+          "name": "siliconcanals.com",
+          "document": "https://siliconcanals.com/softloans-bags-1m/",
+          "date": "2024-04-19",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+        },
+        {
+          "name": "kotis.kt.gov.lt",
+          "document": "https://kotis.kt.gov.lt/paraiskos/view_item/id.2337915",
+          "date": "2024-03-29",
+          "date_precision": "day",
+          "source_rank": "FILING"
+        }
+      ]
+    },
+    "website": {
+      "value": "firstpick.vc",
+      "sources": [
+        {
+          "name": "FIRSTPICK VC | High-speed VC fund",
+          "document": "https://firstpick.vc",
+          "date": "2026-06-03"
+        },
+        {
+          "name": "FIRSTPICK: €25 Million Fund Launched To Back Early-Stage Baltic Startup Founders",
+          "document": "https://pulse2.com/firstpick-e25-million-fund-launched-to-back-early-stage-baltic-startup-founders",
+          "date": "2026-03-06"
+        }
+      ]
+    }
+  },
+  "relationships": {
+    "outgoing": {
+      "PARTICIPATES_IN_FUNDING_ROUND": [
+        {
+          "id": "3dba66dc-5eec-5c0d-96cb-60e88365ef65",
+          "name": "Pre-Seed",
+          "entity_type": "FundingRound",
+          "properties": {
+            "role": "INVESTOR",
+            "sources": [
+              {
+                "name": "startuphub.ai",
+                "document": "https://www.startuphub.ai/news/lithuanian-deeptech-grei-raises-e650k-for-ai-industrial-monitoring",
+                "date": "2025-08-11",
+                "date_precision": "day",
+                "source_rank": "PRESS"
+              }
+            ],
+            "is_lead": true,
+            "id": "c2a5885f-e8b2-5add-b83e-65e60e006481"
+          }
+        },
+        {
+          "id": "43aebe13-51d5-524f-ae33-755679f09273",
+          "name": "Seed",
+          "entity_type": "FundingRound",
+          "properties": {
+            "role": "INVESTOR",
+            "sources": [
+              {
+                "name": "tech.eu",
+                "document": "https://tech.eu/2026/10/15/vilnius-based-holo-raises-eur5m-to-bring-ai-powered-marketing-to-small-businesses/",
+                "date": "2026-10-15",
+                "date_precision": "day",
+                "source_rank": "PRESS"
+              }
+            ],
+            "id": "ea36a65d-7112-525e-af15-97bd0f1cb376"
+          }
+        },
+        {
+          "id": "4edc832c-ca28-5c7c-871e-4be638e16f4e",
+          "name": "Pre-Seed",
+          "entity_type": "FundingRound",
+          "properties": {
+            "role": "INVESTOR",
+            "sources": [
+              {
+                "name": "firstpick.vc",
+                "document": "https://firstpick.vc/blog/firstpick-ai-accelerator-2025-batch/",
+                "date": "2025-06-06",
+                "date_precision": "day",
+                "source_rank": "PRIMARY"
+              },
+              {
+                "name": "callsy.ai",
+                "document": "https://www.callsy.ai/insights/how-we-got-funded-500-global-firstpick",
+                "date": "2026-05-10",
+                "date_precision": "day",
+                "source_rank": "PRIMARY"
+              },
+              {
+                "name": "bouncewatch.com",
+                "document": "https://bouncewatch.com/company/callsy-ai",
+                "date": "2025-11-13",
+                "date_precision": "day",
+                "source_rank": "AGGREGATOR"
+              }
+            ],
+            "is_lead": true,
+            "id": "0ce2f593-e9ce-5e1e-ad76-d6a371250be4"
+          }
+        },
+        {
+          "id": "936707a8-b422-556a-910d-487e162809ef",
+          "name": "Pre-Seed",
+          "entity_type": "FundingRound",
+          "properties": {
+            "role": "INVESTOR",
+            "sources": [
+              {
+                "name": "siliconcanals.com",
+                "document": "https://siliconcanals.com/softloans-bags-1m/",
+                "date": "2024-04-19",
+                "date_precision": "day",
+                "source_rank": "PRESS"
+              },
+              {
+                "name": "kotis.kt.gov.lt",
+                "document": "https://kotis.kt.gov.lt/paraiskos/view_item/id.2337915",
+                "date": "2024-03-29",
+                "date_precision": "day",
+                "source_rank": "FILING"
+              }
+            ],
+            "is_lead": true,
+            "id": "172c45f5-02da-5b33-af55-b5822a7f5162"
+          }
+        },
+        {
+          "id": "a76fc375-1dc5-5148-9d1d-63d6d4b0a9f2",
+          "name": "Convertible Notes round",
+          "entity_type": "FundingRound",
+          "properties": {
+            "role": "INVESTOR",
+            "sources": [
+              {
+                "name": "kotis.kt.gov.lt",
+                "document": "https://kotis.kt.gov.lt/paraiskos/view_item/id.2508193",
+                "date": "2024-12-23",
+                "date_precision": "day",
+                "source_rank": "FILING"
+              }
+            ],
+            "is_lead": true,
+            "id": "534308b5-25c9-552b-ac92-a5363402d5ab"
+          }
+        },
+        {
+          "id": "ae44bd34-20a9-586d-8796-b12981dfcd8d",
+          "name": "Pre-Seed",
+          "entity_type": "FundingRound",
+          "properties": {
+            "role": "GRANTOR",
+            "sources": [
+              {
+                "name": "itkey.media",
+                "document": "https://itkey.media/latvian-traveltech-rebookify-secures-eur-200k-to-bring-ai-automation-to-agency-bookings/",
+                "date": "2025-11-28",
+                "date_precision": "day",
+                "source_rank": "PRESS"
+              }
+            ],
+            "id": "ec636adf-5e26-5021-80a5-917f3dac5c8b"
+          }
+        },
+        {
+          "id": "afd36bf6-66ae-55a6-aaa9-bec4a3772e60",
+          "name": "Convertible Notes round",
+          "entity_type": "FundingRound",
+          "properties": {
+            "role": "INVESTOR",
+            "sources": [
+              {
+                "name": "kotis.kt.gov.lt",
+                "document": "https://kotis.kt.gov.lt/paraiskos/view_item/id.2247283",
+                "date": "2023-04-21",
+                "date_precision": "day",
+                "source_rank": "FILING"
+              }
+            ],
+            "is_lead": true,
+            "id": "9150043e-c93c-5951-9362-a2d2d975bb11"
+          }
+        },
+        {
+          "id": "e76a66cd-ee39-5330-9cb1-4f8da0e3a8c1",
+          "name": "Seed",
+          "entity_type": "FundingRound",
+          "properties": {
+            "role": "INVESTOR",
+            "sources": [
+              {
+                "name": "balsio.com",
+                "document": "https://www.balsio.com/blog/balsio-is-now-live-in-europe",
+                "date": "2026-05-05",
+                "date_precision": "day",
+                "source_rank": "PRIMARY"
+              },
+              {
+                "name": "techfundingnews.com",
+                "document": "https://techfundingnews.com/birdychat-1-7m-dig-ventures-work-personal-chat-app/",
+                "date": "2026-05-05",
+                "date_precision": "day",
+                "source_rank": "PRESS"
+              },
+              {
+                "name": "data.gov.lv",
+                "document": "https://data.gov.lv/dati/api/3/action/datastore_search?resource_id=837b451a-4833-4fd1-bfdd-b45b35a994fd&q=40203455420",
+                "date": "2025-09-30",
+                "date_precision": "day",
+                "source_rank": "FILING"
+              }
+            ],
+            "id": "afbf8571-1b85-5a06-80ec-4daadb754155"
+          }
+        }
+      ]
+    },
+    "incoming": {}
+  },
+  "numerical_observations": []
+}

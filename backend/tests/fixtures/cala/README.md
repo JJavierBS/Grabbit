@@ -17,6 +17,10 @@ Two kinds:
 | `company_startup.json` | Hand-written startup: every `source_rank`, both `document` shapes, a year-precision date, rounds, executives, headcount series |
 | `round_seed.json` | Hand-written `FundingRound` with its issuer and participants, one lead |
 | `real_company_rupert.json` | Recorded Slush attendee (seed startup): no founding date, no headcount series |
+| `real_investor_firstpick.json` | Recorded investor (GREÏ's lead) with its outgoing `PARTICIPATES_IN_FUNDING_ROUND` edges, one as `GRANTOR` |
+| `real_round_grei_preseed.json` | Recorded GREÏ pre-seed: issuer and FIRSTPICK as lead |
+| `real_round_callsy.json` | Recorded round where FIRSTPICK sat next to "500 Global" |
+| `real_round_rebookify.json` | Recorded round where FIRSTPICK (GRANTOR) sat next to "500 Global (500 Emerging Europe)", the same fund as another entity |
 | `real_round_rupert_seed.json` | Recorded seed round: no `event_date` (only `announcement_date`), two leads, `is_lead` absent on the others |
 
 What the recordings taught us (2026-11-14): rounds may lack `event_date`; most startups

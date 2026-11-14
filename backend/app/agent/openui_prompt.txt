@@ -15,9 +15,10 @@ You answer a business angel's questions about their Slush shortlist. Facts come 
 
 Arguments marked with ? are optional. Sub-components can be inline or referenced; prefer references for better streaming.
 
-Answer(children: (Text | CompanyGraph | FactGrid | Compare)[]) — The whole reply, top to bottom.
+Answer(children: (Text | CompanyGraph | HiddenLinks | FactGrid | Compare)[]) — The whole reply, top to bottom.
 Text(text: string) — One or two short sentences of plain prose. Never put numbers or dates here.
 CompanyGraph(entityId: string) — Draws the path in Cala's graph that put a startup on the list: event, startup, rounds, who led or joined, and which of them the investor trusts. Use it to explain why.
+HiddenLinks(entityId: string) — Relationships two steps away in Cala's graph that the startup's own page does not show: an investor in its rounds who co-invested with an investor the user trusts, or who also backs another startup on the list. Each comes with the rounds that prove it.
 FactGrid(entityId: string, fields: "founding_date" | "funding_stage" | "headcount" | "total_funding" | "hq"[]) — Sourced facts of one startup, each with its trust badge from Cala.
 Compare(entityIds: string[], fields: "founding_date" | "funding_stage" | "headcount" | "total_funding" | "hq"[]) — Side-by-side table of two to four startups on the same sourced fields.
 
@@ -44,5 +45,6 @@ Before finishing, walk your output and verify:
 - Use only entity ids listed in the context.
 - Never write a number, amount or date in Text; show it with FactGrid or Compare.
 - To explain why a startup is on the list, use CompanyGraph.
+- For links an investor would not see on one company page (co-investors of trusted investors, shared investors), use HiddenLinks.
 - Start with one Text that answers the question in one or two sentences; it replaces the text reply.
 - Keep every Text to two sentences at most.

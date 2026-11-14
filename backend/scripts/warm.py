@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any
 
 from app.cala.client import CalaClient
+from app.discovery.links import LinkLimits
 from app.discovery.pipeline import SLUSH_2026, Limits, get_candidates, neutral_profile
 from app.store.cala_cache import CalaCache
 
@@ -45,7 +46,10 @@ async def main(args: argparse.Namespace) -> None:
     )
     try:
         result = await get_candidates(
-            client, neutral_profile(args.event), limits=Limits(max_attendees=args.limit)
+            client,
+            neutral_profile(args.event),
+            # No call budget: warming is where the hidden-link walk is meant to run in full.
+            limits=Limits(max_attendees=args.limit, links=LinkLimits(call_budget=None)),
         )
     finally:
         await client.aclose()
@@ -58,6 +62,9 @@ async def main(args: argparse.Namespace) -> None:
         1 for c in result.candidates if any(i.is_lead for r in c.rounds for i in r.investors)
     )
     print(f"startups with a known round lead {with_lead}")
+    shared = sum(1 for c in result.candidates if any(k.kind == "shared_investor" for k in c.links))
+    print(f"investors walked for hidden links {len(result.links.investors)}")
+    print(f"startups sharing an investor with another startup {shared}")
     if args.dump:
         print(f"dumped {dump_raw(result.raw, Path(args.dump))} nodes to {args.dump}")
 

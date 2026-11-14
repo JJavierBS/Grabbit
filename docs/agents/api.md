@@ -35,7 +35,17 @@ work in parallel against mocks.
   facts: Fact[]`. `value=null` means not enough data, shown as such.
 - `Candidate`: `entity_id, name, website?, description?, founding_date: Fact,
   funding_stage: Fact, headcount: Fact, total_funding: Fact, hq: Fact, industries: string[],
-  rounds: Round[], signals: Signal[]`.
+  rounds: Round[], signals: Signal[], links: HiddenLink[]`.
+- `HiddenLink`: `kind (trusted_co_investor|shared_investor), label, explanation,
+  via_entity_id, target: LinkNode, count, trust: TrustLevel, nodes: LinkNode[],
+  edges: LinkEdge[], facts: Fact[]`. A second-degree relationship in Cala's graph: `via` is
+  the investor on the startup's own path it branches from, `nodes`/`edges` the path that
+  proves it (Cala ids, relationship names, `role`), `count` the rounds (co-investor) or other
+  shortlisted startups (shared investor) behind it, `trust` the weakest edge in the path,
+  `facts` one per proving round with the edges' sources. Computed in discovery
+  (`app/discovery/links.py`), never by the model.
+- `LinkNode`: `entity_id, name, entity_type`. `LinkEdge`: `source, target, relationship,
+  role?` (Cala's direction: participant -> round).
 - `Profile`: `version, event_id?, thesis, filters {stages[], sectors_in[], sectors_out[],
   countries[], headcount_max?, ticket?: Fact}, reference_investors [{entity_id, name}],
   style {length (short|medium|long), detail (plain|technical), language, sections[]},

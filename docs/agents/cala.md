@@ -146,6 +146,14 @@ each round -> each investor's `PARTICIPATES_IN_FUNDING_ROUND` edges with `is_lea
 round dates (still active?).
 
 ## Data quirks: handle them in our code
+- Round participants can also have `role: GRANTOR` (not in the field guide): FIRSTPICK sat
+  as GRANTOR next to INVESTORs in a round (2026-11-14). Hidden links count it as funding;
+  `participants()` in `build.py` still lists INVESTOR and LENDER only.
+- Founders' `Person` nodes link almost only to their current company: of 40 founders and
+  CEOs of 20 Slush startups probed on 2026-11-14, none had a FOUNDED, WORKS_AT or IS_CEO_OF
+  edge to another company (only duplicates of the same one). "Repeat founder" links are not
+  supported by the data yet.
+- Investors have few round edges: Pioneer Fund 1, FIRSTPICK 8, Y Combinator 100+ (hub).
 - Duplicate entities: one person appeared as three `Person` nodes, Nvidia as two companies,
   one fund as both `Organization` and `Company`. Part of it is by design (each legal entity
   and subsidiary is its own `Company`). Merge by normalised name, `website` and registry id
@@ -169,6 +177,12 @@ round dates (still active?).
   `Event` (default Slush 2026), introspects each attendee, keeps startups
   (`filters.is_startup`), reads their `ISSUER` rounds and each last-round lead's other
   rounds, applies the profile filters and attaches the three signals.
+- `app/discovery/links.py`: hidden links (#75). After the profile filters, walks each
+  shortlisted startup's first 5 investors (newest round, leads first) and their first 15
+  rounds, serially, 25 s timeout per call, at most 300 new Cala calls per discovery run
+  (cached reads are free; `make warm` has no budget). The walk does not depend on the
+  profile; matching trusted investors (by id or fund name) is pure and reruns when the
+  reference investors resolve.
 - Warm the cache and get the pitch counts, from `backend/`:
   `uv run --env-file ../.env python -m scripts.warm [--limit N] [--dump DIR]`.
 

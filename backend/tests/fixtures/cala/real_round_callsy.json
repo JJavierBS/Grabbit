@@ -1,0 +1,202 @@
+{
+  "id": "4edc832c-ca28-5c7c-871e-4be638e16f4e",
+  "name": "Pre-Seed",
+  "entity_type": "FundingRound",
+  "description": null,
+  "properties": {
+    "name": {
+      "value": "Pre-Seed",
+      "sources": [
+        {
+          "name": "firstpick.vc",
+          "document": "https://firstpick.vc/blog/firstpick-ai-accelerator-2025-batch/",
+          "date": "2025-06-06",
+          "date_precision": "day",
+          "source_rank": "PRIMARY"
+        },
+        {
+          "name": "callsy.ai",
+          "document": "https://www.callsy.ai/insights/how-we-got-funded-500-global-firstpick",
+          "date": "2026-05-10",
+          "date_precision": "day",
+          "source_rank": "PRIMARY"
+        },
+        {
+          "name": "linkedin.com",
+          "document": "https://www.linkedin.com/posts/500eurasia_500global-eurasia-accelerator-activity-7374395084668047360-AjTu",
+          "date": "2025-09-18",
+          "date_precision": "day",
+          "source_rank": "PRIMARY"
+        }
+      ]
+    },
+    "round_label": {
+      "value": "PRE_SEED",
+      "sources": [
+        {
+          "name": "firstpick.vc",
+          "document": "https://firstpick.vc/blog/firstpick-ai-accelerator-2025-batch/",
+          "date": "2025-06-06",
+          "date_precision": "day",
+          "source_rank": "PRIMARY"
+        },
+        {
+          "name": "callsy.ai",
+          "document": "https://www.callsy.ai/insights/how-we-got-funded-500-global-firstpick",
+          "date": "2026-05-10",
+          "date_precision": "day",
+          "source_rank": "PRIMARY"
+        },
+        {
+          "name": "linkedin.com",
+          "document": "https://www.linkedin.com/posts/500eurasia_500global-eurasia-accelerator-activity-7374395084668047360-AjTu",
+          "date": "2025-09-18",
+          "date_precision": "day",
+          "source_rank": "PRIMARY"
+        }
+      ]
+    },
+    "transaction_value": {
+      "value": 50000.0,
+      "sources": [
+        {
+          "name": "bouncewatch.com",
+          "document": "https://bouncewatch.com/company/callsy-ai",
+          "date": "2025-11-13",
+          "date_precision": "day",
+          "source_rank": "AGGREGATOR"
+        }
+      ]
+    },
+    "transaction_value_units": {
+      "value": "EUR",
+      "sources": [
+        {
+          "name": "bouncewatch.com",
+          "document": "https://bouncewatch.com/company/callsy-ai",
+          "date": "2025-11-13",
+          "date_precision": "day",
+          "source_rank": "AGGREGATOR"
+        }
+      ]
+    },
+    "announcement_date": {
+      "value": "2025-09-18",
+      "sources": [
+        {
+          "name": "linkedin.com",
+          "document": "https://www.linkedin.com/posts/500eurasia_500global-eurasia-accelerator-activity-7374395084668047360-AjTu",
+          "date": "2025-09-18",
+          "date_precision": "day",
+          "source_rank": "PRIMARY"
+        }
+      ]
+    }
+  },
+  "relationships": {
+    "outgoing": {},
+    "incoming": {
+      "PARTICIPATES_IN_FUNDING_ROUND": [
+        {
+          "id": "50dad4a7-432c-5466-8848-ba26abf9c614",
+          "name": "Callsy AI",
+          "entity_type": "Company",
+          "properties": {
+            "role": "ISSUER",
+            "sources": [
+              {
+                "name": "firstpick.vc",
+                "document": "https://firstpick.vc/blog/firstpick-ai-accelerator-2025-batch/",
+                "date": "2025-06-06",
+                "date_precision": "day",
+                "source_rank": "PRIMARY"
+              },
+              {
+                "name": "callsy.ai",
+                "document": "https://www.callsy.ai/insights/how-we-got-funded-500-global-firstpick",
+                "date": "2026-05-10",
+                "date_precision": "day",
+                "source_rank": "PRIMARY"
+              },
+              {
+                "name": "linkedin.com",
+                "document": "https://www.linkedin.com/posts/500eurasia_500global-eurasia-accelerator-activity-7374395084668047360-AjTu",
+                "date": "2025-09-18",
+                "date_precision": "day",
+                "source_rank": "PRIMARY"
+              }
+            ],
+            "id": "cb9983da-04d1-5345-8c49-c8489df5d969"
+          }
+        },
+        {
+          "id": "6cf62619-4bed-46cc-acb4-c08a6d5f7754",
+          "name": "500 Global",
+          "entity_type": "Organization",
+          "properties": {
+            "role": "INVESTOR",
+            "sources": [
+              {
+                "name": "linkedin.com",
+                "document": "https://www.linkedin.com/posts/500eurasia_500global-eurasia-accelerator-activity-7374395084668047360-AjTu",
+                "date": "2025-09-18",
+                "date_precision": "day",
+                "source_rank": "PRIMARY"
+              },
+              {
+                "name": "callsy.ai",
+                "document": "https://www.callsy.ai/insights/how-we-got-funded-500-global-firstpick",
+                "date": "2026-05-10",
+                "date_precision": "day",
+                "source_rank": "PRIMARY"
+              },
+              {
+                "name": "bouncewatch.com",
+                "document": "https://bouncewatch.com/company/callsy-ai",
+                "date": "2025-11-13",
+                "date_precision": "day",
+                "source_rank": "AGGREGATOR"
+              }
+            ],
+            "is_lead": true,
+            "id": "509b064b-99d4-5121-b5ea-28f0dc73d87f"
+          }
+        },
+        {
+          "id": "88b67750-caa3-40ca-bfde-8eb88aa48ae4",
+          "name": "FIRSTPICK",
+          "entity_type": "Company",
+          "properties": {
+            "role": "INVESTOR",
+            "sources": [
+              {
+                "name": "firstpick.vc",
+                "document": "https://firstpick.vc/blog/firstpick-ai-accelerator-2025-batch/",
+                "date": "2025-06-06",
+                "date_precision": "day",
+                "source_rank": "PRIMARY"
+              },
+              {
+                "name": "callsy.ai",
+                "document": "https://www.callsy.ai/insights/how-we-got-funded-500-global-firstpick",
+                "date": "2026-05-10",
+                "date_precision": "day",
+                "source_rank": "PRIMARY"
+              },
+              {
+                "name": "bouncewatch.com",
+                "document": "https://bouncewatch.com/company/callsy-ai",
+                "date": "2025-11-13",
+                "date_precision": "day",
+                "source_rank": "AGGREGATOR"
+              }
+            ],
+            "is_lead": true,
+            "id": "0ce2f593-e9ce-5e1e-ad76-d6a371250be4"
+          }
+        }
+      ]
+    }
+  },
+  "numerical_observations": []
+}

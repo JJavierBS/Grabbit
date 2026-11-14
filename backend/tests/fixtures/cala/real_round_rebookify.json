@@ -1,0 +1,221 @@
+{
+  "id": "ae44bd34-20a9-586d-8796-b12981dfcd8d",
+  "name": "Pre-Seed",
+  "entity_type": "FundingRound",
+  "description": null,
+  "properties": {
+    "name": {
+      "value": "Pre-Seed",
+      "sources": [
+        {
+          "name": "latban.lv",
+          "document": "https://www.latban.lv/latbanevents/tpost/yyvljjbg91-rebookify-raises-200000-in-pre-seed-fund",
+          "date": "2025-10-30",
+          "date_precision": "day",
+          "source_rank": "PRIMARY"
+        },
+        {
+          "name": "itkey.media",
+          "document": "https://itkey.media/latvian-traveltech-rebookify-secures-eur-200k-to-bring-ai-automation-to-agency-bookings/",
+          "date": "2025-11-28",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+        }
+      ]
+    },
+    "round_label": {
+      "value": "PRE_SEED",
+      "sources": [
+        {
+          "name": "latban.lv",
+          "document": "https://www.latban.lv/latbanevents/tpost/yyvljjbg91-rebookify-raises-200000-in-pre-seed-fund",
+          "date": "2025-10-30",
+          "date_precision": "day",
+          "source_rank": "PRIMARY"
+        },
+        {
+          "name": "itkey.media",
+          "document": "https://itkey.media/latvian-traveltech-rebookify-secures-eur-200k-to-bring-ai-automation-to-agency-bookings/",
+          "date": "2025-11-28",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+        }
+      ]
+    },
+    "instrument": {
+      "value": "GRANT",
+      "sources": [
+        {
+          "name": "itkey.media",
+          "document": "https://itkey.media/latvian-traveltech-rebookify-secures-eur-200k-to-bring-ai-automation-to-agency-bookings/",
+          "date": "2025-11-28",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+        }
+      ]
+    },
+    "transaction_value": {
+      "value": 205000.0,
+      "sources": [
+        {
+          "name": "latban.lv",
+          "document": "https://www.latban.lv/latbanevents/tpost/yyvljjbg91-rebookify-raises-200000-in-pre-seed-fund",
+          "date": "2025-10-30",
+          "date_precision": "day",
+          "source_rank": "PRIMARY"
+        },
+        {
+          "name": "itkey.media",
+          "document": "https://itkey.media/latvian-traveltech-rebookify-secures-eur-200k-to-bring-ai-automation-to-agency-bookings/",
+          "date": "2025-11-28",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+        }
+      ]
+    },
+    "transaction_value_units": {
+      "value": "EUR",
+      "sources": [
+        {
+          "name": "latban.lv",
+          "document": "https://www.latban.lv/latbanevents/tpost/yyvljjbg91-rebookify-raises-200000-in-pre-seed-fund",
+          "date": "2025-10-30",
+          "date_precision": "day",
+          "source_rank": "PRIMARY"
+        },
+        {
+          "name": "itkey.media",
+          "document": "https://itkey.media/latvian-traveltech-rebookify-secures-eur-200k-to-bring-ai-automation-to-agency-bookings/",
+          "date": "2025-11-28",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+        }
+      ]
+    },
+    "announcement_date": {
+      "value": "2025-10-30",
+      "sources": [
+        {
+          "name": "latban.lv",
+          "document": "https://www.latban.lv/latbanevents/tpost/yyvljjbg91-rebookify-raises-200000-in-pre-seed-fund",
+          "date": "2025-10-30",
+          "date_precision": "day",
+          "source_rank": "PRIMARY"
+        }
+      ]
+    },
+    "event_date": {
+      "value": "2025-10-01",
+      "sources": [
+        {
+          "name": "itkey.media",
+          "document": "https://itkey.media/latvian-traveltech-rebookify-secures-eur-200k-to-bring-ai-automation-to-agency-bookings/",
+          "date": "2025-11-28",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+        }
+      ]
+    }
+  },
+  "relationships": {
+    "outgoing": {},
+    "incoming": {
+      "PARTICIPATES_IN_FUNDING_ROUND": [
+        {
+          "id": "7e55b310-361b-4b08-952d-98fcd8f2ab49",
+          "name": "500 Global (500 Emerging Europe)",
+          "entity_type": "Organization",
+          "properties": {
+            "role": "INVESTOR",
+            "sources": [
+              {
+                "name": "latban.lv",
+                "document": "https://www.latban.lv/latbanevents/tpost/yyvljjbg91-rebookify-raises-200000-in-pre-seed-fund",
+                "date": "2025-10-30",
+                "date_precision": "day",
+                "source_rank": "PRIMARY"
+              },
+              {
+                "name": "itkey.media",
+                "document": "https://itkey.media/latvian-traveltech-rebookify-secures-eur-200k-to-bring-ai-automation-to-agency-bookings/",
+                "date": "2025-11-28",
+                "date_precision": "day",
+                "source_rank": "PRESS"
+              }
+            ],
+            "id": "fd935939-3790-5f75-85c7-2360084b6d3e"
+          }
+        },
+        {
+          "id": "88b67750-caa3-40ca-bfde-8eb88aa48ae4",
+          "name": "FIRSTPICK",
+          "entity_type": "Company",
+          "properties": {
+            "role": "GRANTOR",
+            "sources": [
+              {
+                "name": "itkey.media",
+                "document": "https://itkey.media/latvian-traveltech-rebookify-secures-eur-200k-to-bring-ai-automation-to-agency-bookings/",
+                "date": "2025-11-28",
+                "date_precision": "day",
+                "source_rank": "PRESS"
+              }
+            ],
+            "id": "ec636adf-5e26-5021-80a5-917f3dac5c8b"
+          }
+        },
+        {
+          "id": "9edba942-38f7-4ed6-b5c2-ae6a9b9f8c9e",
+          "name": "LatBAN",
+          "entity_type": "Company",
+          "properties": {
+            "role": "INVESTOR",
+            "sources": [
+              {
+                "name": "latban.lv",
+                "document": "https://www.latban.lv/latbanevents/tpost/yyvljjbg91-rebookify-raises-200000-in-pre-seed-fund",
+                "date": "2025-10-30",
+                "date_precision": "day",
+                "source_rank": "PRIMARY"
+              },
+              {
+                "name": "itkey.media",
+                "document": "https://itkey.media/latvian-traveltech-rebookify-secures-eur-200k-to-bring-ai-automation-to-agency-bookings/",
+                "date": "2025-11-28",
+                "date_precision": "day",
+                "source_rank": "PRESS"
+              }
+            ],
+            "id": "99cb2b66-50ab-5432-b72b-1ba8d1b4f963"
+          }
+        },
+        {
+          "id": "d24b900d-d295-46aa-bd56-4b6b6d55fd00",
+          "name": "Rebookify",
+          "entity_type": "Company",
+          "properties": {
+            "role": "ISSUER",
+            "sources": [
+              {
+                "name": "latban.lv",
+                "document": "https://www.latban.lv/latbanevents/tpost/yyvljjbg91-rebookify-raises-200000-in-pre-seed-fund",
+                "date": "2025-10-30",
+                "date_precision": "day",
+                "source_rank": "PRIMARY"
+              },
+              {
+                "name": "itkey.media",
+                "document": "https://itkey.media/latvian-traveltech-rebookify-secures-eur-200k-to-bring-ai-automation-to-agency-bookings/",
+                "date": "2025-11-28",
+                "date_precision": "day",
+                "source_rank": "PRESS"
+              }
+            ],
+            "id": "5ddf4db5-942b-5528-bac9-b784b04c65ee"
+          }
+        }
+      ]
+    }
+  },
+  "numerical_observations": []
+}
