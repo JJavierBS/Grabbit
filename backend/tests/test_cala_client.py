@@ -150,3 +150,11 @@ async def test_connection_errors_are_retried_then_become_cala_error(cache):
         await client.introspect(COMPANY_ID)
     assert err.value.status == 503
     assert route.call_count == 2 and sleep.delays == [1.0]
+
+
+def test_missing_key_is_a_cala_error_so_fallbacks_catch_it(cache):
+    from app.cala.client import CalaKeyMissing
+
+    with pytest.raises(CalaError) as err:
+        CalaClient("", cache, mode="live")
+    assert isinstance(err.value, CalaKeyMissing) and isinstance(err.value, ValueError)
