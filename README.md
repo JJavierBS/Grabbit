@@ -18,11 +18,23 @@ TODO: what it does, in 3-5 lines. Screenshot or GIF here.
 TODO: keep in sync with the submission form.
 
 ## Run locally
+Needs `uv`, Node 24 and npm.
 ```sh
-cp .env.example .env   # fill in the keys
-make setup
-make dev
+make setup             # uv sync, npm ci, hooks; creates .env from .env.example
+make dev               # API on :8000, web app on http://localhost:5173
 ```
+Offline (no keys): set `CALA_MODE=replay` and `LLM_MODE=fake` in `.env`.
+
+| Command | What it does |
+| --- | --- |
+| `make test` | Backend pytest and frontend Vitest, quiet |
+| `make lint` | ruff, Biome and the TypeScript check |
+| `make fmt` | Formats only the files changed on your branch |
+| `make gen-api` | Regenerates `frontend/src/api/schema.ts` from the running API |
+| `make warm` | Fills the Cala cache for the demo |
+| `make docker` | Builds the production image (frontend served by FastAPI on :8000) |
+
+API docs while `make dev` runs: http://localhost:8000/api/docs
 
 ## Contributing
 After cloning, run `bash scripts/setup.sh` once (hooks, local exclusions, `.env`).

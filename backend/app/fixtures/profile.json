@@ -1,0 +1,64 @@
+{
+  "version": 3,
+  "event_id": "evt-slush-2026",
+  "thesis": "Early-stage Nordic and Baltic software companies I can co-invest in with people I trust.",
+  "filters": {
+    "stages": [
+      "pre_seed",
+      "seed",
+      "series_a"
+    ],
+    "sectors_in": [
+      "healthtech",
+      "climate tech",
+      "fintech"
+    ],
+    "sectors_out": [
+      "hardware"
+    ],
+    "countries": [
+      "FI",
+      "EE",
+      "SE"
+    ],
+    "headcount_max": 50,
+    "ticket": {
+      "value": 50000,
+      "unit": "EUR",
+      "trust": "primary",
+      "sources": [
+        {
+          "name": "You, in chat",
+          "url": null,
+          "date": "2026-11-14",
+          "date_precision": "day",
+          "rank": "primary"
+        }
+      ]
+    }
+  },
+  "reference_investors": [
+    {
+      "entity_id": "inv-aurora-ventures",
+      "name": "Aurora Ventures"
+    },
+    {
+      "entity_id": "inv-lumi-angels",
+      "name": "Lumi Angels"
+    }
+  ],
+  "style": {
+    "length": "short",
+    "detail": "plain",
+    "language": "en",
+    "sections": [
+      "Shortlist",
+      "Co-invest with who you trust",
+      "Ask them at Slush"
+    ]
+  },
+  "cadence": "event",
+  "alert_threshold": "medium",
+  "instructions": "Write for a business angel at Slush 2026 with tickets of 25-50k EUR. Lead with who led each round and whether Aurora Ventures or Lumi Angels are on the cap table. Skip hardware. Keep it short and plain; end with one question to ask each founder.",
+  "updated_at": "2026-11-14T09:12:00Z"
+}
