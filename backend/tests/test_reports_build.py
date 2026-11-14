@@ -183,3 +183,32 @@ async def test_prose_has_no_badges_and_no_doubled_round(now):
     assert "Based in Finland and led by North Pine Ventures, with Aurora Angels" in prose
     assert "raised EUR 2M in its Seed round." in prose
     assert "(Press)" in kiln  # the facts line under the prose keeps the badges
+
+
+def test_shown_since_prep_merges_candidates_and_rounds():
+    from app.reports.build import shown_since_prep
+
+    def report(rid, kind, candidates):
+        from datetime import UTC, datetime
+
+        from app.models import Report
+
+        return Report(
+            id=rid,
+            kind=kind,
+            created_at=datetime(2026, 11, 14, tzinfo=UTC),
+            profile_version=1,
+            summary="",
+            sections=[],
+            candidates=candidates,
+        )
+
+    a, b, *_ = fixture_candidates()
+    a_new_round = a.model_copy(
+        update={"rounds": [a.rounds[0].model_copy(update={"entity_id": "r-new"})]}
+    )
+    merged = shown_since_prep([report("d", "digest", [a_new_round]), report("p", "prep", [a, b])])
+    assert [c.entity_id for c in merged.candidates] == [a.entity_id, b.entity_id]
+    rounds = {r.entity_id for r in merged.candidates[0].rounds}
+    assert "r-new" in rounds and a.rounds[0].entity_id in rounds
+    assert shown_since_prep([]) is None

@@ -86,3 +86,12 @@ def test_profile_links_a_chat_typed_investor_to_the_cala_id_in_the_report(client
     refs = client.get("/api/profile").json()["reference_investors"]
 
     assert refs == [{"entity_id": "inv-aurora", "name": "Aurora Angels"}]
+
+
+def test_second_quiet_digest_does_not_reannounce_the_prep_startups(client):
+    client.post("/api/reports/run", json={"kind": "prep"})
+    first = client.post("/api/reports/run", json={"kind": "digest"}).json()
+    second = client.post("/api/reports/run", json={"kind": "digest"}).json()
+    assert first["candidates"] == []
+    assert second["candidates"] == []
+    assert second["summary"] == "Nothing new since the last report."

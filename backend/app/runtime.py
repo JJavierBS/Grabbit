@@ -37,11 +37,16 @@ async def watcher_job() -> None:
     from app.store.snapshots import WatchStore
     from app.watcher.run import Watcher
 
-    report = report_store.latest()
-    if report is None:
+    # Every company shown since the last prep report: a quiet digest stores no candidates,
+    # and watching only the latest report would then watch nothing.
+    candidates = {}
+    for report in report_store.since_last_prep():
+        for candidate in report.candidates:
+            candidates.setdefault(candidate.entity_id, candidate)
+    if not candidates:
         return
-    shortlist = [candidate.entity_id for candidate in report.candidates]
-    profile = resolve_references(profile_store.current(), report.candidates)
+    shortlist = list(candidates)
+    profile = resolve_references(profile_store.current(), list(candidates.values()))
     try:
         async with open_cala() as (client, conn):
             alerts = await Watcher(client, WatchStore(conn), publish=publish).run_once(

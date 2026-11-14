@@ -123,10 +123,12 @@ class CalaClient:
             self.calls_made += 1
             try:
                 resp = await self._http.request(method, path, params=params, json=body)
-            except httpx.TimeoutException as exc:
+            except httpx.TransportError as exc:
+                # Timeouts, refused connections, dropped reads: retried, then a CalaError,
+                # so every caller's Cala fallback also covers a dead network.
+                status = 504 if isinstance(exc, httpx.TimeoutException) else 503
                 if attempt >= self._max_retries:
-                    raise CalaError(504, f"timeout on {method} {path}") from exc
-                status = 504
+                    raise CalaError(status, f"{type(exc).__name__} on {method} {path}") from exc
             else:
                 if resp.status_code < 400:
                     return resp.json()

@@ -137,3 +137,16 @@ async def test_fresh_retrieve_skips_cached_copy_and_updates_it(cache):
     assert await client.retrieve(COMPANY_ID, {}, fresh=True) == {"v": 2}
     assert await client.retrieve(COMPANY_ID, {}) == {"v": 2}
     assert route.call_count == 2
+
+
+@respx.mock
+async def test_connection_errors_are_retried_then_become_cala_error(cache):
+    sleep = FakeSleep()
+    route = respx.get(f"{BASE_URL}/v1/entities/{COMPANY_ID}/introspection").mock(
+        side_effect=[httpx.ConnectError("no network"), httpx.ReadError("dropped")]
+    )
+    client = make_client(cache, sleep=sleep, max_retries=1)
+    with pytest.raises(CalaError) as err:
+        await client.introspect(COMPANY_ID)
+    assert err.value.status == 503
+    assert route.call_count == 2 and sleep.delays == [1.0]
