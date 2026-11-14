@@ -52,7 +52,8 @@ Owners are assigned on the issues; the board is the source of truth.
 | Context.dev (`https://api.context.dev/v1`) | Soft signals only (decisions.md) | `CONTEXT_DEV_API_KEY` |
 | Gemini API (Google DeepMind), SDK `google-genai` | Chat, self-personalization, report writing, importance score | `GEMINI_API_KEY`, `GEMINI_MODEL`, `LLM_MODE` |
 | Aiven for Valkey (`grabbit-cache`) | Shared Cala cache across deployed instances; SQLite stays the fallback | `VALKEY_URL` |
-| AWS EC2 host + Caddy edge, GHCR image | Deployed demo link; blue/green rollout by `deploy/rollout.sh` from GitHub Actions | `/opt/junction/.env` on the host, never in git |
+| Aiven Runtime (`grabbit-app`) | Deployed demo link, built from the root `Dockerfile`; redeploy by hand (README "Deploy") | App environment variables in Aiven, never in git |
+| AWS EC2 host + Caddy edge, GHCR image | Fallback deploy of `main`; blue/green rollout by `deploy/rollout.sh` from GitHub Actions | `/opt/junction/.env` on the host, never in git |
 
 ## Directory layout
 - `backend/`: FastAPI app (`app/`), tests (`tests/`), `pyproject.toml` managed by `uv`.
