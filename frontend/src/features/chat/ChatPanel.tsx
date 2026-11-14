@@ -11,6 +11,7 @@ import { useChat, useProfile, useSendMessage, useUndo } from "../../api/hooks/qu
 import type { ChatMessage } from "../../api/types";
 import { Button } from "../../components/Button";
 import { TextArea } from "../../components/Input";
+import { Logo } from "../../components/Logo";
 import { Markdown } from "../../components/Markdown";
 import { Skeleton } from "../../components/Skeleton";
 import { ChangeNote } from "./ChangeNote";
@@ -86,10 +87,13 @@ export function ChatPanel({ footer }: ChatPanelProps) {
           </div>
         )}
         {chat.isSuccess && messages.length === 0 && (
-          <p className={styles.empty}>
-            Tell Grabbit what you look for at Slush 2026, however vague. It asks two or three
-            questions backed by data, then writes your prep report.
-          </p>
+          <div className={styles.welcome}>
+            <Logo stacked className={styles.welcomeLogo} />
+            <p className={styles.empty}>
+              Tell Grabbit what you look for at Slush 2026, however vague. It asks two or three
+              questions backed by data, then writes your prep report.
+            </p>
+          </div>
         )}
         {messages.map((m) => (
           <Message

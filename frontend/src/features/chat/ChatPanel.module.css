@@ -57,9 +57,19 @@
   color: var(--color-text-muted);
 }
 
+.welcome {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-6);
+  margin: auto;
+}
+
+.welcomeLogo {
+  font-size: var(--text-2xl);
+}
+
 .empty {
   max-width: 34rem;
-  margin: auto;
   text-align: center;
   line-height: var(--leading-prose);
 }
