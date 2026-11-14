@@ -23,7 +23,8 @@ export function formatDate(iso: string, precision: Source["date_precision"] = "d
   return `${Number(day)} ${monthName} ${year}`;
 }
 
-function formatNumber(value: number, unit?: string | null): string {
+/** A number with its unit; currencies read compact from 10,000 on ("€650K"). */
+export function formatNumber(value: number, unit?: string | null): string {
   if (unit && /^[A-Z]{3}$/.test(unit)) {
     return new Intl.NumberFormat("en", {
       style: "currency",
