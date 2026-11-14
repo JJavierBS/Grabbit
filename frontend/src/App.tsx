@@ -15,6 +15,10 @@ import { DEFAULT_DEMO_FIXTURE, DemoAlertButton } from "./features/alerts/DemoAle
 import { askNotificationPermission } from "./features/alerts/notify";
 import { useAlertDelivery } from "./features/alerts/useAlertDelivery";
 import { ChatPanel } from "./features/chat/ChatPanel";
+import { CoachCard } from "./features/demo/CoachCard";
+import { DemoLauncher } from "./features/demo/DemoLauncher";
+import { useDemo, useGuideLocked } from "./features/demo/DemoRoot";
+import { GuideLock } from "./features/demo/GuideLock";
 import { ProfileHistory } from "./features/profile/ProfileHistory";
 import { ReportOutline } from "./features/report/ReportOutline";
 import { ReportSidebar, reportKey } from "./features/report/ReportSidebar";
@@ -74,16 +78,42 @@ export function Grabbit() {
   return <App key={current} />;
 }
 
+/** Links and SVG buttons ignore a disabled fieldset; the guided demo holds them here. */
+function isHeld(target: EventTarget | null): boolean {
+  if (!(target instanceof Element)) return false;
+  return Boolean(
+    target.closest("[data-guide-locked]") && target.closest('a[href], [role="button"]'),
+  );
+}
+
+function holdLocked(e: React.MouseEvent) {
+  if (!isHeld(e.target)) return;
+  e.preventDefault();
+  e.stopPropagation();
+}
+
+function holdLockedKey(e: React.KeyboardEvent) {
+  if ((e.key === "Enter" || e.key === " ") && isHeld(e.target)) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+}
+
 export function App() {
   const [panel, setPanel] = useState<Panel | null>(null);
   const [demo] = useState(demoFixture);
+  // Inside the guided demo (#184): sample data, nothing may touch the visitor's research.
+  const guided = useDemo()?.active ?? false;
+  // In the guided demo the guide card makes every move; the app's own controls wait.
+  const guideLocked = useGuideLocked();
+  const [alertsDelivered, setAlertsDelivered] = useState(0);
   const [confirmed, setConfirmed] = useState(false);
   const report = useLatestReport();
   const diff = useReportChanges(report.data ?? undefined);
   const profile = useProfile();
   // The turn ends before the background rebuild lands; until then the report says so.
   const rewriting = useReportRewriting(profile.data, report.data);
-  const send = useSendMessage();
+  const send = useSendMessage({ sandbox: guided });
   const client = useQueryClient();
   const chat = useChat();
   // An opened alert stays where it was opened: after the last message at that moment.
@@ -103,8 +133,8 @@ export function App() {
   // A research from before the list existed takes its name from its first message.
   const firstAsk = chat.data?.find((m) => m.role === "user")?.text;
   useEffect(() => {
-    if (firstAsk) nameResearch(firstAsk);
-  }, [firstAsk]);
+    if (firstAsk && !guided) nameResearch(firstAsk);
+  }, [firstAsk, guided]);
 
   /** Leaves this research: every cached query belongs to it, so none may survive. */
   const leave = (go: () => void) => {
@@ -147,7 +177,14 @@ export function App() {
     },
     [client],
   );
-  const deliver = useAlertDelivery(showAlert);
+  const deliverAlert = useAlertDelivery(showAlert, { desktop: !guided });
+  const deliver = useCallback(
+    (alert: Alert) => {
+      deliverAlert(alert);
+      setAlertsDelivered((n) => n + 1);
+    },
+    [deliverAlert],
+  );
   const stream = useEvents(deliver);
 
   // Opened by the app, not by the reader: focus moves without a focus frame around it.
@@ -160,6 +197,12 @@ export function App() {
     openedByApp.current = true;
     setPanel("report");
   }, [diff]);
+
+  // The demo waits for the visitor to open the report before it explains the badges.
+  const [reportOpened, setReportOpened] = useState(false);
+  useEffect(() => {
+    if (guided && panel === "report") setReportOpened(true);
+  }, [guided, panel]);
 
   useEffect(() => {
     if (!panel) return;
@@ -203,21 +246,45 @@ export function App() {
 
   const confirm = () => {
     setConfirmed(true);
-    void askNotificationPermission();
+    if (!guided) void askNotificationPermission();
     send.mutate(CONFIRM_MESSAGE);
   };
+
+  const coach = (submit: (text: string) => void, busy: boolean) => (
+    <CoachCard
+      signals={{
+        agentReplies: messages.filter((m) => m.role === "agent").length,
+        hasReport: Boolean(report.data),
+        reportOpened,
+        profileVersion: profile.data?.version ?? 0,
+        alerts: alertsDelivered,
+      }}
+      actions={{
+        send: submit,
+        openReport: () => openPanel("report"),
+        confirm: () => {
+          setConfirmed(true);
+          submit(CONFIRM_MESSAGE);
+        },
+      }}
+      busy={busy}
+      floating={panel !== null}
+    />
+  );
 
   const reportInChat = report.isPending ? (
     <Skeleton block="card" label="Loading the report" />
   ) : report.data ? (
-    <ReportOutline
-      key={report.data.id}
-      report={report.data}
-      open={panel === "report" && pastReport === null}
-      rewriting={rewriting}
-      rewritten={diff !== null}
-      onOpen={() => openPanel("report")}
-    />
+    <GuideLock>
+      <ReportOutline
+        key={report.data.id}
+        report={report.data}
+        open={panel === "report" && pastReport === null}
+        rewriting={rewriting}
+        rewritten={diff !== null}
+        onOpen={() => openPanel("report")}
+      />
+    </GuideLock>
   ) : report.isError ? (
     <div className={styles.reportError} role="alert">
       <p className={styles.reportErrorTitle}>The report did not load</p>
@@ -253,23 +320,31 @@ export function App() {
       className={styles.app}
       data-sidebar={sidebarOpen ? "open" : "closed"}
       data-drawer={drawerOpen ? "open" : undefined}
+      data-guided={guided || undefined}
+      onClickCapture={guided ? holdLocked : undefined}
+      onKeyDownCapture={guided ? holdLockedKey : undefined}
     >
-      <ReportSidebar
-        id="report-sidebar"
-        className={styles.sidebar}
-        activeKey={activeKey}
-        onOpen={openReport}
-        onClose={closeSidebar}
-        brand={<Logo />}
-        top={
-          <ResearchList
-            current={research.current}
-            list={research.list}
-            onNew={newResearch}
-            onOpen={openResearch}
-          />
-        }
-      />
+      <GuideLock>
+        <ReportSidebar
+          id="report-sidebar"
+          className={styles.sidebar}
+          activeKey={activeKey}
+          onOpen={openReport}
+          onClose={closeSidebar}
+          brand={<Logo />}
+          top={
+            guided ? undefined : (
+              <ResearchList
+                current={research.current}
+                list={research.list}
+                onNew={newResearch}
+                onOpen={openResearch}
+              />
+            )
+          }
+          foot={guided ? undefined : <DemoLauncher place="sidebar" />}
+        />
+      </GuideLock>
       {drawerOpen && (
         <button
           type="button"
@@ -292,6 +367,7 @@ export function App() {
             aria-controls="report-sidebar"
             aria-expanded={drawerOpen}
             icon={<PanelLeft aria-hidden="true" />}
+            disabled={guideLocked}
             onClick={openSidebar}
           />
           <span className={styles.topLogo} aria-hidden="true">
@@ -301,21 +377,26 @@ export function App() {
             <span className={styles.statusLabel}>{STATUS_TEXT[stream]}</span>
           </span>
           <div className={styles.actions}>
-            {demo && <DemoAlertButton fixture={demo} labelClassName={styles.actionLabel} />}
-            <Button
-              variant="ghost"
-              size="sm"
-              className={styles.newResearch}
-              icon={<SquarePen aria-hidden="true" />}
-              onClick={newResearch}
-            >
-              <span className={styles.actionLabel}>New research</span>
-            </Button>
+            {demo && !guided && (
+              <DemoAlertButton fixture={demo} labelClassName={styles.actionLabel} />
+            )}
+            {!guided && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className={styles.newResearch}
+                icon={<SquarePen aria-hidden="true" />}
+                onClick={newResearch}
+              >
+                <span className={styles.actionLabel}>New research</span>
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="sm"
               icon={<SlidersHorizontal aria-hidden="true" />}
               aria-pressed={panel === "history"}
+              disabled={guideLocked}
               onClick={() => (panel === "history" ? closePanel() : openPanel("history"))}
             >
               <span className={styles.actionLabel}>What changed</span>
@@ -339,6 +420,7 @@ export function App() {
                 </>
               }
               followKey={`${report.data?.id}|${reportAnchor}|${openAlert?.alert.id}|${rewriting}`}
+              coach={guided ? coach : undefined}
             />
           </div>
           {shownPanel && (

@@ -1,5 +1,13 @@
 import { ArrowDown, MicVocal, RefreshCw, SendHorizontal, Square } from "lucide-react";
-import { type FormEvent, Fragment, type KeyboardEvent, type ReactNode, useState } from "react";
+import {
+  type FormEvent,
+  Fragment,
+  type KeyboardEvent,
+  type ReactNode,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   useChat,
   useLatestReport,
@@ -15,6 +23,9 @@ import { TextArea } from "../../components/Input";
 import { Logo } from "../../components/Logo";
 import { Markdown } from "../../components/Markdown";
 import { Skeleton } from "../../components/Skeleton";
+import { DemoLauncher } from "../demo/DemoLauncher";
+import { useDemo } from "../demo/DemoRoot";
+import { GuideLock } from "../demo/GuideLock";
 import { AgentQuestions } from "./AgentQuestions";
 import { ChangeNote } from "./ChangeNote";
 import styles from "./ChatPanel.module.css";
@@ -47,17 +58,21 @@ interface ChatPanelProps {
   renderAfter?: (message: ChatMessage) => ReactNode;
   /** Changes when the anchored or footer items change, so the log can follow them. */
   followKey?: string;
+  /** The guided demo's card, docked on the composer (#184); it sends through this composer. */
+  coach?: (send: (text: string) => void, busy: boolean) => ReactNode;
 }
 
-export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
+export function ChatPanel({ footer, renderAfter, followKey, coach }: ChatPanelProps) {
   const chat = useChat();
   const profile = useProfile();
   const report = useLatestReport();
   const progress = useTurnProgress();
   const trace = useWalkTrace().data;
-  const send = useSendMessage();
+  const demo = useDemo();
+  const send = useSendMessage({ sandbox: demo?.active });
   const undo = useUndo();
   const [draft, setDraft] = useState("");
+  const field = useRef<HTMLTextAreaElement>(null);
   const dictation = useDictation(setDraft);
   const messages = chat.data ?? [];
   const hasReport = Boolean(report.data);
@@ -67,6 +82,12 @@ export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
   // The live walk grows under the working line; follow it like a new message.
   const growth = trace ? `${trace.steps.length}|${trace.nodes}|${trace.answer?.length ?? 0}` : "";
   const follow = useFollowLog(messages, chat.isSuccess, `${followKey}|${send.isPending}|${growth}`);
+
+  // Back from the guided demo: the visitor's own research starts at the composer.
+  const returning = demo?.returning;
+  useEffect(() => {
+    if (returning) field.current?.focus();
+  }, [returning]);
 
   const submit = (text: string) => {
     const value = text.trim();
@@ -130,6 +151,7 @@ export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
                 <span>A sector, a stage, investors you trust:</span>{" "}
                 <span>however vague, I ask the rest.</span>
               </p>
+              <DemoLauncher place="welcome" />
             </div>
           )}
           {messages.map((m) => (
@@ -142,6 +164,7 @@ export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
                 onUndo={() => undo.mutate()}
                 onAnswer={m.id === messages.at(-1)?.id ? submit : undefined}
                 busy={send.isPending}
+                showSteps={demo?.active}
               />
               {renderAfter?.(m)}
             </Fragment>
@@ -154,6 +177,7 @@ export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
       </div>
 
       <form className={styles.composer} onSubmit={onSubmit}>
+        {coach?.(submit, send.isPending)}
         {follow.behind && (
           <Button
             variant="secondary"
@@ -181,64 +205,69 @@ export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
           </p>
         )}
         {suggestions.length > 0 && (
-          <div className={styles.suggestions}>
-            {suggestions.map((s) => (
-              <Button
-                key={s}
-                variant="secondary"
-                size="sm"
-                disabled={send.isPending}
-                onClick={() => submit(s)}
-              >
-                {s}
-              </Button>
-            ))}
-          </div>
+          <GuideLock>
+            <div className={styles.suggestions}>
+              {suggestions.map((s) => (
+                <Button
+                  key={s}
+                  variant="secondary"
+                  size="sm"
+                  disabled={send.isPending}
+                  onClick={() => submit(s)}
+                >
+                  {s}
+                </Button>
+              ))}
+            </div>
+          </GuideLock>
         )}
-        <div className={styles.inputRow}>
-          <TextArea
-            label="Message Grabbit"
-            hideLabel
-            placeholder={
-              dictation.listening
-                ? "Listening… press Stop when you are done"
-                : dictation.transcribing
-                  ? "Writing down what you said…"
-                  : hasReport
-                    ? PLACEHOLDER_REPORT
-                    : PLACEHOLDER_FIRST
-            }
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={onKeyDown}
-            rows={1}
-          />
-          {dictation.supported && (
-            <Button
-              variant={dictation.listening ? "primary" : "ghost"}
-              aria-label={dictation.listening ? "Stop talking" : "Talk"}
-              aria-pressed={dictation.listening}
-              className={styles.talk}
-              loading={dictation.transcribing}
-              onClick={dictation.toggle}
-              icon={
-                dictation.listening ? (
-                  <Square aria-hidden="true" />
-                ) : (
-                  <MicVocal aria-hidden="true" />
-                )
+        <GuideLock>
+          <div className={styles.inputRow}>
+            <TextArea
+              label="Message Grabbit"
+              hideLabel
+              placeholder={
+                dictation.listening
+                  ? "Listening… press Stop when you are done"
+                  : dictation.transcribing
+                    ? "Writing down what you said…"
+                    : hasReport
+                      ? PLACEHOLDER_REPORT
+                      : PLACEHOLDER_FIRST
               }
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={onKeyDown}
+              rows={1}
+              ref={field}
             />
-          )}
-          <Button
-            type="submit"
-            aria-label="Send"
-            className={styles.send}
-            loading={send.isPending}
-            disabled={!draft.trim()}
-            icon={<SendHorizontal aria-hidden="true" />}
-          />
-        </div>
+            {dictation.supported && (
+              <Button
+                variant={dictation.listening ? "primary" : "ghost"}
+                aria-label={dictation.listening ? "Stop talking" : "Talk"}
+                aria-pressed={dictation.listening}
+                className={styles.talk}
+                loading={dictation.transcribing}
+                onClick={dictation.toggle}
+                icon={
+                  dictation.listening ? (
+                    <Square aria-hidden="true" />
+                  ) : (
+                    <MicVocal aria-hidden="true" />
+                  )
+                }
+              />
+            )}
+            <Button
+              type="submit"
+              aria-label="Send"
+              className={styles.send}
+              loading={send.isPending}
+              disabled={!draft.trim()}
+              icon={<SendHorizontal aria-hidden="true" />}
+            />
+          </div>
+        </GuideLock>
       </form>
     </section>
   );
@@ -254,9 +283,20 @@ interface MessageProps {
   /** Answers its questions with a click; only the latest reply's are still open (#153). */
   onAnswer?: (text: string) => void;
   busy: boolean;
+  /** Opens "How I found this" instead of folding it. */
+  showSteps?: boolean;
 }
 
-function Message({ message, entering, canUndo, undoing, onUndo, onAnswer, busy }: MessageProps) {
+function Message({
+  message,
+  entering,
+  canUndo,
+  undoing,
+  onUndo,
+  onAnswer,
+  busy,
+  showSteps = false,
+}: MessageProps) {
   const isAgent = message.role === "agent";
   const { note, rest } = isAgent
     ? changeNoteText(message.text, message.profile_changes)
@@ -268,12 +308,18 @@ function Message({ message, entering, canUndo, undoing, onUndo, onAnswer, busy }
       data-enter={entering || undefined}
     >
       <p className="visually-hidden">{isAgent ? "Grabbit said:" : "You said:"}</p>
-      {note && <ChangeNote note={note} canUndo={canUndo} undoing={undoing} onUndo={onUndo} />}
+      {note && (
+        <GuideLock>
+          <ChangeNote note={note} canUndo={canUndo} undoing={undoing} onUndo={onUndo} />
+        </GuideLock>
+      )}
       {/* A visual answer opens with its own sentence; the text stays as the model's history. */}
       {message.ui ? (
         <div className={styles.visual}>
-          <VisualAnswer ui={message.ui} graph={message.graph} />
-          {message.walk && <HowIFound walk={message.walk} />}
+          <GuideLock>
+            <VisualAnswer ui={message.ui} graph={message.graph} />
+          </GuideLock>
+          {message.walk && <HowIFound walk={message.walk} open={showSteps} />}
         </div>
       ) : (
         rest && (
@@ -284,7 +330,9 @@ function Message({ message, entering, canUndo, undoing, onUndo, onAnswer, busy }
         )
       )}
       {isAgent && message.questions.length > 0 && (
-        <AgentQuestions questions={message.questions} onAnswer={onAnswer} busy={busy} />
+        <GuideLock>
+          <AgentQuestions questions={message.questions} onAnswer={onAnswer} busy={busy} />
+        </GuideLock>
       )}
     </article>
   );

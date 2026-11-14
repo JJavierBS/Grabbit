@@ -17,11 +17,11 @@ export function SimulatedBadge() {
  * Delivers one alert: a desktop notification when the tab is hidden (and allowed), and
  * always a toast, so the alert is still on screen when the user comes back.
  */
-export function useAlertDelivery(onOpen: (alert: Alert) => void) {
+export function useAlertDelivery(onOpen: (alert: Alert) => void, { desktop = true } = {}) {
   const { toast } = useToast();
   return useCallback(
     (alert: Alert) => {
-      if (document.visibilityState === "hidden")
+      if (desktop && document.visibilityState === "hidden")
         showDesktopNotification(alert, () => onOpen(alert));
       toast({
         tone: "alert",
@@ -32,6 +32,6 @@ export function useAlertDelivery(onOpen: (alert: Alert) => void) {
         duration: null,
       });
     },
-    [toast, onOpen],
+    [toast, onOpen, desktop],
   );
 }

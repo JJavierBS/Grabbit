@@ -9,8 +9,17 @@
   synthetic fixtures (`src/dev/fakeApi.ts`, `src/dev/fixtures.ts`). The "Alerts" button
   in the top bar fires a simulated alert 30 s after the click. Dev only; tests use `src/test/renderApp.tsx` (`mockApi`) instead.
 - Design system reference: open `/?gallery`.
-- Demo trigger: a "Simulate event" button shows with the fake API, or with `?demo` (fixture
-  `new_round`) or `?demo=<fixture>` against the real backend (`DEMO_MODE=1`).
+- Demo trigger: an "Alerts" button shows with the fake API, or with `?demo` (fixture
+  `grei_seed_round`) or `?demo=<fixture>` against the real backend (`DEMO_MODE=1`).
+- Guided demo (#184, `src/features/demo/`): a five-step tour on sample data for first-time
+  visitors. It opens by itself on the first visit in a browser (`grabbit.demo.seen:v1`), and
+  replays from "See how it works" on the empty chat, "How Grabbit works" at the
+  sidebar foot, or `?tour`. `DemoRoot` swaps in a fresh `createDemoApi()` (a
+  `createFakeApi` instance from `src/dev/fakeApi.ts`) and its own `QueryClient`, then
+  restores both on exit. Inside it, `useDemo()?.active` is true: never write to the
+  visitor's research, ask for permissions or call the real API from there. Every app
+  control goes inside `<GuideLock>`, which disables it during the demo: the coach card makes
+  every move.
 
 ## Structure
 - `src/api/`: generated `schema.ts` (api.md, `make gen-api`), named aliases in `types.ts`,

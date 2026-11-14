@@ -9,6 +9,7 @@ import { Markdown } from "../../components/Markdown";
 import { Skeleton } from "../../components/Skeleton";
 import { useSettled } from "../../lib/useSettled";
 import { WorkingLine } from "../chat/WorkingLine";
+import { GuideLock } from "../demo/GuideLock";
 import { CandidateCard } from "./CandidateCard";
 import styles from "./ReportView.module.css";
 import { type ChangeMark, describeDiff, type ReportDiff } from "./reportDiff";
@@ -122,22 +123,26 @@ export function ReportView({
         {!archived && (
           <div className={styles.actions}>
             {onConfirm && (
-              <Button
-                icon={<BellRing aria-hidden="true" />}
-                onClick={onConfirm}
-                disabled={confirmed}
-              >
-                {confirmed ? "Watching your shortlist" : "Looks right, keep me posted"}
-              </Button>
+              <GuideLock>
+                <Button
+                  icon={<BellRing aria-hidden="true" />}
+                  onClick={onConfirm}
+                  disabled={confirmed}
+                >
+                  {confirmed ? "Watching your shortlist" : "Looks right, keep me posted"}
+                </Button>
+              </GuideLock>
             )}
-            <Button
-              variant="ghost"
-              icon={<RefreshCw aria-hidden="true" />}
-              loading={run.isPending}
-              onClick={() => run.mutate(report.kind)}
-            >
-              Run now
-            </Button>
+            <GuideLock>
+              <Button
+                variant="ghost"
+                icon={<RefreshCw aria-hidden="true" />}
+                loading={run.isPending}
+                onClick={() => run.mutate(report.kind)}
+              >
+                Run now
+              </Button>
+            </GuideLock>
           </div>
         )}
         {run.isError && (
@@ -147,70 +152,72 @@ export function ReportView({
         )}
       </header>
 
-      {diff && lines.length > 0 && (
-        <div className={styles.banner} role="status">
-          <Sparkles aria-hidden="true" className={styles.bannerIcon} />
-          <p>
-            <strong>Rewritten for you.</strong> {lines.join(" · ")}
+      <GuideLock>
+        {diff && lines.length > 0 && (
+          <div className={styles.banner} role="status">
+            <Sparkles aria-hidden="true" className={styles.bannerIcon} />
+            <p>
+              <strong>Rewritten for you.</strong> {lines.join(" · ")}
+            </p>
+          </div>
+        )}
+
+        {diff?.removedSections.map((title) => (
+          <p key={title} className={styles.removed}>
+            <Minus aria-hidden="true" />
+            <span>Removed section: </span>
+            <s>{title}</s>
           </p>
-        </div>
-      )}
+        ))}
+        {diff?.removedCandidates.map((c) => (
+          <p key={c.entity_id} className={styles.removed}>
+            <Minus aria-hidden="true" />
+            <span>Removed startup: </span>
+            <s>{c.name}</s>
+          </p>
+        ))}
 
-      {diff?.removedSections.map((title) => (
-        <p key={title} className={styles.removed}>
-          <Minus aria-hidden="true" />
-          <span>Removed section: </span>
-          <s>{title}</s>
-        </p>
-      ))}
-      {diff?.removedCandidates.map((c) => (
-        <p key={c.entity_id} className={styles.removed}>
-          <Minus aria-hidden="true" />
-          <span>Removed startup: </span>
-          <s>{c.name}</s>
-        </p>
-      ))}
+        {report.sections.length === 0 && report.candidates.length === 0 && (
+          <EmptyState title="No startup matches yet">
+            Tell Grabbit to widen the thesis in the chat, for example another stage or sector.
+          </EmptyState>
+        )}
 
-      {report.sections.length === 0 && report.candidates.length === 0 && (
-        <EmptyState title="No startup matches yet">
-          Tell Grabbit to widen the thesis in the chat, for example another stage or sector.
-        </EmptyState>
-      )}
+        {report.sections.map((section) => {
+          const mark = diff?.sections[section.title];
+          const fresh = section.candidate_ids.filter((id) => !shown.has(id) && byId.has(id));
+          const seen = section.candidate_ids.filter((id) => shown.has(id) && byId.has(id));
+          for (const id of fresh) shown.add(id);
+          return (
+            <section
+              key={section.title}
+              className={styles.section}
+              data-changed={mark ?? undefined}
+              data-settled={(mark && settled) || undefined}
+            >
+              <div className={styles.sectionHead}>
+                <h3 className={styles.sectionTitle}>{section.title}</h3>
+                {mark && <Badge tone="warning">{MARK_LABEL[mark]}</Badge>}
+              </div>
+              <Markdown source={section.body_md} />
+              {seen.length > 0 && (
+                <SeeAbove candidates={seen.map((id) => byId.get(id) as Candidate)} />
+              )}
+              {fresh.map((id) => (
+                <CandidateCard
+                  key={id}
+                  candidate={byId.get(id) as Candidate}
+                  trusted={trusted}
+                  mark={diff?.candidates[id]}
+                  settled={settled}
+                />
+              ))}
+            </section>
+          );
+        })}
 
-      {report.sections.map((section) => {
-        const mark = diff?.sections[section.title];
-        const fresh = section.candidate_ids.filter((id) => !shown.has(id) && byId.has(id));
-        const seen = section.candidate_ids.filter((id) => shown.has(id) && byId.has(id));
-        for (const id of fresh) shown.add(id);
-        return (
-          <section
-            key={section.title}
-            className={styles.section}
-            data-changed={mark ?? undefined}
-            data-settled={(mark && settled) || undefined}
-          >
-            <div className={styles.sectionHead}>
-              <h3 className={styles.sectionTitle}>{section.title}</h3>
-              {mark && <Badge tone="warning">{MARK_LABEL[mark]}</Badge>}
-            </div>
-            <Markdown source={section.body_md} />
-            {seen.length > 0 && (
-              <SeeAbove candidates={seen.map((id) => byId.get(id) as Candidate)} />
-            )}
-            {fresh.map((id) => (
-              <CandidateCard
-                key={id}
-                candidate={byId.get(id) as Candidate}
-                trusted={trusted}
-                mark={diff?.candidates[id]}
-                settled={settled}
-              />
-            ))}
-          </section>
-        );
-      })}
-
-      <Leftovers report={report} shown={shown} trusted={trusted} diff={diff} settled={settled} />
+        <Leftovers report={report} shown={shown} trusted={trusted} diff={diff} settled={settled} />
+      </GuideLock>
     </article>
   );
 }
