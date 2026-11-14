@@ -206,12 +206,16 @@ be cut out cleanly. Replace it with the original vector when the team has one.
 
 ## Layout
 
-- **Top bar:** the Grabbit logo (`components/Logo.tsx`) on the left, the live
-  status next to it, then "Alerts" (demo only), "Reports" and "What changed" on the right
-  as small ghost buttons. No border, no other labels.
+- **Sidebar (left):** `--sidebar-width` (17rem), `--color-sidebar` fill, soft right edge.
+  The logo and a close button at the top, then "Reports" grouped by day ("Today",
+  "Yesterday", a date), in the manner of a conversation list. It collapses on wide screens
+  (remembered in the browser) and becomes a drawer with a scrim below 64rem.
+- **Top bar:** an "Open sidebar" button and the logo only while the sidebar is hidden, the live
+  the live status, then "Alerts" (demo only) and "What changed" on the right as small ghost
+  buttons. No border, no other labels.
 - **Chat:** one column, 44rem max, centred while the panel is closed. Composer at the
   foot with suggestion chips above it.
-- **Side panel:** `min(52rem, 56vw)` wide, surface fill, soft left edge, 14px top-left
+- **Side panel:** shares the workspace with the chat at 1.3 : 1, the chat never under 24rem, surface fill, soft left edge, 14px top-left
   corner, sticky bar with the panel name and a close button. It slides in from 2rem right
   in 280ms. Escape and the close button close it, and focus returns to the opener. Below
   64rem it is fixed full screen.
@@ -241,11 +245,13 @@ again (or send) to stop. The text stays in the box for the user to read and send
 misheard word never reaches the agent unseen. Browsers without speech recognition do not
 show the button. A blocked microphone shows a one-line error above the chips.
 
-### Reports
-The side panel lists every report, newest first, from `GET /api/reports`: title with a
-neutral "Latest" badge on the newest, then date, time, number of startups and profile
-version, and a chevron. The whole row is the button. Opening an older report shows it
-read only (no confirm, no "Run now") with an "All reports" back button in the panel bar.
+### Report history (sidebar)
+Every report from `GET /api/reports`, newest first, grouped by day. Each row: the report
+summary on one line (14px medium ink, ellipsis), then "Latest" on the newest, the time,
+the number of startups and the profile version (12px muted). Hover fills the row with
+`--color-sidebar-hover`; the report open in the panel is a white raised row with
+`aria-current`. Opening the newest shows the live report; an older one opens read only
+(no confirm, no "Run now") as "Past report".
 
 ### Report Outline (signature)
 The report as it shows in the chat: the report title (16px semibold), a meta line (date,

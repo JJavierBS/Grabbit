@@ -11,6 +11,7 @@ const base = {
   "GET /api/profile/history": () => historyV2,
   "GET /api/chat": () => chatV2,
   "GET /api/alerts": () => [],
+  "GET /api/reports": () => [],
 };
 
 describe("App", () => {
@@ -139,18 +140,18 @@ describe("App", () => {
     expect(screen.getByText("Live")).toBeInTheDocument();
   });
 
-  it("lists past reports and opens one read only", async () => {
+  it("lists past reports in the sidebar and opens one read only", async () => {
     mockApi({
       ...base,
       "GET /api/reports/latest": () => reportV2,
       "GET /api/reports": () => [reportV2, reportV1],
     });
     renderWithClient(<App />);
-    await userEvent.click(await screen.findByRole("button", { name: "Reports" }));
-    const panel = screen.getByRole("region", { name: "Reports" });
-    const items = await within(panel).findAllByRole("button", { name: /Slush 2026 prep report/ });
+    const nav = screen.getByRole("navigation", { name: "Reports" });
+    const items = await within(nav).findAllByRole("button");
     expect(items).toHaveLength(2);
-    expect(within(items[0]).getByText("Latest")).toBeInTheDocument();
+    expect(items[0]).toHaveTextContent(reportV2.summary);
+    expect(items[0]).toHaveTextContent("Latest");
 
     await userEvent.click(items[1]);
     const past = screen.getByRole("region", { name: "Past report" });
@@ -158,9 +159,30 @@ describe("App", () => {
       within(past).getByText(`Profile version ${reportV1.profile_version}`),
     ).toBeInTheDocument();
     expect(within(past).queryByRole("button", { name: "Run now" })).not.toBeInTheDocument();
+    expect(items[1]).toHaveAttribute("aria-current", "true");
 
-    await userEvent.click(within(past).getByRole("button", { name: "All reports" }));
-    expect(screen.getByRole("region", { name: "Reports" })).toBeInTheDocument();
+    await userEvent.click(items[0]);
+    const latest = screen.getByRole("region", { name: "Report" });
+    expect(within(latest).getByRole("button", { name: "Run now" })).toBeInTheDocument();
+    expect(items[0]).toHaveAttribute("aria-current", "true");
+    expect(items[1]).not.toHaveAttribute("aria-current");
+  });
+
+  it("remembers a collapsed sidebar", async () => {
+    localStorage.clear();
+    mockApi({ ...base, "GET /api/reports/latest": () => reportV1 });
+    const first = renderWithClient(<App />);
+    const shell = first.container.firstElementChild as HTMLElement;
+    expect(shell).toHaveAttribute("data-sidebar", "open");
+    await userEvent.click(screen.getByRole("button", { name: "Close sidebar" }));
+    expect(shell).toHaveAttribute("data-sidebar", "closed");
+    first.unmount();
+
+    const second = renderWithClient(<App />);
+    expect(second.container.firstElementChild).toHaveAttribute("data-sidebar", "closed");
+    await userEvent.click(screen.getByRole("button", { name: "Open sidebar" }));
+    expect(second.container.firstElementChild).toHaveAttribute("data-sidebar", "open");
+    localStorage.clear();
   });
 
   it("fires the demo alert 30 s after Alerts is pressed, with no demo data label", async () => {

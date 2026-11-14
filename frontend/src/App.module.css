@@ -1,20 +1,56 @@
 .app {
   display: grid;
-  grid-template-rows: auto 1fr;
+  grid-template-columns: auto minmax(0, 1fr);
   height: 100dvh;
   background: var(--color-ground);
+}
+
+.workspace {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* Wide screens: the sidebar sits beside the chat; collapsed, its logo and opener move up. */
+.app[data-sidebar="closed"] .sidebar {
+  display: none;
+}
+
+.openSidebar {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  color: var(--color-text-muted);
+}
+
+/* Scoped to the top bar so it outranks the Button's own display rule. */
+.topbar .openSidebar,
+.topbar .topLogo {
+  display: none;
+}
+
+.app[data-sidebar="closed"] .topbar .openSidebar,
+.app[data-sidebar="closed"] .topbar .topLogo {
+  display: inline-flex;
+}
+
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-drawer) - 1);
+  padding: 0;
+  border: 0;
+  background: rgb(20 21 28 / 0.28);
+  animation: fade var(--duration-base) var(--ease-out);
 }
 
 .topbar {
   display: flex;
   align-items: center;
-  gap: var(--space-3) var(--space-5);
-  padding: var(--space-3) var(--space-5);
-}
-
-.brand {
-  display: flex;
-  min-width: 0;
+  gap: var(--space-3);
+  min-height: 3.5rem;
+  padding: var(--space-2) var(--space-5);
 }
 
 .status {
@@ -62,8 +98,9 @@
   min-height: 0;
 }
 
+/* The chat keeps a readable width even with the sidebar and the panel both open. */
 .main[data-panel] {
-  grid-template-columns: minmax(0, 1fr) var(--panel-width);
+  grid-template-columns: minmax(24rem, 1fr) minmax(0, 1.3fr);
 }
 
 .chat {
@@ -122,6 +159,12 @@
   font-weight: var(--weight-semibold);
 }
 
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
 @keyframes slide-in {
   from {
     opacity: 0;
@@ -129,8 +172,38 @@
   }
 }
 
-/* Narrow screens: the panel covers the chat, like a sheet. */
+/* Narrow screens: the panel covers the chat, like a sheet; the sidebar is a drawer. */
 @media (max-width: 63.99rem) {
+  .app {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .app .sidebar,
+  .app[data-sidebar="closed"] .sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: var(--z-drawer);
+    display: grid;
+    width: min(var(--sidebar-width), 86vw);
+    box-shadow: var(--shadow-lg);
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition:
+      transform var(--duration-slow) var(--ease-out),
+      visibility 0s linear var(--duration-slow);
+  }
+
+  .app[data-drawer="open"] .sidebar {
+    transform: none;
+    visibility: visible;
+    transition: transform var(--duration-slow) var(--ease-out);
+  }
+
+  .topbar .openSidebar,
+  .topbar .topLogo {
+    display: inline-flex;
+  }
+
   .main[data-panel] {
     grid-template-columns: minmax(0, 1fr);
   }
