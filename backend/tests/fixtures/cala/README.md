@@ -5,8 +5,9 @@ directly. No network in tests.
 
 Until real recordings land, these are hand-written from the shapes in
 `docs/agents/cala.md` and `docs/reference/cala-field-guide.md` (entity names are invented).
-Replace them with trimmed real responses from `backend/scripts/record_fixtures.py`
-(TODO(#23)), keeping the file names so tests keep working.
+Replace them with trimmed real responses dumped by `python -m scripts.warm --limit 5
+--dump <dir>` (one file per node), keeping these file names so tests keep working. The
+pipeline tests in `test_discovery.py` build the rest of the graph in code.
 
 | File | What it is |
 | --- | --- |

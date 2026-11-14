@@ -165,6 +165,12 @@ round dates (still active?).
   response cached by method + path + params + body. Replay raises `CalaCacheMiss`.
 - `normalize.py`: `property_fact`, `edge_fact`, `edge_attr`, `relationships`,
   `observations` turn raw responses into `Fact`s (absent -> `not_published`).
+- `app/discovery/pipeline.py`: `get_candidates(client, profile)` walks the profile's
+  `Event` (default Slush 2026), introspects each attendee, keeps startups
+  (`filters.is_startup`), reads their `ISSUER` rounds and each last-round lead's other
+  rounds, applies the profile filters and attaches the three signals.
+- Warm the cache and get the pitch counts, from `backend/`:
+  `uv run --env-file ../.env python -m scripts.warm [--limit N] [--dump DIR]`.
 
 ## Rate limits and latency
 - `429 {"error":"rate_limit_exceeded",...}` with no `Retry-After` header. Limits are not
