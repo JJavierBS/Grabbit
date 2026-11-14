@@ -42,12 +42,7 @@ export function AlertCard({ alert, onClose }: { alert: Alert; onClose?: () => vo
           {alert.facts.map((f, i) => (
             // biome-ignore lint/suspicious/noArrayIndexKey: alert facts have no id and never reorder.
             <li key={i}>
-              <FactValue
-                inline
-                labelled
-                fact={f}
-                kind={/^\d{4}-\d{2}/.test(String(f.value)) ? "date" : "auto"}
-              />
+              <FactValue inline labelled fact={f} />
             </li>
           ))}
         </ul>
