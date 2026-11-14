@@ -4,6 +4,7 @@ import {
   Fragment,
   type KeyboardEvent,
   type ReactNode,
+  type RefObject,
   useEffect,
   useRef,
   useState,
@@ -29,11 +30,13 @@ import { GuideLock } from "../demo/GuideLock";
 import { AgentQuestions } from "./AgentQuestions";
 import { ChangeNote } from "./ChangeNote";
 import styles from "./ChatPanel.module.css";
+import { readDraft, saveDraft } from "./draft";
 import { HowIFound } from "./HowIFound";
 import { LiveWalk } from "./LiveWalk";
 import { changeNoteText, isUndoable } from "./noteText";
 import { VisualAnswer } from "./openui/VisualAnswer";
 import { ReplySources } from "./ReplySources";
+import { useComposerFocus } from "./useComposerFocus";
 import { useDictation } from "./useDictation";
 import { useFollowLog } from "./useFollowLog";
 import { WorkingLine } from "./WorkingLine";
@@ -60,19 +63,25 @@ interface ChatPanelProps {
   followKey?: string;
   /** The guided demo's card, docked on the composer (#184); it sends through this composer. */
   coach?: (send: (text: string) => void, busy: boolean) => ReactNode;
+  /** The message box, for the layout to give focus back to it. */
+  composerRef?: RefObject<HTMLTextAreaElement>;
 }
 
-export function ChatPanel({ footer, renderAfter, followKey, coach }: ChatPanelProps) {
+export function ChatPanel({ footer, renderAfter, followKey, coach, composerRef }: ChatPanelProps) {
   const chat = useChat();
   const profile = useProfile();
   const report = useLatestReport();
   const progress = useTurnProgress();
   const trace = useWalkTrace().data;
   const demo = useDemo();
-  const send = useSendMessage({ sandbox: demo?.active });
+  const sandbox = demo?.active ?? false;
+  const send = useSendMessage({ sandbox });
   const undo = useUndo();
-  const [draft, setDraft] = useState("");
-  const field = useRef<HTMLTextAreaElement>(null);
+  // The guided demo never reads or writes the visitor's draft.
+  const [draft, setDraft] = useState(() => (sandbox ? "" : readDraft()));
+  const ownField = useRef<HTMLTextAreaElement>(null);
+  const field = composerRef ?? ownField;
+  const focusComposer = useComposerFocus(field, !sandbox);
   const dictation = useDictation(setDraft);
   const messages = chat.data ?? [];
   const hasReport = Boolean(report.data);
@@ -86,8 +95,31 @@ export function ChatPanel({ footer, renderAfter, followKey, coach }: ChatPanelPr
   // Back from the guided demo: the visitor's own research starts at the composer.
   const returning = demo?.returning;
   useEffect(() => {
-    if (returning) field.current?.focus();
-  }, [returning]);
+    if (returning) focusComposer();
+  }, [returning, focusComposer]);
+
+  useEffect(() => {
+    if (!sandbox) saveDraft(draft);
+  }, [draft, sandbox]);
+
+  // Each reply hands the turn back: the next message starts in the box, unless the reader
+  // is typing in another field.
+  const working = send.isPending;
+  const wasWorking = useRef(false);
+  useEffect(() => {
+    const active = document.activeElement;
+    const elsewhere = active !== field.current && active?.matches("input, textarea, select");
+    if (wasWorking.current && !working && !elsewhere) focusComposer();
+    wasWorking.current = working;
+  }, [working, focusComposer, field]);
+
+  // Talk ends with the words in the box: read them, then Enter sends.
+  const dictating = dictation.listening || dictation.transcribing;
+  const wasDictating = useRef(false);
+  useEffect(() => {
+    if (wasDictating.current && !dictating) focusComposer();
+    wasDictating.current = dictating;
+  }, [dictating, focusComposer]);
 
   const submit = (text: string) => {
     const value = text.trim();
@@ -95,6 +127,8 @@ export function ChatPanel({ footer, renderAfter, followKey, coach }: ChatPanelPr
     dictation.cancel();
     // The message leaves the composer at once; if it is not sent, it comes back to edit.
     setDraft("");
+    // Sent from a suggestion, an answer or the Send button: the next message starts here.
+    focusComposer();
     send.mutate(value, { onError: () => setDraft((current) => current || value) });
   };
 

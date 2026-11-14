@@ -46,3 +46,9 @@
 - Styling follows styles.md. No inline magic colours or spacings.
 - Use mocks from api.md when the backend endpoint is not ready yet.
 - Every `Fact` on screen shows its trust badge; a simulated alert shows "simulated event".
+- Focus lives in the message box (#188, `features/chat/useComposerFocus.ts`): it takes focus
+  when the chat opens, after each send and each reply, after Talk, on a stray keystroke and
+  when the focused control disappears or turns disabled. A report opened from the sidebar or
+  by a rewrite never takes it away on wide screens. Drafts are kept per research
+  (`features/chat/draft.ts`). Never on touch screens or in the guided demo. Ctrl/Cmd+Shift+O
+  starts a new research.
