@@ -136,6 +136,42 @@ def test_round_led_by_reference_investor_is_decisive():
     assert value == 0.95 and "Aurora" in reason
 
 
+def test_round_led_by_another_entity_of_a_reference_fund_is_decisive():
+    """#196: the lead is the fund's Organization, the profile holds its Company id."""
+    profile = P(
+        reference_investors=[ReferenceInvestor(entity_id="yc-company", name="Y Combinator")]
+    )
+    new = snap(
+        rounds={
+            "r1": {
+                "name": "Seed",
+                "date": "2026-11-01",
+                "leads": ["Y Combinator"],
+                "lead_ids": ["yc-organization"],
+            }
+        }
+    )
+    [change] = diff(snap(), new)
+    assert rule_score(change, profile) == (
+        0.95,
+        "Led by Y Combinator, one of your reference investors.",
+    )
+
+
+def test_round_led_by_a_vehicle_of_a_reference_fund_names_the_reference():
+    profile = P(reference_investors=[ReferenceInvestor(entity_id="500", name="500 Global")])
+    data = {"lead_ids": ["500-europe"], "leads": ["500 Global (500 Emerging Europe)"]}
+    value, reason = rule_score(Change("new_round", "r1", "t", "w", data), profile)
+    assert value == 0.95 and reason == "Led by 500 Global, one of your reference investors."
+
+
+def test_one_word_reference_does_not_make_a_longer_named_lead_decisive():
+    profile = P(reference_investors=[ReferenceInvestor(entity_id="unresolved:Ugly", name="Ugly")])
+    data = {"lead_ids": ["udv"], "leads": ["Ugly Duckling Ventures"]}
+    value, _ = rule_score(Change("new_round", "r1", "t", "w", data), profile)
+    assert value == 0.7
+
+
 async def test_llm_scorer_used_only_when_rules_are_not_decisive():
     calls = []
 

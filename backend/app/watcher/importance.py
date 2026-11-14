@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import inspect
 from collections.abc import Awaitable, Callable
+from itertools import zip_longest
 from typing import Any
 
 from app.models import Profile
+from app.trusted import Trusted
 from app.watcher.snapshot import Change
 
 BASE = {
@@ -26,10 +28,16 @@ Scorer = Callable[[Change, Profile], Awaitable[tuple[float, str]] | tuple[float,
 
 def rule_score(change: Change, profile: Profile) -> tuple[float, str]:
     if change.kind == "new_round":
-        trusted = {r.entity_id: r.name for r in profile.reference_investors}
-        led_by = [trusted[i] for i in change.data.get("lead_ids", []) if i in trusted]
+        trusted = Trusted(profile.reference_investors)
+        led_by = [
+            ref
+            for entity_id, name in zip_longest(
+                change.data.get("lead_ids", []), change.data.get("leads", [])
+            )
+            if (ref := trusted.match(entity_id, name))
+        ]
         if led_by:
-            return 0.95, f"Led by {led_by[0]}, one of your reference investors."
+            return 0.95, f"Led by {led_by[0].name}, one of your reference investors."
     if (
         change.kind == "executive_change"
         and change.data.get("left")

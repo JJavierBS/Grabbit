@@ -13,6 +13,7 @@ from app.agent.rules import FIXED_RULES
 from app.llm import LLM, LLMError
 from app.models import Candidate, Profile
 from app.reports.facts import BADGES
+from app.trusted import Trusted
 
 log = logging.getLogger(__name__)
 
@@ -88,12 +89,14 @@ def _prompt(profile: Profile, kind: str, candidates: list[Candidate], context: s
     if context:
         lines.append(f"What changed: {context}")
     lines.append("Startups, in the order to present them (their facts are shown under you):")
-    trusted = {r.entity_id for r in profile.reference_investors}
+    trusted = Trusted(profile.reference_investors)
     for c in candidates:
         backers = sorted(
             {f"{i.name}{' (lead)' if i.is_lead else ''}" for r in c.rounds for i in r.investors}
         )
-        yours = sorted({i.name for r in c.rounds for i in r.investors if i.entity_id in trusted})
+        yours = sorted(
+            {i.name for r in c.rounds for i in r.investors if trusted.match(i.entity_id, i.name)}
+        )
         signals = "; ".join(s.label for s in c.signals if s.value not in (None, False))
         lines.append(
             f"- id {c.entity_id}: {c.name}. {c.description or ''} "

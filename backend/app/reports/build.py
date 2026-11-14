@@ -10,6 +10,7 @@ from app.models import Candidate, Fact, Profile, Report, ReportSection
 from app.reports import write
 from app.reports.facts import BADGES, render_date
 from app.reports.rank import co_invest, rank
+from app.trusted import Trusted
 
 Kind = Literal["prep", "digest", "memo"]
 LIMIT = {"short": 5, "medium": 8, "long": 20}
@@ -97,10 +98,10 @@ def _what_changed(ranked: list[Candidate], previous: Report | None) -> tuple[lis
 def _sections(
     kind: Kind, selected: list[Candidate], paragraphs: dict[str, str], profile: Profile
 ) -> list[ReportSection]:
-    refs = {r.entity_id for r in profile.reference_investors}
+    trusted = Trusted(profile.reference_investors)
     groups: dict[str, list[Candidate]] = {}
     for c in selected:
-        led, joined = co_invest(c, refs)
+        led, joined = co_invest(c, trusted)
         likely = next((s.value for s in c.signals if s.kind == "likely_to_raise"), None)
         if kind == "digest":
             title = "What changed"

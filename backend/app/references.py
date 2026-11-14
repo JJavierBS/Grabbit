@@ -1,8 +1,9 @@
 """Link reference investors named in chat to the Cala investors seen in candidates' rounds.
 
 The agent stores a name it could not resolve as `entity_id = "unresolved:<name>"`
-(`agent/tools.py`); signals, ranking, report text and the watcher compare entity ids, so
-without this a trusted investor typed in chat would never match.
+(`agent/tools.py`). Signals, ranking, report text and the watcher also match by fund name
+(`app/trusted.py`); the chat walk and the profile's "You trust" badge compare entity ids, so
+they need the id.
 """
 
 from app.discovery.build import normalise_name

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import re
 from typing import Any
 
 from app.cala.normalize import (
@@ -13,14 +12,7 @@ from app.cala.normalize import (
     relationships,
 )
 from app.models import Candidate, Fact, Investor, Round, Source
-
-LEGAL_SUFFIXES = r"\b(oy|oyj|ab|as|aps|gmbh|ltd|limited|llc|inc|sa|sas|bv|nv|plc|co|corp)\b"
-
-
-def normalise_name(name: str | None) -> str:
-    text = re.sub(r"[^\w\s]", " ", (name or "").lower())
-    text = re.sub(LEGAL_SUFFIXES, " ", text)
-    return " ".join(text.split())
+from app.trusted import normalise_name
 
 
 def build_round(round_node: dict[str, Any]) -> Round:

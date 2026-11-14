@@ -34,6 +34,20 @@ def test_investor_question_counts_backed_attendees(now):
     assert text.startswith("4 of 6 startups here are backed by North Pine")
 
 
+def test_investor_question_counts_a_fund_under_another_cala_entity(now):
+    """#196: the profile holds another entity id of the fund that sits in the rounds."""
+    profile = default_profile(now).model_copy(
+        update={
+            "reference_investors": [
+                ReferenceInvestor(entity_id="north-pine-company", name="North Pine Ventures")
+            ]
+        }
+    )
+    questions = pick_questions(_candidates(), profile, now, limit=10)
+    text = next(q.text for q in questions if q.key == "investors")
+    assert text.startswith("4 of 6 startups here are backed by North Pine Ventures")
+
+
 def test_answered_filters_are_not_asked_again(now):
     profile = default_profile(now)
     profile.filters.sectors_out = ["B2C"]

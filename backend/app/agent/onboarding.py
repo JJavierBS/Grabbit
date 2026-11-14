@@ -11,6 +11,7 @@ from pydantic import BaseModel
 
 from app.llm import LLM, LLMError
 from app.models import Candidate, Investor, Profile
+from app.trusted import Trusted
 
 log = logging.getLogger(__name__)
 
@@ -213,12 +214,10 @@ def _investors(cs: list[Candidate], profile: Profile, _n: datetime) -> Question 
             0.5,
             tuple(options),
         )
-    # Investors typed in chat keep an `unresolved:<name>` id until a report resolves them.
-    ref_ids = {r.entity_id for r in profile.reference_investors}
-    ref_names = {_name(r.name) for r in profile.reference_investors}
+    matcher = Trusted(profile.reference_investors)
 
     def trusted(i: Investor) -> bool:
-        return i.entity_id in ref_ids or _name(i.name) in ref_names
+        return matcher.match(i.entity_id, i.name) is not None
 
     backed = sum(1 for c in cs if any(trusted(i) for r in c.rounds for i in r.investors))
     if not backed:
@@ -334,10 +333,6 @@ def money(value: float, unit: str) -> str:
         if value >= size:
             return f"{unit} {value / size:.3g}{suffix}".strip()
     return f"{unit} {value:.0f}".strip()
-
-
-def _name(name: str) -> str:
-    return " ".join(name.split(" (")[0].casefold().split())
 
 
 def _headcount(value: object) -> int | None:

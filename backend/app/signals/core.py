@@ -11,6 +11,7 @@ from datetime import date
 
 from app.models import Candidate, Fact, ReferenceInvestor, Round, Signal, Source
 from app.signals.dates import months_between, parse_date
+from app.trusted import Trusted
 
 RAISE_WINDOW_MONTHS = (12, 30)
 HEADCOUNT_GROWTH = 0.20
@@ -45,16 +46,19 @@ def co_invest(candidate: Candidate, reference: list[ReferenceInvestor]) -> Signa
         return _empty("co_invest", label, "No reference investors in the profile yet.")
     if not candidate.rounds:
         return _empty("co_invest", label, "No funding rounds published for this company.")
-    trusted = {r.entity_id: r.name for r in reference}
+    trusted = Trusted(reference)
     matches: list[tuple[bool, str, str, str]] = []  # (is_lead, date, investor, round)
     facts: list[Fact] = []
     for round_ in candidate.rounds:
+        # One fund can sit in a round as several Cala entities: one line each, lead wins.
+        led_by_fund: dict[str, bool] = {}
         for inv in round_.investors:
-            if inv.entity_id in trusted:
-                matches.append(
-                    (inv.is_lead, str(round_.date.value or ""), trusted[inv.entity_id], round_.name)
-                )
-                facts.append(round_.date)
+            ref = trusted.match(inv.entity_id, inv.name)
+            if ref:
+                led_by_fund[ref.name] = led_by_fund.get(ref.name, False) or inv.is_lead
+        for name, is_lead in led_by_fund.items():
+            matches.append((is_lead, str(round_.date.value or ""), name, round_.name))
+            facts.append(round_.date)
     if not matches:
         return Signal(
             kind="co_invest",

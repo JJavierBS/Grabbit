@@ -7,6 +7,7 @@ from app.discovery.links import LinkGraph
 from app.discovery.proximity import proximity
 from app.models import Candidate, Profile
 from app.reports.facts import last_round
+from app.trusted import Trusted
 
 
 def rank(
@@ -18,9 +19,9 @@ def rank(
     return sorted(kept, key=lambda c: _key(c, _proximity_score(c, profile, today)))
 
 
-def co_invest(c: Candidate, refs: set[str]) -> tuple[bool, bool]:
+def co_invest(c: Candidate, trusted: Trusted) -> tuple[bool, bool]:
     """(a reference investor led a round, a reference investor joined a round)."""
-    involved = [i for r in c.rounds for i in r.investors if i.entity_id in refs]
+    involved = [i for r in c.rounds for i in r.investors if trusted.match(i.entity_id, i.name)]
     return any(i.is_lead for i in involved), bool(involved)
 
 
