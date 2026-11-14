@@ -16,8 +16,7 @@ from pathlib import Path
 from typing import Any
 
 from app.cala.client import CalaClient
-from app.discovery.pipeline import SLUSH_2026, Limits, get_candidates
-from app.models import Profile
+from app.discovery.pipeline import SLUSH_2026, Limits, get_candidates, neutral_profile
 from app.store.cala_cache import CalaCache
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -46,7 +45,7 @@ async def main(args: argparse.Namespace) -> None:
     )
     try:
         result = await get_candidates(
-            client, Profile(event_id=args.event), limits=Limits(max_attendees=args.limit)
+            client, neutral_profile(args.event), limits=Limits(max_attendees=args.limit)
         )
     finally:
         await client.aclose()

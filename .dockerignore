@@ -1,0 +1,9 @@
+*
+!backend/pyproject.toml
+!backend/uv.lock
+!backend/app/
+!frontend/
+frontend/node_modules/
+frontend/dist/
+!data/grabbit.db
+**/__pycache__/

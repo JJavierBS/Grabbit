@@ -35,16 +35,18 @@ def make_candidate(rounds: list[Round]) -> Candidate:
         headcount=nothing,
         total_funding=nothing,
         hq=nothing,
+        industries=[],
         rounds=rounds,
+        signals=[],
     )
 
 
 def lead(iid="aurora", name="Aurora Ventures") -> Investor:
-    return Investor(entity_id=iid, name=name, is_lead=True)
+    return Investor(entity_id=iid, name=name, is_lead=True, role="investor")
 
 
 def member(iid="baltic", name="Baltic Angels") -> Investor:
-    return Investor(entity_id=iid, name=name, is_lead=False)
+    return Investor(entity_id=iid, name=name, is_lead=False, role="investor")
 
 
 # co_invest
@@ -58,12 +60,11 @@ def test_co_invest_lists_leads_first_then_most_recent():
         ]
     )
     signal = co_invest(candidate, [AURORA, BALTIC])
-    assert [(m["investor_id"], m["is_lead"], m["round_id"]) for m in signal.value] == [
-        ("aurora", True, "r2"),
-        ("baltic", False, "r2"),
-        ("baltic", False, "r1"),
-    ]
-    assert signal.explanation.startswith("Aurora Ventures led its Seed")
+    assert signal.value == ["Aurora Ventures", "Baltic Angels"]
+    assert signal.explanation == (
+        "Aurora Ventures led its Seed; Baltic Angels joined its Seed; "
+        "Baltic Angels joined its Pre-Seed."
+    )
 
 
 def test_co_invest_without_reference_investors_is_null():

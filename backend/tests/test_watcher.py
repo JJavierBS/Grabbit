@@ -4,7 +4,8 @@ from datetime import UTC, datetime
 
 import pytest
 
-from app.models import Profile, ReferenceInvestor
+from app.discovery.pipeline import neutral_profile
+from app.models import ReferenceInvestor
 from app.scheduler import GrabbitScheduler, digest_trigger
 from app.store.snapshots import WatchStore
 from app.watcher.importance import passes, rule_score, score
@@ -16,6 +17,10 @@ NORTHWIND = "c0000000-0000-4000-8000-000000000001"
 SEED = "r0000000-0000-4000-8000-000000000001"
 AURORA = "v0000000-0000-4000-8000-000000000001"
 NOW = datetime(2026, 11, 14, 12, 0, tzinfo=UTC)
+
+
+def P(**update):
+    return neutral_profile().model_copy(update=update)
 
 
 class FakeCala:
@@ -59,9 +64,7 @@ def setup():
     cala, bus = FakeCala(), Bus()
     store = WatchStore(sqlite3.connect(":memory:"))
     watcher = Watcher(cala, store, publish=bus, clock=lambda: NOW)
-    profile = Profile(
-        reference_investors=[ReferenceInvestor(entity_id=AURORA, name="Aurora Ventures")]
-    )
+    profile = P(reference_investors=[ReferenceInvestor(entity_id=AURORA, name="Aurora Ventures")])
     return cala, bus, store, watcher, profile
 
 
@@ -127,7 +130,7 @@ def test_diff_no_change_no_alert():
 
 
 def test_round_led_by_reference_investor_is_decisive():
-    profile = Profile(reference_investors=[ReferenceInvestor(entity_id="a", name="Aurora")])
+    profile = P(reference_investors=[ReferenceInvestor(entity_id="a", name="Aurora")])
     change = Change("new_round", "r1", "t", "w", {"lead_ids": ["a"]})
     value, reason = rule_score(change, profile)
     assert value == 0.95 and "Aurora" in reason
@@ -140,7 +143,7 @@ async def test_llm_scorer_used_only_when_rules_are_not_decisive():
         calls.append(change.kind)
         return 0.2, "minor"
 
-    profile = Profile()
+    profile = P()
     assert await score(Change("headcount_jump", "k", "t", "w"), profile, scorer) == (0.2, "minor")
     ceo = Change("executive_change", "k", "t", "w", {"role": "CEO", "left": True})
     assert (await score(ceo, profile, scorer))[0] == 0.85
@@ -148,9 +151,9 @@ async def test_llm_scorer_used_only_when_rules_are_not_decisive():
 
 
 def test_thresholds():
-    assert passes(0.5, Profile(alert_threshold="medium"))
-    assert not passes(0.5, Profile(alert_threshold="high"))
-    assert passes(0.3, Profile(alert_threshold="low"))
+    assert passes(0.5, P(alert_threshold="medium"))
+    assert not passes(0.5, P(alert_threshold="high"))
+    assert passes(0.3, P(alert_threshold="low"))
 
 
 # watcher end to end
@@ -216,8 +219,8 @@ def test_merge_appends_lists_and_merges_dicts():
 
 
 def test_digest_trigger_by_cadence():
-    assert "day_of_week='mon'" in str(digest_trigger(Profile(cadence="weekly")))
-    assert "day_of_week" not in str(digest_trigger(Profile(cadence="event")))
+    assert "day_of_week='mon'" in str(digest_trigger(P(cadence="weekly")))
+    assert "day_of_week" not in str(digest_trigger(P(cadence="event")))
 
 
 async def test_scheduler_loads_both_jobs_and_replaces_them():
@@ -225,8 +228,8 @@ async def test_scheduler_loads_both_jobs_and_replaces_them():
         return None
 
     sched = GrabbitScheduler(job, job)
-    sched.apply(Profile(cadence="event"))
-    sched.apply(Profile(cadence="weekly"))
+    sched.apply(P(cadence="event"))
+    sched.apply(P(cadence="weekly"))
     jobs = {j.id: j for j in sched.scheduler.get_jobs()}
     assert set(jobs) == {"watcher", "digest"}
     assert "mon" in str(jobs["digest"].trigger)

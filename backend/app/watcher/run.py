@@ -84,7 +84,9 @@ class Watcher:
             return []  # first look at this company: baseline only
         delivered: list[Alert] = []
         for change in diff(old, new):
-            alert_id = _alert_id(candidate.entity_id, change, simulated)
+            # Real alerts dedupe on the change; a staged one can be replayed in rehearsals.
+            salt = now.isoformat() if simulated else "real"
+            alert_id = _alert_id(candidate.entity_id, change, salt)
             if self.store.has_alert(alert_id):
                 continue
             value, reason = await score(change, profile, self.scorer)
@@ -155,6 +157,6 @@ def merge(base: Any, patch: Any) -> Any:
     return copy.deepcopy(patch)
 
 
-def _alert_id(entity_id: str, change: Change, simulated: bool) -> str:
-    raw = f"{entity_id}|{change.kind}|{change.key}|{'sim' if simulated else 'real'}"
+def _alert_id(entity_id: str, change: Change, salt: str) -> str:
+    raw = f"{entity_id}|{change.kind}|{change.key}|{salt}"
     return hashlib.sha256(raw.encode()).hexdigest()[:16]

@@ -5,11 +5,23 @@ import pytest
 from app.cala.client import CalaError
 from app.discovery.build import build_round, normalise_name, participants
 from app.discovery.filters import is_startup, matches_profile
-from app.discovery.pipeline import SLUSH_2026, Limits, get_candidates
-from app.models import Filters, Profile, ReferenceInvestor
+from app.discovery.pipeline import SLUSH_2026, Limits, get_candidates, neutral_profile
+from app.models import ProfileFilters, ReferenceInvestor
 from tests.conftest import load_cala
 
 TODAY = date(2026, 11, 14)
+
+
+def make_profile(reference=(), **filters):
+    base = {"stages": [], "sectors_in": [], "sectors_out": [], "countries": []}
+    return neutral_profile().model_copy(
+        update={
+            "filters": ProfileFilters(**{**base, **filters}),
+            "reference_investors": list(reference),
+        }
+    )
+
+
 EVENT = SLUSH_2026
 NORTHWIND = "c0000000-0000-4000-8000-000000000001"
 AURORA = "v0000000-0000-4000-8000-000000000001"
@@ -171,9 +183,7 @@ def graph():
 
 
 async def test_pipeline_keeps_startups_with_rounds_and_signals(graph):
-    profile = Profile(
-        reference_investors=[ReferenceInvestor(entity_id=AURORA, name="Aurora Ventures")]
-    )
+    profile = make_profile([ReferenceInvestor(entity_id=AURORA, name="Aurora Ventures")])
     result = await get_candidates(FakeCala(graph), profile, TODAY, Limits(page_size=2))
     names = [c.name for c in result.candidates]
     assert names == ["Northwind Robotics", "Kide Health"]
@@ -184,27 +194,27 @@ async def test_pipeline_keeps_startups_with_rounds_and_signals(graph):
     assert northwind.rounds[0].investors[0].name == "Aurora Ventures"
     assert northwind.headcount.value == 18
     signals = {sig.kind: sig for sig in northwind.signals}
-    assert signals["co_invest"].value[0]["is_lead"] is True
+    assert signals["co_invest"].value == ["Aurora Ventures"]
     assert signals["lead_follow_on"].value == 0.33  # followed on in alpha, not beta or gamma
     assert signals["likely_to_raise"].value is True
 
 
 async def test_profile_filters_apply(graph):
-    profile = Profile(filters=Filters(countries=["EE"]))
+    profile = make_profile(countries=["EE"])
     result = await get_candidates(FakeCala(graph), profile, TODAY)
     # Northwind is in FI and is dropped; Kide passes.
     assert [c.name for c in result.candidates] == ["Kide Health"]
 
 
 async def test_a_failing_attendee_is_skipped_not_fatal(graph):
-    result = await get_candidates(FakeCala(graph, failing={"kide"}), Profile(), TODAY)
+    result = await get_candidates(FakeCala(graph, failing={"kide"}), make_profile(), TODAY)
     assert [c.name for c in result.candidates] == ["Northwind Robotics"]
     assert result.stats.skipped == 1
 
 
 async def test_max_attendees_caps_the_walk(graph):
     fake = FakeCala(graph)
-    await get_candidates(fake, Profile(), TODAY, Limits(max_attendees=1))
+    await get_candidates(fake, make_profile(), TODAY, Limits(max_attendees=1))
     assert ("retrieve", "kide") not in fake.calls  # max_attendees respected
 
 
@@ -248,8 +258,8 @@ def test_matches_profile_lets_unpublished_fields_pass(graph):
     from app.discovery.build import build_candidate
 
     bare = build_candidate(company("z", "Z", stage="SEED"), [])
-    assert matches_profile(bare, Profile(filters=Filters(countries=["FI"], sectors_in=["AI"])))
-    assert not matches_profile(bare, Profile(filters=Filters(stages=["SERIES_A"])))
+    assert matches_profile(bare, make_profile(countries=["FI"], sectors_in=["AI"]))
+    assert not matches_profile(bare, make_profile(stages=["SERIES_A"]))
 
 
 def test_warm_dump_writes_one_file_per_node(tmp_path):

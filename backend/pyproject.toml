@@ -1,30 +1,42 @@
 [project]
 name = "grabbit-backend"
 version = "0.1.0"
-requires-python = ">=3.12"
+description = "Grabbit API: FastAPI app, Cala client, agent, reports, watcher"
+requires-python = ">=3.12,<3.13"
 dependencies = [
-    "apscheduler>=3.10,<4",
-    "httpx>=0.27",
-    "pydantic>=2.7",
+    "apscheduler>=3.11.3,<4",
+    "fastapi>=0.162.7",
+    "google-genai>=3.3.0",
+    "httpx>=0.28.1",
+    "pydantic>=2.14.3",
+    "pydantic-settings>=2.16.3",
+    "sse-starlette>=3.7.0",
+    "uvicorn>=0.54.0",
 ]
 
 [dependency-groups]
 dev = [
-    "pytest>=8",
-    "pytest-asyncio>=0.23",
-    "respx>=0.21",
-    "ruff>=0.6",
+    "pytest>=9.2.0",
+    "pytest-asyncio>=1.5.0",
+    "respx>=0.23.1",
+    "ruff>=0.17.5",
 ]
 
+[tool.uv]
+package = false
+
 [tool.pytest.ini_options]
+testpaths = ["tests"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
-testpaths = ["tests"]
-pythonpath = ["."]
+addopts = "--strict-markers"
 
 [tool.ruff]
 line-length = 100
 target-version = "py312"
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "UP", "B"]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "ASYNC"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]

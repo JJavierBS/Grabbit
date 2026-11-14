@@ -30,9 +30,12 @@ def rule_score(change: Change, profile: Profile) -> tuple[float, str]:
         led_by = [trusted[i] for i in change.data.get("lead_ids", []) if i in trusted]
         if led_by:
             return 0.95, f"Led by {led_by[0]}, one of your reference investors."
-    if change.kind == "executive_change" and change.data.get("left"):
-        if change.data.get("role") in ("CEO", "CTO"):
-            return 0.85, f"The {change.data['role']} left."
+    if (
+        change.kind == "executive_change"
+        and change.data.get("left")
+        and change.data.get("role") in ("CEO", "CTO")
+    ):
+        return 0.85, f"The {change.data['role']} left."
     return BASE.get(change.kind, 0.5), change.why
 
 

@@ -8,6 +8,8 @@ import sqlite3
 from datetime import UTC, datetime
 from typing import Any
 
+from app.store.db import register_table
+
 TABLE_SQL = """
 CREATE TABLE IF NOT EXISTS cala_cache (
     key TEXT PRIMARY KEY,
@@ -18,6 +20,7 @@ CREATE TABLE IF NOT EXISTS cala_cache (
     fetched_at TEXT NOT NULL
 )
 """
+register_table(TABLE_SQL)
 
 
 def cache_key(method: str, path: str, params: dict[str, Any] | None, body: Any) -> str:

@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import Any
 
 from app.models import Alert
+from app.store.db import register_table
 
 TABLES_SQL = [
     """CREATE TABLE IF NOT EXISTS snapshots (
@@ -21,6 +22,8 @@ TABLES_SQL = [
         payload TEXT NOT NULL
     )""",
 ]
+for _sql in TABLES_SQL:
+    register_table(_sql)
 
 
 class WatchStore:
