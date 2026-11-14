@@ -4,6 +4,7 @@ import { Badge } from "../components/Badge";
 import { Button } from "../components/Button";
 import { Card } from "../components/Card";
 import { Input, TextArea } from "../components/Input";
+import { Markdown } from "../components/Markdown";
 import { Skeleton } from "../components/Skeleton";
 import { useToast } from "../components/Toast";
 import { TrustBadge } from "../components/TrustBadge";
@@ -18,6 +19,12 @@ const LEVELS: TrustLevel[] = [
   "web_unverified",
   "not_published",
 ];
+
+// Agent text as Gemini writes it: trust tags and ISO dates are drawn by Markdown.
+const AGENT_PROSE = [
+  "Kiln Analytics raised €2.4M [Database] on 2026-06-10, led by Inventure (Filing).",
+  "- Team of 14 [Company or investor], covered by Arctic Startup [Press]\n- Revenue [Not published]",
+].join("\n\n");
 
 /** Living reference of the base components, at /?gallery once the app exists. */
 export function Gallery() {
@@ -43,6 +50,7 @@ export function Gallery() {
             <TrustBadge key={level} level={level} compact />
           ))}
         </div>
+        <Markdown source={AGENT_PROSE} />
       </Card>
 
       <Card as="section" padding="lg" className={styles.section}>
