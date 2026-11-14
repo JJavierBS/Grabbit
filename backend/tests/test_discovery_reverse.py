@@ -245,6 +245,232 @@ async def test_no_references_makes_no_cala_call(world):
     assert result.candidates == [] and cala.calls_made == 0
 
 
+YC_CO = ("yc", "Y Combinator")
+YC_W24 = ("yc-w24", "Y Combinator W24")
+PIONEER_A = ("pioneer-a", "Pioneer Fund")
+PIONEER_B = ("pioneer-b", "Pioneer Fund")
+SV = ("sv", "SV Angel")
+ADA = ("ada", "Ada Lovelace")
+REBEL = ("rebel", "Rebel Fund")
+ONCE = ("once", "Once Capital")
+
+
+def shared_round(rid, issuer, funders):
+    node = round_node(rid, issuer, "2025-01-01", [(fid, False) for fid, _ in funders])
+    edges = node["relationships"]["incoming"][PARTICIPATES][1:]
+    for edge, (_, name) in zip(edges, funders, strict=True):
+        edge["name"] = name
+    return node
+
+
+@pytest.fixture
+def rings():
+    """Y Combinator funded five rounds. Next to it: Pioneer Fund in three (as two entities),
+    SV Angel and the angel Ada Lovelace in two each, Rebel Fund and Once Capital in one.
+    Zeta attends and raised from YC; Yota (Pioneer), Nova (SV) and Hidden (Rebel) attend too,
+    and so does Zeta's legal entity, which raised from Pioneer."""
+    attendees = [
+        stub("zeta", "Zeta"),
+        stub("zeta-oy", "Zeta"),
+        stub("yota", "Yota"),
+        stub("nova", "Nova"),
+        stub("hidden", "Hidden"),
+        stub("bigco", "BigCo"),
+    ]
+    yc = fund("yc", "Y Combinator", ["r1", "r2", "r3", "r4", "r5"], "Company")
+    nodes = {
+        EVENT: {
+            "id": EVENT,
+            "name": "Slush 2026",
+            "entity_type": "Event",
+            "relationships": {"incoming": {"PARTICIPATES_IN_EVENT": attendees}},
+        },
+        "yc": yc,
+        "yc-w24": fund("yc-w24", "Y Combinator W24", ["r1", "r2", "w1"], "Group"),
+        "pioneer-a": fund("pioneer-a", "Pioneer Fund", ["r1", "r2", "p1"]),
+        "pioneer-b": fund("pioneer-b", "Pioneer Fund", ["r3", "p2"]),
+        "sv": fund("sv", "SV Angel", ["r2", "r3", "s1"]),
+        "ada": fund("ada", "Ada Lovelace", ["r4", "r5", "a1"], "Person"),
+        "rebel": fund("rebel", "Rebel Fund", ["r4", "x1"]),
+        "zeta": startup("zeta", "Zeta", "r1"),
+        "zeta-oy": startup("zeta-oy", "Zeta", "p2"),
+        "yota": startup("yota", "Yota", "p1"),
+        "nova": startup("nova", "Nova", "s1"),
+        "hidden": startup("hidden", "Hidden", "x1"),
+        "bigco": company("bigco", "BigCo", founded="1990-01-01", size=[5000], rounds=["a1"]),
+        "r1": shared_round("r1", "zeta", [YC_CO, YC_W24, PIONEER_A]),
+        "r2": shared_round("r2", "e2", [YC_CO, YC_W24, PIONEER_A, SV]),
+        "r3": shared_round("r3", "e3", [YC_CO, PIONEER_B, SV]),
+        "r4": shared_round("r4", "e4", [YC_CO, ADA, REBEL]),
+        "r5": shared_round("r5", "e5", [YC_CO, ADA, ONCE]),
+        "p1": shared_round("p1", "yota", [PIONEER_A]),
+        "p2": shared_round("p2", "zeta-oy", [PIONEER_B]),
+        "s1": shared_round("s1", "nova", [SV]),
+        "a1": shared_round("a1", "bigco", [ADA]),
+        "x1": shared_round("x1", "hidden", [REBEL]),
+    }
+    return nodes, {"Y Combinator": [hit(yc)]}
+
+
+async def test_co_investors_are_ranked_by_shared_rounds_and_merged_by_name(rings):
+    nodes, hits = rings
+    cala = ReverseCala(nodes, hits)
+
+    result = await reverse_walk(cala, [YC], EVENT, TODAY)
+
+    assert [(c.name, c.shared_rounds, c.trusted) for c in result.co_investors] == [
+        ("Pioneer Fund", 3, "Y Combinator"),
+        ("Ada Lovelace", 2, "Y Combinator"),
+        ("SV Angel", 2, "Y Combinator"),
+    ]
+    assert result.co_investors[0].entity_ids == ["pioneer-a", "pioneer-b"]
+    s = result.stats
+    assert (s.co_investors, s.co_investors_walked, s.co_investors_skipped) == (5, 3, 0)
+    asked = cala.asked()
+    walked = [i for i in asked if i in ("yc", "pioneer-a", "pioneer-b", "sv", "ada")]
+    assert walked == ["yc", "pioneer-a", "pioneer-b", "ada", "sv"]
+    assert "yc-w24" not in asked and "w1" not in asked  # the trusted fund's own entity
+    assert "rebel" not in asked and "once" not in asked  # one shared round only
+
+
+async def test_second_ring_adds_the_attending_startups_its_co_investors_funded(rings):
+    nodes, hits = rings
+    cala = ReverseCala(nodes, hits)
+
+    result = await reverse_walk(cala, [YC], EVENT, TODAY)
+
+    assert [c.name for c in result.candidates] == ["Zeta", "Yota", "Nova"]
+    s = result.stats
+    assert (s.startups, s.second_ring_startups) == (3, 2)
+    assert (s.rounds, s.issuers, s.attending) == (9, 9, 5)
+    asked = cala.asked()
+    assert "zeta-oy" not in asked  # Zeta is a ring 1 candidate already
+    assert asked.count("zeta") == 1
+    assert all(asked.count(rid) == 1 for rid in ("r1", "r2", "r3", "p1", "p2", "s1", "a1"))
+
+
+async def test_second_ring_rounds_and_investors_join_the_link_graph(rings):
+    nodes, hits = rings
+    result = await reverse_walk(ReverseCala(nodes, hits), [YC], EVENT, TODAY)
+
+    graph = result.links
+    assert set(graph.investors) == {"yc", "pioneer-a", "pioneer-b", "sv", "ada"}
+    assert graph.investors["pioneer-a"].round_ids == ["r1", "r2", "p1"]
+    assert graph.investors["ada"].entity_type == "Person"
+    assert {"p1", "p2", "s1", "a1"} <= set(graph.rounds)
+    assert result.investors["pioneer fund"] == "pioneer-a"
+    assert result.investors["sv angel"] == "sv"
+
+
+async def test_at_most_k_co_investors_are_walked(rings):
+    nodes, hits = rings
+    cala = ReverseCala(nodes, hits)
+
+    result = await reverse_walk(cala, [YC], EVENT, TODAY, ReverseLimits(co_investors=1))
+
+    assert [c.name for c in result.co_investors] == ["Pioneer Fund"]
+    assert [c.name for c in result.candidates] == ["Zeta", "Yota"]
+    assert "sv" not in cala.asked() and "ada" not in cala.asked()
+    assert result.stats.co_investors == 5 and result.stats.co_investors_walked == 1
+
+
+async def test_co_investors_below_the_minimum_of_shared_rounds_are_not_walked(rings):
+    nodes, hits = rings
+
+    strict = await reverse_walk(
+        ReverseCala(nodes, hits), [YC], EVENT, TODAY, ReverseLimits(min_shared_rounds=3)
+    )
+    loose = await reverse_walk(
+        ReverseCala(nodes, hits), [YC], EVENT, TODAY, ReverseLimits(min_shared_rounds=1)
+    )
+
+    assert [c.name for c in strict.co_investors] == ["Pioneer Fund"]
+    assert [c.name for c in strict.candidates] == ["Zeta", "Yota"]
+    assert "Rebel Fund" in [c.name for c in loose.co_investors]
+    assert "Hidden" in [c.name for c in loose.candidates]
+
+
+def test_second_ring_defaults():
+    limits = ReverseLimits()
+
+    assert limits.second_ring is True
+    assert (limits.co_investors, limits.min_shared_rounds, limits.hub_round_edges) == (10, 2, 300)
+
+
+async def test_a_hub_co_investor_is_skipped_and_logged(rings, caplog):
+    nodes, hits = rings
+    nodes["sv"] = fund("sv", "SV Angel", ["r2", "r3", "s1", *(f"hub-{n}" for n in range(250))])
+    cala = ReverseCala(nodes, hits)
+
+    with caplog.at_level("WARNING", logger="app.discovery.reverse"):
+        result = await reverse_walk(cala, [YC], EVENT, TODAY, ReverseLimits(hub_round_edges=150))
+
+    pages = [
+        body["relationships"]["outgoing"][PARTICIPATES]
+        for entity_id, body in cala.bodies
+        if entity_id == "sv"
+    ]
+    assert pages == [{"limit": 100}, {"limit": 100, "offset": 100}]  # stops past the cap
+    assert "s1" not in cala.asked() and "hub-0" not in cala.asked()
+    assert [c.name for c in result.candidates] == ["Zeta", "Yota"]
+    assert "sv" not in result.links.investors
+    s = result.stats
+    assert (s.co_investors_walked, s.co_investors_skipped) == (2, 1)
+    assert "hub co-investor SV Angel" in caplog.text
+
+
+async def test_a_co_investor_under_the_hub_cap_is_walked_in_full(rings):
+    nodes, hits = rings
+    nodes["sv"] = fund("sv", "SV Angel", [*(f"missing-{n}" for n in range(120)), "s1"])
+    cala = ReverseCala(nodes, hits)
+
+    result = await reverse_walk(cala, [YC], EVENT, TODAY)
+
+    assert "Nova" in [c.name for c in result.candidates]
+    assert result.stats.co_investors_skipped == 0
+
+
+async def test_a_budget_spent_in_the_second_ring_returns_what_was_read(rings):
+    nodes, hits = rings
+    cala = ReverseCala(nodes, hits)
+
+    # Ring 1 is ten new calls; then both Pioneer entities, p1, Yota's introspection and node.
+    result = await reverse_walk(cala, [YC], EVENT, TODAY, ReverseLimits(call_budget=15))
+
+    assert cala.calls_made == 15
+    assert result.stats.budget_spent is True
+    assert [c.name for c in result.candidates] == ["Zeta", "Yota"]
+    assert result.stats.second_ring_startups == 1
+    assert result.stats.co_investors_walked == 1
+    assert set(result.links.investors) == {"yc", "pioneer-a", "pioneer-b"}
+    assert result.links.investors["pioneer-b"].round_ids == ["r3"]  # p2 was never read
+    assert "sv" not in cala.asked() and "ada" not in cala.asked()
+
+
+async def test_second_ring_never_starts_before_ring_one_is_done(rings):
+    nodes, hits = rings
+    cala = ReverseCala(nodes, hits)
+
+    result = await reverse_walk(cala, [YC], EVENT, TODAY, ReverseLimits(call_budget=9))
+
+    assert cala.calls_made == 9
+    assert result.links.investors["yc"].round_ids == ["r1", "r2", "r3", "r4"]
+    assert set(result.links.investors) == {"yc"}
+    assert result.stats.co_investors_walked == 0
+
+
+async def test_second_ring_can_be_turned_off(rings):
+    nodes, hits = rings
+    cala = ReverseCala(nodes, hits)
+
+    result = await reverse_walk(cala, [YC], EVENT, TODAY, ReverseLimits(second_ring=False))
+
+    assert [c.name for c in result.candidates] == ["Zeta"]
+    assert result.co_investors == [] and result.stats.co_investors == 0
+    assert set(result.links.investors) == {"yc"}
+    assert "pioneer-a" not in cala.asked()
+
+
 def test_merge_keeps_the_event_walk_and_drops_repeats_by_id_or_name():
     found = sources.fixture_candidates()
     same_id = found[0].model_copy(update={"name": "Another name"})
