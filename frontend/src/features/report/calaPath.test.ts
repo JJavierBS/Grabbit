@@ -45,6 +45,8 @@ describe("toTall", () => {
     expect([event.kind, startup.kind, round.kind]).toEqual(["event", "startup", "round"]);
     expect(startup.sub).toBe("attends");
     expect(round.sub).toMatch(/^raised/);
+    expect(round.sub).not.toMatch(/\d{4}-\d{2}/);
+    expect(round.sub).toMatch(/[A-Z][a-z]{2} \d{4}$/);
     expect(first.x).toBeGreaterThan(round.x);
     expect(tall.nodes.every((n) => n.x + (n.w ?? 0) === 320)).toBe(true);
     expect(tall.nodes.map((n) => n.y)).toEqual(tall.nodes.map((_, i) => i * 46));
