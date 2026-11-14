@@ -1,0 +1,23 @@
+{
+  "name": "Grabbit",
+  "short_name": "Grabbit",
+  "description": "Finds the Slush startups backed by the investors you trust, shows the source of every fact and alerts you when one of them moves.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f7f7fa",
+  "theme_color": "#f7f7fa",
+  "lang": "en",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
