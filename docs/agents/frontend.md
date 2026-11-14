@@ -19,8 +19,9 @@
   one folder per area, each with its components, hooks and tests.
 - `src/components/`: shared pieces, e.g. `TrustBadge` (agent.md "Trust scale"), `FactValue`
   (value, date with its precision, "not published").
-- `src/App.tsx`: layout. One screen: chat beside the current report; alerts as toasts and
-  desktop notifications.
+- `src/App.tsx`: layout. One screen: a centred chat; the report shows in the chat as an
+  outline (`features/report/ReportOutline.tsx`) and opens in a side panel, which also holds
+  "What changed". Alerts as toasts and desktop notifications.
 
 ## Rules
 - All server calls go through the single API client; components never call `fetch` directly.
