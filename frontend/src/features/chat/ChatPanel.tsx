@@ -7,7 +7,13 @@ import {
   useRef,
   useState,
 } from "react";
-import { useChat, useProfile, useSendMessage, useUndo } from "../../api/hooks/queries";
+import {
+  useChat,
+  useLatestReport,
+  useProfile,
+  useSendMessage,
+  useUndo,
+} from "../../api/hooks/queries";
 import type { ChatMessage } from "../../api/types";
 import { Button } from "../../components/Button";
 import { TextArea } from "../../components/Input";
@@ -19,6 +25,7 @@ import styles from "./ChatPanel.module.css";
 import { changeNoteText, isUndoable } from "./noteText";
 import { VisualAnswer } from "./openui/VisualAnswer";
 import { useDictation } from "./useDictation";
+import { WorkingLine } from "./WorkingLine";
 
 const SUGGESTIONS = ["Shorter, co-investors first", "Drop consumer health"];
 
@@ -30,6 +37,7 @@ interface ChatPanelProps {
 export function ChatPanel({ footer }: ChatPanelProps) {
   const chat = useChat();
   const profile = useProfile();
+  const report = useLatestReport();
   const send = useSendMessage();
   const undo = useUndo();
   const [draft, setDraft] = useState("");
@@ -46,7 +54,9 @@ export function ChatPanel({ footer }: ChatPanelProps) {
     const value = text.trim();
     if (!value || send.isPending) return;
     if (dictation.listening) dictation.toggle("");
-    send.mutate(value, { onSuccess: () => setDraft("") });
+    // The message leaves the composer at once; if it is not sent, it comes back to edit.
+    setDraft("");
+    send.mutate(value, { onError: () => setDraft((current) => current || value) });
   };
 
   const onSubmit = (e: FormEvent) => {
@@ -97,12 +107,9 @@ export function ChatPanel({ footer }: ChatPanelProps) {
               onUndo={() => undo.mutate()}
             />
           ))}
-          {send.isPending && (
-            <p className={styles.thinking} role="status">
-              Grabbit is reading your message and checking the report…
-            </p>
-          )}
           {footer}
+          {/* The working line is always the last thing in the log, under any card. */}
+          {send.isPending && <WorkingLine hasReport={Boolean(report.data)} />}
           <div ref={endRef} />
         </div>
       </div>
