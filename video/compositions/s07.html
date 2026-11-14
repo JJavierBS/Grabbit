@@ -9,24 +9,24 @@
     .s07-tab{height:48px;border-radius:12px 12px 0 0;background:#fff;border:2px solid #e3e3ec;border-bottom:0;padding:0 14px;display:flex;align-items:center;gap:10px;font-size:22px;font-weight:500;color:#5c5d6e;white-space:nowrap;overflow:hidden;flex:none}
     .s07-tab img{height:28px}
     .s07-tab b{font-family:"Outfit",sans-serif;font-weight:800;font-size:26px;color:#14151c}
-    .s07-body{position:absolute;left:0;right:0;top:70px;bottom:0;background:repeating-linear-gradient(135deg,#f7f7fa 0 30px,#f0eff5 30px 60px);padding:150px 130px}
-    .s07-k{font-size:34px;font-weight:700;color:#4b25d6}
-    .s07-t{font-size:96px;font-weight:800;letter-spacing:-.035em;line-height:1.05;margin-top:26px}
-    .s07-d{font-size:42px;font-weight:500;color:#5c5d6e;line-height:1.35;margin-top:40px;max-width:1300px}
-    .s07-z{font-size:38px;font-weight:700;margin-top:44px}
+    .s07-body{position:absolute;left:0;right:0;top:70px;bottom:0;overflow:hidden;background:#f7f7fa}
+    .s07-cap{position:absolute;inset:0}
+    .s07-cap video{position:absolute;left:0;top:0;width:1724px;height:866px}
   </style>
   <div id="root" data-composition-id="s07" data-width="1920" data-height="1080">
     <div class="s07-win" style="left:96px;top:70px;width:1728px;height:940px">
       <div class="s07-bar"><span class="s07-dots"><i></i><i></i><i></i></span><span class="s07-tab"><img src="assets/grabbit-mark.svg" alt=""><b>Grabbit</b></span></div>
       <div class="s07-body">
-        <div class="s07-k">Placeholder: app capture, filmed when the app is ready</div>
-        <div class="s07-t">The Slush shortlist</div>
-        <div class="s07-d">The report opens. One startup card shows the round lead, the trusted co-investors and a trust badge on each fact.</div>
-        <div class="s07-z">Punch-in: the trust badges</div>
+        <div id="s07-cap" class="s07-cap" data-layout-allow-overflow><video id="s07-v" class="clip" src="assets/captures/s07.mp4" data-start="0" data-duration="10" data-track-index="0" muted playsinline></video></div>
       </div>
     </div>
   </div>
   <script>
-    window.__timelines["s07"] = gsap.timeline({ paused: true });
+    (() => {
+      const tl = gsap.timeline({ paused: true });
+      // punch-in on the report panel as it starts to scroll
+      tl.to("#s07-cap", { scale: 1.3, transformOrigin: "100% 50%", duration: 0.5, ease: "power3.inOut" }, 2.9);
+      window.__timelines["s07"] = tl;
+    })();
   </script>
 </template>

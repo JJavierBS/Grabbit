@@ -46,12 +46,12 @@ SHOTS:   s01    0-315     footage 1, the entrance, wide: "Slush 2026", counter t
                           No scene file: the clip pile.webm, frames 393-603, crosses the cut
          s03  573-759     footage 3, medium: the speed lines take the pile away, "Skip the data.",
                           the presenter shows the app on the phone, the Grabbit lockup lands
-         s05  759-1239    app capture (placeholder): thesis and two reference investors
-         s06 1239-1719    app capture (placeholder): the question and its numbers
-         s07 1719-2019    app capture (placeholder): the report opens, trust badges
-         s08 2019-2319    app capture (placeholder): the correction and the change marks
+         s05  759-1239    app capture: the typed thesis, then the agent's answer and questions
+         s06 1239-1719    app capture: the three questions with their numbers, the answers
+         s07 1719-2019    app capture: the report opens, one startup and its trust badges
+         s08 2019-2319    app capture: the correction and the change marks
          s09 2319-2463    footage 5, the presenter walks away: "You: away." "Grabbit: on watch.", a notification
-         s10 2463-2883    app capture (placeholder): the alert with "Simulated event"; why it matters
+         s10 2463-2883    app capture: the alert with "Simulated event"; why it matters
          s11 2883-3309    footage 4, the closing: "Other investors: Searching" against "You: Deciding",
                           then "Skip the data. Focus on what matters."
          s12 3309-3465    the speed lines bring the end card in; "Built on Cala"; demo link

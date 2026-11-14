@@ -7,7 +7,8 @@ audience: Junction 2026 judges and peer reviewers
 ---
 
 The presenter speaks in every filmed frame. The times of the spoken words are in the script of
-each scene file. Frames 4 to 7 and frame 9 are placeholders until the app captures exist.
+each scene file. Frames 4 to 7 and frame 9 are screen recordings of the public app (one take,
+cut into assets/captures/). The voiceover over them is not recorded yet.
 
 ## Frame 1: At the door (0-10.5s)
 
@@ -46,38 +47,43 @@ each scene file. Frames 4 to 7 and frame 9 are placeholders until the app captur
 ## Frame 4: Thesis (25.3-41.3s)
 
 - act: Act 2: Grabbit
-- status: placeholder, app capture not recorded
+- status: built, voiceover not recorded
 - src: compositions/s05.html
+- capture: assets/captures/s05.mp4
 - duration: 16s
-- voiceover: "Tell Grabbit what you want. A vague thesis is enough. Name two investors you trust."
-- reads: the typed thesis (2-8s); the two reference investors (9-16s)
+- voiceover: "Tell Grabbit what you want. A vague thesis is enough."
+- reads: the typed thesis, after the punch-in (1.4-5.5s); the agent reads it (6-10.5s); its answer and three questions arrive (10.5-16s)
 
 ## Frame 5: It asks (41.3-57.3s)
 
 - act: Act 2: Grabbit
-- status: placeholder, app capture not recorded
+- status: built, voiceover not recorded
 - src: compositions/s06.html
+- capture: assets/captures/s06.mp4, the same take as frame 4 with no cut between them
 - duration: 16s
-- voiceover: "Grabbit does not only answer. It asks, and each question has real numbers from Cala's graph."
-- reads: the question from the agent (1-8s); the numbers in it, after the punch-in (8-14s)
+- voiceover: "Grabbit does not only answer. It asks, and each question has real numbers from Cala's graph. Then name the investors you trust."
+- reads: the three questions and their numbers (0-9.5s); the three answers, the last one names both investors (9.5-12.5s); the answers go (13.8s)
 
 ## Frame 6: Shortlist (57.3-67.3s)
 
 - act: Act 2: Grabbit
-- status: placeholder, app capture not recorded
+- status: built, voiceover not recorded
 - src: compositions/s07.html
+- capture: assets/captures/s07.mp4
 - duration: 10s
 - voiceover: "Here is your Slush shortlist. Who led each round. Which of your trusted investors joined. Each fact shows its source."
-- reads: the report opens (0-3s); one startup: lead, co-investors, trust badges (3-10s)
+- reads: the report opens (0.6-3s); the frame moves to the report and it scrolls to one startup (3-6s); the path to the trusted lead investor and the co-invest signal with its trust badge (6-10s)
 
 ## Frame 7: It rewrites itself (67.3-77.3s)
 
 - act: Act 2: Grabbit
-- status: placeholder, app capture not recorded
+- status: built, voiceover not recorded
 - src: compositions/s08.html
+- capture: assets/captures/s08.mp4
 - duration: 10s
 - voiceover: "Too long? Say so. The agent rewrites its own instructions, and the report changes in front of you."
-- reads: "shorter, co-investors first" (0-3s); the change marks on the report (3-8s); one source opens (8-10s)
+- reads: "Shorter, co-investors first" goes (1s); the agent confirms its new instruction (3.8s); the report rewrites itself and shows its change marks: 67% shorter, 3 startups removed (6-10s)
+- not shown: a source opening. A source link opens a new browser tab, which the capture window cannot show
 
 ## Frame 8: Away (77.3-82.1s)
 
@@ -93,11 +99,13 @@ each scene file. Frames 4 to 7 and frame 9 are placeholders until the app captur
 ## Frame 9: The alert (82.1-96.1s)
 
 - act: Act 3: It watches
-- status: placeholder, app capture not recorded
+- status: built, voiceover not recorded
 - src: compositions/s10.html
+- capture: assets/captures/s10.mp4
 - duration: 14s
 - voiceover: "A startup on your shortlist announces a seed round, led by an investor you trust. You know why it matters before the others read the news."
-- reads: the notification with its Simulated event label (0-7s); why it matters, in the chat (7-14s)
+- reads: the in-app alert with its Simulated event label, after the punch-in (1.3-6.2s); the alert opens in the chat with why it matters (7-14s)
+- note: the capture shows the in-app alert, not the desktop notification of the operating system
 
 ## Frame 10: The closing (96.1-110.3s)
 
