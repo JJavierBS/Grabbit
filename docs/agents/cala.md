@@ -149,7 +149,12 @@ round dates (still active?).
 ## Data quirks: handle them in our code
 - Round participants can also have `role: GRANTOR` (not in the field guide): FIRSTPICK sat
   as GRANTOR next to INVESTORs in a round (2026-11-14). Hidden links count it as funding;
-  `participants()` in `build.py` still lists INVESTOR and LENDER only.
+  `participants()` in `build.py` still lists INVESTOR and LENDER only: of 70 grantors in
+  108 cached rounds (2026-11-15) nearly all are public agencies (Innovate UK 20, Business
+  Finland 11, EIC 7), which would flood the investor question, links and the hidden-links
+  walk (42 extra Cala calls on the demo). Proximity reads a trusted grantor from the raw round.
+- `normalise_name` drops legal forms (Oy, AB, AS, Co, Ltd...) only at the end of a name:
+  inside one they are words ("Same As Ventures").
 - Founders' `Person` nodes link almost only to their current company: of 40 founders and
   CEOs of 20 Slush startups probed on 2026-11-14, none had a FOUNDED, WORKS_AT or IS_CEO_OF
   edge to another company (only duplicates of the same one). "Repeat founder" links are not
