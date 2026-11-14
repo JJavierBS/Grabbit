@@ -74,9 +74,8 @@ async def handle_message(
 
     outcomes = _apply_all(profile, result.tool_calls)
     updated = outcomes[-1].profile if outcomes else profile
-    if not any(o.refusal for o in outcomes) and not any(
-        c.name == "rewrite_instructions" for c in result.tool_calls
-    ):
+    # A turn the model already acted on needs no second guess; learning costs another call.
+    if not result.tool_calls:
         learned = await learn.from_reaction(llm, updated, text)
         if learned:
             outcomes += _apply_all(updated, [learned])
