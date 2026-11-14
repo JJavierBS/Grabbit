@@ -43,7 +43,7 @@ human confirms.
 | R5 | The video shows the least original part (digest, alert) and no "verified by Cala" moment | Fixed in this audit: the demo script now shows source labels; consider a few seconds of the thesis flow |
 | R6 | Originality: no comparison with existing tools | pitch.md lists the alternatives to research; do not claim "nothing like it exists" without checking |
 | R7 | Impact and Implementation (event-wide judges) are not argued anywhere | pitch.md drafts both; needs numbers the team can defend |
-| R8 | Startup data in Cala is unprobed: Investor B warned young companies have little data, and the coverage probe only checked SMEs and one listed company (research.md) | Probe funding rounds, lead investors and dates for 10+ startups in the demo sector before D2; ask Cala (C4) which round entity to rely on |
+| R8 | Startup data in Cala is unprobed: Investor B warned young companies have little data, and the coverage probe only checked SMEs and one listed company (research.md) | Probe funding rounds, lead investors and dates for 10+ startups in the demo sector before D2, from `FundingRound` participants (decisions.md 02:48) |
 
 ## Submission status unknown
 - Was the Fri 23:59 pre-submission draft sent with the Cala challenge? Someone confirm.
