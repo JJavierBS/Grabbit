@@ -202,7 +202,8 @@ describe("App", () => {
     expect(items[0]).toHaveTextContent(shortTitle(reportV2));
     expect(items[0]).toHaveAttribute("title", reportV2.summary);
     expect(items[0]).toHaveTextContent("Latest");
-    expect(items[0]).toHaveTextContent(/^.+ startups · \d{2}:\d{2}$/);
+    // The time follows the browser locale: "09:34" or "09:34 AM".
+    expect(items[0]).toHaveTextContent(/ startups · \d{1,2}[:.]\d{2}/);
     expect(items[0].textContent).not.toMatch(/\bv\d/);
 
     await userEvent.click(items[1]);
