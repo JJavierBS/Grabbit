@@ -10,9 +10,9 @@ human confirms.
 ## Team decisions that block the build
 | Id | Question | Why it matters | Proposal |
 | --- | --- | --- | --- |
-| D2 | Demo sector and the 5-10 demo startups for the business angel's thesis | Country coverage is not a product constraint (decisions.md), but the demo needs startups whose rounds, lead investors and dates are in Cala | Probe each candidate's introspection and funding-round edges before choosing (R8) |
+| D2 | Demo thesis and reference investors for the Slush angel | The shortlist comes from Slush 2026 attendees (decisions.md 03:10); the thesis decides which ones and how good the demo looks | Pull the attendee list once, then pick a thesis that yields 5-10 startups with recent rounds and a known lead |
 | D4 | Stack: language, frameworks, LLM provider and model, storage, scheduler, hosting of the demo link | architecture.md, api.md, backend.md, frontend.md, testing.md and the Makefile are all TODO; the agent and the importance check need an LLM (flow.md section 4), with no env var yet | Pick what the team knows best; one repo, one `make dev` |
-| D5 | Context.dev role: soft signals only (decisions.md, challenge.md Scope) or also company discovery? | Cala cannot list companies by criteria (cala.md), so the thesis flow needs a discovery source; research.md says "discovery comes from the web" | Context.dev `company/search` discovers candidates; Cala verifies every fact and is the only source of facts. Soft signals stay labelled "web, unverified". Wait for Cala's answer on `knowledge/query` (C1) |
+| D5 | Discovery outside events: a free thesis with no `Event` to start from | The demo discovers from the Slush `Event` (decisions.md 03:10); outside events Cala cannot list companies by criteria (cala.md) | Team talks to Cala (C1, C3). Fallback: widen through the graph from the reference investors' rounds |
 | D6 | Compete in the Context.dev challenge too? | One submission can enter several challenges (guidebook p. 11). Its criteria are not in the repo | Read its brief (hackjunction.app challenge 332 and tech challenge 44), distil it into context-dev.md, then decide |
 | D7 | Feature freeze time and explicit out-of-scope list (challenge.md) | Without them the MVP keeps growing | Freeze Sat evening; out of scope already includes portfolio watching of listed shares |
 
@@ -20,8 +20,7 @@ human confirms.
 | Id | Conflict | Where | To resolve |
 | --- | --- | --- | --- |
 | K1 | Business model "commission on analyses that end in a purchase, even executing it from the bot" vs "the agent never recommends what to buy" | research.md "Business model ideas", acta; decisions.md | Pitch a model that keeps the investor deciding (subscription, per-memo or per-seat). A commission on executed deals can be listed as future, never with the bot buying |
-| K2 | Context.dev "soft signals only" vs web discovery | decisions.md, challenge.md, research.md | D5 |
-| K4 | Context.dev status "being evaluated, not a dependency" vs MVP using it | context-dev.md vs challenge.md Scope | Fixed in this audit: status and `.env.example` updated; role still D5 |
+| K4 | Context.dev status "being evaluated, not a dependency" vs MVP using it | context-dev.md vs challenge.md Scope | Fixed in this audit: status and `.env.example` updated; role is soft signals (decisions.md 03:10) |
 
 ## Questions for Cala (workshop Sat 11:00 or mentors)
 - C1 May `knowledge/query` be used only to obtain seed ids? (cala.md)
@@ -36,14 +35,13 @@ human confirms.
 ## Risks without a plan yet
 | Id | Risk | Proposal |
 | --- | --- | --- |
-| R1 | Live demo or a judge's question goes outside the cache and hits a 429 or a multi-minute call | A call budget per demo step; pre-warm every node on the demo path; for an unexpected company, show what is cached and say live lookups are rate-limited |
+| R1 | Live demo or a judge's question goes outside the cache and hits a 429 or a multi-minute call | Cala will raise the limit (decisions.md 03:10); still pre-warm the Slush attendees and the demo path, and show what is cached for an unexpected company |
 | R2 | The mocked alert is discovered by a judge and read as faked execution | Label it on screen and in the README as "simulated event" (the fixture is already separate, flow.md section 5); say it aloud in the live demo |
-| R3 | No real Cala change exists for the demo companies, so the watcher shows nothing real | Pick, during D2, at least one company with a recent dated event (funding round, ownership change, filing) and replay it from the snapshot |
+| R3 | No real Cala change exists for the demo companies, so the watcher shows nothing real | Pick, during D2, at least one startup with a recent dated event (round, executive change, headcount jump) and replay it from the snapshot |
 | R4 | Deployed demo link: desktop notifications need a browser tab and permission; the Cala key must stay server-side | Server-side calls only; the deployed link can run in cached mode |
 | R5 | The video shows the least original part (digest, alert) and no "verified by Cala" moment | Fixed in this audit: the demo script now shows source labels; consider a few seconds of the thesis flow |
 | R6 | Originality: no comparison with existing tools | pitch.md lists the alternatives to research; do not claim "nothing like it exists" without checking |
 | R7 | Impact and Implementation (event-wide judges) are not argued anywhere | pitch.md drafts both; needs numbers the team can defend |
-| R8 | Startup data in Cala is unprobed: Investor B warned young companies have little data, and the coverage probe only checked SMEs and one listed company (research.md) | Probe funding rounds, lead investors and dates for 10+ startups in the demo sector before D2, from `FundingRound` participants (decisions.md 02:48) |
 
 ## Submission status unknown
 - Was the Fri 23:59 pre-submission draft sent with the Cala challenge? Someone confirm.

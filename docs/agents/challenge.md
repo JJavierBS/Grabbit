@@ -13,7 +13,7 @@ file, not the raw PDFs or slides. Keep it under 100 lines. All times Europe/Hels
   means to build automated research systems, so every hour spent researching is an hour not
   spent deciding. They need to get the most out of their time. Segment: from small private
   equity down (search funds, business angels, individual investors). The demo follows one
-  business angel looking for a startup round to join, with one thesis (research.md).
+  business angel preparing Slush 2026, with one thesis (research.md, decisions.md).
 - Partner judging, 25% each, in their words:
   - Real need: a clear user with a problem worth solving.
   - Execution: it works smoothly, end to end.
@@ -68,15 +68,14 @@ Context.dev: hackerpack (50k credits, `context-dev.md`) and its own challenge, "
 Real-Time Database"; one submission may enter several (open-questions.md D6).
 
 ## Scope
-- MVP (must demo), one flow: a proactive agent that turns a vague thesis into a short list
-  of real companies and a memo by asking data-backed questions, then keeps sending reports
-  and alerts on that shortlist until the investor finds the company. The investor configures
-  it (criteria, sources, format, threshold) and it adapts to them. Facts come from Cala's raw
-  graph ("verified by Cala"); headline signal: lead investors and co-investors of similar
-  companies' rounds. Context.dev adds soft signals ("web, unverified"). The agent reads
-  Cala's introspection per entity, so its questions grow with Cala's coverage.
+- MVP (must demo), one flow: a proactive agent takes a vague thesis, walks the Slush 2026
+  attendees in Cala's graph, asks data-backed questions and returns a shortlist and a memo,
+  then keeps sending reports and alerts on it until the angel finds a round. Each fact shows
+  its trust level (Cala `source_rank`: registry, company, press, database). Signals: lead
+  and co-investors of each round, "co-invest with who you trust", "likely to raise soon".
+  Context.dev adds soft signals ("web, unverified"). The investor configures it.
 - Steps: conversational onboarding, first report validated, scheduled digest and urgent
-  alerts on the shortlist by desktop notification. Full flow: `flow.md`.
+  alerts on the shortlist by desktop notification. Full flow: `flow.md`, decisions.md.
 - Nice to have: voice input in onboarding and chat; Telegram or WhatsApp channel.
 - Out of scope: recommending what to buy or executing trades (decisions.md); watching a
   portfolio of listed shares; regulatory data from Cala. Rest: TODO (open-questions D7).
@@ -84,16 +83,17 @@ Real-Time Database"; one submission may enter several (open-questions.md D6).
 
 ## Demo script
 Video, max 2:00 (times approximate). Features not in this list are low priority.
-1. 0:00-0:15 A business angel drowns in open tabs looking for a startup round to join;
+1. 0:00-0:15 A business angel preparing Slush drowns in open tabs and the attendee list;
    however much time they spend, they find little of value and have no energy left to judge.
 2. 0:15-0:20 They open Grabbit and close every other tab.
-3. 0:20-0:55 Onboarding by conversation: a vague thesis, two or three corrections.
-4. 0:55-1:15 The first report arrives in their chosen format: a shortlist, each fact
-   labelled "verified by Cala" or "web, unverified"; they open one source and validate it.
+3. 0:20-0:55 Onboarding by conversation: a vague thesis, two reference investors, two or
+   three data-backed questions and corrections.
+4. 0:55-1:15 The Slush prep report: a shortlist with who led each round, co-investors they
+   trust and "likely to raise soon"; each fact shows its trust level. They open one source.
 5. 1:15-1:25 They leave the computer.
 6. 1:25-1:40 Seconds later, an urgent desktop notification (simulated event, labelled on
-   screen; open-questions.md R2) about a company on the shortlist; the trigger is chosen
-   when recording. They come back, read why it matters and can act on it.
+   screen; open-questions.md R2) about a shortlisted startup, e.g. a new round or an
+   executive leaving. They come back, read why it matters and can act on it.
 7. 1:40-2:00 Voice-over pitch: Grabbit saves your time, lets you focus on deciding, and
    tells you when something changes.
 The live demo and Q&A go deeper into the thesis questions and the memo.
