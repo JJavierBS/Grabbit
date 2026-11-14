@@ -1,0 +1,197 @@
+{
+  "id": "01137109-a541-56c9-9f60-0d49520a710c",
+  "name": "Rupert",
+  "entity_type": "Company",
+  "description": "Rupert is an AI-powered social media management tool that protects your brand and drives sales 24/7 across Instagram, Facebook, TikTok and YouTube.",
+  "properties": {
+    "name": {
+      "value": "Rupert",
+      "sources": [
+        {
+          "name": "rupert.digital",
+          "document": "https://rupert.digital/",
+          "date": "2026-11-02",
+          "date_precision": "day",
+          "source_rank": "PRIMARY"
+        }
+      ]
+    },
+    "website": {
+      "value": "rupert.digital",
+      "sources": [
+        {
+          "name": "rupert.digital",
+          "document": "https://rupert.digital/",
+          "date": "2026-11-02",
+          "date_precision": "day",
+          "source_rank": "PRIMARY"
+        },
+        {
+          "name": "dns.google",
+          "document": "https://dns.google/query?name=rupert.digital&type=A",
+          "date": "2026-11-02",
+          "date_precision": "day",
+          "source_rank": "PRIMARY"
+        }
+      ]
+    },
+    "description": {
+      "value": "Rupert is an AI-powered social media management tool that protects your brand and drives sales 24/7 across Instagram, Facebook, TikTok and YouTube.",
+      "sources": [
+        {
+          "name": "rupert.digital",
+          "document": "https://rupert.digital/",
+          "date": "2026-11-02",
+          "date_precision": "day",
+          "source_rank": "PRIMARY"
+        }
+      ]
+    },
+    "headquarters_address": {
+      "value": "Leamington Spa, United Kingdom",
+      "sources": [
+        {
+          "name": "rupert.digital",
+          "document": "https://rupert.digital/",
+          "date": "2026-11-02",
+          "date_precision": "day",
+          "source_rank": "PRIMARY"
+        }
+      ]
+    },
+    "operational_status": {
+      "value": "ACTIVE",
+      "sources": [
+        {
+          "name": "rupert.digital",
+          "document": "https://rupert.digital/",
+          "date": "2026-11-02",
+          "date_precision": "day",
+          "source_rank": "PRIMARY"
+        }
+      ]
+    },
+    "funding_stage": {
+      "value": "SEED",
+      "sources": [
+        {
+          "name": "citybiz.co",
+          "document": "https://www.citybiz.co/article/403702/rupert-raises-8m-in-seed-funding/",
+          "date": "2023-04-13",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+        }
+      ]
+    }
+  },
+  "relationships": {
+    "outgoing": {
+      "PARTICIPATES_IN_FUNDING_ROUND": [
+        {
+          "id": "9f1df8bf-e814-5361-aa79-0840a4671eb1",
+          "name": "Seed",
+          "entity_type": "FundingRound",
+          "properties": {
+            "role": "ISSUER",
+            "sources": [
+              {
+                "name": "citybiz.co",
+                "document": "https://www.citybiz.co/article/403702/rupert-raises-8m-in-seed-funding/",
+                "date": "2023-04-13",
+                "date_precision": "day",
+                "source_rank": "PRESS"
+              }
+            ],
+            "id": "4020656b-4c6e-554c-9001-78846b41cc18"
+          }
+        }
+      ],
+      "OPERATES_IN_INDUSTRY": [
+        {
+          "id": "b1d0a7c0-7986-4a8f-a0d5-c78f03d956c6",
+          "name": "ADVERTISING_AND_MARKETING",
+          "entity_type": "Industry",
+          "properties": {
+            "sources": [
+              {
+                "name": "rupert.digital",
+                "document": "https://rupert.digital/",
+                "date": "2026-11-02",
+                "date_precision": "day",
+                "source_rank": "PRIMARY"
+              }
+            ],
+            "id": "52b1325e-83f1-5abb-bd3b-64d44117a70f",
+            "original_label": "marketingAds"
+          }
+        }
+      ],
+      "HAS_DOMAIN_NAME": [
+        {
+          "id": "22c4f824-9b03-589c-88ce-d787b848c07e",
+          "name": "rupert.digital",
+          "entity_type": "DomainName",
+          "properties": {
+            "sources": [
+              {
+                "name": "rupert.digital",
+                "document": "https://rupert.digital/",
+                "date": "2026-11-02",
+                "date_precision": "day",
+                "source_rank": "PRIMARY"
+              },
+              {
+                "name": "dns.google",
+                "document": "https://dns.google/query?name=rupert.digital&type=A",
+                "date": "2026-11-02",
+                "date_precision": "day",
+                "source_rank": "PRIMARY"
+              }
+            ],
+            "id": "006a05d9-e0dd-5041-8c73-1cacfbafbad3",
+            "status": "ACTIVE"
+          }
+        }
+      ]
+    },
+    "incoming": {
+      "FOUNDED": [
+        {
+          "id": "0315702d-30bd-502c-bd6f-be30ec973a04",
+          "name": "Yoni Steinmentz",
+          "entity_type": "Person",
+          "properties": {
+            "sources": [
+              {
+                "name": "citybiz.co",
+                "document": "https://www.citybiz.co/article/403702/rupert-raises-8m-in-seed-funding/",
+                "date": "2023-04-13",
+                "date_precision": "day",
+                "source_rank": "PRESS"
+              }
+            ],
+            "id": "6cbb798c-39d6-5361-9bfe-27f681eebe9b"
+          }
+        },
+        {
+          "id": "3f063770-9cff-5578-bf0d-bc0d27e1201c",
+          "name": "Ziv Wangenheim",
+          "entity_type": "Person",
+          "properties": {
+            "sources": [
+              {
+                "name": "citybiz.co",
+                "document": "https://www.citybiz.co/article/403702/rupert-raises-8m-in-seed-funding/",
+                "date": "2023-04-13",
+                "date_precision": "day",
+                "source_rank": "PRESS"
+              }
+            ],
+            "id": "8f479f78-ec53-5df7-b51b-b0295ece0a7d"
+          }
+        }
+      ]
+    }
+  },
+  "numerical_observations": []
+}

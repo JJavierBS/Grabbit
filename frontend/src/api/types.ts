@@ -17,3 +17,6 @@ export type ReportKind = Schemas["Report"]["kind"];
 export type Alert = Schemas["Alert"];
 export type Health = Schemas["Health"];
 export type ErrorResponse = Schemas["ErrorResponse"];
+
+/** One value of a Fact; a list value holds several of these. */
+export type FactScalar = Exclude<Fact["value"], unknown[] | null>;

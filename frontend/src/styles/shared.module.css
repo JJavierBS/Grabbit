@@ -1,0 +1,38 @@
+/* Shared recipes, pulled in with `composes: <name> from "../styles/shared.module.css"`. */
+
+/* Report title, history title, design system title. */
+.display {
+  font-family: var(--font-display);
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-2xl);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-display);
+}
+
+/* Section titles and startup names. */
+.title {
+  font-family: var(--font-display);
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-xl);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-display);
+}
+
+/* The content column inside the side panel: report and profile history. The panel is the surface. */
+.sheet {
+  display: grid;
+  align-content: start;
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-8) var(--space-16);
+}
+
+@media (max-width: 40rem) {
+  .sheet {
+    padding: var(--space-6) var(--space-4) var(--space-12);
+  }
+
+  .display {
+    font-size: var(--text-xl);
+  }
+}

@@ -1,0 +1,31 @@
+/* Proportions measured on the logo artwork: the mark is about twice the wordmark's cap height. */
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15em;
+  font-family: var(--font-logo);
+  font-weight: 800;
+  font-size: var(--text-xl);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--color-ink);
+}
+
+.mark {
+  height: 1.45em;
+  width: auto;
+  flex: none;
+}
+
+.speed {
+  fill: var(--color-violet);
+}
+
+.rabbit {
+  fill: currentColor;
+}
+
+.word {
+  /* Optical: Outfit's caps sit a hair high next to the mark. */
+  padding-top: 0.06em;
+}

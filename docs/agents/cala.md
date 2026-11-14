@@ -155,7 +155,22 @@ round dates (still active?).
 - Round dates can differ by a day between participants of the same round.
 - `OPERATES_IN_INDUSTRY` mixes coarse labels (`SOFTWARE_AND_SERVICES`) with odd ones
   (`AEROSPACE_AND_DEFENSE` for an LLM startup). Weak signal for "similar companies".
-- Empty `sources: []` happens (ids, some aliases). Show such values as unsourced.
+- Empty `sources: []` happens (ids, some aliases), and older docs show sources without
+  `source_rank`. Both normalise to `aggregator`, the weakest Cala level: we never claim more
+  trust than Cala states (`backend/app/cala/normalize.py`).
+
+## Our client (`backend/app/cala/`)
+- `CalaClient(api_key, CalaCache(conn), mode="live"|"replay")`: `search`, `lookup`,
+  `introspect`, `retrieve`. Serial by default, exponential backoff on 429 and 5xx, every
+  response cached by method + path + params + body. Replay raises `CalaCacheMiss`.
+- `normalize.py`: `property_fact`, `edge_fact`, `edge_attr`, `relationships`,
+  `observations` turn raw responses into `Fact`s (absent -> `not_published`).
+- `app/discovery/pipeline.py`: `get_candidates(client, profile)` walks the profile's
+  `Event` (default Slush 2026), introspects each attendee, keeps startups
+  (`filters.is_startup`), reads their `ISSUER` rounds and each last-round lead's other
+  rounds, applies the profile filters and attaches the three signals.
+- Warm the cache and get the pitch counts, from `backend/`:
+  `uv run --env-file ../.env python -m scripts.warm [--limit N] [--dump DIR]`.
 
 ## Rate limits and latency
 - `429 {"error":"rate_limit_exceeded",...}` with no `Retry-After` header. Limits are not

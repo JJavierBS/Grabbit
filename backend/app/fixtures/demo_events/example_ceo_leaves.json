@@ -1,0 +1,22 @@
+{
+  "description": "Staged event for the demo: the CEO of a shortlisted startup leaves. Copy for the real demo startup (open-questions D2) and change entity_id and the person id.",
+  "entity_id": "c0000000-0000-4000-8000-000000000001",
+  "patch": {
+    "relationships": {
+      "incoming": {
+        "IS_CEO_OF": [
+          {
+            "id": "p1",
+            "name": "Aino Virtanen",
+            "entity_type": "Person",
+            "properties": {
+              "valid_since": "2021-02-01",
+              "valid_until": "2026-11-13",
+              "sources": [{"name": "Simulated event", "document": "https://grabbit.example/simulated", "date": "2026-11-14", "source_rank": "PRIMARY"}]
+            }
+          }
+        ]
+      }
+    }
+  }
+}

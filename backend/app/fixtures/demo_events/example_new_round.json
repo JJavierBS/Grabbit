@@ -1,0 +1,46 @@
+{
+  "description": "Staged event for the demo: a shortlisted startup announces a Series A led by a reference investor. Copy this file for the real demo startup (open-questions D2) and change entity_id, round ids and investor ids.",
+  "entity_id": "c0000000-0000-4000-8000-000000000001",
+  "patch": {
+    "relationships": {
+      "outgoing": {
+        "PARTICIPATES_IN_FUNDING_ROUND": [
+          {
+            "id": "demo-round-series-a",
+            "name": "Series A",
+            "entity_type": "FundingRound",
+            "properties": {"role": "ISSUER", "event_date": "2026-11-14", "sources": []}
+          }
+        ]
+      }
+    }
+  },
+  "rounds": {
+    "demo-round-series-a": {
+      "id": "demo-round-series-a",
+      "name": "Series A",
+      "entity_type": "FundingRound",
+      "properties": {
+        "name": {"value": "Series A", "sources": []},
+        "round_label": {"value": "SERIES_A", "sources": []},
+        "transaction_value": {
+          "value": 12000000,
+          "sources": [{"name": "Simulated event", "document": "https://grabbit.example/simulated", "date": "2026-11-14", "source_rank": "PRESS"}]
+        },
+        "transaction_value_units": {"value": "EUR", "sources": []},
+        "event_date": {
+          "value": "2026-11-14",
+          "sources": [{"name": "Simulated event", "document": "https://grabbit.example/simulated", "date": "2026-11-14", "date_precision": "day", "source_rank": "PRESS"}]
+        }
+      },
+      "relationships": {
+        "incoming": {
+          "PARTICIPATES_IN_FUNDING_ROUND": [
+            {"id": "c0000000-0000-4000-8000-000000000001", "name": "Northwind Robotics Oy", "entity_type": "Company", "properties": {"role": "ISSUER"}},
+            {"id": "v0000000-0000-4000-8000-000000000001", "name": "Aurora Ventures", "entity_type": "Organization", "properties": {"role": "INVESTOR", "is_lead": true}}
+          ]
+        }
+      }
+    }
+  }
+}
