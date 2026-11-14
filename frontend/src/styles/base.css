@@ -66,13 +66,13 @@ a:hover {
 }
 
 ::selection {
-  background: var(--color-marker);
+  background: var(--color-marker-soft);
   color: var(--color-ink);
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--color-panel-strong) transparent;
+  scrollbar-color: var(--color-border-soft) transparent;
 }
 
 ::placeholder {

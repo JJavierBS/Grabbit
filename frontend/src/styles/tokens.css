@@ -1,44 +1,43 @@
 /*
  * Grabbit design tokens. The only file with raw colour, size and motion values.
- * Afterglow (DESIGN.md): the logo's black and night ink, with one violet light.
- * Dark only, because the logo is dark and the demo runs in a dark event hall.
+ * Afterglow, light (DESIGN.md): a near-white room, dark ink, and one violet light from the logo.
  */
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
-  /* The logo: void black, night ink #0e111a, violet #6139f8. */
+  /* The logo's violet. 6.1:1 on white, so it works as text and as a button fill. */
   --color-violet: #6139f8;
-  --color-violet-light: #a593ff; /* violet as text or a line on black */
-  --color-glow: rgb(97 57 248 / 0.5);
+  --color-violet-light: #5530e8; /* violet as small text or a thin line */
+  --color-glow: rgb(97 57 248 / 0.32);
 
   /* Ground and surfaces. */
-  --color-ground: #000000;
-  --color-surface: #0e111a;
-  --color-surface-raised: #161a26;
-  --color-panel: #000000;
-  --color-panel-strong: #1d2230;
+  --color-ground: #f7f7fa;
+  --color-surface: #ffffff;
+  --color-surface-raised: #ffffff;
+  --color-panel: #f7f7fa;
+  --color-panel-strong: #ecebf3;
 
-  /* "Ink" is the strongest foreground. On black it is near white. */
-  --color-ink: #f4f3fa;
-  --color-text: #d9d8e3;
-  --color-text-muted: #a3a2b2;
-  --color-text-faint: #807f90;
-  --color-on-ink: #000000;
+  /* Ink: the logo's night ink, the strongest foreground. */
+  --color-ink: #14151c;
+  --color-text: #2a2b36;
+  --color-text-muted: #5c5d6e;
+  --color-text-faint: #737485;
+  --color-on-ink: #ffffff;
 
-  /* Lines: --color-border keeps 3:1 on black for field edges. */
-  --color-border: #60657c;
-  --color-border-soft: #262b3c;
-  --color-border-strong: #f4f3fa;
-  --color-focus: var(--color-violet-light);
+  /* Lines: --color-border keeps 3:1 on white for field edges. */
+  --color-border: #8e8fa3;
+  --color-border-soft: #e3e3ec;
+  --color-border-strong: #14151c;
+  --color-focus: var(--color-violet);
 
   /* Info stays cool and quiet. The marker is the violet light: "look here now". */
-  --color-info: #9db4ff;
-  --color-info-bg: #141b33;
+  --color-info: #1f5fbf;
+  --color-info-bg: #e6efff;
   --color-marker: var(--color-violet);
-  --color-marker-soft: #1f1745;
-  --color-warning-ink: var(--color-violet-light);
-  --color-danger: #ff8a7a;
-  --color-danger-bg: #2b1210;
+  --color-marker-soft: #ece7ff;
+  --color-warning-ink: #4b25d6;
+  --color-danger: #b42318;
+  --color-danger-bg: #fde8e6;
 
   /* Trust scale: strength reads from line form first (fill, outline, tint, dashed), hue second. */
   --trust-filing-bg: var(--color-ink);
@@ -105,13 +104,13 @@
   --border-width: 1px;
   --focus-ring: 0 0 0 2px var(--color-ground), 0 0 0 4px var(--color-focus);
 
-  /* Elevation: black shadows are invisible on black, so lifted parts get a lighter edge instead. */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.6);
-  --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.7);
-  --shadow-lg: 0 16px 40px -8px rgb(0 0 0 / 0.8), 0 0 0 1px var(--color-border-soft);
-  /* The light: it falls from below, like the logo's glow. */
-  --glow-rest: 0 18px 48px -18px rgb(97 57 248 / 0.35);
-  --glow-work: 0 18px 64px -8px var(--color-glow);
+  /* Elevation: soft ink shadows. */
+  --shadow-sm: 0 1px 2px 0 rgb(20 21 28 / 0.06);
+  --shadow-md: 0 4px 12px -2px rgb(20 21 28 / 0.1);
+  --shadow-lg: 0 16px 40px -12px rgb(20 21 28 / 0.22), 0 0 0 1px var(--color-border-soft);
+  /* The light: violet that falls from below, like the logo's glow. */
+  --glow-rest: 0 10px 30px -14px rgb(97 57 248 / 0.28);
+  --glow-work: 0 14px 44px -10px var(--color-glow);
 
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
