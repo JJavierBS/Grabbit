@@ -1,6 +1,6 @@
 import { Fragment, type ReactNode } from "react";
 import type { TrustLevel } from "../api/types";
-import { formatDate } from "./FactValue";
+import { formatDate, formatNumber } from "./FactValue";
 import styles from "./Markdown.module.css";
 import { TRUST_LABELS, TrustBadge } from "./TrustBadge";
 
@@ -18,7 +18,14 @@ const TRUST_NAMES = new Map<string, TrustLevel>([
 const NAMES = [...TRUST_NAMES.keys()].map((n) => n.replace(/ /g, "\\s+")).join("|");
 const TRUST_TAG = new RegExp(`\\s*(?:\\[(${NAMES})\\]|\\((${NAMES})\\))`, "gi");
 const ISO_DATE = /\b\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])\b/g;
-const TOKEN = new RegExp(`${TRUST_TAG.source}|${ISO_DATE.source}`, "gi");
+// Raw amounts such as "650000 EUR" read as "€650K", like the facts on the report.
+const MONEY = /\b(\d{4,}(?:\.\d+)?)\s?(EUR|USD|GBP|CHF|SEK|NOK|DKK)\b/;
+// "01 Jul 2025" loses its leading zero, as dates do everywhere else in the app.
+const ZERO_DAY = /\b0([1-9])(?=\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b)/;
+const TOKEN = new RegExp(
+  `${TRUST_TAG.source}|${ISO_DATE.source}|${MONEY.source}|${ZERO_DAY.source}`,
+  "gi",
+);
 
 function trustLevel(name: string): TrustLevel | undefined {
   const wanted = name.replace(/\s+/g, " ").toLowerCase();
@@ -28,7 +35,10 @@ function trustLevel(name: string): TrustLevel | undefined {
   return undefined;
 }
 
-/** Plain text with trust tags drawn as badges and ISO dates written out ("10 Jun 2026"). */
+/**
+ * Plain text with trust tags drawn as badges, ISO dates written out ("10 Jun 2026"), raw
+ * amounts made compact ("€650K") and leading zeros dropped from days ("1 Jul 2025").
+ */
 function plain(text: string, key: string): ReactNode[] {
   const out: ReactNode[] = [];
   let last = 0;
@@ -36,17 +46,21 @@ function plain(text: string, key: string): ReactNode[] {
     const at = m.index ?? 0;
     if (at > last) out.push(text.slice(last, at));
     const level = m[1] || m[2] ? trustLevel(m[1] ?? m[2]) : undefined;
-    out.push(
-      level ? (
+    if (level) {
+      out.push(
         <Fragment key={`${key}-${at}`}>
           {at > 0 && " "}
           {/* An absent value is content, not a source: it keeps its words. */}
           <TrustBadge level={level} compact={level !== "not_published"} />
-        </Fragment>
-      ) : (
-        formatDate(m[0], "day")
-      ),
-    );
+        </Fragment>,
+      );
+    } else if (m[3]) {
+      out.push(formatNumber(Number(m[3]), m[4].toUpperCase()));
+    } else if (m[5]) {
+      out.push(m[5]);
+    } else {
+      out.push(formatDate(m[0], "day"));
+    }
     last = at + m[0].length;
   }
   if (last < text.length) out.push(text.slice(last));

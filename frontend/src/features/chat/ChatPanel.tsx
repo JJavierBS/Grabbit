@@ -125,7 +125,8 @@ export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
               <Logo stacked className={styles.welcomeLogo} />
               <p className={styles.welcomeLead}>Tell me what you look for at Slush 2026.</p>
               <p className={styles.welcomeHint}>
-                A sector, a stage, investors you trust: however vague. I ask the rest.
+                <span>A sector, a stage, investors you trust:</span>{" "}
+                <span>however vague, I ask the rest.</span>
               </p>
             </div>
           )}

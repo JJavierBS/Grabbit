@@ -117,16 +117,24 @@ export function App() {
   const deliver = useAlertDelivery(showAlert);
   const stream = useEvents(deliver);
 
+  // Opened by the app, not by the reader: focus moves without a focus frame around it.
+  const openedByApp = useRef(false);
+
   // A rewrite is the moment to watch: open the report on the change.
   useEffect(() => {
     if (!diff) return;
     setPastReport(null);
+    openedByApp.current = true;
     setPanel("report");
   }, [diff]);
 
   useEffect(() => {
     if (!panel) return;
-    panelRef.current?.focus();
+    // `focusVisible: false` keeps the ring for keyboard opens only (supported in Chromium).
+    panelRef.current?.focus(
+      openedByApp.current ? ({ focusVisible: false } as FocusOptions) : undefined,
+    );
+    openedByApp.current = false;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") closePanel();
     };
