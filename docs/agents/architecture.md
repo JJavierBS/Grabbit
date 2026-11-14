@@ -50,14 +50,15 @@ Owners are assigned on the issues; the board is the source of truth.
 | Cala API (`https://api.cala.ai`) | Discovery from `Event`, companies, rounds, investors, people | `CALA_API_KEY`, `CALA_MODE` |
 | Context.dev (`https://api.context.dev/v1`) | Soft signals only (decisions.md) | `CONTEXT_DEV_API_KEY` |
 | Gemini API (Google DeepMind), SDK `google-genai` | Chat, self-personalization, report writing, importance score | `GEMINI_API_KEY`, `GEMINI_MODEL`, `LLM_MODE` |
-| AWS Lightsail container service | Deployed demo link over HTTPS (desktop notifications need it) | set in the service, never in git |
+| AWS EC2 host + Caddy edge, GHCR image | Deployed demo link; blue/green rollout by `deploy/rollout.sh` from GitHub Actions | `/opt/junction/.env` on the host, never in git |
 
 ## Directory layout
 - `backend/`: FastAPI app (`app/`), tests (`tests/`), `pyproject.toml` managed by `uv`.
 - `frontend/`: Vite + React + TypeScript app (`src/`), tests next to components.
 - `data/`: local SQLite and cache, gitignored.
 - `docs/`: agent docs (`agents/`), raw references (`reference/`), research (`research/`).
-- `scripts/`: setup, hooks, board, docs mirror.
+- `scripts/`: setup, hooks, board, docs mirror, EC2 `server-init.sh`.
+- `deploy/`: files copied to the EC2 host: `Caddyfile`, `rollout.sh`.
 - `Dockerfile`: multi-stage, builds the frontend and serves it from FastAPI.
 
 ## Constraints
@@ -69,4 +70,6 @@ Owners are assigned on the issues; the board is the source of truth.
 - All Cala calls go through one wrapper with timeout and a response cache.
 - One uvicorn worker only: the scheduler lives in the process, more workers would duplicate
   jobs. The watcher and digest loop over every workspace with a report; only the default
-  workspace sets the shared digest cadence.
+  workspace sets the shared digest cadence. A deploy overlaps two containers for the
+  health check (about 10-30 s); both share the SQLite file in WAL mode, and a job that
+  fires in that window may run twice.
