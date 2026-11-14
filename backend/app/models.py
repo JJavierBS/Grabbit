@@ -130,6 +130,10 @@ class Profile(ApiModel):
     style: ProfileStyle
     cadence: Cadence
     alert_threshold: AlertThreshold
+    sources: list[str] = Field(
+        default_factory=list,
+        description="Publisher domains the angel trusts; Context.dev allow-list (web, unverified)",
+    )
     instructions: str
     updated_at: datetime
 

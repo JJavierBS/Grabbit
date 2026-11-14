@@ -39,7 +39,9 @@ work in parallel against mocks.
 - `Profile`: `version, event_id?, thesis, filters {stages[], sectors_in[], sectors_out[],
   countries[], headcount_max?, ticket?: Fact}, reference_investors [{entity_id, name}],
   style {length (short|medium|long), detail (plain|technical), language, sections[]},
-  cadence (event|daily|weekly), alert_threshold (low|medium|high), instructions, updated_at`.
+  cadence (event|daily|weekly), alert_threshold (low|medium|high), sources[] (publisher
+  domains the angel trusts, the Context.dev allow-list; up to 3 are queried), instructions,
+  updated_at`.
 - `ProfileChange`: `version, field, before, after, reason, by (user|agent)`.
 - `ChatMessage`: `id, role (user|agent), text, created_at, profile_changes: ProfileChange[],
   report_id?`.

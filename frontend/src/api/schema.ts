@@ -349,6 +349,11 @@ export interface components {
        * @enum {string}
        */
       alert_threshold: "low" | "medium" | "high";
+      /**
+       * Sources
+       * @description Publisher domains the angel trusts; Context.dev allow-list (web, unverified)
+       */
+      sources: string[];
       /** Instructions */
       instructions: string;
       /**

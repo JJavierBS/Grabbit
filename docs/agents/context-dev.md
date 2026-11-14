@@ -1,7 +1,9 @@
 # Context.dev (hackerpack tool)
 
 Web data API: scrape, search, crawl, plus company, people and news search. Status: used in
-the MVP (challenge.md "Scope"), key `CONTEXT_DEV_API_KEY` in `.env.example`. Its exact role
+the MVP (challenge.md "Scope"), key `CONTEXT_DEV_API_KEY` in `.env.example`.
+In the code: `backend/app/context_dev/` (client with cache, `signals.py` turning news about
+shortlisted startups into `web_unverified` facts from the profile's `sources` allow-list). Its exact role
 (soft signals only, or also company discovery) is open: open-questions.md D5. Cala stays the
 only source of facts (decisions.md). Its own challenge, possibly a second prize: D6.
 Full docs: `docs/reference/context-dev/` (index in its `README.md`, spec in `openapi.json`).

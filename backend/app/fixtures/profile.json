@@ -59,6 +59,10 @@
   },
   "cadence": "event",
   "alert_threshold": "medium",
+  "sources": [
+    "arcticstartup.example",
+    "nordicwire.example"
+  ],
   "instructions": "Write for a business angel at Slush 2026 with tickets of 25-50k EUR. Lead with who led each round and whether Aurora Ventures or Lumi Angels are on the cap table. Skip hardware. Keep it short and plain; end with one question to ask each founder.",
   "updated_at": "2026-11-14T09:12:00Z"
 }

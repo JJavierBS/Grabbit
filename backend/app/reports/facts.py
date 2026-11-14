@@ -3,7 +3,7 @@
 import re
 
 from app.agent.onboarding import money
-from app.models import Candidate, Fact, Round
+from app.models import Candidate, Fact, Round, Source
 
 BADGES = {
     "filing": "Official filing",
@@ -45,6 +45,13 @@ def _date(value: str, fact: Fact) -> str | None:
     if precision == "month" or not day:
         return f"{name} {year}"
     return f"{int(day)} {name} {year}"
+
+
+def render_date(source: Source) -> str | None:
+    if not source.date:
+        return None
+    fact = Fact(value=source.date, trust=source.rank, sources=[source])
+    return _date(source.date, fact)
 
 
 def last_round(c: Candidate) -> Round | None:
