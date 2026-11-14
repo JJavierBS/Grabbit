@@ -23,7 +23,14 @@ function backend() {
     if (key === "POST /api/chat") {
       const { text } = await request.json();
       const at = "2026-11-14T09:00:00Z";
-      const base = { report_id: null, ui: null, graph: null, walk: null, sources: [] };
+      const base = {
+        report_id: null,
+        ui: null,
+        graph: null,
+        walk: null,
+        sources: [],
+        questions: [],
+      };
       chat.push({
         ...base,
         id: `u${chat.length}`,

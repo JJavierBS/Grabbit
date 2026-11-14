@@ -5,6 +5,7 @@ from datetime import UTC, datetime
 
 from app import workspace
 from app.models import (
+    AgentQuestion,
     ChatMessage,
     ChatRole,
     ExploredGraph,
@@ -36,6 +37,7 @@ def add(
     graph: ExploredGraph | None = None,
     walk: WalkSummary | None = None,
     sources: list[ReplySource] | None = None,
+    questions: list[AgentQuestion] | None = None,
     now: datetime | None = None,
 ) -> ChatMessage:
     message = ChatMessage(
@@ -49,6 +51,7 @@ def add(
         graph=graph,
         walk=walk,
         sources=sources or [],
+        questions=questions or [],
     )
     with db.connect() as conn:
         conn.execute(

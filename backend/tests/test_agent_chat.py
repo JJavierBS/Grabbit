@@ -74,12 +74,37 @@ async def test_plain_question_changes_nothing(candidates, now):
     assert reply.profile_changes == [] and profile_store.current().version == 1
 
 
-async def test_first_turn_appends_onboarding_questions(candidates, now):
+async def test_first_turn_asks_onboarding_questions_with_clickable_answers(candidates, now):
     reply = await _say("I invest in B2B software", candidates, now)
-    assert "Of the 6 startups that match, 4 are pre-seed or seed" in reply.text
+    # Asked as a form under the reply (#153), not as bullets in its text.
+    assert "Of the 6 startups" not in reply.text
+    stage = next(q for q in reply.questions if q.key == "stage")
+    assert stage.text.startswith("Of the 6 startups that match, 4 are pre-seed or seed")
+    assert [(o.label, o.answer) for o in stage.options][0] == (
+        "Pre-seed and seed",
+        "Only pre-seed and seed startups.",
+    )
+    assert all(q.options for q in reply.questions)
+    assert chat_store.all_messages()[-1].questions == reply.questions
     assert profile_store.current().thesis.startswith("Early-stage B2B software")
     second = await _say("ok", candidates, now)
-    assert "Of the 6 startups" not in second.text
+    assert second.questions == []
+
+
+async def test_the_agent_still_sees_the_questions_it_asked(candidates, now):
+    seen = []
+
+    class Recording(FakeLLM):
+        async def chat(self, *, system, messages, tools=None, on_text=None):
+            seen.append(messages)
+            return await super().chat(system=system, messages=messages, tools=tools)
+
+    llm = Recording()
+    first = await _say("I invest in B2B software", candidates, now, llm=llm)
+    seen.clear()
+    await _say("Only pre-seed and seed startups.", candidates, now, llm=llm)
+    model_turns = [m.text for call in seen for m in call if m.role == "model"]
+    assert any(all(q.text in t for q in first.questions) for t in model_turns)
 
 
 async def test_model_failure_keeps_profile_and_says_so(candidates, now):

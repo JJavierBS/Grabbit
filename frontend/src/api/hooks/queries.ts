@@ -100,6 +100,7 @@ export function useSendMessage() {
         graph: null,
         walk: null,
         sources: [],
+        questions: [],
         text,
         created_at: new Date().toISOString(),
         profile_changes: [],

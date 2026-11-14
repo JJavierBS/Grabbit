@@ -50,3 +50,22 @@ def test_money_formatting():
     assert money(400000, "EUR") == "EUR 400k"
     assert money(22_000_000, "EUR") == "EUR 22M"
     assert money(1_500_000, "USD") == "USD 1.5M"
+
+
+def test_every_question_offers_short_clickable_answers(now):
+    questions = pick_questions(_candidates(), default_profile(now), now, limit=10)
+    assert questions
+    for q in questions:
+        assert 1 <= len(q.options) <= 4, q.key
+        for label, answer in q.options:
+            assert 0 < len(label) <= 32 and answer.endswith("."), (q.key, label, answer)
+
+
+def test_answers_are_built_from_the_same_data_as_the_question(now):
+    by_key = {q.key: q for q in pick_questions(_candidates(), default_profile(now), now, limit=10)}
+    ticket = by_key["ticket"]
+    low = ticket.text.split("range from ")[1].split(" to ")[0]
+    assert ticket.options[0] == (f"Small, near {low}", f"I invest in small rounds, near {low}.")
+    investors = by_key["investors"]
+    top = investors.text.split("? ")[1].split(" back the most")[0].split(" and ")
+    assert [label for label, _ in investors.options][: len(top)] == top

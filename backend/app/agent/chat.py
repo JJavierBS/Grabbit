@@ -14,7 +14,7 @@ from app.agent.rules import FIXED_RULES
 from app.agent.tools import TOOL_SPECS, ToolOutcome, apply_tool_call
 from app.agent.visual import visual_answer
 from app.llm import LLM, LLMError, Message, ToolCall
-from app.models import Candidate, ChatMessage, Profile
+from app.models import AgentQuestion, Candidate, ChatMessage, Profile, QuestionOption
 from app.store import chat as chat_store
 from app.store import profile as profile_store
 
@@ -65,7 +65,7 @@ async def handle_message(
     first_turn = chat_store.count_user_messages() == 1
     profile = profile_store.current(now)
     history = [
-        Message(role="user" if m.role == "user" else "model", text=m.text)
+        Message(role="user" if m.role == "user" else "model", text=_with_questions(m))
         for m in chat_store.last(HISTORY_TURNS)
     ]
     system = system_prompt(profile, report_summary, candidates)
@@ -108,10 +108,17 @@ async def handle_message(
             report_id = await on_profile_change(saved)
         updated = saved
 
+    asked: list[AgentQuestion] = []
     if first_turn:
-        questions = onboarding.pick_questions(candidates, updated, now)
-        if questions:
-            reply += "\n\n" + "\n".join(f"- {q.text}" for q in questions)
+        # Asked as a form under the reply (#153), not as bullets in its text.
+        asked = [
+            AgentQuestion(
+                key=q.key,
+                text=q.text,
+                options=[QuestionOption(label=label, answer=answer) for label, answer in q.options],
+            )
+            for q in onboarding.pick_questions(candidates, updated, now)
+        ]
 
     drawn = None
     if visual and changes:
@@ -131,8 +138,16 @@ async def handle_message(
         graph=drawn and drawn.graph,
         walk=drawn and drawn.walk,
         sources=sources,
+        questions=asked,
         now=now,
     )
+
+
+def _with_questions(m: ChatMessage) -> str:
+    """The model's own turn as it asked it: its text and the questions shown under it."""
+    if not m.questions:
+        return m.text
+    return m.text + "\n\n" + "\n".join(f"- {q.text}" for q in m.questions)
 
 
 def _apply_all(profile: Profile, calls: list[ToolCall]) -> list[ToolOutcome]:
