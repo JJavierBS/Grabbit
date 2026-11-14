@@ -11,10 +11,13 @@ export function summaryText(walk: WalkSummary): string {
   return `Checked ${what} in Cala in ${time}`;
 }
 
-/** How the agent found an answer in Cala, kept folded on it once the live walk is gone (#138). */
-export function HowIFound({ walk }: { walk: WalkSummary }) {
+/**
+ * How the agent found an answer in Cala, kept folded on it once the live walk is gone (#138).
+ * The guided demo opens it: the steps are part of what it teaches (#184).
+ */
+export function HowIFound({ walk, open = false }: { walk: WalkSummary; open?: boolean }) {
   return (
-    <details className={styles.how}>
+    <details className={styles.how} open={open}>
       <summary className={styles.summary}>
         <span className={styles.lead}>How I found this</span> · {summaryText(walk)}
       </summary>

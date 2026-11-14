@@ -1,0 +1,14 @@
+/* A fieldset only for its `disabled`: it adds no box of its own. */
+.lock {
+  display: contents;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.lock[data-guide-locked] a[href],
+.lock[data-guide-locked] [role="button"] {
+  cursor: default;
+  pointer-events: none;
+}

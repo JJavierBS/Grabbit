@@ -337,3 +337,10 @@
     display: none;
   }
 }
+
+/* The guided demo's card floats over the panel on narrow screens; the report scrolls clear of it. */
+@media (max-width: 63.99rem) {
+  .app[data-guided] .panelContent {
+    padding-bottom: 16rem;
+  }
+}
