@@ -1,0 +1,30 @@
+/* Folded under the answer: one quiet line until the reader asks how it was found. */
+.how {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: var(--border-width) solid var(--color-border-soft);
+  font-size: var(--text-sm);
+}
+
+.summary {
+  cursor: pointer;
+  min-height: 24px;
+  color: var(--color-text-muted);
+  border-radius: var(--radius-sm);
+}
+
+.summary:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.lead {
+  font-weight: var(--weight-medium);
+  color: var(--color-ink);
+}
+
+.how[open] .summary {
+  margin-bottom: var(--space-2);
+}

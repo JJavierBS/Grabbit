@@ -17,6 +17,7 @@ import { Markdown } from "../../components/Markdown";
 import { Skeleton } from "../../components/Skeleton";
 import { ChangeNote } from "./ChangeNote";
 import styles from "./ChatPanel.module.css";
+import { HowIFound } from "./HowIFound";
 import { LiveWalk } from "./LiveWalk";
 import { changeNoteText, isUndoable } from "./noteText";
 import { VisualAnswer } from "./openui/VisualAnswer";
@@ -261,6 +262,7 @@ function Message({ message, entering, canUndo, undoing, onUndo }: MessageProps) 
       {message.ui ? (
         <div className={styles.visual}>
           <VisualAnswer ui={message.ui} graph={message.graph} />
+          {message.walk && <HowIFound walk={message.walk} />}
         </div>
       ) : (
         rest && <div className={styles.bubble}>{isAgent ? <Markdown source={rest} /> : rest}</div>

@@ -8,7 +8,7 @@ import { cssFile, declarations } from "../../test/css";
 import { installTestStreams } from "../../test/fakeEvents";
 import { renderWithClient } from "../../test/renderApp";
 import { ChatPanel } from "./ChatPanel";
-import { budgetText, LiveWalk, VISIBLE_STEPS } from "./LiveWalk";
+import { budgetText, checkedText, LiveWalk, VISIBLE_STEPS } from "./LiveWalk";
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
 
@@ -59,6 +59,7 @@ function heldTurns() {
         report_id: null,
         ui: null,
         graph: null,
+        walk: null,
         created_at: "2026-11-14T09:00:00Z",
         profile_changes: [],
       };
@@ -70,11 +71,24 @@ function heldTurns() {
 }
 
 describe("LiveWalk", () => {
-  it("says the round and the entity budget", () => {
+  it("says how far the walk is in words anyone reads", () => {
     expect(budgetText(trace({ round: 2, nodes: 14 }))).toBe(
-      "Round 2 of 6 · 14 of 30 Cala entities",
+      "Step 2 of up to 6 · 14 companies, people and rounds checked",
     );
-    expect(budgetText(trace({ round: 0 }))).toBe("0 of 30 Cala entities");
+    expect(budgetText(trace({ round: 0 }))).toBe("nothing checked yet");
+    expect(checkedText(1)).toBe("1 company, person or round checked");
+    for (const text of [budgetText(trace({ round: 3, nodes: 9 })), checkedText(9)]) {
+      expect(text).not.toMatch(/entit|node|edge|link/i);
+    }
+  });
+
+  it("explains the walk in one line and draws its progress", () => {
+    const { container } = renderWithClient(
+      <LiveWalk trace={trace({ round: 3, steps: [step(0)] })} />,
+    );
+    expect(screen.getByText("Reading Cala's map of who funds whom")).toBeInTheDocument();
+    const bar = container.querySelector("header [aria-hidden='true'] > span") as HTMLElement;
+    expect(bar.style.width).toBe("50%");
   });
 
   it("shows the latest steps, folds the older ones and marks the model's reasoning", () => {
@@ -151,7 +165,9 @@ describe("LiveWalk", () => {
     );
     const grown = screen.getByRole("region", { name: "Grabbit walking Cala's graph" });
     await waitFor(() =>
-      expect(grown).toHaveTextContent(`Round 2 of 6 · ${exploredAurora.nodes.length} of 30`),
+      expect(grown).toHaveTextContent(
+        `Step 2 of up to 6 · ${exploredAurora.nodes.length} companies, people and rounds`,
+      ),
     );
     expect(within(grown).getByRole("figure")).toBeInTheDocument();
 

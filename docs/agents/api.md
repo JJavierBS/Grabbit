@@ -64,10 +64,12 @@ work in parallel against mocks.
   updated_at`.
 - `ProfileChange`: `version, field, before, after, reason, by (user|agent)`.
 - `ChatMessage`: `id, role (user|agent), text, created_at, profile_changes: ProfileChange[],
-  report_id?, ui?, graph?`. `ui` is OpenUI Lang drawn with the Cala components in
+  report_id?, ui?, graph?, walk?`. `ui` is OpenUI Lang drawn with the Cala components in
   `frontend/src/features/chat/openui/`; when set, the chat shows it instead of `text`.
   `graph` is the part of Cala's graph the agent walked for that answer (`ExploredGraph`),
-  drawn by the `ExploredGraph` and `EntityFacts` components.
+  drawn by the `ExploredGraph` and `EntityFacts` components. `walk` (`WalkSummary`: `steps:
+  WalkStep[]`, `checked`, `seconds`) is how the agent walked Cala for it, in plain words,
+  without the model's reasoning; the chat shows it folded as "How I found this" (#138).
 - `ExploredGraph`: `nodes: GraphNode[], edges: GraphEdge[]`. `GraphNode`: `entity_id, name,
   entity_type, facts: {property: Fact}` (only for nodes the agent expanded).
   `GraphEdge`: `source, target, relationship (Cala name), role?, is_lead, facts: {event_date|
