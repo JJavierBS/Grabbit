@@ -33,9 +33,8 @@ file, not the raw PDFs or slides. Keep it under 100 lines. All times Europe/Hels
   `docs/agents/cala.md`. Coverage per country: research.md "Cala coverage".
 - Base `https://api.cala.ai`, header `X-API-KEY: $CALA_API_KEY` (keys: console.cala.ai/api-keys).
 - Credits: console.cala.ai, Billing > Extra credits > Add credits > promo code MAKEUNICORNSREAL.
-- Build on the entity endpoints (`/v1/entities...`), not on the LLM-processed
-  `/v1/knowledge/search` and `/v1/knowledge/query` (decisions.md).
-- 429 rate limit is easy to hit. Cache responses: the demo must survive bad wifi.
+- Build on the entity endpoints (`/v1/entities...`), not the LLM-processed `/v1/knowledge/*`.
+- Cache responses: the demo must survive bad wifi (Cala will raise the rate limit).
 
 ## Event-wide judging (peer review and final judges)
 - Innovation: new or different compared to the other projects.
@@ -46,13 +45,12 @@ Peer review happens at tables: a stranger must get the point and see it work in 
 ## Rules that affect the code
 - All project code is written during the event (from Fri 19:30). Open source libraries are fine.
 - Submission is MIT-licensed and the source must be accessible: the repo is public.
-- Partner APIs and data stay under the partner's terms; Cala usage limits: undocumented, see
-  cala.md "Rate limits and latency" (ask at the workshop).
+- Partner APIs and data stay under the partner's terms; Cala limits: cala.md "Rate limits".
 
 ## Deadlines
 - Fri 23:59: pre-submission draft on Junction Platform with the chosen challenge.
 - Sat 12:00: submissions open.
-- Feature freeze: TODO (team decides).
+- Feature freeze: Sun 00:00; then only fixes, video, deck and README (decisions.md).
 - Sun 10:00: final submission. Form closes automatically; DRAFT projects are not reviewed.
 - Sun 10:30-14:00: live peer review (guidebook p. 7); all 4 present or no main prize.
 - Top 5: 3 min pitch with live demo from our own laptop, then 3 min questions.
@@ -73,12 +71,13 @@ Real-Time Database"; one submission may enter several (open-questions.md D6).
   then keeps sending reports and alerts on it until the angel finds a round. Each fact shows
   its trust level (Cala `source_rank`: registry, company, press, database). Signals: lead
   and co-investors of each round, "co-invest with who you trust", "likely to raise soon".
-  Context.dev adds soft signals ("web, unverified"). The investor configures it.
+  Context.dev adds soft signals ("web, unverified"). Originality: Gemini personalizes the
+  report itself through the conversation (agent.md).
 - Steps: conversational onboarding, first report validated, scheduled digest and urgent
   alerts on the shortlist by desktop notification. Full flow: `flow.md`, decisions.md.
-- Nice to have: voice input in onboarding and chat; Telegram or WhatsApp channel.
-- Out of scope: recommending what to buy or executing trades (decisions.md); watching a
-  portfolio of listed shares; regulatory data from Cala. Rest: TODO (open-questions D7).
+- Nice to have: voice input in onboarding and chat.
+- Out of scope: Telegram and WhatsApp; recommending what to buy or executing trades;
+  watching a portfolio of listed shares; regulatory data from Cala (decisions.md).
 - Undecided points and conflicts: `open-questions.md`. Pitch, deck, README: `pitch.md`.
 
 ## Demo script
@@ -89,7 +88,8 @@ Video, max 2:00 (times approximate). Features not in this list are low priority.
 3. 0:20-0:55 Onboarding by conversation: a vague thesis, two reference investors, two or
    three data-backed questions and corrections.
 4. 0:55-1:15 The Slush prep report: a shortlist with who led each round, co-investors they
-   trust and "likely to raise soon"; each fact shows its trust level. They open one source.
+   trust and "likely to raise soon"; each fact shows its trust level. They say "shorter,
+   co-investors first" and the report rewrites itself. They open one source.
 5. 1:15-1:25 They leave the computer.
 6. 1:25-1:40 Seconds later, an urgent desktop notification (simulated event, labelled on
    screen; open-questions.md R2) about a shortlisted startup, e.g. a new round or an

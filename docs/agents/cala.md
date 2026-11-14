@@ -177,7 +177,8 @@ Shared core, whatever the seed source:
 4. Queue the neighbours worth expanding; stop at a fixed depth and node budget.
 5. Store nodes, edges and sources locally; deduplicate.
 6. Filter, sort, aggregate and score locally. The API does none of that.
-7. Show every fact with its source name, link and date ("verified by Cala").
+7. Show every fact with its source name, link, date precision and trust badge from
+   `source_rank` (agent.md "Trust scale").
 
 Seeds without the LLM endpoints:
 - Names typed by the user or found on the web, resolved with name search (user picks when

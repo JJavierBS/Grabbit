@@ -46,6 +46,7 @@ Read only what the current step needs. Do not preload these files.
 | decide scope, product behaviour, README or submission text | `docs/agents/challenge.md` |
 | choose the target user, demo flow or pitch story | `docs/agents/research.md` |
 | build onboarding, reports, alerts or chat, or plan them as issues | `docs/agents/flow.md` |
+| build the agent's personalization, questions, signals or trust badges | `docs/agents/agent.md` |
 | call Cala, walk its entity graph or cache its data | `docs/agents/cala.md` |
 | use or evaluate Context.dev (web data API, hackerpack) | `docs/agents/context-dev.md` |
 | turn the challenge into backlog issues | `docs/agents/planning.md` |
