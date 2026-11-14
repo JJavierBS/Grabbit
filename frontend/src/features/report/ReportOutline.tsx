@@ -1,4 +1,4 @@
-import { PanelRightOpen } from "lucide-react";
+import { FileText } from "lucide-react";
 import type { Report } from "../../api/types";
 import { Badge } from "../../components/Badge";
 import { formatDate } from "../../components/FactValue";
@@ -23,8 +23,7 @@ export function ReportOutline({ report, open, rewritten, onOpen }: ReportOutline
         {rewritten && <Badge tone="warning">Rewritten</Badge>}
       </div>
       <p className={styles.meta}>
-        {formatDate(report.created_at, "day")} · {count} {count === 1 ? "startup" : "startups"} ·
-        Profile version {report.profile_version}
+        {formatDate(report.created_at, "day")} · {count} {count === 1 ? "startup" : "startups"}
       </p>
       {report.sections.length > 0 && (
         <ol className={styles.sections}>
@@ -40,7 +39,7 @@ export function ReportOutline({ report, open, rewritten, onOpen }: ReportOutline
         aria-controls="report-panel"
         onClick={onOpen}
       >
-        <PanelRightOpen aria-hidden="true" />
+        <FileText aria-hidden="true" />
         {open ? "Report is open" : "Open report"}
       </button>
     </article>

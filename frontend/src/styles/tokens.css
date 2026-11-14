@@ -131,6 +131,12 @@
   --press-scale: 0.98; /* a pressed button gives a little */
 
   --chat-width: 44rem;
+  --icon-size: 1.125rem;
+  --icon-stroke: 1.75;
+  --control-size: 2.25rem;
+  --touch-target: 2.75rem;
+  --header-height: 4rem;
+
   --sidebar-width: 17rem;
   --z-panel: 40;
   --z-drawer: 45;
@@ -144,5 +150,19 @@
     --duration-slow: 0ms;
     --duration-glow: 0ms;
     --press-scale: 1;
+  }
+}
+
+/* Report surfaces (#117): kept apart from the main block so parallel work does not collide. */
+:root {
+  --reveal-step: 60ms; /* text, graph, facts: 0, 60, 120ms + a 150ms fade < 300ms */
+  --reveal-rise: 0.25rem;
+  --lift-hover: -2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --reveal-step: 0ms;
+    --lift-hover: 0px;
   }
 }

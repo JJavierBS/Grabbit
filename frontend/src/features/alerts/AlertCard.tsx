@@ -44,6 +44,7 @@ export function AlertCard({ alert, onClose }: { alert: Alert; onClose?: () => vo
             <li key={i}>
               <FactValue
                 inline
+                labelled
                 fact={f}
                 kind={/^\d{4}-\d{2}/.test(String(f.value)) ? "date" : "auto"}
               />

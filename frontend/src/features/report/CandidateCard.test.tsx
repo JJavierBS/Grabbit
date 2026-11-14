@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { reportV1 } from "../../dev/fixtures";
 import { CandidateCard } from "./CandidateCard";
 
@@ -33,7 +33,7 @@ describe("CandidateCard", () => {
     const base = reportV1.candidates[0];
     const candidate = {
       ...base,
-      industries: ["SOFTWARE_AND_SERVICES", "ai"],
+      industries: ["SOFTWARE_AND_SERVICES", "ai", "AI"],
       funding_stage: { ...base.funding_stage, value: "PRE_SEED" },
       rounds: base.rounds.slice(0, 1).map((r) => ({ ...r, label: "SERIES_A" })),
     };
@@ -41,6 +41,7 @@ describe("CandidateCard", () => {
     const tags = screen.getByRole("list", { name: "Industries" });
     expect(tags).toHaveTextContent("Software and services");
     expect(tags).toHaveTextContent("AI");
+    expect(within(tags).getAllByRole("listitem")).toHaveLength(2);
     expect(container).toHaveTextContent("Pre-seed");
     expect(container).toHaveTextContent("Series A");
     expect(container.textContent).not.toMatch(/PRE_SEED|SOFTWARE_AND_SERVICES|SERIES_A/);

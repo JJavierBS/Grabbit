@@ -76,6 +76,19 @@ describe("FactValue", () => {
     expect(screen.queryByText(/0/)).not.toBeInTheDocument();
   });
 
+  it("says Not published once, as its badge, with no empty pill beside it", () => {
+    const { container } = render(
+      <FactValue
+        label="Stage"
+        fact={{ value: null, unit: null, trust: "aggregator", sources: [] }}
+      />,
+    );
+    const badges = container.querySelectorAll("[data-trust]");
+    expect(badges).toHaveLength(1);
+    expect(badges[0]).toHaveAttribute("data-trust", "not_published");
+    expect(screen.getByText("Not published")).not.toHaveClass("visually-hidden");
+  });
+
   it("treats a null value as not published even with another trust level", () => {
     const { container } = render(
       <FactValue label="HQ" fact={{ value: null, unit: null, trust: "press", sources: [] }} />,

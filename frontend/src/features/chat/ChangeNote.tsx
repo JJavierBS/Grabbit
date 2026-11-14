@@ -1,4 +1,4 @@
-import { Sparkles, Undo2 } from "lucide-react";
+import { FilePenLine, Undo2 } from "lucide-react";
 import { Button } from "../../components/Button";
 import styles from "./ChangeNote.module.css";
 
@@ -13,7 +13,7 @@ interface ChangeNoteProps {
 export function ChangeNote({ note, canUndo, undoing = false, onUndo }: ChangeNoteProps) {
   return (
     <div className={styles.note}>
-      <Sparkles className={styles.icon} aria-hidden="true" />
+      <FilePenLine className={styles.icon} aria-hidden="true" />
       <p className={styles.text}>{note}</p>
       {canUndo && (
         <Button
