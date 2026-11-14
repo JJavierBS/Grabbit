@@ -12,12 +12,14 @@ import copy
 import hashlib
 import inspect
 import json
+import logging
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
+from app.cala.client import CalaCacheMiss, CalaError
 from app.cala.normalize import edge_fact, property_fact, relationships
 from app.discovery.build import build_candidate, build_round, issuer_round_ids
 from app.discovery.pipeline import ROUND_BODY, Cala, fetch_company
@@ -25,6 +27,8 @@ from app.models import Alert, Candidate, Fact, Profile
 from app.store.snapshots import WatchStore
 from app.watcher.importance import Scorer, passes, score
 from app.watcher.snapshot import EXECUTIVE_EDGES, Change, diff, snapshot_of
+
+log = logging.getLogger(__name__)
 
 DEMO_EVENTS = Path(__file__).resolve().parent.parent / "fixtures" / "demo_events"
 
@@ -45,8 +49,13 @@ class Watcher:
     async def run_once(self, profile: Profile, shortlist: list[str]) -> list[Alert]:
         alerts: list[Alert] = []
         for entity_id in shortlist:
-            company = await fetch_company(self.client, entity_id, fresh=True)
-            candidate = await self._candidate(company)
+            try:
+                company = await fetch_company(self.client, entity_id, fresh=True)
+                candidate = await self._candidate(company)
+            except (CalaError, CalaCacheMiss) as err:
+                # One unreadable company must not leave the rest of the shortlist unwatched.
+                log.warning("watcher skipped %s: %s", entity_id, err)
+                continue
             alerts += await self._process(company, candidate, profile, simulated=False)
         return alerts
 
@@ -78,11 +87,12 @@ class Watcher:
         now = self.clock()
         new = snapshot_of(company, candidate)
         old = self.store.snapshot(candidate.entity_id)
-        if not simulated:
-            self.store.save_snapshot(candidate.entity_id, new, now)
         if old is None:
+            if not simulated:
+                self.store.save_snapshot(candidate.entity_id, new, now)
             return []  # first look at this company: baseline only
         delivered: list[Alert] = []
+        deferred = False
         for change in diff(old, new):
             # Real alerts dedupe on the change; a staged one can be replayed in rehearsals.
             salt = now.isoformat() if simulated else "real"
@@ -95,6 +105,7 @@ class Watcher:
             if not simulated:
                 sent_today = self.store.alerts_since(now - timedelta(days=1), simulated=False)
                 if sent_today >= self.max_alerts_per_day:
+                    deferred = True
                     continue
             alert = Alert(
                 id=alert_id,
@@ -111,6 +122,10 @@ class Watcher:
             self.store.add_alert(alert)
             await self._deliver(alert)
             delivered.append(alert)
+        # Keep the old snapshot while an alert waits for the daily cap: the next run diffs
+        # again, sends what is left, and skips what was already sent (alert ids repeat).
+        if not simulated and not deferred:
+            self.store.save_snapshot(candidate.entity_id, new, now)
         return delivered
 
     async def _deliver(self, alert: Alert) -> None:
