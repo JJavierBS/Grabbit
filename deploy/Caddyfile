@@ -1,0 +1,6 @@
+# Edge proxy on the EC2 host. rollout.sh rewrites upstream.caddy and reloads Caddy in place,
+# so open connections finish on the old container while new ones reach the new one.
+# SITE_ADDRESS defaults to plain HTTP on :80; a domain name there turns on automatic HTTPS.
+{$SITE_ADDRESS::80} {
+	import /etc/caddy/upstream.caddy
+}
