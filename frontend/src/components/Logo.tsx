@@ -5,10 +5,10 @@ import styles from "./Logo.module.css";
  * The Grabbit logo: violet speed lines, the rabbit whose head is a G, and the wordmark.
  * Redrawn as vector from the logo artwork, because the source PNG is a glow render on black.
  */
-export function Logo({ className }: { className?: string }) {
+export function Logo({ className, stacked = false }: { className?: string; stacked?: boolean }) {
   const cut = useId();
   return (
-    <span className={[styles.logo, className].filter(Boolean).join(" ")}>
+    <span className={[styles.logo, stacked && styles.stacked, className].filter(Boolean).join(" ")}>
       <svg className={styles.mark} viewBox="115 290 410 370" aria-hidden="true">
         <mask id={cut}>
           <rect x="0" y="0" width="1000" height="1000" fill="#fff" />

@@ -29,3 +29,17 @@
   /* Optical: Outfit's caps sit a hair high next to the mark. */
   padding-top: 0.06em;
 }
+
+/* Welcome screens: the mark on top, the wordmark centred under it. */
+.stacked {
+  flex-direction: column;
+  gap: 0.2em;
+}
+
+.stacked .mark {
+  height: 2.6em;
+}
+
+.stacked .word {
+  padding-top: 0;
+}

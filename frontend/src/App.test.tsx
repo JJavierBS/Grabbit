@@ -46,6 +46,19 @@ describe("App", () => {
     expect(screen.queryByRole("region", { name: "Report" })).not.toBeInTheDocument();
   });
 
+  it("welcomes an empty chat with the logo and wordmark, gone once there is a message", async () => {
+    mockApi({ ...base, "GET /api/chat": () => [], "GET /api/reports/latest": () => reportV1 });
+    const { unmount } = renderWithClient(<App />);
+    const log = await screen.findByRole("log");
+    expect(await within(log).findByText("Grabbit")).toBeInTheDocument();
+    unmount();
+
+    mockApi({ ...base, "GET /api/reports/latest": () => reportV1 });
+    renderWithClient(<App />);
+    expect(await screen.findByText(/Tell me what you look for/)).toBeInTheDocument();
+    expect(within(screen.getByRole("log")).queryByText("Grabbit")).not.toBeInTheDocument();
+  });
+
   it("shows no error before the first report exists", async () => {
     mockApi({
       ...base,

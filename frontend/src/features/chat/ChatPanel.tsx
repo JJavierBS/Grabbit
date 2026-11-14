@@ -11,6 +11,7 @@ import { useChat, useProfile, useSendMessage, useUndo } from "../../api/hooks/qu
 import type { ChatMessage } from "../../api/types";
 import { Button } from "../../components/Button";
 import { TextArea } from "../../components/Input";
+import { Logo } from "../../components/Logo";
 import { Markdown } from "../../components/Markdown";
 import { Skeleton } from "../../components/Skeleton";
 import { ChangeNote } from "./ChangeNote";
@@ -85,12 +86,7 @@ export function ChatPanel({ footer }: ChatPanelProps) {
             </Button>
           </div>
         )}
-        {chat.isSuccess && messages.length === 0 && (
-          <p className={styles.empty}>
-            Tell Grabbit what you look for at Slush 2026, however vague. It asks two or three
-            questions backed by data, then writes your prep report.
-          </p>
-        )}
+        {chat.isSuccess && messages.length === 0 && <Logo stacked className={styles.welcome} />}
         {messages.map((m) => (
           <Message
             key={m.id}
