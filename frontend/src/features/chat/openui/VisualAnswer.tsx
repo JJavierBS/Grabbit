@@ -5,7 +5,16 @@ import type { ExploredGraph } from "../../../api/types";
 import { AnswerContext, type AnswerData, answerLibrary } from "./library";
 
 /** The agent's answer drawn with Cala components, under its text. */
-export function VisualAnswer({ ui, graph }: { ui: string; graph?: ExploredGraph | null }) {
+export function VisualAnswer({
+  ui,
+  graph,
+  streaming = false,
+}: {
+  ui: string;
+  graph?: ExploredGraph | null;
+  /** Still arriving: OpenUI draws the statements complete so far. */
+  streaming?: boolean;
+}) {
   const report = useLatestReport();
   const profile = useProfile();
   const data = useMemo<AnswerData>(
@@ -18,7 +27,7 @@ export function VisualAnswer({ ui, graph }: { ui: string; graph?: ExploredGraph 
   );
   return (
     <AnswerContext.Provider value={data}>
-      <Renderer response={ui} library={answerLibrary} />
+      <Renderer response={ui} library={answerLibrary} isStreaming={streaming} />
     </AnswerContext.Provider>
   );
 }

@@ -1,12 +1,11 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { History, PanelLeftOpen, RefreshCw, X } from "lucide-react";
+import { PanelLeft, RefreshCw, SlidersHorizontal, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./App.module.css";
 import { keys, useChat, useLatestReport, useSendMessage } from "./api/hooks/queries";
 import { type StreamStatus, useEvents } from "./api/hooks/useEvents";
 import type { Alert, ChatMessage, Report } from "./api/types";
 import { Button } from "./components/Button";
-import { FullscreenButton } from "./components/FullscreenButton";
 import { Logo } from "./components/Logo";
 import { Skeleton } from "./components/Skeleton";
 import { usePresence } from "./components/usePresence";
@@ -239,27 +238,26 @@ export function App() {
             aria-label="Open sidebar"
             aria-controls="report-sidebar"
             aria-expanded={drawerOpen}
-            icon={<PanelLeftOpen aria-hidden="true" />}
+            icon={<PanelLeft aria-hidden="true" />}
             onClick={openSidebar}
           />
           <span className={styles.topLogo} aria-hidden="true">
             <Logo />
           </span>
           <span className={styles.status} data-status={stream} role="status">
-            {STATUS_TEXT[stream]}
+            <span className={styles.statusLabel}>{STATUS_TEXT[stream]}</span>
           </span>
           <div className={styles.actions}>
             {demo && <DemoAlertButton fixture={demo} labelClassName={styles.actionLabel} />}
             <Button
               variant="ghost"
               size="sm"
-              icon={<History aria-hidden="true" />}
+              icon={<SlidersHorizontal aria-hidden="true" />}
               aria-pressed={panel === "history"}
               onClick={() => (panel === "history" ? closePanel() : openPanel("history"))}
             >
               <span className={styles.actionLabel}>What changed</span>
             </Button>
-            <FullscreenButton />
           </div>
         </header>
 

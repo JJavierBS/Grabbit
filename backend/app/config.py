@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     gemini_api_key: str = ""
     gemini_model: str = ""
     gemini_timeout_s: float = 30.0
+    gemini_thoughts: bool = False
+    walk_step_min_s: float = 0.0
     cala_mode: CalaMode = "live"
     llm_mode: LLMMode = "gemini"
     demo_mode: bool = False

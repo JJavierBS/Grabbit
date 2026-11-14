@@ -177,7 +177,8 @@ export interface paths {
     /**
      * Stream Events
      * @description Server-Sent Events: `alert` (Alert), `report` ({id}), `profile` (Profile),
-     *     `progress` (TurnProgress) while a chat turn runs.
+     *     `progress` (TurnProgress) while a chat turn runs, `trace` (WalkTrace) while its agent
+     *     walks Cala.
      */
     get: operations["stream_events_api_events_get"];
     put?: never;
@@ -749,6 +750,84 @@ export interface components {
       phase: "cala" | "llm" | "report" | "graph";
       /** Label */
       label: string;
+      /**
+       * Done
+       * @description Items finished so far, when counted
+       */
+      done: number | null;
+      /**
+       * Total
+       * @description Items in this phase, when counted
+       */
+      total: number | null;
+    };
+    /**
+     * WalkStep
+     * @description One thing the agent did while walking Cala, in a plain sentence.
+     */
+    WalkStep: {
+      /** Id */
+      id: number;
+      /**
+       * Kind
+       * @enum {string}
+       */
+      kind: "search" | "expand" | "thought" | "rewrite";
+      /** Text */
+      text: string;
+      /**
+       * Result
+       * @description What came back, once done
+       */
+      result: string | null;
+      /**
+       * Done
+       * @default false
+       */
+      done: boolean;
+    };
+    /**
+     * WalkTrace
+     * @description The running chat turn's Cala walk, sent whole as a `trace` event after every change
+     *     (#134), so a client that missed one still draws the latest state.
+     */
+    WalkTrace: {
+      /**
+       * Turn
+       * @description Random id of the walk; a new id means a new walk
+       */
+      turn: string;
+      /** Round */
+      round: number;
+      /** Max Rounds */
+      max_rounds: number;
+      /** Nodes */
+      nodes: number;
+      /** Max Nodes */
+      max_nodes: number;
+      /** Steps */
+      steps: components["schemas"]["WalkStep"][];
+      graph: components["schemas"]["ExploredGraph"] | null;
+      /**
+       * Root Id
+       * @description Entity the live graph grows from
+       */
+      root_id: string | null;
+      /**
+       * Answer
+       * @description OpenUI Lang streamed so far
+       */
+      answer: string | null;
+      /**
+       * Streaming
+       * @default false
+       */
+      streaming: boolean;
+      /**
+       * Done
+       * @default false
+       */
+      done: boolean;
     };
   };
   responses: never;
@@ -1163,7 +1242,9 @@ export interface operations {
         };
         content: {
           "text/event-stream": unknown;
-          "application/json": components["schemas"]["TurnProgress"];
+          "application/json":
+            | components["schemas"]["TurnProgress"]
+            | components["schemas"]["WalkTrace"];
         };
       };
       /** @description Not Found */

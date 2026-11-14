@@ -23,7 +23,9 @@ async def test_candidates_come_from_the_discovery_pipeline(monkeypatch):
     found = fixtures.latest_report().candidates[:1]
     seen = {}
 
-    async def fake_get_candidates(client, profile, today: date | None = None, limits=None):
+    async def fake_get_candidates(
+        client, profile, today: date | None = None, limits=None, on_progress=None
+    ):
         seen["limit"] = limits.max_attendees
         return DiscoveryResult(candidates=found, stats=DiscoveryStats())
 
@@ -36,7 +38,7 @@ async def test_candidates_come_from_the_discovery_pipeline(monkeypatch):
 
 
 async def test_an_empty_shortlist_stays_empty(monkeypatch):
-    async def nothing(client, profile, today=None, limits=None):
+    async def nothing(client, profile, today=None, limits=None, on_progress=None):
         return DiscoveryResult(candidates=[], stats=DiscoveryStats())
 
     monkeypatch.setattr(sources, "get_candidates", nothing)
@@ -228,7 +230,7 @@ async def test_reschedule_without_a_running_scheduler_is_a_no_op():
 def _counting_discovery(monkeypatch, found):
     calls = []
 
-    async def fake_get_candidates(client, profile, today=None, limits=None):
+    async def fake_get_candidates(client, profile, today=None, limits=None, on_progress=None):
         calls.append(profile.event_id)
         return DiscoveryResult(candidates=found, stats=DiscoveryStats())
 
@@ -287,7 +289,7 @@ async def test_reference_investors_apply_on_top_of_the_cached_walk(monkeypatch):
 async def test_a_failed_walk_is_not_cached(monkeypatch):
     attempts = []
 
-    async def flaky(client, profile, today=None, limits=None):
+    async def flaky(client, profile, today=None, limits=None, on_progress=None):
         attempts.append(1)
         if len(attempts) == 1:
             raise CalaCacheMiss("cold")

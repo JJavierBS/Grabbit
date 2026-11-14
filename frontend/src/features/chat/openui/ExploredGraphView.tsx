@@ -40,10 +40,12 @@ interface Props {
   graph: ExploredGraph;
   rootId: string;
   trusted: Set<string>;
+  /** Still growing: new entities and edges fade in as the agent reaches them (#134). */
+  live?: boolean;
 }
 
 /** What the agent walked in Cala's graph for this answer: each box an entity, each line an edge. */
-export function ExploredGraphView({ graph, rootId, trusted }: Props) {
+export function ExploredGraphView({ graph, rootId, trusted, live = false }: Props) {
   const frame = useRef<HTMLElement>(null);
   const wide = layoutWalk(graph, rootId, trusted);
   const width = useWidth(frame);
@@ -64,7 +66,12 @@ export function ExploredGraphView({ graph, rootId, trusted }: Props) {
   const pick = (n: WalkNode) => setPicked(n.kind === "more" ? null : (n.entityId ?? null));
 
   return (
-    <figure ref={frame} className={styles.figure} data-tall={layout.tall || undefined}>
+    <figure
+      ref={frame}
+      className={styles.figure}
+      data-tall={layout.tall || undefined}
+      data-live={live || undefined}
+    >
       <div className={styles.scroll}>
         <svg
           className={styles.svg}
@@ -169,6 +176,8 @@ export function ExploredGraphView({ graph, rootId, trusted }: Props) {
               </dl>
             )}
           </>
+        ) : live ? (
+          "Growing as Grabbit walks Cala's entity graph. Each box is a Cala entity, each line an edge."
         ) : (
           "What Grabbit walked in Cala's entity graph to answer. Each box is a Cala entity, each line an edge. Select one."
         )}

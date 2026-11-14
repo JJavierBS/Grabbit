@@ -308,6 +308,38 @@ class TurnProgress(ApiModel):
 
     phase: TurnPhase
     label: str
+    done: int | None = Field(default=None, description="Items finished so far, when counted")
+    total: int | None = Field(default=None, description="Items in this phase, when counted")
+
+
+WalkStepKind = Literal["search", "expand", "thought", "rewrite"]
+
+
+class WalkStep(ApiModel):
+    """One thing the agent did while walking Cala, in a plain sentence."""
+
+    id: int
+    kind: WalkStepKind
+    text: str
+    result: str | None = Field(default=None, description="What came back, once done")
+    done: bool = False
+
+
+class WalkTrace(ApiModel):
+    """The running chat turn's Cala walk, sent whole as a `trace` event after every change
+    (#134), so a client that missed one still draws the latest state."""
+
+    turn: str = Field(description="Random id of the walk; a new id means a new walk")
+    round: int
+    max_rounds: int
+    nodes: int
+    max_nodes: int
+    steps: list[WalkStep]
+    graph: ExploredGraph | None = None
+    root_id: str | None = Field(default=None, description="Entity the live graph grows from")
+    answer: str | None = Field(default=None, description="OpenUI Lang streamed so far")
+    streaming: bool = False
+    done: bool = False
 
 
 class ErrorDetail(ApiModel):
