@@ -59,6 +59,8 @@ interface ReportSidebarProps {
   brand: ReactNode;
   /** Shown above the reports: the research switcher (#145). */
   top?: ReactNode;
+  /** Pinned under the list, e.g. the guided demo's launcher. */
+  foot?: ReactNode;
   className?: string;
 }
 
@@ -70,6 +72,7 @@ export function ReportSidebar({
   onClose,
   brand,
   top,
+  foot,
   className,
 }: ReportSidebarProps) {
   const reports = useReports();
@@ -157,6 +160,7 @@ export function ReportSidebar({
           ))}
         </nav>
       </div>
+      {foot && <div className={styles.foot}>{foot}</div>}
     </aside>
   );
 }

@@ -674,3 +674,79 @@ export const exploredAuroraWalk: WalkSummary = {
   checked: exploredAurora.nodes.length,
   seconds: 9.4,
 };
+
+/** The path from the reference investors to the shortlist, as the guided demo draws it (#184). */
+export const exploredShortlist: ExploredGraph = {
+  nodes: [
+    {
+      entity_id: "i-aurora",
+      name: "Aurora Ventures",
+      entity_type: "Organization",
+      facts: { website: fact("aurora.example", database) },
+    },
+    {
+      entity_id: "i-northstar",
+      name: "North Star Capital",
+      entity_type: "Organization",
+      facts: {},
+    },
+    {
+      entity_id: "r-northwind-seed",
+      name: "Seed",
+      entity_type: "FundingRound",
+      facts: { event_date: fact("2025-09-01", registry("2025-09-01", "month")) },
+    },
+    { entity_id: "r-lumen-a", name: "Series A", entity_type: "FundingRound", facts: {} },
+    { entity_id: "c-northwind", name: "Northwind Labs", entity_type: "Company", facts: {} },
+    { entity_id: "c-lumen", name: "Lumen Ledger", entity_type: "Company", facts: {} },
+  ],
+  edges: [
+    edge("i-aurora", "r-northwind-seed", "INVESTOR", true),
+    edge("c-northwind", "r-northwind-seed", "ISSUER"),
+    edge("i-northstar", "r-lumen-a", "INVESTOR", true),
+    edge("i-aurora", "r-lumen-a", "INVESTOR"),
+    edge("c-lumen", "r-lumen-a", "ISSUER"),
+  ],
+};
+
+export const shortlistAnswerUi = [
+  "root = Answer([t, g])",
+  't = Text("Aurora Ventures led the seed of Northwind Labs and joined North Star Capital in Lumen Ledger. Both attend Slush, so they lead your shortlist.")',
+  'g = ExploredGraph("i-aurora")',
+].join("\n");
+
+/** What the agent did to build that path; the last step reads the report, not Cala. */
+export const shortlistWalk: WalkSummary = {
+  steps: [
+    {
+      id: 0,
+      kind: "search",
+      text: "Searching Cala for “Aurora Ventures” and “North Star Capital”",
+      result: "found both investors",
+      done: true,
+    },
+    {
+      id: 1,
+      kind: "expand",
+      text: "Looking at the funding rounds they joined",
+      result: "found 2 rounds of Slush attendees",
+      done: true,
+    },
+    {
+      id: 2,
+      kind: "expand",
+      text: "Opening each round to see who raised and who led",
+      result: "found Northwind Labs and Lumen Ledger",
+      done: true,
+    },
+    {
+      id: 3,
+      kind: "report",
+      text: "Matching them against the startups already in your report, no new Cala call",
+      result: "both are on your shortlist",
+      done: true,
+    },
+  ],
+  checked: exploredShortlist.nodes.length,
+  seconds: 3.2,
+};

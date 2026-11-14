@@ -1,0 +1,43 @@
+<template>
+  <style>
+    @font-face{font-family:"Hanken Grotesk";src:url("assets/fonts/hanken-grotesk.woff2") format("woff2");font-weight:100 900}
+    #root{position:absolute;inset:0;color:#14151c;font-family:"Hanken Grotesk",sans-serif;overflow:hidden}
+    #root .clip{position:absolute;inset:0}
+    .s03-card{position:absolute;left:80px;background:#f7f7fa;border:2px solid #e3e3ec;border-radius:22px;box-shadow:0 30px 70px rgba(20,21,28,.14);padding:26px 40px 32px}
+    .s03-skip{font-size:112px;font-weight:800;letter-spacing:-.04em;line-height:1.06;white-space:nowrap}
+    .s03-skip span{display:inline-block}
+    .s03-lock{display:flex;align-items:center;gap:24px}
+    .s03-lock img{height:120px;display:block}
+    .s03-lock b{font-family:"Outfit",sans-serif;font-weight:800;font-size:100px;letter-spacing:-.01em}
+  </style>
+  <div id="root" data-composition-id="s03" data-width="1920" data-height="1080">
+    <!-- the pile and the speed lines that take it away: Remotion clip assets/overlays/pile.webm, mounted in index.html -->
+    <div id="s03-skip" class="clip" data-start="1.75" data-duration="2.7">
+      <div id="s03-skip-card" class="s03-card" style="top:330px">
+        <div class="s03-skip"><span id="s03-k1">Skip</span></div>
+        <div class="s03-skip"><span id="s03-k2">the</span> <span id="s03-k3">data.</span></div>
+      </div>
+    </div>
+    <div id="s03-meet" class="clip" data-start="4.55" data-duration="1.65">
+      <div id="s03-meet-card" class="s03-card" style="top:400px">
+        <div class="s03-lock"><img src="assets/grabbit-mark.svg" alt=""><b>Grabbit</b></div>
+      </div>
+    </div>
+  </div>
+  <script>
+    (() => {
+      const tl = gsap.timeline({ paused: true });
+      // "there's a way" 0.35 s, "skip the data" 1.8 s, "meet" 3.75 s, "Grabbit" 4.7 s
+      ["#s03-k1", "#s03-k2", "#s03-k3"].forEach((id, i) => {
+        tl.fromTo(id, { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.16, ease: "power2.out" }, 1.95 + i * 0.09);
+      });
+      tl.fromTo("#s03-skip-card", { opacity: 0, y: 40, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "expo.out" }, 1.8);
+      // exits are shorter than entrances and do not move: a blur-out on the spot
+      tl.to("#s03-skip-card", { opacity: 0, filter: "blur(8px)", duration: 0.2, ease: "power2.in" }, 4.22);
+      // whip: the lockup lands blurred and sharpens
+      tl.fromTo("#s03-meet-card", { opacity: 0, x: -140, filter: "blur(10px)" }, { opacity: 1, x: 0, filter: "blur(0px)", duration: 0.45, ease: "power4.out" }, 4.6);
+      tl.to("#s03-meet-card", { opacity: 0, y: -20, duration: 0.28, ease: "power2.in" }, 5.8);
+      window.__timelines["s03"] = tl;
+    })();
+  </script>
+</template>

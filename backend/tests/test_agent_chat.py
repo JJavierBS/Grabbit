@@ -353,3 +353,11 @@ async def test_learning_writes_its_reason_for_the_investor_in_their_language():
     assert "in the language the reaction is written in" in learn.SYSTEM
     assert "Never describe the investor or the request" in learn.SYSTEM
     assert "keep the search open" in learn.SYSTEM
+
+
+async def test_replies_stay_in_the_profile_language_after_a_button(candidates, now):
+    """#181: "Looks right, keep me posted." got an English reply in a Spanish research."""
+    prompt = chat.system_prompt(profile_store.current(now), None, candidates)
+    assert "Reply in the investor's language (profile style.language)" in prompt
+    assert 'fixed English button text such as "Looks right, keep me posted."' in prompt
+    assert "Only when nothing changes" in prompt

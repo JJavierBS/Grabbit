@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App } from "./App";
 import type { ChatMessage } from "./api/types";
@@ -38,21 +38,41 @@ describe("panel focus", () => {
 
   afterEach(() => vi.restoreAllMocks());
 
+  const reply: ChatMessage = {
+    id: "m9",
+    role: "agent",
+    report_id: null,
+    ui: null,
+    graph: null,
+    walk: null,
+    sources: [],
+    questions: [],
+    text: "I rewrote your report.",
+    created_at: "2026-11-14T09:34:00Z",
+    profile_changes: [],
+  };
+
   it("moves focus to a panel the app opened without drawing the focus frame", async () => {
     let report = reportV1;
-    const reply: ChatMessage = {
-      id: "m9",
-      role: "agent",
-      report_id: null,
-      ui: null,
-      graph: null,
-      walk: null,
-      sources: [],
-      questions: [],
-      text: "I rewrote your report.",
-      created_at: "2026-11-14T09:34:00Z",
-      profile_changes: [],
-    };
+    const api = mockApi({ ...base, "GET /api/reports/latest": () => report });
+    const focus = vi.spyOn(HTMLElement.prototype, "focus");
+    renderWithClient(<App />);
+    await screen.findByRole("button", { name: "Open report" });
+
+    // A background rebuild lands while the reader is elsewhere on the page.
+    act(() => (document.activeElement as HTMLElement | null)?.blur());
+    report = reportV2;
+    api.streams.at(-1)?.push("report", {});
+    await screen.findByText(/Rewritten for you/);
+    const panel = document.getElementById("report-panel");
+    const panelCalls = focus.mock.contexts
+      .map((ctx, i) => [ctx, focus.mock.calls[i][0]] as const)
+      .filter(([ctx]) => ctx === panel);
+    expect(panelCalls.at(-1)?.[1]).toEqual({ focusVisible: false });
+  });
+
+  it("leaves focus in the message box when the app opens the panel (#188)", async () => {
+    let report = reportV1;
     mockApi({
       ...base,
       "GET /api/reports/latest": () => report,
@@ -61,20 +81,36 @@ describe("panel focus", () => {
         return reply;
       },
     });
-    const focus = vi.spyOn(HTMLElement.prototype, "focus");
     renderWithClient(<App />);
     await screen.findByRole("button", { name: "Open report" });
+    const box = screen.getByRole("textbox", { name: "Message Grabbit" });
 
-    await userEvent.type(
-      screen.getByRole("textbox", { name: "Message Grabbit" }),
-      "Shorter, co-investors first{Enter}",
-    );
+    await userEvent.type(box, "Shorter, co-investors first{Enter}");
     await screen.findByText(/Rewritten for you/);
-    const panel = document.getElementById("report-panel");
-    const panelCalls = focus.mock.contexts
-      .map((ctx, i) => [ctx, focus.mock.calls[i][0]] as const)
-      .filter(([ctx]) => ctx === panel);
-    expect(panelCalls.at(-1)?.[1]).toEqual({ focusVisible: false });
+    expect(document.getElementById("report-panel")).toBeInTheDocument();
+    expect(box).toHaveFocus();
+  });
+
+  it("keeps the message box focused when a report opens from the sidebar (#188)", async () => {
+    mockApi({
+      ...base,
+      "GET /api/reports/latest": () => reportV2,
+      "GET /api/reports": () => [reportV2, reportV1],
+    });
+    renderWithClient(<App />);
+    const nav = screen.getByRole("navigation", { name: "Reports" });
+    const items = await within(nav).findAllByRole("button");
+
+    await userEvent.click(items[1]);
+    expect(screen.getByRole("region", { name: "Past report" })).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "Message Grabbit" })).toHaveFocus();
+
+    await userEvent.click(items[0]);
+    expect(screen.getByRole("region", { name: "Report" })).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "Message Grabbit" })).toHaveFocus();
+
+    await userEvent.keyboard("{Escape}");
+    expect(screen.getByRole("textbox", { name: "Message Grabbit" })).toHaveFocus();
   });
 
   it("keeps the focus frame when the reader opens the panel", async () => {
