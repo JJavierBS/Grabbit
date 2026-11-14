@@ -234,3 +234,21 @@ async def test_scheduler_loads_both_jobs_and_replaces_them():
     assert set(jobs) == {"watcher", "digest"}
     assert "mon" in str(jobs["digest"].trigger)
     assert jobs["watcher"].max_instances == 1
+
+
+def test_staged_demo_events_are_well_formed():
+    """Every patch-style demo event adds an ISSUER round whose node it ships, with a lead."""
+    import json
+
+    from app.discovery.build import build_round, issuer_round_ids
+    from app.watcher.run import DEMO_EVENTS
+
+    staged = [json.loads(p.read_text()) for p in DEMO_EVENTS.glob("*.json")]
+    staged = [s for s in staged if "patch" in s]
+    assert any(s["entity_id"] == "0094ec10-bd61-4833-bf19-c2ab9d78312b" for s in staged)
+    for event in staged:
+        new_rounds = issuer_round_ids(event["patch"])
+        for rid in new_rounds:
+            round_ = build_round(event["rounds"][rid])
+            assert any(i.is_lead for i in round_.investors), rid
+            assert event["entity_id"] not in [i.entity_id for i in round_.investors]
