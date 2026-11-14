@@ -155,6 +155,12 @@ round dates (still active?).
   edge to another company (only duplicates of the same one). "Repeat founder" links are not
   supported by the data yet.
 - Investors have few round edges: Pioneer Fund 1, FIRSTPICK 8, Y Combinator 100+ (hub).
+- One fund is many entities: name search for Y Combinator returns 10 (Company, Organization,
+  Group, EducationalInstitution, "Y Combinator W24", "Y Combinator Continuity Fund"), most
+  with zero round edges, 165 unique rounds together; 500 Global is 3 entities, 9 rounds
+  (2026-11-14).
+- The investor -> round edge carries no date: how recent a round is shows only after reading
+  the round itself.
 - Duplicate entities: one person appeared as three `Person` nodes, Nvidia as two companies,
   one fund as both `Organization` and `Company`. Part of it is by design (each legal entity
   and subsidiary is its own `Company`). Merge by normalised name, `website` and registry id
@@ -190,8 +196,25 @@ round dates (still active?).
   (cached reads are free; `make warm` has no budget). The walk does not depend on the
   profile; matching trusted investors (by id or fund name) is pure and reruns when the
   reference investors resolve.
+- `app/discovery/reverse.py`: the reverse walk (#191), `reverse_walk(client, references,
+  event_id)`. Per reference investor: name search (limit 50), keeping the stored id and the
+  hits under the fund's name or that name followed by more words (the `Trusted` rule of
+  `links.py`; `unresolved:<name>` references resolve the same way); each entity's outgoing
+  `PARTICIPATES_IN_FUNDING_ROUND` edges, 100 per page with `offset` (the first page is
+  `INVESTOR_BODY`, shared with the event walk's cache), roles INVESTOR, LENDER and GRANTOR
+  only; each round once with `ROUND_BODY`; its `ISSUER` crossed by entity id with the whole
+  paged attendee list. Attending issuers take the event walk's path (`fetch_company`,
+  `is_startup`, rounds, signals). Serial, 25 s timeout per call, at most 300 new Cala calls
+  per walk (`ReverseLimits`; `make warm` has no budget); a Cala error, cache miss, timeout
+  or spent budget never raises, the walk returns what it has. `agent/sources.candidates_for`
+  runs it only when the profile has reference investors, caches it per (event, set of fund
+  names) for the event walk's TTL, and merges candidates (`merge_candidates`: event walk
+  first, no repeat by entity id or normalised name) and the `LinkGraph` (`merge_graphs`).
 - Warm the cache and get the pitch counts, from `backend/`:
-  `uv run --env-file ../.env python -m scripts.warm [--limit N] [--dump DIR]`.
+  `uv run --env-file ../.env python -m scripts.warm [--limit N] [--dump DIR]`. It also runs
+  the reverse walk without budget for Y Combinator, 500 Global and the stored profile's
+  reference investors, prints the attending startups reached, and replays it from the cache
+  to count misses (`--check` exits 1 on any, from either walk).
 
 ## Rate limits and latency
 - `429 {"error":"rate_limit_exceeded",...}` with no `Retry-After` header. Limits are not
@@ -235,6 +258,13 @@ Seeds without the LLM endpoints:
   companies: filter locally on `founding_date`, `funding_stage` and headcount.
 - Widening without filters: go through the graph itself, e.g. the investors of the seed
   companies lead to their other portfolio companies.
+- Trusted investors as seeds (reverse walk, #191): investor name -> all its entities ->
+  their funded rounds -> each round's `ISSUER`, kept when it is on the event's attendee
+  list. It reaches attendees the event walk never opens: on 2026-11-14 the first 150 of
+  2,989 Slush attendees held 5 startups backed by Y Combinator or 500 Global, the reverse
+  walk found 26 attending issuers (YC: 150 rounds read, 100 issuers, 20 at Slush; 500
+  Global: 6). They are attendees, not yet startups: `is_startup` and the profile filters
+  still apply.
 - Limit: no discovery by criteria ("Series A fintechs in Spain"), no server-side filters
   or sorting, many calls per question, hub nodes too slow to enumerate.
 
