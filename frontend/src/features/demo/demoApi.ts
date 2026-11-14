@@ -10,16 +10,7 @@ import {
   shortlistAnswerUi,
   shortlistWalk,
 } from "../../dev/fixtures";
-import { DEMO_ANSWER } from "./steps";
-
-/** Milliseconds the demo backend takes: long enough to read as real work, short enough to stay brisk. */
-export interface DemoTiming {
-  get: number;
-  post: number;
-  alert: number;
-}
-
-export const DEMO_TIMING: DemoTiming = { get: 120, post: 700, alert: 2500 };
+import { DEMO_ANSWER, DEMO_TIMING, type DemoTiming } from "./steps";
 
 /** A new visitor's profile: nothing known yet. */
 const blank: Profile = {

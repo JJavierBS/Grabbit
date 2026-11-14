@@ -3,7 +3,7 @@ import { type KeyboardEvent, useEffect, useRef, useState } from "react";
 import { Button } from "../../components/Button";
 import styles from "./CoachCard.module.css";
 import { useDemo } from "./DemoRoot";
-import { DEMO_STEPS, type DemoActions, type DemoSignals } from "./steps";
+import { DEMO_END, DEMO_STEPS, type DemoActions, type DemoSignals } from "./steps";
 
 interface CoachCardProps {
   signals: DemoSignals;
@@ -15,16 +15,27 @@ interface CoachCardProps {
 }
 
 /**
- * The guided demo's narrator (#184): one step at a time, what to do, then what happened.
- * "Show me" makes the move for the visitor; making it themselves works the same.
+ * The guided demo's narrator (#184): one step at a time. "Show me" makes the move for the
+ * visitor, and making it themselves works the same. Once the result is on screen the guide
+ * moves on by itself; the next step's text says what just happened.
  */
 export function CoachCard({ signals, actions, busy, floating = false }: CoachCardProps) {
   const demo = useDemo();
   const [index, setIndex] = useState(0);
+  // The step whose move was made: its button waits for the result, e.g. the alert.
+  const [acted, setActed] = useState(-1);
   const ref = useRef<HTMLElement>(null);
   const finished = index >= DEMO_STEPS.length;
   const step = DEMO_STEPS[index];
   const done = !finished && step.done(signals);
+  const advanceMs = demo?.advanceMs ?? 0;
+
+  // A beat to see the result land, then the next step.
+  useEffect(() => {
+    if (!done) return;
+    const timer = setTimeout(() => setIndex((i) => i + 1), advanceMs);
+    return () => clearTimeout(timer);
+  }, [done, advanceMs]);
 
   // The demo opens on the card, so a keyboard reader starts where the guide speaks.
   useEffect(() => {
@@ -39,12 +50,8 @@ export function CoachCard({ signals, actions, busy, floating = false }: CoachCar
     demo.exit();
   };
 
-  const title = finished ? "That's the loop. Your turn." : step.title;
-  const text = finished
-    ? "Now describe your own thesis. Nothing from this demo stays in your research."
-    : done
-      ? step.outcome
-      : step.prompt;
+  const title = finished ? DEMO_END.title : step.title;
+  const text = finished ? DEMO_END.text : step.prompt;
 
   return (
     <section
@@ -76,7 +83,7 @@ export function CoachCard({ signals, actions, busy, floating = false }: CoachCar
           onClick={demo.exit}
         />
       </div>
-      <p key={`${index}-${done}`} className={styles.text}>
+      <p key={index} className={styles.text}>
         {text}
       </p>
       <div className={styles.foot}>
@@ -94,20 +101,16 @@ export function CoachCard({ signals, actions, busy, floating = false }: CoachCar
               Replay
             </Button>
           </>
-        ) : done ? (
-          <Button
-            size="sm"
-            icon={<ArrowRight aria-hidden="true" />}
-            onClick={() => setIndex((i) => i + 1)}
-          >
-            {index === DEMO_STEPS.length - 1 ? "Finish" : "Next"}
-          </Button>
         ) : (
           <Button
             size="sm"
             icon={<Play aria-hidden="true" />}
-            loading={busy}
-            onClick={() => step.act(actions)}
+            loading={busy || (acted === index && !done)}
+            disabled={done}
+            onClick={() => {
+              setActed(index);
+              step.act(actions);
+            }}
           >
             Show me
           </Button>

@@ -5,9 +5,9 @@ import { historyV2, profileV2 } from "../../dev/fixtures";
 import { mockApi, renderWithClient } from "../../test/renderApp";
 import { DemoRoot } from "./DemoRoot";
 import { createDemoApi } from "./demoApi";
-import { DEMO_ANSWER, DEMO_STEPS, DEMO_THESIS } from "./steps";
+import { DEMO_ANSWER, DEMO_END, DEMO_STEPS, DEMO_THESIS } from "./steps";
 
-const instant = { get: 0, post: 0, alert: 0 };
+const instant = { get: 0, post: 0, alert: 0, advance: 0 };
 const SEEN = "grabbit.demo.seen:v1";
 const RESEARCHES = "grabbit.researches";
 
@@ -119,19 +119,16 @@ describe("guided demo", () => {
     await step(DEMO_STEPS[0].title);
     await userEvent.click(screen.getByRole("button", { name: "Show me" }));
     expect(await screen.findByText(/Which investors do you trust/)).toBeInTheDocument();
-    expect(await screen.findByText(DEMO_STEPS[0].outcome)).toBeInTheDocument();
-    await userEvent.click(screen.getByRole("button", { name: "Next" }));
 
-    // 2. Answer: the graph Grabbit walked with its steps in the open; the report waits.
+    // 2. Answer: the guide moved on by itself, with no Next to press.
     await step(DEMO_STEPS[1].title);
+    expect(screen.queryByRole("button", { name: "Next" })).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Show me" }));
     expect(await screen.findByText("Around Aurora Ventures in Cala's graph")).toBeInTheDocument();
     const steps = screen.getByRole("list", { name: "How I found this, step by step" });
     expect(steps.closest("details")).toHaveAttribute("open");
     expect(within(steps).getByText(/already in your report, no new Cala call/)).toBeVisible();
-    expect(await screen.findByText(DEMO_STEPS[1].outcome)).toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Report" })).not.toBeInTheDocument();
-    await userEvent.click(screen.getByRole("button", { name: "Next" }));
 
     // 3. Report: it opens on request, with a trust badge on every fact.
     await step(DEMO_STEPS[2].title);
@@ -141,22 +138,19 @@ describe("guided demo", () => {
       await within(panel).findByRole("heading", { name: "Slush 2026 prep report" }),
     ).toBeInTheDocument();
     expect(within(panel).getAllByText("Official filing").length).toBeGreaterThan(0);
-    await userEvent.click(await screen.findByRole("button", { name: "Next" }));
 
     // 4. Correction: the report rewrites itself.
     await step(DEMO_STEPS[3].title);
     await userEvent.click(screen.getByRole("button", { name: "Show me" }));
     expect(await screen.findByText(/Rewritten for you/)).toBeInTheDocument();
-    await userEvent.click(await screen.findByRole("button", { name: "Next" }));
 
     // 5. Confirmation: a simulated alert arrives, labelled as such.
     await step(DEMO_STEPS[4].title);
     await userEvent.click(screen.getByRole("button", { name: "Show me" }));
     const toasts = screen.getByRole("region", { name: "Notifications" });
     expect(await within(toasts).findByText("Simulated event")).toBeInTheDocument();
-    await userEvent.click(await screen.findByRole("button", { name: "Finish" }));
 
-    await step("That's the loop. Your turn.");
+    await step(DEMO_END.title);
     // Nothing the demo did went to the real API or renamed the visitor's research.
     expect(calls.length).toBe(before);
     expect(localStorage.getItem(RESEARCHES)).toBe(researches);
@@ -182,7 +176,7 @@ describe("guided demo", () => {
       screen.getByRole("textbox", { name: "Message Grabbit" }),
       "Robotics at pre-seed{Enter}",
     );
-    expect(await screen.findByText(DEMO_STEPS[0].outcome)).toBeInTheDocument();
+    await step(DEMO_STEPS[1].title);
   });
 
   it("leaves with Escape from the card, and with its close button", async () => {

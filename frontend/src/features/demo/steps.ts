@@ -17,10 +17,8 @@ export interface DemoActions {
 
 export interface DemoStep {
   title: string;
-  /** What to do, before the step is done. */
+  /** What the last step just did, then what to do now; the card moves on by itself. */
   prompt: string;
-  /** What just happened and why it matters, once it is done. */
-  outcome: string;
   act: (actions: DemoActions) => void;
   done: (signals: DemoSignals) => boolean;
 }
@@ -33,44 +31,56 @@ export const DEMO_STEPS: DemoStep[] = [
   {
     title: "Start vague",
     prompt: "Say what you look for in your own words. A sector and a stage are enough.",
-    outcome: "Grabbit walked the Slush attendees and came back with one question.",
     act: ({ send }) => send(DEMO_THESIS),
     done: (s) => s.agentReplies >= 1,
   },
   {
-    title: "Answer, see how it got there",
-    prompt: "It asks only what the data can't settle. Pick the investors you trust.",
-    outcome:
-      "The graph is the path Grabbit walked. The steps under it say what it did, and which part came from your report instead of Cala.",
+    title: "Answer its question",
+    prompt:
+      "Grabbit walked the Slush attendees and asks only what the data can't settle. Pick the investors you trust.",
     act: ({ send }) => send(DEMO_ANSWER),
     done: (s) => s.hasReport,
   },
   {
-    title: "Every fact shows its source",
-    prompt: "The shortlist is ready. Open the report.",
-    outcome:
-      "Each figure carries a badge, from official filing down to not published, so you know how far to trust it.",
+    title: "See how it got there",
+    prompt:
+      "Above: the path Grabbit walked, and under it every step it took, even the one read from your report. Now open the report.",
     act: ({ openReport }) => openReport(),
     done: (s) => s.reportOpened,
   },
   {
     title: "Correct it in plain words",
-    prompt: "There is no settings screen. Tell Grabbit what to change.",
-    outcome:
-      "Grabbit rewrote its own instructions, then the report. What changed keeps each edit and the reason.",
+    prompt:
+      "Every figure carries a badge that says how far to trust it. There is no settings screen: tell Grabbit what to change.",
     act: ({ send }) => send(DEMO_CORRECTION),
     // The answer brings the profile to version 2; any correction moves it on.
     done: (s) => s.profileVersion > 2,
   },
   {
     title: "It comes to you",
-    prompt: "Confirm the report and Grabbit keeps watching your shortlist.",
-    outcome:
-      "A startup on your shortlist is raising. For real, this arrives as a desktop notification, even with the tab in the background.",
+    prompt:
+      "Grabbit rewrote its instructions and the report; What changed keeps why. Confirm, and it watches your shortlist.",
     act: ({ confirm }) => confirm(),
     done: (s) => s.alerts >= 1,
   },
 ];
+
+/** The card after the last step, while the simulated alert is still on screen. */
+export const DEMO_END = {
+  title: "That's the loop. Your turn.",
+  text: "A startup on your shortlist is raising. For real, that reaches you as a desktop notification. Nothing from this demo stays.",
+};
+
+/** Milliseconds the demo takes: long enough to read as real work, short enough to stay brisk. */
+export interface DemoTiming {
+  get: number;
+  post: number;
+  alert: number;
+  /** How long a finished step stays on screen before the guide moves on. */
+  advance: number;
+}
+
+export const DEMO_TIMING: DemoTiming = { get: 120, post: 700, alert: 2500, advance: 900 };
 
 const SEEN_KEY = "grabbit.demo.seen:v1";
 

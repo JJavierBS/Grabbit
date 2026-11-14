@@ -17,8 +17,7 @@ import {
 } from "../../api/client";
 import { useToast } from "../../components/Toast";
 import type { FakeApi } from "../../dev/fakeApi";
-import type { DemoTiming } from "./demoApi";
-import { readDemoSeen, saveDemoSeen } from "./steps";
+import { DEMO_TIMING, type DemoTiming, readDemoSeen, saveDemoSeen } from "./steps";
 
 export interface DemoContextValue {
   /** True inside the guided demo, false in the visitor's own research. */
@@ -31,6 +30,8 @@ export interface DemoContextValue {
   dismiss: () => void;
   /** Just back from the demo: the composer takes focus. */
   returning: boolean;
+  /** How long a finished step stays on screen before the guide moves on. */
+  advanceMs: number;
 }
 
 const DemoContext = createContext<DemoContextValue | null>(null);
@@ -141,8 +142,9 @@ export function DemoRoot({ children, demo, timing }: DemoRootProps) {
       exit,
       dismiss,
       returning: returning && run === null,
+      advanceMs: (timing ?? DEMO_TIMING).advance,
     }),
-    [run, seen, start, exit, dismiss, returning],
+    [run, seen, start, exit, dismiss, returning, timing],
   );
 
   return (
