@@ -172,3 +172,29 @@ def test_simulated_event_is_scored_against_the_stored_profile(client, monkeypatc
 
     assert response.json()["error"]["code"] == "no_alert"
     assert seen == [profile_store.current()]
+
+
+def _live_without_key(monkeypatch):
+    from app.config import get_settings
+
+    monkeypatch.setenv("CALA_MODE", "live")
+    monkeypatch.setenv("CALA_API_KEY", "")
+    get_settings.cache_clear()
+
+
+async def test_no_cala_key_in_live_mode_falls_back_to_fixture_candidates(monkeypatch):
+    _live_without_key(monkeypatch)
+    result = await sources.candidates_for(profile_store.current())
+    assert [c.entity_id for c in result] == [c.entity_id for c in sources.fixture_candidates()]
+
+
+def test_chat_and_reports_work_on_a_fresh_checkout_without_cala_key(client, monkeypatch):
+    _live_without_key(monkeypatch)
+    assert client.post("/api/chat", json={"text": "hello"}).status_code == 200
+    assert client.post("/api/reports/run", json={"kind": "prep"}).status_code == 200
+
+
+async def test_watcher_job_skips_quietly_without_cala_key(monkeypatch):
+    report_store.add(fixtures.latest_report())
+    _live_without_key(monkeypatch)
+    await runtime.watcher_job()
