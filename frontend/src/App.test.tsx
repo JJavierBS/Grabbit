@@ -51,7 +51,6 @@ describe("App", () => {
     const { unmount } = renderWithClient(<App />);
     const log = await screen.findByRole("log");
     expect(await within(log).findByText("Grabbit")).toBeInTheDocument();
-    expect(within(log).getByText(/Tell Grabbit what you look for/)).toBeInTheDocument();
     unmount();
 
     mockApi({ ...base, "GET /api/reports/latest": () => reportV1 });

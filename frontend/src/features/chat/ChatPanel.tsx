@@ -86,15 +86,7 @@ export function ChatPanel({ footer }: ChatPanelProps) {
             </Button>
           </div>
         )}
-        {chat.isSuccess && messages.length === 0 && (
-          <div className={styles.welcome}>
-            <Logo stacked className={styles.welcomeLogo} />
-            <p className={styles.empty}>
-              Tell Grabbit what you look for at Slush 2026, however vague. It asks two or three
-              questions backed by data, then writes your prep report.
-            </p>
-          </div>
-        )}
+        {chat.isSuccess && messages.length === 0 && <Logo stacked className={styles.welcome} />}
         {messages.map((m) => (
           <Message
             key={m.id}
