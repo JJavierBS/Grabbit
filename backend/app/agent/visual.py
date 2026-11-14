@@ -20,7 +20,7 @@ from app.agent.trace import Tracer
 from app.cala.client import CalaClient
 from app.config import get_settings
 from app.llm import LLM, LLMError
-from app.models import Candidate, ExploredGraph, Profile
+from app.models import Candidate, ExploredGraph, Profile, WalkSummary
 
 log = logging.getLogger(__name__)
 
@@ -34,6 +34,7 @@ _TEXT = re.compile(r'Text\("((?:[^"\\]|\\.)*)"\)')
 class Visual:
     ui: str
     graph: ExploredGraph | None = None
+    walk: WalkSummary | None = None
 
 
 @asynccontextmanager
@@ -110,6 +111,8 @@ async def visual_answer(
             trusted=trusted,
             check=problem,
             tracer=tracer,
+            names={c.entity_id: c.name for c in candidates}
+            | {r.entity_id: r.name for r in profile.reference_investors},
         )
     except LLMError as exc:
         log.info("no visual answer: %s", exc)
@@ -120,6 +123,8 @@ async def visual_answer(
         tracer.close(None)
         raise
     visual = _checked(_strip_fence(text), graph, problem)
+    if visual:
+        visual.walk = tracer.summary()
     tracer.close(visual and visual.ui)
     return visual
 

@@ -8,11 +8,13 @@ import type {
   Profile,
   ProfileChange,
   Report,
+  WalkSummary,
 } from "../api/types";
 import {
   chatV2,
   exploredAnswerUi,
   exploredAurora,
+  exploredAuroraWalk,
   historyV2,
   profileV2,
   reportV1,
@@ -32,6 +34,7 @@ interface Script {
   next?: (v: Version) => Version;
   ui?: string;
   graph?: ExploredGraph;
+  walk?: WalkSummary;
 }
 
 const now = () => new Date().toISOString();
@@ -96,6 +99,7 @@ const scripts: Script[] = [
     reply: "Aurora Ventures also led the seed of Fjordlight Robotics.",
     ui: exploredAnswerUi,
     graph: exploredAurora,
+    walk: exploredAuroraWalk,
   },
   {
     match: /confirm|looks right|keep me posted/i,
@@ -150,6 +154,7 @@ export async function fakeTransport(request: Request): Promise<Response> {
       report_id: null,
       ui: null,
       graph: null,
+      walk: null,
       text,
       created_at: now(),
       profile_changes: [],
@@ -170,6 +175,7 @@ export async function fakeTransport(request: Request): Promise<Response> {
       report_id: after === before ? null : after.report.id,
       ui: script?.ui ?? null,
       graph: script?.graph ?? null,
+      walk: script?.walk ?? null,
     };
     state.chat.push(reply);
     return json(reply);
@@ -188,6 +194,7 @@ export async function fakeTransport(request: Request): Promise<Response> {
       report_id: null,
       ui: null,
       graph: null,
+      walk: null,
       text: "Undone. I went back to the previous version of your report.",
       created_at: now(),
       profile_changes: [],

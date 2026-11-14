@@ -95,6 +95,7 @@ export function useSendMessage() {
         report_id: null,
         ui: null,
         graph: null,
+        walk: null,
         text,
         created_at: new Date().toISOString(),
         profile_changes: [],

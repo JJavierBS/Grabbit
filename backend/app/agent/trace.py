@@ -16,7 +16,7 @@ import uuid
 from collections.abc import Awaitable, Callable
 
 from app import events
-from app.models import ExploredGraph, WalkStep, WalkStepKind, WalkTrace
+from app.models import ExploredGraph, WalkStep, WalkStepKind, WalkSummary, WalkTrace
 
 THOUGHT_CHARS = 280
 OPENUI_START = "root ="
@@ -46,6 +46,7 @@ class Tracer:
         self._clock = clock
         self._sleep = sleep
         self._started: dict[int, float] = {}
+        self._opened = clock()
 
     def publish(self) -> None:
         # A snapshot: the state keeps changing after this event is queued.
@@ -103,6 +104,17 @@ class Tracer:
             self.state.answer = None
             self.state.streaming = False
             self.publish()
+
+    def summary(self) -> WalkSummary | None:
+        """The walk to keep on the answer, or None when the agent never called Cala."""
+        steps = [s for s in self.state.steps if s.kind != "thought"]
+        if not any(s.kind in ("search", "expand") for s in steps):
+            return None
+        return WalkSummary(
+            steps=[s.model_copy() for s in steps],
+            checked=self.state.nodes,
+            seconds=round(self._clock() - self._opened, 1),
+        )
 
     def close(self, answer: str | None) -> None:
         """The walk is over; `answer` is what the chat will show, or None if it was dropped."""

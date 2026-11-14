@@ -7,7 +7,7 @@ from app.agent.sources import fixture_candidates
 from app.agent.visual import Visual
 from app.llm import ChatResult, LLMError
 from app.llm.fake import FakeLLM
-from app.models import ExploredGraph, GraphNode
+from app.models import ChatMessage, ExploredGraph, GraphNode, WalkStep, WalkSummary
 from app.store import chat as chat_store
 from app.store import profile as profile_store
 
@@ -224,3 +224,29 @@ async def test_a_correction_skips_the_graph_phase(candidates, now, published):
 
     await _say("Shorter, co-investors first", candidates, now, hook=hook)
     assert [p.phase for kind, p in published if kind == "progress"] == ["llm", "report"]
+
+
+async def test_how_the_walk_found_the_answer_is_stored_with_it(candidates, now, monkeypatch):
+    walk = WalkSummary(
+        steps=[WalkStep(id=0, kind="search", text="Searching Cala for “Aurora”", done=True)],
+        checked=4,
+        seconds=3.2,
+    )
+
+    async def visual(llm, question, profile, candidates):
+        return Visual(ui='root = Answer([t])\nt = Text("Aurora.")', walk=walk)
+
+    monkeypatch.setattr(chat, "visual_answer", visual)
+    await _say("hello", candidates, now)
+    reply = await _say("What else did Aurora back?", candidates, now)
+
+    assert reply.walk == walk
+    assert chat_store.all_messages()[-1].walk == walk
+
+
+def test_messages_stored_before_the_walk_summary_still_load():
+    old = (
+        '{"id": "m1", "role": "agent", "text": "Hi.", "created_at": "2026-11-14T10:00:00Z",'
+        ' "profile_changes": [], "report_id": null, "ui": null, "graph": null}'
+    )
+    assert ChatMessage.model_validate_json(old).walk is None

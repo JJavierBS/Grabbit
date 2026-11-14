@@ -126,6 +126,7 @@ async def handle_message(
         report_id=report_id,
         ui=drawn and drawn.ui,
         graph=drawn and drawn.graph,
+        walk=drawn and drawn.walk,
         now=now,
     )
 

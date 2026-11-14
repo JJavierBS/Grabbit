@@ -301,6 +301,8 @@ export interface components {
       ui: string | null;
       /** @description Cala entities and edges the agent walked for this answer */
       graph: components["schemas"]["ExploredGraph"] | null;
+      /** @description How the agent walked Cala for this answer, step by step */
+      walk: components["schemas"]["WalkSummary"] | null;
     };
     /** ChatRequest */
     ChatRequest: {
@@ -785,6 +787,24 @@ export interface components {
        * @default false
        */
       done: boolean;
+    };
+    /**
+     * WalkSummary
+     * @description How the agent found an answer in Cala, kept on the chat message (#138).
+     */
+    WalkSummary: {
+      /**
+       * Steps
+       * @description The walk's steps, without the model's reasoning
+       */
+      steps: components["schemas"]["WalkStep"][];
+      /**
+       * Checked
+       * @description Cala entities the walk reached
+       */
+      checked: number;
+      /** Seconds */
+      seconds: number;
     };
     /**
      * WalkTrace

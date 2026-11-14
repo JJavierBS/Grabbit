@@ -233,6 +233,27 @@ class ExploredGraph(ApiModel):
     edges: list[GraphEdge]
 
 
+WalkStepKind = Literal["search", "expand", "thought", "rewrite"]
+
+
+class WalkStep(ApiModel):
+    """One thing the agent did while walking Cala, in a plain sentence."""
+
+    id: int
+    kind: WalkStepKind
+    text: str
+    result: str | None = Field(default=None, description="What came back, once done")
+    done: bool = False
+
+
+class WalkSummary(ApiModel):
+    """How the agent found an answer in Cala, kept on the chat message (#138)."""
+
+    steps: list[WalkStep] = Field(description="The walk's steps, without the model's reasoning")
+    checked: int = Field(description="Cala entities the walk reached")
+    seconds: float
+
+
 class ChatMessage(ApiModel):
     id: str
     role: ChatRole
@@ -245,6 +266,9 @@ class ChatMessage(ApiModel):
     )
     graph: ExploredGraph | None = Field(
         default=None, description="Cala entities and edges the agent walked for this answer"
+    )
+    walk: WalkSummary | None = Field(
+        default=None, description="How the agent walked Cala for this answer, step by step"
     )
 
 
@@ -310,19 +334,6 @@ class TurnProgress(ApiModel):
     label: str
     done: int | None = Field(default=None, description="Items finished so far, when counted")
     total: int | None = Field(default=None, description="Items in this phase, when counted")
-
-
-WalkStepKind = Literal["search", "expand", "thought", "rewrite"]
-
-
-class WalkStep(ApiModel):
-    """One thing the agent did while walking Cala, in a plain sentence."""
-
-    id: int
-    kind: WalkStepKind
-    text: str
-    result: str | None = Field(default=None, description="What came back, once done")
-    done: bool = False
 
 
 class WalkTrace(ApiModel):

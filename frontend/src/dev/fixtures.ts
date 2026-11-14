@@ -12,6 +12,7 @@ import type {
   ProfileChange,
   Report,
   Source,
+  WalkSummary,
 } from "../api/types";
 
 const registry = (date: string, precision: Source["date_precision"] = "year"): Source => ({
@@ -512,6 +513,7 @@ export const chatV2: ChatMessage[] = [
     report_id: null,
     ui: null,
     graph: null,
+    walk: null,
     text: "Hi, I am Grabbit. Tell me what you look for at Slush 2026, however vague.",
     created_at: "2026-11-14T09:20:00Z",
     profile_changes: [],
@@ -522,6 +524,7 @@ export const chatV2: ChatMessage[] = [
     report_id: null,
     ui: null,
     graph: null,
+    walk: null,
     text: "Nordic B2B software, climate or fintech. Small tickets, around 25k.",
     created_at: "2026-11-14T09:21:00Z",
     profile_changes: [],
@@ -532,6 +535,7 @@ export const chatV2: ChatMessage[] = [
     report_id: null,
     ui: null,
     graph: null,
+    walk: null,
     text: "Of the 64 attendees that match, 41 are pre-seed or seed and 23 are Series A or later. Which stage do you want?",
     created_at: "2026-11-14T09:21:30Z",
     profile_changes: [],
@@ -542,6 +546,7 @@ export const chatV2: ChatMessage[] = [
     report_id: null,
     ui: null,
     graph: null,
+    walk: null,
     text: "Pre-seed and seed. I trust Aurora Ventures and North Star Capital.",
     created_at: "2026-11-14T09:23:00Z",
     profile_changes: [],
@@ -555,6 +560,7 @@ export const chatV2: ChatMessage[] = [
     report_id: "rep-1",
     ui: null,
     graph: null,
+    walk: null,
   },
 ];
 
@@ -622,3 +628,32 @@ export const exploredAnswerUi = [
   'g = ExploredGraph("i-aurora")',
   'f = EntityFacts("r-fjord-seed")',
 ].join("\n");
+
+/** How the agent walked Cala for the Aurora answer, as the chat keeps it (#138). */
+export const exploredAuroraWalk: WalkSummary = {
+  steps: [
+    {
+      id: 0,
+      kind: "search",
+      text: "Searching Cala for “Aurora Ventures”",
+      result: "found Aurora Ventures",
+      done: true,
+    },
+    {
+      id: 1,
+      kind: "expand",
+      text: "Looking at Aurora Ventures’ funding rounds and people",
+      result: "found 3 funding rounds",
+      done: true,
+    },
+    {
+      id: 2,
+      kind: "expand",
+      text: "Opening 3 funding rounds to see who raised and who invested",
+      result: "found 3 startups and 2 investors",
+      done: true,
+    },
+  ],
+  checked: exploredAurora.nodes.length,
+  seconds: 9.4,
+};

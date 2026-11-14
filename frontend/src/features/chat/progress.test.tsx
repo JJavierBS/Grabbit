@@ -33,6 +33,7 @@ function heldTurns() {
         report_id: null,
         ui: null,
         graph: null,
+        walk: null,
         created_at: "2026-11-14T09:00:00Z",
         profile_changes: [],
       };
