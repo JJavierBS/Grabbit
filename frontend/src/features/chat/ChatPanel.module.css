@@ -6,16 +6,33 @@
   background: var(--color-panel);
 }
 
+/* The scroll area spans the whole main column, so its scrollbar sits at the window edge;
+   the conversation is a centred column inside it. Positioned so visually hidden labels stay
+   in this scroll area. The edges fade, so text slides under the top bar and the composer. */
 .log {
+  position: relative;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* Only the mask's alpha matters; the colour is any opaque token. */
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    var(--color-ink) var(--space-6),
+    var(--color-ink) calc(100% - var(--space-6)),
+    transparent
+  );
+}
+
+.column {
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
   width: 100%;
+  min-height: 100%;
   max-width: var(--chat-width);
   margin: 0 auto;
   padding: var(--space-8) var(--space-6) var(--space-6);
-  overflow-y: auto;
-  min-height: 0;
 }
 
 .message {
@@ -161,7 +178,7 @@
 }
 
 @media (max-width: 40rem) {
-  .log {
+  .column {
     padding: var(--space-6) var(--space-4) var(--space-4);
   }
 

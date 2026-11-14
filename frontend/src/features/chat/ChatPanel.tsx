@@ -72,37 +72,39 @@ export function ChatPanel({ footer }: ChatPanelProps) {
         Chat with Grabbit
       </h2>
       <div className={styles.log} role="log" aria-live="polite" aria-busy={chat.isPending}>
-        {chat.isPending && <Skeleton lines={4} label="Loading the conversation" />}
-        {chat.isError && (
-          <div className={styles.error} role="alert">
-            <p>{chat.error.message}</p>
-            <Button
-              variant="secondary"
-              size="sm"
-              icon={<RefreshCw aria-hidden="true" />}
-              onClick={() => chat.refetch()}
-            >
-              Try again
-            </Button>
-          </div>
-        )}
-        {chat.isSuccess && messages.length === 0 && <Logo stacked className={styles.welcome} />}
-        {messages.map((m) => (
-          <Message
-            key={m.id}
-            message={m}
-            canUndo={isUndoable(m.profile_changes, profile.data?.version)}
-            undoing={undo.isPending}
-            onUndo={() => undo.mutate()}
-          />
-        ))}
-        {send.isPending && (
-          <p className={styles.thinking} role="status">
-            Grabbit is reading your message and checking the report…
-          </p>
-        )}
-        {footer}
-        <div ref={endRef} />
+        <div className={styles.column}>
+          {chat.isPending && <Skeleton lines={4} label="Loading the conversation" />}
+          {chat.isError && (
+            <div className={styles.error} role="alert">
+              <p>{chat.error.message}</p>
+              <Button
+                variant="secondary"
+                size="sm"
+                icon={<RefreshCw aria-hidden="true" />}
+                onClick={() => chat.refetch()}
+              >
+                Try again
+              </Button>
+            </div>
+          )}
+          {chat.isSuccess && messages.length === 0 && <Logo stacked className={styles.welcome} />}
+          {messages.map((m) => (
+            <Message
+              key={m.id}
+              message={m}
+              canUndo={isUndoable(m.profile_changes, profile.data?.version)}
+              undoing={undo.isPending}
+              onUndo={() => undo.mutate()}
+            />
+          ))}
+          {send.isPending && (
+            <p className={styles.thinking} role="status">
+              Grabbit is reading your message and checking the report…
+            </p>
+          )}
+          {footer}
+          <div ref={endRef} />
+        </div>
       </div>
 
       <form className={styles.composer} onSubmit={onSubmit}>

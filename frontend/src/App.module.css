@@ -1,20 +1,44 @@
+/* The app is the window: only the chat log and the side panel scroll, never the document.
+   `overflow: clip` keeps stray absolute children (visually hidden labels) from growing it. */
 .app {
+  position: relative;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
   height: 100dvh;
+  overflow: clip;
   background: var(--color-ground);
+  transition: grid-template-columns var(--duration-slow) var(--ease-out);
 }
 
+/* Pinned to the second column, so a collapsed sidebar never pulls the chat into its track. */
 .workspace {
+  grid-column: 2;
   display: grid;
   grid-template-rows: auto 1fr;
   min-width: 0;
   min-height: 0;
 }
 
-/* Wide screens: the sidebar sits beside the chat; collapsed, its logo and opener move up. */
+/* Wide screens: the sidebar folds its track to zero; its content keeps its width and is
+   clipped, so the list does not reflow while it slides. Collapsed, the logo and opener move up. */
+.app .sidebar {
+  width: auto;
+  min-width: 0;
+  overflow: hidden;
+  transition: visibility 0s linear 0s;
+}
+
+.app .sidebar > * {
+  min-width: var(--sidebar-width);
+}
+
+.app[data-sidebar="closed"] {
+  grid-template-columns: 0 minmax(0, 1fr);
+}
+
 .app[data-sidebar="closed"] .sidebar {
-  display: none;
+  visibility: hidden;
+  transition: visibility 0s linear var(--duration-slow);
 }
 
 .openSidebar {
@@ -107,7 +131,9 @@
   min-height: 0;
 }
 
+/* Positioned so the visually hidden labels inside stay in its own scroll area. */
 .panel {
+  position: relative;
   display: grid;
   grid-template-rows: auto 1fr;
   min-height: 0;
@@ -174,8 +200,17 @@
 
 /* Narrow screens: the panel covers the chat, like a sheet; the sidebar is a drawer. */
 @media (max-width: 63.99rem) {
-  .app {
+  .app,
+  .app[data-sidebar="closed"] {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .workspace {
+    grid-column: 1;
+  }
+
+  .app .sidebar > * {
+    min-width: 0;
   }
 
   .app .sidebar,
