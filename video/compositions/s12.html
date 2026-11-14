@@ -1,0 +1,21 @@
+<template>
+  <style>
+    @font-face{font-family:"Hanken Grotesk";src:url("assets/fonts/hanken-grotesk.woff2") format("woff2");font-weight:100 900}
+    #root{position:absolute;inset:0;background:#f7f7fa;color:#14151c;font-family:"Hanken Grotesk",sans-serif;overflow:hidden}
+    .s12-lock{position:absolute;left:0;right:0;top:330px;display:flex;align-items:center;justify-content:center;gap:26px}
+    .s12-lock img{height:168px}
+    .s12-lock b{font-family:"Outfit",sans-serif;font-weight:800;font-size:132px;letter-spacing:-.01em}
+    .s12-cala{position:absolute;left:0;right:0;top:560px;text-align:center;font-size:52px;font-weight:600}
+    .s12-cta{position:absolute;left:50%;top:690px;margin-left:-330px;width:660px;height:104px;border-radius:20px;background:#14151c;color:#fff;font-size:42px;font-weight:700;display:flex;align-items:center;justify-content:center}
+    .s12-note{position:absolute;left:0;right:0;top:826px;text-align:center;font-size:30px;font-weight:600;color:#4b25d6}
+  </style>
+  <div id="root" data-composition-id="s12" data-width="1920" data-height="1080">
+    <div class="s12-lock"><img src="assets/grabbit-mark.svg" alt=""><b>Grabbit</b></div>
+    <div class="s12-cala">Built on Cala</div>
+    <div class="s12-cta">Try the demo</div>
+    <div class="s12-note">Placeholder: the demo link goes here</div>
+  </div>
+  <script>
+    window.__timelines["s12"] = gsap.timeline({ paused: true });
+  </script>
+</template>
