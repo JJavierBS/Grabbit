@@ -5,7 +5,12 @@ import pytest
 
 from app.discovery.build import build_candidate, build_round
 from app.discovery.links import LinkGraph
-from app.discovery.proximity import MAX_PATHS, attach_proximity, proximity
+from app.discovery.proximity import (
+    MAX_PATHS,
+    MAX_PATHS_PER_INTERMEDIARY,
+    attach_proximity,
+    proximity,
+)
 from app.models import ReferenceInvestor
 from tests.conftest import load_cala
 
@@ -241,3 +246,44 @@ def test_a_candidate_without_raw_rounds_is_scored_from_its_round_dates():
     [path] = found.paths
     assert path.ring == 1 and path.strength == 1.0
     assert path.facts == [kiln.rounds[0].date]
+
+
+def test_two_entities_of_one_fund_in_one_round_are_one_path():
+    batch = party("t-w24", "Trusted Fund W24", lead=True)
+    own = round_node("r1", "startup", [trusted(lead=True), batch])
+    candidate, graph = startup(own)
+    found = proximity(candidate, graph, [TRUSTED], today=TODAY)
+    assert [(p.ring, p.strength) for p in found.paths] == [(1, 1.0)]
+    assert found.score == 1.0
+
+
+def test_the_strongest_entity_of_the_fund_in_a_round_is_the_one_counted():
+    own = round_node("r1", "startup", [trusted(), party("t-w24", "Trusted Fund W24", lead=True)])
+    assert score(own) == 1.0
+
+
+def test_a_grant_from_a_trusted_fund_is_a_path():
+    candidate, graph = startup(round_node("r1", "startup", [trusted(role="GRANTOR")]))
+    found = proximity(candidate, graph, [TRUSTED], today=TODAY)
+    assert [(p.ring, p.strength) for p in found.paths] == [(1, 0.6)]
+    assert found.paths[0].explanation == "Trusted Fund gave a grant in Startup's Seed r1 (2026)."
+
+
+def test_one_intermediary_adds_at_most_a_few_ring_two_paths():
+    own = round_node("r1", "startup", [middle(lead=True)])
+    shared = [round_node(f"s{n}", f"co{n}", [middle(), trusted()]) for n in range(MAX_PATHS)]
+    candidate, graph = startup(own, others=shared)
+    found = proximity(candidate, graph, [TRUSTED], today=TODAY)
+    assert len(found.paths) == MAX_PATHS_PER_INTERMEDIARY
+    assert found.score == round(sum(p.strength for p in found.paths), 4)
+
+
+def test_two_intermediaries_each_add_their_own_paths():
+    own = round_node("r1", "startup", [middle(lead=True), party("m2", "Second VC")])
+    shared = [
+        round_node(f"s{n}", f"co{n}", [middle(), party("m2", "Second VC"), trusted()])
+        for n in range(3)
+    ]
+    candidate, graph = startup(own, others=shared)
+    found = proximity(candidate, graph, [TRUSTED], today=TODAY)
+    assert len(found.paths) == 2 * MAX_PATHS_PER_INTERMEDIARY
