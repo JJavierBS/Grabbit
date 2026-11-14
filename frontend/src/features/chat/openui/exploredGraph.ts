@@ -186,7 +186,7 @@ export function layoutWalk(graph: ExploredGraph, rootId: string, trusted: Set<st
       kind,
       label: n.name,
       sub:
-        [isTrusted && "you trust", isLead ? "Lead investor" : role || typeLabel(n.entity_type)]
+        [isTrusted && "you trust", isLead ? "lead investor" : role || typeLabel(n.entity_type)]
           .filter(Boolean)
           .join(" · ") || undefined,
       entityId: n.entity_id,

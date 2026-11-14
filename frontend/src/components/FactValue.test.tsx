@@ -11,6 +11,13 @@ const src = (date_precision: "day" | "month" | "year" | null = null) => ({
 });
 
 describe("formatFact", () => {
+  it("writes an ISO date out even when the caller did not say it is a date", () => {
+    const fact: Fact = { value: "2023-06-01", unit: null, trust: "primary", sources: [] };
+    expect(formatFact(fact)).toBe("1 Jun 2023");
+    expect(formatFact({ ...fact, value: "2023-06" })).toBe("Jun 2023");
+    expect(formatFact({ ...fact, value: "Helsinki" })).toBe("Helsinki");
+  });
+
   it("shows a year-precision date as the year only", () => {
     const fact: Fact = { value: "2019-01-01", unit: null, trust: "filing", sources: [src("year")] };
     expect(formatFact(fact, "date")).toBe("2019");

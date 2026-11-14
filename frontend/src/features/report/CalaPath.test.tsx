@@ -49,4 +49,13 @@ describe("CalaPath legibility", () => {
     fireEvent.blur(node);
     expect(container.querySelector("[data-overlay]")).toBeNull();
   });
+
+  it("starts each sub line with a capital", () => {
+    const { container } = draw();
+    const subs = [...container.querySelectorAll('g[role="button"] text + text')].map(
+      (t) => t.textContent ?? "",
+    );
+    expect(subs.length).toBeGreaterThan(0);
+    for (const sub of subs) expect(sub).toMatch(/^[^\p{Ll}]/u);
+  });
 });
