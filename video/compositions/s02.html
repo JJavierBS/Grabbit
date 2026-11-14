@@ -1,34 +1,58 @@
 <template>
   <style>
     @font-face{font-family:"Hanken Grotesk";src:url("assets/fonts/hanken-grotesk.woff2") format("woff2");font-weight:100 900}
-    #root{position:absolute;inset:0;background:#f7f7fa;color:#14151c;font-family:"Hanken Grotesk",sans-serif;overflow:hidden}
-    .s02-win{position:absolute;background:#fff;border:2px solid #e3e3ec;border-radius:22px;box-shadow:0 30px 70px rgba(20,21,28,.14);overflow:hidden}
-    .s02-bar{height:68px;background:#f0eff5;border-bottom:2px solid #e3e3ec;display:flex;align-items:flex-end;gap:6px;padding:0 22px}
-    .s02-dots{display:flex;gap:10px;align-self:center;margin-right:18px}
-    .s02-dots i{width:16px;height:16px;border-radius:50%;background:#c9c9d6;display:block}
-    .s02-tab{height:48px;border-radius:12px 12px 0 0;background:#fff;border:2px solid #e3e3ec;border-bottom:0;padding:0 14px;display:flex;align-items:center;gap:10px;font-size:22px;font-weight:500;color:#5c5d6e;white-space:nowrap;overflow:hidden;flex:none}
-    .s02-tab img{height:28px}
-    .s02-tab b{font-family:"Outfit",sans-serif;font-weight:800;font-size:26px;color:#14151c}
-    .s02-body{padding:32px 36px;display:flex;flex-direction:column;gap:24px}
-    .s02-body i{display:block;height:20px;border-radius:10px;background:#e3e3ec}
-    .s02-line{position:absolute;left:640px;top:800px;background:#f7f7fa;border-radius:18px;padding:18px 30px 26px;font-size:104px;font-weight:800;letter-spacing:-.035em;line-height:1;white-space:nowrap}
-    .s02-line span{color:#6139f8}
+    #root{position:absolute;inset:0;color:#14151c;font-family:"Hanken Grotesk",sans-serif;overflow:hidden}
+    #root .clip{position:absolute;inset:0}
+    .s02-win{position:absolute;width:500px;height:310px;background:#fff;border:2px solid #e3e3ec;border-radius:22px;box-shadow:0 30px 70px rgba(20,21,28,.14);overflow:hidden}
+    .s02-bar{height:50px;background:#f0eff5;border-bottom:2px solid #e3e3ec;display:flex;align-items:flex-end;gap:6px;padding:0 16px}
+    .s02-bar i{width:12px;height:12px;border-radius:50%;background:#c9c9d6;align-self:center;flex:none}
+    .s02-bar i:nth-child(3){margin-right:10px}
+    .s02-tab{height:36px;width:62px;border-radius:10px 10px 0 0;background:#e3e3ec;flex:none}
+    .s02-tab.on{width:186px;background:#fff;padding:0 12px;font-size:20px;font-weight:500;line-height:36px;color:#5c5d6e;white-space:nowrap;overflow:hidden}
+    .s02-body{padding:26px 28px;display:flex;flex-direction:column;gap:16px}
+    .s02-body b{height:14px;border-radius:7px;background:#e3e3ec;display:block}
+    .s02-body b:first-child{height:22px;border-radius:11px;background:#c9c9d6}
+    .s02-plate{position:absolute;left:1010px;top:730px;background:#f7f7fa;border:2px solid #e3e3ec;border-radius:22px;box-shadow:0 30px 70px rgba(20,21,28,.14);padding:22px 38px 28px}
+    .s02-line{font-size:100px;font-weight:800;letter-spacing:-.04em;line-height:1.08;white-space:nowrap;font-variant-numeric:tabular-nums}
+    .s02-violet{color:#6139f8}
   </style>
   <div id="root" data-composition-id="s02" data-width="1920" data-height="1080">
-    <div style="position:absolute;left:0px;top:0px;width:1920px;height:300px;background:#dcdfe8;"></div><div style="position:absolute;left:0px;top:300px;width:1920px;height:520px;background:#b9bcc9;"></div><div style="position:absolute;left:760px;top:380px;width:250px;height:440px;background:#8f93a6;border-radius:8px 8px 0 0"></div><div style="position:absolute;left:1060px;top:380px;width:250px;height:440px;background:#8f93a6;border-radius:8px 8px 0 0"></div><div style="position:absolute;left:1360px;top:380px;width:250px;height:440px;background:#8f93a6;border-radius:8px 8px 0 0"></div><div style="position:absolute;left:0px;top:820px;width:1920px;height:260px;background:#e6e7ee;"></div>
-    <div data-layout-allow-overflow><div style="position:absolute;left:205.0px;top:250px;width:250.0px;height:250.0px;background:#14151c;border-radius:50%"></div><div style="position:absolute;left:117.49999999999997px;top:525.0px;width:425.00000000000006px;height:975.0px;background:#14151c;border-radius:150.0px 150.0px 8px 8px"></div></div>
-    <div data-layout-allow-overflow>
-      <div class="s02-win" style="left:560px;top:40px;width:900px;height:500px"><div class="s02-bar"><span class="s02-dots"><i></i><i></i><i></i></span><span class="s02-tab" style="width:104px">attendee list</span><span class="s02-tab" style="width:104px">seed round news</span><span class="s02-tab" style="width:104px">investor portfolio</span><span class="s02-tab" style="width:104px">company registry</span><span class="s02-tab" style="width:104px">founder profile</span><span class="s02-tab" style="width:104px">funding database</span><span class="s02-tab" style="width:104px">who led the round</span></div><div class="s02-body"><i style="width:520px"></i><i style="width:700px"></i><i style="width:620px"></i><i style="width:460px"></i></div></div>
-      <div class="s02-win" style="left:710px;top:74px;width:900px;height:500px"><div class="s02-bar"><span class="s02-dots"><i></i><i></i><i></i></span><span class="s02-tab" style="width:104px">seed round news</span><span class="s02-tab" style="width:104px">investor portfolio</span><span class="s02-tab" style="width:104px">company registry</span><span class="s02-tab" style="width:104px">founder profile</span><span class="s02-tab" style="width:104px">funding database</span><span class="s02-tab" style="width:104px">who led the round</span><span class="s02-tab" style="width:104px">attendee list</span></div><div class="s02-body"><i style="width:520px"></i><i style="width:700px"></i><i style="width:620px"></i></div></div>
-      <div class="s02-win" style="left:860px;top:108px;width:900px;height:500px"><div class="s02-bar"><span class="s02-dots"><i></i><i></i><i></i></span><span class="s02-tab" style="width:104px">investor portfolio</span><span class="s02-tab" style="width:104px">company registry</span><span class="s02-tab" style="width:104px">founder profile</span><span class="s02-tab" style="width:104px">funding database</span><span class="s02-tab" style="width:104px">who led the round</span><span class="s02-tab" style="width:104px">attendee list</span><span class="s02-tab" style="width:104px">seed round news</span></div><div class="s02-body"><i style="width:520px"></i><i style="width:700px"></i><i style="width:620px"></i><i style="width:460px"></i></div></div>
-      <div class="s02-win" style="left:1010px;top:142px;width:900px;height:500px"><div class="s02-bar"><span class="s02-dots"><i></i><i></i><i></i></span><span class="s02-tab" style="width:104px">company registry</span><span class="s02-tab" style="width:104px">founder profile</span><span class="s02-tab" style="width:104px">funding database</span><span class="s02-tab" style="width:104px">who led the round</span><span class="s02-tab" style="width:104px">attendee list</span><span class="s02-tab" style="width:104px">seed round news</span><span class="s02-tab" style="width:104px">investor portfolio</span></div><div class="s02-body"><i style="width:520px"></i><i style="width:700px"></i><i style="width:620px"></i></div></div>
-      <div class="s02-win" style="left:1160px;top:176px;width:900px;height:500px"><div class="s02-bar"><span class="s02-dots"><i></i><i></i><i></i></span><span class="s02-tab" style="width:104px">founder profile</span><span class="s02-tab" style="width:104px">funding database</span><span class="s02-tab" style="width:104px">who led the round</span><span class="s02-tab" style="width:104px">attendee list</span><span class="s02-tab" style="width:104px">seed round news</span><span class="s02-tab" style="width:104px">investor portfolio</span><span class="s02-tab" style="width:104px">company registry</span></div><div class="s02-body"><i style="width:520px"></i><i style="width:700px"></i><i style="width:620px"></i><i style="width:460px"></i></div></div>
-      <div class="s02-win" style="left:1310px;top:210px;width:900px;height:500px"><div class="s02-bar"><span class="s02-dots"><i></i><i></i><i></i></span><span class="s02-tab" style="width:64px">funding database</span><span class="s02-tab" style="width:64px">who led the round</span><span class="s02-tab" style="width:64px">attendee list</span><span class="s02-tab" style="width:64px">seed round news</span><span class="s02-tab" style="width:64px">investor portfolio</span><span class="s02-tab" style="width:64px">company registry</span><span class="s02-tab" style="width:64px">founder profile</span><span class="s02-tab" style="width:64px">funding database</span><span class="s02-tab" style="width:64px">who led the round</span><span class="s02-tab" style="width:64px">attendee list</span><span class="s02-tab" style="width:64px">seed round news</span><span class="s02-tab" style="width:64px">investor portfolio</span></div><div class="s02-body"><i style="width:520px"></i><i style="width:700px"></i><i style="width:620px"></i></div></div>
+    <div id="s02-pile" class="clip" data-start="2.6" data-duration="6" data-layout-allow-overlap>
+      <div data-layout-allow-overflow data-layout-allow-overlap>
+        <div id="s02-w1" class="s02-win" style="left:1010px;top:90px"><div class="s02-bar"><i></i><i></i><i></i><span class="s02-tab on" data-layout-ignore>seed round 2025</span><span class="s02-tab"></span><span class="s02-tab"></span><span class="s02-tab"></span></div><div class="s02-body"><b style="width:69%"></b><b style="width:75%"></b><b style="width:77%"></b><b style="width:49%"></b></div></div>
+        <div id="s02-w2" class="s02-win" style="left:1330px;top:60px"><div class="s02-bar"><i></i><i></i><i></i><span class="s02-tab on" data-layout-ignore>who invested in</span><span class="s02-tab"></span><span class="s02-tab"></span><span class="s02-tab"></span></div><div class="s02-body"><b style="width:76%"></b><b style="width:82%"></b><b style="width:84%"></b><b style="width:60%"></b></div></div>
+        <div id="s02-w3" class="s02-win" style="left:1150px;top:250px"><div class="s02-bar"><i></i><i></i><i></i><span class="s02-tab on" data-layout-ignore>founder background</span><span class="s02-tab"></span><span class="s02-tab"></span><span class="s02-tab"></span></div><div class="s02-body"><b style="width:83%"></b><b style="width:69%"></b><b style="width:91%"></b><b style="width:41%"></b></div></div>
+        <div id="s02-w4" class="s02-win" style="left:980px;top:420px"><div class="s02-bar"><i></i><i></i><i></i><span class="s02-tab on" data-layout-ignore>is it at Slush?</span><span class="s02-tab"></span><span class="s02-tab"></span><span class="s02-tab"></span></div><div class="s02-body"><b style="width:90%"></b><b style="width:76%"></b><b style="width:76%"></b><b style="width:52%"></b></div></div>
+        <div id="s02-w5" class="s02-win" style="left:1350px;top:330px"><div class="s02-bar"><i></i><i></i><i></i><span class="s02-tab on" data-layout-ignore>pitch deck pdf</span><span class="s02-tab"></span><span class="s02-tab"></span><span class="s02-tab"></span></div><div class="s02-body"><b style="width:67%"></b><b style="width:83%"></b><b style="width:83%"></b><b style="width:63%"></b></div></div>
+        <div id="s02-w6" class="s02-win" style="left:1090px;top:560px"><div class="s02-bar"><i></i><i></i><i></i><span class="s02-tab on" data-layout-ignore>team size</span><span class="s02-tab"></span><span class="s02-tab"></span><span class="s02-tab"></span></div><div class="s02-body"><b style="width:74%"></b><b style="width:70%"></b><b style="width:90%"></b><b style="width:44%"></b></div></div>
+        <div id="s02-w7" class="s02-win" style="left:1300px;top:520px"><div class="s02-bar"><i></i><i></i><i></i><span class="s02-tab on" data-layout-ignore>last valuation</span><span class="s02-tab"></span><span class="s02-tab"></span><span class="s02-tab"></span></div><div class="s02-body"><b style="width:81%"></b><b style="width:77%"></b><b style="width:75%"></b><b style="width:55%"></b></div></div>
+        <div id="s02-w8" class="s02-win" style="left:1040px;top:170px"><div class="s02-bar"><i></i><i></i><i></i><span class="s02-tab on" data-layout-ignore>press: raises</span><span class="s02-tab"></span><span class="s02-tab"></span><span class="s02-tab"></span></div><div class="s02-body"><b style="width:88%"></b><b style="width:84%"></b><b style="width:82%"></b><b style="width:66%"></b></div></div>
+        <div id="s02-w9" class="s02-win" style="left:1360px;top:150px"><div class="s02-bar"><i></i><i></i><i></i><span class="s02-tab on" data-layout-ignore>investor list</span><span class="s02-tab"></span><span class="s02-tab"></span><span class="s02-tab"></span></div><div class="s02-body"><b style="width:65%"></b><b style="width:71%"></b><b style="width:89%"></b><b style="width:47%"></b></div></div>
+        <div id="s02-w10" class="s02-win" style="left:1200px;top:400px"><div class="s02-bar"><i></i><i></i><i></i><span class="s02-tab on" data-layout-ignore>portfolio page</span><span class="s02-tab"></span><span class="s02-tab"></span><span class="s02-tab"></span></div><div class="s02-body"><b style="width:72%"></b><b style="width:78%"></b><b style="width:74%"></b><b style="width:58%"></b></div></div>
+        <div id="s02-w11" class="s02-win" style="left:960px;top:300px"><div class="s02-bar"><i></i><i></i><i></i><span class="s02-tab on" data-layout-ignore>funding news</span><span class="s02-tab"></span><span class="s02-tab"></span><span class="s02-tab"></span></div><div class="s02-body"><b style="width:79%"></b><b style="width:85%"></b><b style="width:81%"></b><b style="width:39%"></b></div></div>
+        <div id="s02-w12" class="s02-win" style="left:1320px;top:610px"><div class="s02-bar"><i></i><i></i><i></i><span class="s02-tab on" data-layout-ignore>lead investor?</span><span class="s02-tab"></span><span class="s02-tab"></span></div><div class="s02-body"><b style="width:86%"></b><b style="width:72%"></b><b style="width:88%"></b><b style="width:50%"></b></div></div>
       </div>
-    <div class="s02-line">47 tabs. <span>0 decisions.</span></div>
-    <div class="s02-note" style="position:absolute;left:96px;top:24px;background:#fff;border:2px solid #4b25d6;border-radius:12px;padding:10px 20px;font-size:30px;font-weight:700;color:#4b25d6">Footage placeholder: filming shot 2, behind the shoulder</div>
+        <div id="s02-plate" class="s02-plate">
+          <div class="s02-line"><span id="s02-n">1</span> tabs.</div>
+          <div id="s02-zero" class="s02-line s02-violet">0 decisions.</div>
+        </div>
+    </div>
   </div>
   <script>
-    window.__timelines["s02"] = gsap.timeline({ paused: true });
+    (() => {
+      const tl = gsap.timeline({ paused: true });
+      // "open one tab" 2.8 s, "per business" 4.6 s, "still searching" 7.6 s
+      const steps = [[2.7,4],[3.3,8],[3.8,12],[4.25,16],[4.65,20],[5.0,24],[5.3,28],[5.55,32],[5.8,36],[6.0,40],[6.2,44],[6.4,47]]; // [time a window lands, tabs open after it]
+      const n = document.querySelector("#s02-n");
+      const count = (t) => { let c = 1; for (const [at, total] of steps) if (t >= at) c = total; n.textContent = c; };
+      steps.forEach(([at], i) => {
+        tl.fromTo("#s02-w" + (i + 1), { opacity: 0, y: 34, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.33, ease: "power3.out" }, at);
+      });
+      tl.fromTo("#s02-plate", { opacity: 0, y: 40, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "power3.out" }, 2.9);
+      const clock = { t: 0 };
+      tl.fromTo(clock, { t: 2.6 }, { t: 6.6, duration: 4, ease: "none", onUpdate: () => count(clock.t) }, 2.6);
+      tl.fromTo("#s02-zero", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power2.out" }, 7.1);
+      window.__timelines["s02"] = tl;
+    })();
   </script>
 </template>

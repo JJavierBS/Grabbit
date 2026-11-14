@@ -2,3 +2,6 @@
 renders/
 node_modules/
 .thumbnails/
+snapshots/
+# footage proxies are 100 MB: copy them by hand, see assets/footage/applelog_lut.py
+assets/footage/*.mp4
