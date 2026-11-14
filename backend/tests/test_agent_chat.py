@@ -113,3 +113,11 @@ async def test_system_prompt_carries_rules_profile_and_instructions(candidates, 
     assert "Two lines each." in prompt
     assert "3 startups this week" in prompt
     assert "Kiln Analytics" in prompt
+
+
+async def test_turn_with_a_tool_call_skips_learning(candidates, now):
+    llm = FakeLLM()
+    await _say("hello", candidates, now, llm=llm)
+    llm.calls.clear()
+    await _say("No B2C please", candidates, now, llm=llm)
+    assert [task for task, _ in llm.calls] == ["chat"]
