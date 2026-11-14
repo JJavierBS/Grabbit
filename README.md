@@ -27,6 +27,9 @@ Grabbit is a proactive agent, not a dashboard.
 5. **You leave. It watches.** A desktop notification tells you what changed on your
    shortlist and why it matters.
 
+How it searches Cala's graph, and what that was measured to find:
+[docs/algorithm.md](docs/algorithm.md).
+
 Grabbit never tells you what to buy. The alert in the demo is a simulated event, labelled
 on screen; it goes through the real diff, importance check and delivery path.
 
