@@ -27,7 +27,12 @@ def offline_settings(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Iterato
     # A developer's .env may slow walk steps for the demo or ask Gemini for its thoughts.
     monkeypatch.setenv("WALK_STEP_MIN_S", "0")
     monkeypatch.setenv("GEMINI_THOUGHTS", "0")
+    # Mocked Cala answers instantly: no spacing between requests in tests.
+    monkeypatch.setenv("CALA_MIN_INTERVAL_MS", "0")
     get_settings.cache_clear()
+    from app.cala import client as cala_client
+
+    monkeypatch.setattr(cala_client, "_shared", None)
     from app.agent.sources import clear_discovery_cache
 
     clear_discovery_cache()  # in-process event walk: never shared between tests

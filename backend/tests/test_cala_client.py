@@ -1,8 +1,17 @@
+import asyncio
+
 import httpx
 import pytest
 import respx
 
-from app.cala.client import BASE_URL, CalaCacheMiss, CalaClient, CalaError
+from app.cala.client import (
+    BASE_URL,
+    CalaCacheMiss,
+    CalaClient,
+    CalaError,
+    CalaLimiter,
+    shared_limiter,
+)
 from app.store.cala_cache import cache_key
 from tests.conftest import load_cala
 
@@ -158,3 +167,106 @@ def test_missing_key_is_a_cala_error_so_fallbacks_catch_it(cache):
     with pytest.raises(CalaError) as err:
         CalaClient("", cache, mode="live")
     assert isinstance(err.value, CalaKeyMissing) and isinstance(err.value, ValueError)
+
+
+# The process-wide limiter (#119): the audit's first chat turn took about 200 s because Cala
+# answered 429 about 100 times while several clients hit it at once.
+
+
+def _slow_route(state: dict, delay: float = 0.01):
+    async def answer(request: httpx.Request) -> httpx.Response:
+        state["now"] += 1
+        state["peak"] = max(state["peak"], state["now"])
+        await asyncio.sleep(delay)
+        state["now"] -= 1
+        return httpx.Response(200, json={"id": request.url.path.rsplit("/", 1)[-1]})
+
+    return answer
+
+
+@respx.mock
+async def test_clients_share_one_limit_on_requests_in_flight(cache):
+    state = {"now": 0, "peak": 0}
+    respx.post(url__regex=rf"{BASE_URL}/v1/entities/.*").mock(side_effect=_slow_route(state))
+    limiter = CalaLimiter(max_concurrency=1)
+    chat, report = (make_client(cache, limiter=limiter) for _ in range(2))
+    await asyncio.gather(
+        *(chat.retrieve(f"a{i}") for i in range(6)),
+        *(report.retrieve(f"b{i}") for i in range(6)),
+    )
+    assert state["peak"] == 1 and limiter.peak == 1
+    assert chat.calls_made + report.calls_made == 12
+
+
+@respx.mock
+async def test_a_higher_limit_allows_that_many_at_once_and_no_more(cache):
+    state = {"now": 0, "peak": 0}
+    respx.post(url__regex=rf"{BASE_URL}/v1/entities/.*").mock(side_effect=_slow_route(state))
+    limiter = CalaLimiter(max_concurrency=2)
+    client = make_client(cache, limiter=limiter)
+    await asyncio.gather(*(client.retrieve(f"e{i}") for i in range(8)))
+    assert state["peak"] == 2
+
+
+async def test_requests_start_at_least_the_interval_apart():
+    clock = {"t": 0.0}
+    starts: list[float] = []
+
+    async def sleep(seconds: float) -> None:
+        clock["t"] += seconds
+
+    limiter = CalaLimiter(min_interval=0.25, clock=lambda: clock["t"], sleep=sleep)
+    for _ in range(4):
+        async with limiter:
+            starts.append(clock["t"])
+    assert starts == [0.0, 0.25, 0.5, 0.75]
+
+
+async def test_a_429_pauses_every_client_sharing_the_limiter():
+    clock = {"t": 0.0}
+
+    async def sleep(seconds: float) -> None:
+        clock["t"] += seconds
+
+    limiter = CalaLimiter(clock=lambda: clock["t"], sleep=sleep)
+    async with limiter:
+        pass
+    limiter.cool_down(2.0)
+    async with limiter:
+        assert clock["t"] == 2.0
+
+
+@respx.mock
+async def test_a_429_cools_the_shared_limiter_down(cache):
+    respx.get(f"{BASE_URL}/v1/entities/{COMPANY_ID}/introspection").mock(
+        side_effect=[
+            httpx.Response(429, json={"error": "rate_limit_exceeded"}),
+            httpx.Response(200, json={"properties": ["name"]}),
+        ]
+    )
+    limiter = CalaLimiter()
+    client = make_client(cache, limiter=limiter, backoff_base=0.5)
+    before = limiter._next_start
+    await client.introspect(COMPANY_ID)
+    assert limiter._next_start >= before + 0.5
+
+
+def test_every_client_uses_the_process_limiter_by_default(cache):
+    first, second = make_client(cache), make_client(cache)
+    assert first._limiter is second._limiter is shared_limiter()
+
+
+@respx.mock
+async def test_cache_misses_count_live_calls_and_replay_misses(cache):
+    respx.post(f"{BASE_URL}/v1/entities/{COMPANY_ID}").mock(
+        return_value=httpx.Response(200, json={"id": COMPANY_ID})
+    )
+    live = make_client(cache)
+    await live.retrieve(COMPANY_ID)
+    await live.retrieve(COMPANY_ID)
+    assert (live.cache_misses, live.cache_hits) == (1, 1)
+    replay = make_client(cache, mode="replay")
+    await replay.retrieve(COMPANY_ID)
+    with pytest.raises(CalaCacheMiss):
+        await replay.retrieve("not-cached")
+    assert (replay.cache_misses, replay.cache_hits) == (1, 1)
