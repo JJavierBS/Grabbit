@@ -1,0 +1,306 @@
+{
+  "id": "9f1df8bf-e814-5361-aa79-0840a4671eb1",
+  "name": "Seed",
+  "entity_type": "FundingRound",
+  "description": null,
+  "properties": {
+    "name": {
+      "value": "Seed",
+      "sources": [
+        {
+          "name": "citybiz.co",
+          "document": "https://www.citybiz.co/article/403702/rupert-raises-8m-in-seed-funding/",
+          "date": "2023-04-13",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+        }
+      ]
+    },
+    "round_label": {
+      "value": "SEED",
+      "sources": [
+        {
+          "name": "citybiz.co",
+          "document": "https://www.citybiz.co/article/403702/rupert-raises-8m-in-seed-funding/",
+          "date": "2023-04-13",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+        }
+      ]
+    },
+    "instrument": {
+      "value": "EQUITY",
+      "sources": [
+        {
+          "name": "citybiz.co",
+          "document": "https://www.citybiz.co/article/403702/rupert-raises-8m-in-seed-funding/",
+          "date": "2023-04-13",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+        }
+      ]
+    },
+    "transaction_value": {
+      "value": 8000000.0,
+      "sources": [
+        {
+          "name": "citybiz.co",
+          "document": "https://www.citybiz.co/article/403702/rupert-raises-8m-in-seed-funding/",
+          "date": "2023-04-13",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+        }
+      ]
+    },
+    "transaction_value_units": {
+      "value": "USD",
+      "sources": [
+        {
+          "name": "citybiz.co",
+          "document": "https://www.citybiz.co/article/403702/rupert-raises-8m-in-seed-funding/",
+          "date": "2023-04-13",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+        }
+      ]
+    },
+    "announcement_date": {
+      "value": "2023-04-13",
+      "sources": [
+        {
+          "name": "citybiz.co",
+          "document": "https://www.citybiz.co/article/403702/rupert-raises-8m-in-seed-funding/",
+          "date": "2023-04-13",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+        }
+      ]
+    }
+  },
+  "relationships": {
+    "outgoing": {},
+    "incoming": {
+      "PARTICIPATES_IN_FUNDING_ROUND": [
+        {
+          "id": "01137109-a541-56c9-9f60-0d49520a710c",
+          "name": "Rupert",
+          "entity_type": "Company",
+          "properties": {
+            "role": "ISSUER",
+            "sources": [
+              {
+                "name": "citybiz.co",
+                "document": "https://www.citybiz.co/article/403702/rupert-raises-8m-in-seed-funding/",
+                "date": "2023-04-13",
+                "date_precision": "day",
+                "source_rank": "PRESS"
+              }
+            ],
+            "id": "4020656b-4c6e-554c-9001-78846b41cc18"
+          }
+        },
+        {
+          "id": "6664dd64-c989-5093-a81e-e47a142c06f5",
+          "name": "Snowplow Technologies Inc",
+          "entity_type": "Organization",
+          "properties": {
+            "role": "INVESTOR",
+            "sources": [
+              {
+                "name": "citybiz.co",
+                "document": "https://www.citybiz.co/article/403702/rupert-raises-8m-in-seed-funding/",
+                "date": "2023-04-13",
+                "date_precision": "day",
+                "source_rank": "PRESS"
+              }
+            ],
+            "id": "509de50c-4dcd-5c70-9c3a-8a31773fcb99"
+          }
+        },
+        {
+          "id": "68cefa1d-c77f-4046-867a-005a7747d998",
+          "name": "Alation, Inc.",
+          "entity_type": "Company",
+          "properties": {
+            "role": "INVESTOR",
+            "sources": [
+              {
+                "name": "citybiz.co",
+                "document": "https://www.citybiz.co/article/403702/rupert-raises-8m-in-seed-funding/",
+                "date": "2023-04-13",
+                "date_precision": "day",
+                "source_rank": "PRESS"
+              }
+            ],
+            "id": "85e51904-3f69-5719-8aea-0b297e9463ed"
+          }
+        },
+        {
+          "id": "76c1b0a5-06ad-44e1-bd8b-874ea98d143c",
+          "name": "CITI VENTURES, INC.",
+          "entity_type": "Company",
+          "properties": {
+            "role": "INVESTOR",
+            "sources": [
+              {
+                "name": "citybiz.co",
+                "document": "https://www.citybiz.co/article/403702/rupert-raises-8m-in-seed-funding/",
+                "date": "2023-04-13",
+                "date_precision": "day",
+                "source_rank": "PRESS"
+              }
+            ],
+            "id": "7d66e6c7-0020-50d8-85cb-441db515da32"
+          }
+        },
+        {
+          "id": "80bf8a8f-9a91-430a-af68-b3f6475c38ba",
+          "name": "Weights & Biases, Inc.",
+          "entity_type": "Company",
+          "properties": {
+            "role": "INVESTOR",
+            "sources": [
+              {
+                "name": "citybiz.co",
+                "document": "https://www.citybiz.co/article/403702/rupert-raises-8m-in-seed-funding/",
+                "date": "2023-04-13",
+                "date_precision": "day",
+                "source_rank": "PRESS"
+              }
+            ],
+            "id": "ab58f514-1ff7-5da7-b68a-20684d3fb69b"
+          }
+        },
+        {
+          "id": "9d66cc36-2db5-493d-9689-4663f53a3655",
+          "name": "Cortical Ventures",
+          "entity_type": "Organization",
+          "properties": {
+            "role": "INVESTOR",
+            "sources": [
+              {
+                "name": "citybiz.co",
+                "document": "https://www.citybiz.co/article/403702/rupert-raises-8m-in-seed-funding/",
+                "date": "2023-04-13",
+                "date_precision": "day",
+                "source_rank": "PRESS"
+              }
+            ],
+            "is_lead": true,
+            "id": "c3e94c9d-7285-51e9-bc8d-c3f2792ff7a5"
+          }
+        },
+        {
+          "id": "a51afbf2-d498-4092-ab9e-d104270c5b2a",
+          "name": "Looker (company)",
+          "entity_type": "Organization",
+          "properties": {
+            "role": "INVESTOR",
+            "sources": [
+              {
+                "name": "citybiz.co",
+                "document": "https://www.citybiz.co/article/403702/rupert-raises-8m-in-seed-funding/",
+                "date": "2023-04-13",
+                "date_precision": "day",
+                "source_rank": "PRESS"
+              }
+            ],
+            "id": "db56c65a-b014-5523-92d9-bc4b341434f5"
+          }
+        },
+        {
+          "id": "b891fa2a-d59a-437a-b8f7-8013befffab5",
+          "name": "Joule Ventures",
+          "entity_type": "Organization",
+          "properties": {
+            "role": "INVESTOR",
+            "sources": [
+              {
+                "name": "citybiz.co",
+                "document": "https://www.citybiz.co/article/403702/rupert-raises-8m-in-seed-funding/",
+                "date": "2023-04-13",
+                "date_precision": "day",
+                "source_rank": "PRESS"
+              }
+            ],
+            "id": "00ba0822-05a9-5b6f-ae46-709d576c2217"
+          }
+        },
+        {
+          "id": "d7eaec72-0637-53d1-9d4f-dfe681c9ed17",
+          "name": "Bob Moore",
+          "entity_type": "Organization",
+          "properties": {
+            "role": "INVESTOR",
+            "sources": [
+              {
+                "name": "citybiz.co",
+                "document": "https://www.citybiz.co/article/403702/rupert-raises-8m-in-seed-funding/",
+                "date": "2023-04-13",
+                "date_precision": "day",
+                "source_rank": "PRESS"
+              }
+            ],
+            "id": "8de7ff29-4514-5b6b-9db5-9afe6bd2be2d"
+          }
+        },
+        {
+          "id": "d9aa45d4-137e-54e0-9b4d-7626b3bab5b6",
+          "name": "Jake Stein",
+          "entity_type": "Organization",
+          "properties": {
+            "role": "INVESTOR",
+            "sources": [
+              {
+                "name": "citybiz.co",
+                "document": "https://www.citybiz.co/article/403702/rupert-raises-8m-in-seed-funding/",
+                "date": "2023-04-13",
+                "date_precision": "day",
+                "source_rank": "PRESS"
+              }
+            ],
+            "id": "d1a18cca-57b9-54a5-9abc-33e31ce071a7"
+          }
+        },
+        {
+          "id": "eab936dc-a408-55e5-8678-9793ffd14cee",
+          "name": "Christopher Lynch",
+          "entity_type": "Organization",
+          "properties": {
+            "role": "INVESTOR",
+            "sources": [
+              {
+                "name": "citybiz.co",
+                "document": "https://www.citybiz.co/article/403702/rupert-raises-8m-in-seed-funding/",
+                "date": "2023-04-13",
+                "date_precision": "day",
+                "source_rank": "PRESS"
+              }
+            ],
+            "id": "23776148-e737-5eb1-b9c0-4f6f773a5f24"
+          }
+        },
+        {
+          "id": "ec585c6c-c08a-4c06-a406-c5f971fd0b22",
+          "name": "IA Ventures",
+          "entity_type": "Organization",
+          "properties": {
+            "role": "INVESTOR",
+            "sources": [
+              {
+                "name": "citybiz.co",
+                "document": "https://www.citybiz.co/article/403702/rupert-raises-8m-in-seed-funding/",
+                "date": "2023-04-13",
+                "date_precision": "day",
+                "source_rank": "PRESS"
+              }
+            ],
+            "is_lead": true,
+            "id": "c3e4c6e6-4a47-5dfe-867d-5f91d611f646"
+          }
+        }
+      ]
+    }
+  },
+  "numerical_observations": []
+}

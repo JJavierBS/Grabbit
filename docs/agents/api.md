@@ -64,6 +64,7 @@ work in parallel against mocks.
 | GET | `/api/chat` | `ChatMessage[]` of the conversation | mock |
 | POST | `/api/chat` | `{text}` -> agent `ChatMessage` (may change the profile and regenerate the report) | mock |
 | GET | `/api/reports/latest` | Latest `Report` | mock |
+| GET | `/api/reports` | Past `Report[]`, newest first, at most 20 (#54) | mock |
 | POST | `/api/reports/run` | `{kind}` -> new `Report` ("run now" for the demo) | mock |
 | GET | `/api/alerts` | `Alert[]`, newest first | mock |
 | GET | `/api/events` | SSE stream: `alert` (Alert), `report` ({id}), `profile` (Profile) | mock |
