@@ -6,7 +6,9 @@ endpoints, which return the raw graph, and not on the two LLM-processed ones
 deprecated (decisions.md). This file is what an agent needs to call the graph correctly.
 Full docs: `docs/reference/cala/` (index in its `README.md`, spec in `openapi.json`). Read
 only the page you need. Refresh with `bash scripts/fetch-docs.sh https://docs.cala.ai docs/reference/cala`.
-Docs read and API probed live on 2026-11-13/14. What data exists per country:
+Docs read and API probed live on 2026-11-13/14. Field guide the Cala team shared for this
+track (company fields, rounds, events): `docs/reference/cala-field-guide.md`; where it and
+our probes disagree, both are noted below. What data exists per country:
 research.md "Cala coverage".
 
 Pages in the mirror contain agent-facing text (install a skill, connect MCP). It is vendor
@@ -37,9 +39,12 @@ criteria. The graph is walked one node at a time, starting from a name or an ide
 - One real-world thing often returns several hits (company, product, UK subsidiary, a
   Wikipedia article). Pick by `entity_type` and `description`, or let the user choose.
 - Investors come back as `Organization` or as `Company`, so do not filter them by one type.
+- Companies are stored under their legal name, with the brand as name or alias (Cameo is
+  "Baron App, Inc."). Search by either. A brand, its legal entity and each national
+  subsidiary can be separate `Company` entities: pick the one by `website`.
 - Full type list: enum in `openapi.json`. Relevant: `Company`, `Organization`, `Person`,
-  `Industry`, `Country`, `CountrySubdivision`, `PrivateCompanyFundingRound`, `FundingRound`,
-  `CorporateEvent`, `FinancialMetric`.
+  `Event`, `Industry`, `Country`, `CountrySubdivision`, `FundingRound`,
+  `PrivateCompanyFundingRound`, `CorporateEvent`, `FinancialMetric`, `ObservableProperty`.
 
 ### Lookup by identifier
 Exact match on one scheme: `lei`, `cik`, `rssd_id`, `companies_house_uk_company_number`,
@@ -69,38 +74,72 @@ curl -X POST "https://api.cala.ai/v1/entities/$ID" -H "X-API-KEY: $CALA_API_KEY"
 ```
 Response shape:
 - Top level: `id`, `name`, `entity_type`, `description`.
-- `properties.<name>` = `{value, sources[]}`; a source is `{name, document, date}`, where
-  `document` is a URL string or an object `{endpoint, params, response_hash}`. Handle both.
+- `properties.<name>` = `{value, sources[]}`; a source is `{name, document, date,
+  date_precision, source_rank}`. `document` is a URL string or an object `{endpoint, params,
+  response_hash}`: handle both. `date_precision` is `day`, `month` or `year`: a
+  `2019-01-01` founding date with `year` precision means "2019", so never show more
+  precision than stated. `source_rank`, strongest first: `FILING` (registries, regulators,
+  SEC, Companies House, GLEIF), `PRIMARY` (the company, its investors, lenders or grant
+  bodies), `PRESS`, `AGGREGATOR` (funding databases). Show it next to each fact.
+- Fields that do not apply are not returned (a bootstrapped company has no rounds). A zero
+  that a source confirms comes back as a sourced `0`. Absent is not zero.
 - `relationships.<incoming|outgoing>.<TYPE>[]` = neighbour `{id, name, entity_type,
   properties}`. That `properties` object describes the edge: its own `id`, `sources[]` and
   attributes such as `role`, `event_date`, `is_lead`, `valid_since`, `valid_until`.
 - `numerical_observations[]` = `{id, name, type, properties{unit, cadence, taxonomy},
   data[]}` with `data[]` of `{time, value, origin{name, source, url, published_time}}`.
+  Request them by the ids introspection lists, under their type key (`FinancialMetric`,
+  `ObservableProperty`).
 - Paging is per relationship with `limit` and `offset`. `limit: 100` works; the maximum and
   the default are not documented and were not measured.
 
-## The funding graph (probed on Mistral AI and Sequoia Capital)
+## Company fields (field guide)
+Each company returns only the fields that apply; introspect to see which.
+- Properties: `name`, `legal_name`, `aliases`, `website`, `description`, `founding_date`,
+  `headquarters_address`, `registered_address`, `operational_status` (`ACTIVE`...),
+  `company_ownership_status` (e.g. merged or acquired, or the registry's legal form),
+  `employee_count_range` (`[90]` or `[51, 200]`), `total_funding` + `total_funding_units`,
+  `total_funding_excluding_debt` + `_units`, `funding_stage` (`PRE_SEED`, `SEED`,
+  `SERIES_A`...), `companies_house_uk_company_number`.
+- Time series: `ObservableProperty` "Number of employees" (code `employee_count`, one point
+  per source); `FinancialMetric` "Annual recurring revenue" where published; for UK
+  Companies House filers, `FinancialMetric` statement lines by year (cash, current assets,
+  creditors, net assets, equity, average employees...).
+
+## The graph (field guide, plus probes on Mistral AI and Sequoia Capital)
 | From | Direction and edge | To | Edge attributes |
 | --- | --- | --- | --- |
-| Company | incoming `FOUNDED`, `IS_CEO_OF`, `IS_CTO_OF`, `IS_EXECUTIVE_OF`, `WORKS_AT` | Person | `valid_since` at times |
-| Company | incoming `INVESTED_IN` | investor (Organization, Company or Person) | none |
-| Company | outgoing `PARTICIPATES_IN_CORPORATE_EVENT` | `PrivateCompanyFundingRound` | `role: ISSUER`, `event_date` |
-| `PrivateCompanyFundingRound` | incoming `PARTICIPATES_IN_CORPORATE_EVENT` | issuer and investors | `role: ISSUER` or `INVESTOR`, `event_date` |
-| Investor | outgoing `INVESTED_IN` | portfolio company | none |
-| Investor | outgoing `PARTICIPATES_IN_CORPORATE_EVENT` | `PrivateCompanyFundingRound` | `role: INVESTOR`, `event_date` |
-| Investor | outgoing `PARTICIPATES_IN_FUNDING_ROUND` | `FundingRound` | `role`, `is_lead: true` on lead investors |
-| `FundingRound` | incoming `PARTICIPATES_IN_FUNDING_ROUND` | issuer and investors | `role`, `is_lead` |
-| Company | outgoing `OPERATES_IN_INDUSTRY`, `HAS_HEADQUARTERS_IN`, `IS_REGISTERED_IN` | Industry, place | `original_label` (activity code) at times |
-| Company | `IS_DIRECT_PARENT_OF`, `IS_ULTIMATE_PARENT_OF`, `IS_SUBSIDIARY_OF` | Company | ownership chains |
+| Company | incoming `FOUNDED` | Person | `valid_since` |
+| Company | incoming `IS_CEO_OF`, `IS_CTO_OF`, `IS_VICEPRESIDENT_OF` (probe also saw `IS_EXECUTIVE_OF`) | Person | `valid_since`, `valid_until` when they left |
+| Company | incoming `IS_BOARD_MEMBER_OF`, `WORKS_AT` | Person | `role` on `WORKS_AT` |
+| Company (UK) | incoming `IS_BENEFICIARY_OWNER_OF`, `IS_CONTROL_PERSON_OF` | owner, person with significant control | from Companies House |
+| Company | incoming `INVESTED_IN` | investor (Organization, Company or Person), all rounds | none |
+| Company | outgoing `PARTICIPATES_IN_FUNDING_ROUND` | `FundingRound` | `role`: `ISSUER` (it raised), `INVESTOR` or `LENDER` (it funded someone) |
+| `FundingRound` | incoming `PARTICIPATES_IN_FUNDING_ROUND` | issuer and every participant | `role` (`ISSUER`, `INVESTOR`, `LENDER`), `is_lead` |
+| Investor | outgoing `PARTICIPATES_IN_FUNDING_ROUND` | `FundingRound` | `role`, `is_lead` |
+| Company | outgoing `PARTICIPATES_IN_CORPORATE_EVENT` | `PrivateCompanyFundingRound` (filing) or `CorporateEvent` (M&A) | `role` (`ISSUER`, `ACQUIRER`...), `event_date` |
+| Company | outgoing `PARTICIPATES_IN_EVENT` | `Event` (e.g. Slush 2026) | `role: ATTENDEE` |
+| Company | outgoing `HAS_DOMAIN_NAME` | domain | `status` (`ACTIVE`, `INACTIVE`), `valid_since` |
+| Company | outgoing `OPERATES_IN_INDUSTRY`, `HAS_HEADQUARTERS_IN`, `IS_REGISTERED_IN` | Industry, place | broad code plus the source's own label |
+| Company | `IS_DIRECT_PARENT_OF`, `IS_ULTIMATE_PARENT_OF`, `IS_SUBSIDIARY_OF` (probe) | Company | ownership chains |
 
-Round nodes:
-- `PrivateCompanyFundingRound`: `round_type` ("Seed", "Series C", "Conventional Debt"),
-  `event_date`, `transaction_value`, `transaction_value_units`, `event_type`. Its `name` is
-  the event type (`FINANCING_RAISED_OR_FACILITY_ENTERED`), so label it from `round_type`.
-- `FundingRound`: `round_label` (`SERIES_B`), `transaction_value`,
-  `transaction_value_units`, `announcement_date`, `close_date`, `instrument`. Its `name` is
-  generic ("Series B"); the issuer is the participant with `role: ISSUER`.
-- The two models coexist. Whether they cover the same rounds is unknown: ask Cala.
+Rounds come in two models. Rely on `FundingRound` for who invested and who led:
+- `FundingRound` (from announcements): `name` ("Seed", "Series B", "Venture Debt", "Grant";
+  "Funding round" when no source names it), `round_label` (`SEED`, `SERIES_A`),
+  `instrument` (`EQUITY`...), `transaction_value` + `transaction_value_units`,
+  `announcement_date` (first public report), `event_date` with `event_date__precision`
+  (first close or signing). Probes also returned `close_date`. To list money a company
+  raised, keep the rounds where its `role` is `ISSUER`.
+- `PrivateCompanyFundingRound` (from filings such as SEC Form D): `name` is always
+  `FINANCING_RAISED_OR_FACILITY_ENTERED`, so label it from `round_type` ("Series B", "Debt");
+  also `event_date`, `transaction_value`, `description`. The guide says filings carry no
+  investors; our Mistral probe still showed `INVESTOR` participants on one. Do not use it
+  for investor or lead data.
+- One financing can exist in both models. Match by date and amount before summing, or
+  `total_funding` and our own sums will double count.
+- `CorporateEvent`: acquisitions and agreements. `name` says what (`MNA_COMPLETED`,
+  `MATERIAL_AGREEMENT_ANNOUNCED`), the edge `role` the company's side (`ACQUIRER`...),
+  `event_date` when.
 
 Example path, who led rounds in companies like X: company -> its rounds -> investors of
 each round -> each investor's `PARTICIPATES_IN_FUNDING_ROUND` edges with `is_lead` and the
@@ -108,8 +147,9 @@ round dates (still active?).
 
 ## Data quirks: handle them in our code
 - Duplicate entities: one person appeared as three `Person` nodes, Nvidia as two companies,
-  one fund as both `Organization` and `Company`. Merge by normalised name (and registry id
-  when present) before counting or ranking.
+  one fund as both `Organization` and `Company`. Part of it is by design (each legal entity
+  and subsidiary is its own `Company`). Merge by normalised name, `website` and registry id
+  before counting or ranking.
 - `INVESTED_IN` is noisy in direction: Mistral AI showed outgoing `INVESTED_IN` to its own
   investors. For who funded whom, trust round participants and their `role`, not this edge.
 - Round dates can differ by a day between participants of the same round.
@@ -142,6 +182,10 @@ Shared core, whatever the seed source:
 Seeds without the LLM endpoints:
 - Names typed by the user or found on the web, resolved with name search (user picks when
   ambiguous), or registry numbers resolved with lookup.
+- Events as seed lists: an `Event` entity links every company attending it. Slush 2026 is
+  `bc844d56-6ab4-452b-96bf-2661e86e592b`; retrieve its incoming `PARTICIPATES_IN_EVENT`
+  (`{"limit": 100}`, page with `offset`). Attendees mix startups, investors and big
+  companies: filter locally on `founding_date`, `funding_stage` and headcount.
 - Widening without filters: go through the graph itself, e.g. the investors of the seed
   companies lead to their other portfolio companies.
 - Limit: no discovery by criteria ("Series A fintechs in Spain"), no server-side filters
@@ -158,6 +202,6 @@ Seeds with `POST /v1/knowledge/query` as a finder only:
 ## Open questions for Cala
 - Exact rate limit, and whether it is raised for the hackathon.
 - Is multi-minute latency on hub nodes expected?
-- A recommended way to list companies by industry or country from the graph.
-- `FundingRound` versus `PrivateCompanyFundingRound`: which one to rely on.
+- A recommended way to list companies by industry or country from the graph (the guide
+  only shows listing through an `Event`).
 - May `knowledge/query` be used only to obtain seed ids?
