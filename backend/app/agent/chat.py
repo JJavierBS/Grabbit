@@ -43,6 +43,9 @@ the change without listing candidates from the previous selection: the rebuilt r
 Today's date is {datetime.now(UTC).date().isoformat()}. Never call an older round recent.
 Reply in the investor's language, in at most three short sentences. Do not say "From now on":
 the app adds that line itself after a change.
+The app rebuilds the report on screen by itself after every profile change. Never offer to
+prepare, run or send a report and never ask whether to go ahead. When the investor's answers
+keep the search open, say the current report already covers that.
 
 {FIXED_RULES}
 
@@ -129,17 +132,26 @@ async def handle_message(
                 if matches_profile(c, updated, today=now.date() if now else None)
             ]
         )
-    asked: list[AgentQuestion] = []
-    if first_turn:
-        # Asked as a form under the reply (#153), not as bullets in its text.
-        asked = [
-            AgentQuestion(
-                key=q.key,
-                text=q.text,
-                options=[QuestionOption(label=label, answer=answer) for label, answer in q.options],
+    # Worded by the model while the report is built, so the first turn takes no longer.
+    wording = (
+        asyncio.create_task(
+            onboarding.word_questions(
+                llm, text, onboarding.pick_questions(candidates, updated, now, limit=None)
             )
-            for q in onboarding.pick_questions(candidates, updated, now)
-        ]
+        )
+        if first_turn
+        else None
+    )
+
+    # Asked as a form under the reply (#153), not as bullets in its text.
+    asked = [
+        AgentQuestion(
+            key=q.key,
+            text=q.text,
+            options=[QuestionOption(label=label, answer=answer) for label, answer in q.options],
+        )
+        for q in (await wording if wording else [])
+    ]
 
     drawn = None
     if visual and any(c.field != "style.language" for c in changes):

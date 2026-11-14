@@ -315,3 +315,41 @@ async def test_a_visual_answer_keeps_its_own_badges_and_cites_nothing_more(
     await _say("hello", candidates, now)
     reply = await _say(f"Tell me about {candidates[0].name}", candidates, now)
     assert reply.sources == []
+
+
+async def test_the_first_turn_asks_the_questions_the_model_worded(candidates, now):
+    """#165: worded for this investor while the report is built."""
+    from app.llm.fake import load_scripts
+
+    worded = {
+        "key": "stage",
+        "text": "De las 6 startups, 4 son pre-semilla o semilla y 2 Serie A o más. ¿Qué etapa?",
+        "options": [
+            {"label": "Pre-semilla y semilla", "answer": "Solo pre-semilla y semilla."},
+            {"label": "Serie A o más", "answer": "Solo Serie A o más."},
+            {"label": "Cualquiera", "answer": "Cualquier etapa."},
+        ],
+    }
+    llm = FakeLLM([*load_scripts(), Script(task="questions", output={"questions": [worded]})])
+
+    reply = await _say("Invierto en software B2B", candidates, now, llm=llm)
+
+    assert [q.key for q in reply.questions] == ["stage"]
+    assert reply.questions[0].text == worded["text"]
+    assert reply.questions[0].options[2].answer == "Cualquier etapa."
+
+
+async def test_the_agent_knows_the_app_rebuilds_the_report_itself(candidates, now):
+    """#163: it asked "shall I prepare the report?" after the report was already rebuilt."""
+    prompt = chat.system_prompt(profile_store.current(now), "8 startups", candidates)
+    assert "rebuilds the report on screen by itself" in prompt
+    assert "Never offer to\nprepare, run or send a report" in prompt
+
+
+async def test_learning_writes_its_reason_for_the_investor_in_their_language():
+    """#163: the note read "From now on: The investor requested a lasting preference…"."""
+    from app.agent import learn
+
+    assert "in the language the reaction is written in" in learn.SYSTEM
+    assert "Never describe the investor or the request" in learn.SYSTEM
+    assert "keep the search open" in learn.SYSTEM

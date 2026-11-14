@@ -1,11 +1,18 @@
-"""Pick the 2-3 bank questions (agent.md "Question bank") that best split the candidates."""
+"""Pick the 2-3 bank questions (agent.md "Question bank") to ask after the first message."""
 
+import json
+import logging
 import re
 from collections import Counter
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 
+from pydantic import BaseModel
+
+from app.llm import LLM, LLMError
 from app.models import Candidate, Profile
+
+log = logging.getLogger(__name__)
 
 EARLY_STAGES = ("pre_seed", "pre-seed", "preseed", "seed", "angel")
 
@@ -21,7 +28,10 @@ class Question:
 
 
 def pick_questions(
-    candidates: list[Candidate], profile: Profile, now: datetime | None = None, limit: int = 3
+    candidates: list[Candidate],
+    profile: Profile,
+    now: datetime | None = None,
+    limit: int | None = 3,
 ) -> list[Question]:
     now = now or datetime.now(UTC)
     from app.discovery.filters import matches_profile
@@ -31,6 +41,93 @@ def pick_questions(
     questions = [q for build in builders if (q := build(candidates, profile, now)) and q.split > 0]
     questions.sort(key=lambda q: q.split, reverse=True)
     return questions[:limit]
+
+
+WORDING_SYSTEM = """You choose the questions a research agent asks an investor right after
+their first message, and word them for this investor.
+From the candidate questions, pick the 2 or 3 that matter most for what the investor said,
+most important first. Skip what their message already answers.
+Write each question and its options in the language of the investor's message, short and
+natural, in your own words rather than the template's. Keep every number exactly as given and
+add none. Keep each question's options, in the same order and with the same meaning: the label
+goes on a button, the answer is the sentence sent for the investor when they click it, in the
+first person. Use only keys from the candidates."""
+
+
+class WordedOption(BaseModel):
+    label: str
+    answer: str
+
+
+class WordedQuestion(BaseModel):
+    key: str
+    text: str
+    options: list[WordedOption]
+
+
+class WordedQuestions(BaseModel):
+    questions: list[WordedQuestion]
+
+
+async def word_questions(
+    llm: LLM, message: str, bank: list[Question], limit: int = 3
+) -> list[Question]:
+    """The bank questions that fit `message` best, in its language; the top of the bank on failure.
+
+    The model only picks and rewords: a question whose numbers or options changed keeps the
+    bank's wording, so every number still comes from Cala.
+    """
+    if not bank:
+        return []
+    candidates = json.dumps(
+        [
+            {
+                "key": q.key,
+                "text": q.text,
+                "options": [{"label": label, "answer": answer} for label, answer in q.options],
+            }
+            for q in bank
+        ],
+        ensure_ascii=False,
+    )
+    try:
+        worded = await llm.generate(
+            task="questions",
+            system=WORDING_SYSTEM,
+            prompt=f"Investor's message:\n{message}\n\nCandidate questions:\n{candidates}",
+            schema=WordedQuestions,
+            quick=True,
+        )
+    except LLMError as exc:
+        log.info("question wording skipped: %s", exc)
+        return bank[:limit]
+    by_key = {q.key: q for q in bank}
+    picked: list[Question] = []
+    for w in worded.questions:
+        q = by_key.pop(w.key, None)
+        if q is None:
+            continue
+        picked.append(_reworded(q, w) or q)
+        if len(picked) == limit:
+            break
+    return picked or bank[:limit]
+
+
+def _reworded(q: Question, w: WordedQuestion) -> Question | None:
+    options = tuple((o.label.strip(), o.answer.strip()) for o in w.options)
+    if not w.text.strip() or len(options) != len(q.options):
+        return None
+    pairs = [(q.text, w.text), *zip(q.options, options, strict=True)]
+    for before, after in pairs:
+        if _numbers(before) != _numbers(after) or not all(after):
+            return None
+    return replace(q, text=w.text.strip(), options=options)
+
+
+def _numbers(text: str | tuple[str, ...]) -> list[str]:
+    """Digit runs in order of size: "€5.2M" and "5,2 M€" both read ["2", "5"]."""
+    joined = text if isinstance(text, str) else " ".join(text)
+    return sorted(re.findall(r"\d+", joined))
 
 
 def _balance(a: int, b: int) -> float:
