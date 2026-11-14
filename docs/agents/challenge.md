@@ -75,8 +75,22 @@ credits per team; see `context-dev.md`.
   or broaden the report. Facts come from Cala's raw graph, labelled "verified by Cala";
   Context.dev adds soft signals (social trends, fund commentary), labelled "web, unverified".
   The agent reads Cala's introspection per entity, so its questions grow with Cala's coverage.
-- Nice to have: TODO
+- MVP, also must demo: conversational onboarding, first report validated by the user, then
+  a scheduled digest and urgent alerts about the portfolio by desktop notification.
+  Full flow: `flow.md`.
+- Nice to have: voice input in onboarding and chat; Telegram or WhatsApp channel.
 - Explicitly out of scope: TODO
 
 ## Demo script
-TODO: the 5-7 steps shown live, in order. Features not in this list are low priority.
+Video, max 2:00 (times approximate). Features not in this list are low priority.
+1. 0:00-0:15 An investor drowns in open tabs; however much time he spends, he finds
+   little of value and has no energy left to judge well.
+2. 0:15-0:20 He opens Grabbit and closes every other tab.
+3. 0:20-0:55 Onboarding by conversation; he makes two or three corrections.
+4. 0:55-1:15 The first report arrives in his chosen format; he validates it.
+5. 1:15-1:25 He leaves the computer.
+6. 1:25-1:40 Seconds later, an urgent desktop notification about his portfolio. He comes
+   back, relieved, reads why it matters and can act on it.
+7. 1:40-2:00 Voice-over pitch: Grabbit saves your time, lets you focus on deciding, and
+   tells you when something changes.
+The live demo and Q&A also show the thesis flow in the chat (MVP above).
