@@ -17,6 +17,8 @@ UGLY = ReferenceInvestor(entity_id="unresolved:Ugly", name="Ugly")
         ("yc-w24", "Y Combinator W24", YC),
         ("500-europe", "500 Global (500 Emerging Europe)", FIVE_HUNDRED),
         ("500-inc", "500 Global, Inc.", FIVE_HUNDRED),
+        ("yc-llc", "Y Combinator Management, LLC", YC),
+        ("yc-co", "Y Combinator Co", YC),
         ("udv", "Ugly Duckling Ventures", None),
         ("combinator", "Combinator", None),
         ("nameless", None, None),

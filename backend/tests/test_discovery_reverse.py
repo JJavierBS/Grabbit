@@ -574,6 +574,21 @@ async def test_reverse_walk_is_cached_per_event_and_set_of_investors(monkeypatch
     assert len(asked) == 4
 
 
+async def test_a_walk_cut_short_by_its_budget_is_walked_again_next_turn(monkeypatch):
+    partial = ReverseResult()
+    partial.stats.budget_spent = True
+    asked = _discovery(monkeypatch, [], partial)
+
+    await sources.candidates_for(_trusting("Y Combinator"))
+    await sources.candidates_for(_trusting("Y Combinator"))
+    assert len(asked) == 2
+
+    partial.stats.budget_spent = False
+    await sources.candidates_for(_trusting("Y Combinator"))
+    await sources.candidates_for(_trusting("Y Combinator"))
+    assert len(asked) == 3
+
+
 async def test_hidden_links_see_the_rounds_the_reverse_walk_read(monkeypatch):
     found = sources.fixture_candidates()
     startup_ = next(c for c in found if c.rounds and c.rounds[0].investors)

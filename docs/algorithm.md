@@ -173,6 +173,14 @@ Each path has a strength, the product of these factors:
 In ring 2 the role is the intermediary's role in the startup's round, and the recency is that
 of the older of the two rounds.
 
+Ring 1 counts one path per round and trusted fund: two Cala entities of one fund in the same
+round ("Y Combinator" and "Y Combinator W24") are one investment, scored at the stronger one.
+A trusted fund that took part as GRANTOR (FIRSTPICK) is a ring 1 path too ("gave a grant
+in"), read from the raw round, since a round's investors leave grantors out (most are public
+agencies). Ring 2 keeps at most 2 paths per intermediary (`MAX_PATHS_PER_INTERMEDIARY`):
+its shared rounds are one piece of evidence seen several times, and without the cap a busy
+intermediary filled all 5 slots and cancelled its own low selectivity.
+
 **Score = sum of the 5 strongest paths.** Only those 5 are kept, so the number always equals
 what is listed: it is never a black box. Each path carries a one-line explanation in plain
 words and the sourced facts that prove it (`Candidate.proximity`).
@@ -216,9 +224,11 @@ C, and B's card can say why.
 | Result cache | 15 min per (event, set of fund names) | `agent/sources.py` |
 
 The walk never raises: over budget, on a timeout or on a Cala error it returns what it has,
-and the event walk's result always comes back. A partial result is cached for the 15 minutes
-like a complete one; the next walk continues from the Cala response cache, where every call
-is stored (SQLite, plus Valkey when configured).
+and the event walk's result always comes back. A walk that spent its call budget is not kept
+in the 15-minute result cache, so the next turn walks again: what it already read comes from
+the Cala response cache for free (SQLite, plus Valkey when configured) and the new budget
+goes further. A walk cut short by timeouts or errors only is kept, so a slow node does not
+cost 25 s on every turn.
 
 Ring 1 always completes before ring 2 starts, so a short budget costs second-degree results
 first.
@@ -307,6 +317,7 @@ joined only through ring 2 start at position 27 with scores under 0.2, as the we
 | Late-stage companies pass the startup rules | Helion Energy (Series G), D-ID (Series B), ElevenLabs and Modal Labs (Series D) appear with a neutral profile; a stage filter removes them | Tighten `is_startup` by stage |
 | Cold cost is above the live budget | First live turn for a new pair of investors is partial | Raise the budget, or run ring 1 in the background and report progress |
 | Rounds are read in Cala's order | With a short budget, old rounds may be read before recent ones | None without a date on the edge; ask Cala |
+| The score outranks every other signal | Being likely to raise only breaks exact ties: a ring 2 path of 0.01 beats a likely-to-raise startup with no path | Band the score before the other keys; a product decision |
 | Weights are not calibrated | The order between close scores is a judgement, not a measurement | Fit against known follow-on rounds once there is history |
 | Selectivity counts rounds in the walked graph | An investor walked less looks more selective than it is | Use its total round count from Cala |
 | The score is not drawn in the UI | It orders the report but the paths are only in the API | Frontend follow-up on `Candidate.proximity` |
