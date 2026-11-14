@@ -128,6 +128,29 @@ async def test_reference_investors_get_their_own_section(now):
     assert "Co-invest:" not in first.body_md
 
 
+async def test_a_reference_fund_under_another_cala_entity_gets_the_section_and_the_prompt(now):
+    """#196: the profile holds another entity id of the fund that sits in the rounds."""
+    llm = FakeLLM()
+    profile = _profile(
+        now,
+        reference_investors=[ReferenceInvestor(entity_id="fjord-company", name="Fjord Capital")],
+    )
+    report = await _build("prep", profile, llm=llm, now=now)
+    first = report.sections[0]
+    assert first.title == "Co-invest with investors you trust"
+    assert first.candidate_ids == ["cand-ledgerly", "cand-brikk"]
+    [(_, prompt)] = llm.calls
+    assert "Investors you trust among them: Fjord Capital" in prompt
+
+
+async def test_a_one_word_reference_does_not_group_a_longer_named_fund(now):
+    profile = _profile(
+        now, reference_investors=[ReferenceInvestor(entity_id="unresolved:Fjord", name="Fjord")]
+    )
+    report = await _build("prep", profile, now=now)
+    assert "Co-invest with investors you trust" not in [s.title for s in report.sections]
+
+
 async def test_numbers_written_by_the_model_are_rejected_then_replaced(now):
     bad = Script(
         task="report_write",
