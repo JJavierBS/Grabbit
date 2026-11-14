@@ -121,6 +121,22 @@ async def test_system_prompt_carries_rules_profile_and_instructions(candidates, 
     assert "Kiln Analytics" in prompt
 
 
+async def test_system_prompt_gives_every_fact_a_card_shows(candidates, now):
+    """#147: without them the agent called founding dates "not published"."""
+    import json
+
+    prompt = chat.system_prompt(profile_store.current(now), None, candidates)
+    kiln = next(c for c in candidates if c.name == "Kiln Analytics")
+    line = next(json.loads(row) for row in prompt.splitlines() if '"Kiln Analytics"' in row)
+    assert line["founded"] == kiln.founding_date.value
+    assert line["total_raised"] == {
+        "amount": kiln.total_funding.value,
+        "unit": kiln.total_funding.unit,
+    }
+    assert line["description"]
+    assert kiln.founding_date.value is not None and kiln.total_funding.value is not None
+
+
 async def test_turn_with_a_tool_call_skips_learning(candidates, now):
     llm = FakeLLM()
     await _say("hello", candidates, now, llm=llm)

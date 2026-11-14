@@ -175,6 +175,12 @@ def _compose(reply: str, outcomes: list[ToolOutcome]) -> str:
     return "\n\n".join(lines) or "Noted."
 
 
+def _trim(text: str | None, limit: int = 160) -> str | None:
+    if not text or len(text) <= limit:
+        return text
+    return text[: limit - 1].rsplit(" ", 1)[0] + "…"
+
+
 def _candidate_lines(candidates: list[Candidate], limit: int = 25) -> str:
     if not candidates:
         return "(none loaded)"
@@ -186,10 +192,15 @@ def _candidate_lines(candidates: list[Candidate], limit: int = 25) -> str:
                 {
                     "id": c.entity_id,
                     "name": c.name,
+                    "description": _trim(c.description),
                     "stage": c.funding_stage.value,
                     "hq": c.hq.value,
                     "industries": c.industries,
                     "headcount": c.headcount.value,
+                    # Every fact a card shows, so the agent never calls it "not published" (#147).
+                    "founded": c.founding_date.value,
+                    "total_raised": c.total_funding.value is not None
+                    and {"amount": c.total_funding.value, "unit": c.total_funding.unit},
                     "last_round": last
                     and {
                         "name": last.name,
