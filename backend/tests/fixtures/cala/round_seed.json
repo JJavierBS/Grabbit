@@ -1,0 +1,39 @@
+{
+  "id": "r0000000-0000-4000-8000-000000000001",
+  "name": "Seed",
+  "entity_type": "FundingRound",
+  "description": null,
+  "properties": {
+    "name": {"value": "Seed", "sources": []},
+    "round_label": {"value": "SEED", "sources": []},
+    "instrument": {"value": "EQUITY", "sources": []},
+    "transaction_value": {
+      "value": 3000000,
+      "sources": [
+        {"name": "TechCrunch", "document": "https://press.example/northwind-seed", "date": "2024-11-20", "date_precision": "day", "source_rank": "PRESS"},
+        {"name": "Northwind blog", "document": "https://northwind.example/blog/seed", "date": "2024-11-15", "date_precision": "day", "source_rank": "PRIMARY"}
+      ]
+    },
+    "transaction_value_units": {"value": "EUR", "sources": []},
+    "announcement_date": {"value": "2024-11-20", "sources": []},
+    "event_date": {
+      "value": "2024-11-01",
+      "sources": [
+        {"name": "Northwind blog", "document": "https://northwind.example/blog/seed", "date": "2024-11-15", "source_rank": "PRIMARY"}
+      ]
+    },
+    "event_date__precision": {"value": "month", "sources": []}
+  },
+  "relationships": {
+    "outgoing": {},
+    "incoming": {
+      "PARTICIPATES_IN_FUNDING_ROUND": [
+        {"id": "c0000000-0000-4000-8000-000000000001", "name": "Northwind Robotics Oy", "entity_type": "Company", "properties": {"id": "e10", "role": "ISSUER", "sources": []}},
+        {"id": "v0000000-0000-4000-8000-000000000001", "name": "Aurora Ventures", "entity_type": "Organization", "properties": {"id": "e11", "role": "INVESTOR", "is_lead": true, "sources": []}},
+        {"id": "v0000000-0000-4000-8000-000000000002", "name": "Baltic Angels", "entity_type": "Organization", "properties": {"id": "e12", "role": "INVESTOR", "is_lead": false, "sources": []}},
+        {"id": "v0000000-0000-4000-8000-000000000003", "name": "Nordic Growth Debt", "entity_type": "Company", "properties": {"id": "e13", "role": "LENDER", "sources": []}}
+      ]
+    }
+  },
+  "numerical_observations": []
+}
