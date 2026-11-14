@@ -44,7 +44,8 @@ work in parallel against mocks.
   updated_at`.
 - `ProfileChange`: `version, field, before, after, reason, by (user|agent)`.
 - `ChatMessage`: `id, role (user|agent), text, created_at, profile_changes: ProfileChange[],
-  report_id?`.
+  report_id?, ui?`. `ui` is OpenUI Lang drawn with the Cala components in
+  `frontend/src/features/chat/openui/`; when set, the chat shows it instead of `text`.
 - `Report`: `id, kind (prep|digest|memo), created_at, profile_version, summary,
   sections [{title, body_md, candidate_ids[]}], candidates: Candidate[]`.
 - `Alert`: `id, created_at, entity_id, entity_name, kind (new_round|executive_change|

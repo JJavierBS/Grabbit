@@ -38,7 +38,8 @@ TODO: screenshot or GIF here.
 
 ## Technologies used
 Cala entity API, Gemini (`google-genai`), Context.dev, FastAPI (Python, uv), React and
-TypeScript (Vite), SQLite, APScheduler, Server-Sent Events, Docker on AWS Lightsail.
+TypeScript (Vite), OpenUI (`@openuidev/react-lang`, generative UI in chat answers), SQLite,
+APScheduler, Server-Sent Events, Docker on AWS Lightsail.
 
 ## Run locally
 Needs `uv`, Node 24 and npm.

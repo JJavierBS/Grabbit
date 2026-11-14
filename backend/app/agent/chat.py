@@ -1,5 +1,6 @@
 """One chat turn: Gemini reads the profile and may edit it and its own instructions."""
 
+import asyncio
 import json
 import logging
 from collections.abc import Awaitable, Callable
@@ -9,6 +10,7 @@ from app import events
 from app.agent import learn, onboarding
 from app.agent.rules import FIXED_RULES
 from app.agent.tools import TOOL_SPECS, ToolOutcome, apply_tool_call
+from app.agent.visual import visual_answer
 from app.llm import LLM, LLMError, Message, ToolCall
 from app.models import Candidate, ChatMessage, Profile
 from app.store import chat as chat_store
@@ -65,11 +67,18 @@ async def handle_message(
         for m in chat_store.last(HISTORY_TURNS)
     ]
     system = system_prompt(profile, report_summary, candidates)
+    # Drawn alongside the turn to save a round trip; dropped if the turn turns out to be a
+    # correction, which already changes the report on screen.
+    visual = (
+        None if first_turn else asyncio.create_task(visual_answer(llm, text, profile, candidates))
+    )
 
     try:
         result = await llm.chat(system=system, messages=history, tools=TOOL_SPECS)
     except LLMError as exc:
         log.warning("chat turn failed: %s", exc)
+        if visual:
+            visual.cancel()
         return chat_store.add("agent", UNAVAILABLE, now=now)
 
     outcomes = _apply_all(profile, result.tool_calls)
@@ -99,7 +108,14 @@ async def handle_message(
         if questions:
             reply += "\n\n" + "\n".join(f"- {q.text}" for q in questions)
 
-    return chat_store.add("agent", reply, profile_changes=changes, report_id=report_id, now=now)
+    ui = None
+    if visual and changes:
+        visual.cancel()
+    elif visual:
+        ui = await visual
+    return chat_store.add(
+        "agent", reply, profile_changes=changes, report_id=report_id, ui=ui, now=now
+    )
 
 
 def _apply_all(profile: Profile, calls: list[ToolCall]) -> list[ToolOutcome]:

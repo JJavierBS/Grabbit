@@ -147,3 +147,21 @@ async def test_note_joins_reasons_without_their_full_stops(candidates, now):
     await _say("hello", candidates, now)
     reply = await _say("daily, fewer alerts", candidates, now, llm=TwoChanges())
     assert reply.text.endswith("From now on: a daily digest; fewer alerts.")
+
+
+async def test_a_question_gets_a_visual_answer_and_a_correction_does_not(
+    candidates, now, monkeypatch
+):
+    drawn = 'root = Answer([t])\nt = Text("Aurora led it.")'
+
+    async def visual(llm, question, profile, candidates):
+        return drawn
+
+    monkeypatch.setattr(chat, "visual_answer", visual)
+    await _say("hello", candidates, now)
+
+    question = await _say("Who backs Mossa?", candidates, now)
+    correction = await _say("Shorter, co-investors first", candidates, now)
+
+    assert question.ui == drawn
+    assert correction.profile_changes and correction.ui is None

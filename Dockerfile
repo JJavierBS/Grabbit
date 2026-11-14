@@ -3,6 +3,8 @@
 FROM node:24-slim AS web
 WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json ./
+# OpenUI sends install telemetry from a postinstall script unless told not to.
+ENV DO_NOT_TRACK=1 OPENUI_TELEMETRY_DISABLED=1
 RUN npm ci --no-audit --no-fund
 COPY frontend/ ./
 RUN npm run build

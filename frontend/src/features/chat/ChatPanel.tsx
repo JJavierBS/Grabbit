@@ -16,6 +16,7 @@ import { Skeleton } from "../../components/Skeleton";
 import { ChangeNote } from "./ChangeNote";
 import styles from "./ChatPanel.module.css";
 import { changeNoteText, isUndoable } from "./noteText";
+import { VisualAnswer } from "./openui/VisualAnswer";
 import { useDictation } from "./useDictation";
 
 const SUGGESTIONS = ["Shorter, co-investors first", "Drop consumer health"];
@@ -193,7 +194,14 @@ function Message({ message, canUndo, undoing, onUndo }: MessageProps) {
     <article className={`${styles.message} ${isAgent ? styles.agent : styles.user}`}>
       <p className="visually-hidden">{isAgent ? "Grabbit said:" : "You said:"}</p>
       {note && <ChangeNote note={note} canUndo={canUndo} undoing={undoing} onUndo={onUndo} />}
-      {rest && <div className={styles.bubble}>{isAgent ? <Markdown source={rest} /> : rest}</div>}
+      {/* A visual answer opens with its own sentence; the text stays as the model's history. */}
+      {message.ui ? (
+        <div className={styles.visual}>
+          <VisualAnswer ui={message.ui} />
+        </div>
+      ) : (
+        rest && <div className={styles.bubble}>{isAgent ? <Markdown source={rest} /> : rest}</div>
+      )}
     </article>
   );
 }
