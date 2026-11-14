@@ -38,50 +38,45 @@ def last_round(candidate: Candidate) -> Round | None:
 
 
 def co_invest(candidate: Candidate, reference: list[ReferenceInvestor]) -> Signal:
+    """Value: names of the reference investors in its rounds, leads first, then most recent
+    (api.md `Signal.value` holds scalars only; the explanation carries round and role)."""
     label = "Co-invest with who you trust"
     if not reference:
-        return Signal(
-            kind="co_invest",
-            label=label,
-            explanation="No reference investors in the profile yet.",
-        )
+        return _empty("co_invest", label, "No reference investors in the profile yet.")
     if not candidate.rounds:
-        return Signal(
-            kind="co_invest",
-            label=label,
-            explanation="No funding rounds published for this company.",
-        )
+        return _empty("co_invest", label, "No funding rounds published for this company.")
     trusted = {r.entity_id: r.name for r in reference}
-    matches: list[dict] = []
+    matches: list[tuple[bool, str, str, str]] = []  # (is_lead, date, investor, round)
     facts: list[Fact] = []
     for round_ in candidate.rounds:
         for inv in round_.investors:
             if inv.entity_id in trusted:
                 matches.append(
-                    {
-                        "investor_id": inv.entity_id,
-                        "investor": trusted[inv.entity_id],
-                        "round_id": round_.entity_id,
-                        "round": round_.name,
-                        "is_lead": inv.is_lead,
-                        "date": round_.date.value,
-                    }
+                    (inv.is_lead, str(round_.date.value or ""), trusted[inv.entity_id], round_.name)
                 )
                 facts.append(round_.date)
-    # Leads first, then the most recent round.
-    matches.sort(key=lambda m: (m["is_lead"], str(m["date"] or "")), reverse=True)
     if not matches:
-        explanation = "None of your reference investors took part in its rounds."
-    else:
-        first = matches[0]
-        role = "led" if first["is_lead"] else "joined"
-        explanation = f"{first['investor']} {role} its {first['round']}"
-        if len(matches) > 1:
-            explanation += f", plus {len(matches) - 1} more match(es)"
-        explanation += "."
+        return Signal(
+            kind="co_invest",
+            label=label,
+            value=[],
+            explanation="None of your reference investors took part in its rounds.",
+            facts=[],
+        )
+    matches.sort(reverse=True)  # leads first, then the most recent round
+    names = list(dict.fromkeys(m[2] for m in matches))
+    parts = [f"{name} {'led' if lead else 'joined'} its {rnd}" for lead, _, name, rnd in matches]
     return Signal(
-        kind="co_invest", label=label, value=matches, explanation=explanation, facts=facts
+        kind="co_invest",
+        label=label,
+        value=names,
+        explanation="; ".join(parts) + ".",
+        facts=facts,
     )
+
+
+def _empty(kind: str, label: str, explanation: str) -> Signal:
+    return Signal(kind=kind, label=label, value=None, explanation=explanation, facts=[])  # type: ignore[arg-type]
 
 
 def lead_follow_on(candidate: Candidate, portfolios: dict[str, Portfolio]) -> Signal:
@@ -89,24 +84,18 @@ def lead_follow_on(candidate: Candidate, portfolios: dict[str, Portfolio]) -> Si
     round_ = last_round(candidate)
     lead = next((i for i in round_.investors if i.is_lead), None) if round_ else None
     if lead is None:
-        return Signal(
-            kind="lead_follow_on",
-            label=label,
-            explanation="No lead investor known for its last round.",
-        )
+        return _empty("lead_follow_on", label, "No lead investor known for its last round.")
     portfolio = {
         cid: rounds
         for cid, rounds in portfolios.get(lead.entity_id, {}).items()
         if cid != candidate.entity_id
     }
     if len(portfolio) < MIN_PORTFOLIO:
-        return Signal(
-            kind="lead_follow_on",
-            label=label,
-            explanation=(
-                f"{lead.name} has {len(portfolio)} other known portfolio companies; "
-                f"{MIN_PORTFOLIO} are needed."
-            ),
+        return _empty(
+            "lead_follow_on",
+            label,
+            f"{lead.name} has {len(portfolio)} other known portfolio companies; "
+            f"{MIN_PORTFOLIO} are needed.",
         )
     followed = sum(1 for rounds in portfolio.values() if _followed_on(rounds))
     ratio = followed / len(portfolio)

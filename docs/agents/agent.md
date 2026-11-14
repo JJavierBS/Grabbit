@@ -54,7 +54,8 @@ best, never all of them. Numbers in the question come from Cala, not from the mo
 
 ## Signals (v1, pure functions, tuned in code with tests)
 - `co_invest`: a reference investor (deduplicated by entity id) took part in one of the
-  startup's rounds. Value: list of {investor, round, is_lead, date}. Lead counts first.
+  startup's rounds. Value: their names, leads first, then most recent (`Signal.value` holds
+  scalars only); the explanation says who led or joined which round.
 - `lead_follow_on`: for the lead of the startup's last round, the share of the lead's other
   portfolio companies where it also joined a later round. Needs 3+ companies, else null.
 - `likely_to_raise`: up to three checks, each only if the data exists:
