@@ -75,6 +75,21 @@ asked (#165). Numbers in the question come from Cala, not from the model.
   True if at least two checks pass; null if fewer than two checks have data. The
   explanation lists each check and its facts. It is a hint, never a recommendation.
 
+## Proximity (report order)
+`app/discovery/proximity.py`, pure. Each candidate gets a score: the sum of the paths that
+join it, through funding rounds, to the reference investors (matched by id or fund name,
+`links.Trusted`). Up to 5 paths are kept, each with a plain sentence and its sourced facts.
+- Ring 1: a trusted investor took part in one of its rounds. Ring 2: one of its investors
+  shared another round with a trusted investor (the `trusted_co_investor` hidden link).
+- Path strength = distance (ring 1 = 1.0, ring 2 = 0.3) x role (lead 1.0, participant 0.6;
+  in ring 2 the intermediary's role in the startup's round) x recency (halves every 3 years,
+  no date = 0.5; in ring 2 the older of the two rounds) x source (filing 1.0, primary 0.9,
+  press 0.75, aggregator 0.6; the weakest edge on the path) x, ring 2 only, selectivity of
+  the intermediary, `1 / log2(2 + its rounds in the walked graph)`.
+- `rank()` orders by score, then likely to raise, then newest round, then name. No reference
+  investors: `proximity` is null and the order is the last three.
+- The weights are a first calibration, named constants at the top of the module.
+
 ## Cadence and alerts
 - With an event: a prep report when onboarding ends, a daily digest during the event week,
   a weekly follow-up after it, until the angel says they found a round. Without an event:
