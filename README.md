@@ -40,7 +40,7 @@ TODO: screenshot or GIF here.
 Cala entity API, Gemini (`google-genai`), Context.dev, FastAPI (Python, uv), React and
 TypeScript (Vite), OpenUI (`@openuidev/react-lang`, generative UI in chat answers), SQLite,
 Aiven for Valkey (shared Cala cache, `redis`), APScheduler, Server-Sent Events, Docker on
-Aiven Runtime (fallback: AWS EC2 behind Caddy, deployed by GitHub Actions).
+Aiven Runtime.
 
 ## Run locally
 Needs `uv`, Node 24 and npm.
@@ -65,8 +65,8 @@ API docs while `make dev` runs: http://localhost:8000/api/docs
 The demo runs on Aiven, project `grabbit`, AWS `eu-central-1`:
 https://www.grabbit.cloud (Aiven host: https://cosmic-enhanced-jawfish.eur-1.aiven.app;
 `http://grabbit.cloud` redirects there from IONOS, which holds the domain and its DNS)
-- `grabbit-app` (Aiven Runtime, `startup-100-2048`) builds the root `Dockerfile` from branch
-  `129-valkey-cala-cache` and serves it on port 8000. Pushing does **not** deploy: use
+- `grabbit-app` (Aiven Runtime, `startup-100-2048`) builds the root `Dockerfile` from
+  `main` and serves it on port 8000. Merging does **not** deploy: use
   Runtime > `grabbit-app` > Actions > **Deploy latest commit** in the console. Keys and
   modes are its environment variables (keys as secrets); `CALA_MODE=replay`.
 - `grabbit-cache` (Aiven for Valkey, Hobbyist) holds the shared Cala cache; Aiven injects its
@@ -77,8 +77,8 @@ https://www.grabbit.cloud (Aiven host: https://cosmic-enhanced-jawfish.eur-1.aiv
 - Both are paid from Aiven's 50 USD trial credits; with no card on file, Aiven powers them
   off when the credits run out instead of charging.
 
-### Fallback: AWS EC2
-`main` still deploys to EC2. The fallback runs on one AWS EC2 host: a Caddy edge on port 80 proxies to one app container,
+### Legacy: AWS EC2
+The first deploy, no longer the demo link. It runs on one AWS EC2 host: a Caddy edge on port 80 proxies to one app container,
 and each deploy starts the new image next to the old one (blue/green), moves traffic only
 once it is healthy, then stops the old one. No downtime; a broken image never goes live.
 `.github/workflows/deploy.yml` runs on every push to `main`: `make test lint`, image to

@@ -52,8 +52,8 @@ Owners are assigned on the issues; the board is the source of truth.
 | Context.dev (`https://api.context.dev/v1`) | Soft signals only (decisions.md) | `CONTEXT_DEV_API_KEY` |
 | Gemini API (Google DeepMind), SDK `google-genai` | Chat, self-personalization, report writing, importance score | `GEMINI_API_KEY`, `GEMINI_MODEL`, `LLM_MODE` |
 | Aiven for Valkey (`grabbit-cache`) | Shared Cala cache across deployed instances; SQLite stays the fallback | `VALKEY_URL` |
-| Aiven Runtime (`grabbit-app`) | Deployed demo link, built from the root `Dockerfile`; redeploy by hand (README "Deploy") | App environment variables in Aiven, never in git |
-| AWS EC2 host + Caddy edge, GHCR image | Fallback deploy of `main`; blue/green rollout by `deploy/rollout.sh` from GitHub Actions | `/opt/junction/.env` on the host, never in git |
+| Aiven Runtime (`grabbit-app`) | Deployed demo link, built from `main` with the root `Dockerfile`; redeploy by hand (README "Deploy") | App environment variables in Aiven, never in git |
+| AWS EC2 host + Caddy edge, GHCR image | Legacy deploy, not the demo link; blue/green rollout by `deploy/rollout.sh` from GitHub Actions | `/opt/junction/.env` on the host, never in git |
 
 ## Directory layout
 - `backend/`: FastAPI app (`app/`), tests (`tests/`), `pyproject.toml` managed by `uv`.
@@ -73,6 +73,6 @@ Owners are assigned on the issues; the board is the source of truth.
 - All Cala calls go through one wrapper with timeout and a response cache.
 - One uvicorn worker only: the scheduler lives in the process, more workers would duplicate
   jobs. The watcher and digest loop over every workspace with a report; only the default
-  workspace sets the shared digest cadence. A deploy overlaps two containers for the
+  workspace sets the shared digest cadence. An EC2 deploy overlaps two containers for the
   health check (about 10-30 s); both share the SQLite file in WAL mode, and a job that
   fires in that window may run twice.
