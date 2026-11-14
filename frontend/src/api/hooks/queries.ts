@@ -6,7 +6,10 @@ export const keys = {
   profile: ['profile'] as const,
   history: ['profile', 'history'] as const,
   chat: ['chat'] as const,
+  /** Prefix of every report query: invalidate it when a report may have changed. */
+  reportsAll: ['reports'] as const,
   report: ['reports', 'latest'] as const,
+  reports: ['reports', 'list'] as const,
   alerts: ['alerts'] as const,
 };
 
@@ -25,6 +28,10 @@ export const useChat = () =>
 export const useLatestReport = () =>
   useQuery({ queryKey: keys.report, queryFn: () => api.get<Report>('/api/reports/latest') });
 
+/** Past reports, newest first (api.md `GET /api/reports`). */
+export const useReports = () =>
+  useQuery({ queryKey: keys.reports, queryFn: () => api.get<Report[]>('/api/reports') });
+
 export const useAlerts = () =>
   useQuery({ queryKey: keys.alerts, queryFn: () => api.get<Alert[]>('/api/alerts') });
 
@@ -35,7 +42,7 @@ function useRefreshAfterTurn() {
     Promise.all([
       client.invalidateQueries({ queryKey: keys.chat }),
       client.invalidateQueries({ queryKey: keys.profile }),
-      client.invalidateQueries({ queryKey: keys.report }),
+      client.invalidateQueries({ queryKey: keys.reportsAll }),
     ]);
 }
 
@@ -73,7 +80,10 @@ export function useRunReport() {
   const client = useQueryClient();
   return useMutation({
     mutationFn: (kind: Report['kind']) => api.post<Report>('/api/reports/run', { kind }),
-    onSuccess: (report) => client.setQueryData(keys.report, report),
+    onSuccess: (report) => {
+      client.setQueryData(keys.report, report);
+      void client.invalidateQueries({ queryKey: keys.reports });
+    },
   });
 }
 

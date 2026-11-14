@@ -30,6 +30,8 @@ interface ReportViewProps {
   /** Confirms the report: the browser asks for notification permission here (flow.md 2). */
   onConfirm?: () => void;
   confirmed?: boolean;
+  /** A past report: read only, without the confirm and run actions. */
+  archived?: boolean;
 }
 
 export function ReportView({
@@ -40,6 +42,7 @@ export function ReportView({
   diff,
   onConfirm,
   confirmed,
+  archived,
 }: ReportViewProps) {
   const profile = useProfile();
   const run = useRunReport();
@@ -87,21 +90,27 @@ export function ReportView({
         <p className={styles.summary} data-changed={diff?.summaryChanged || undefined}>
           {report.summary}
         </p>
-        <div className={styles.actions}>
-          {onConfirm && (
-            <Button icon={<BellRing aria-hidden="true" />} onClick={onConfirm} disabled={confirmed}>
-              {confirmed ? 'Watching your shortlist' : 'Looks right, keep me posted'}
+        {!archived && (
+          <div className={styles.actions}>
+            {onConfirm && (
+              <Button
+                icon={<BellRing aria-hidden="true" />}
+                onClick={onConfirm}
+                disabled={confirmed}
+              >
+                {confirmed ? 'Watching your shortlist' : 'Looks right, keep me posted'}
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              icon={<RefreshCw aria-hidden="true" />}
+              loading={run.isPending}
+              onClick={() => run.mutate(report.kind)}
+            >
+              Run now
             </Button>
-          )}
-          <Button
-            variant="ghost"
-            icon={<RefreshCw aria-hidden="true" />}
-            loading={run.isPending}
-            onClick={() => run.mutate(report.kind)}
-          >
-            Run now
-          </Button>
-        </div>
+          </div>
+        )}
         {run.isError && (
           <p className={styles.inlineError} role="alert">
             The report did not run: {run.error.message}

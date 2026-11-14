@@ -87,6 +87,12 @@ const state = {
   versions: [{ profile: profileV2, report: reportV1, history: historyV2 }] as Version[],
   chat: [...chatV2] as ChatMessage[],
   alerts: [] as Alert[],
+  // Every report written, oldest first; GET /api/reports serves it newest first.
+  reports: [reportV1] as Report[],
+};
+const logReport = (r: Report) => {
+  if (!state.reports.some((x) => x.id === r.id && x.profile_version === r.profile_version))
+    state.reports.push(r);
 };
 const current = () => state.versions[state.versions.length - 1];
 
@@ -105,6 +111,7 @@ export async function fakeTransport(path: string, init?: RequestInit): Promise<R
     if (path === '/api/profile/history') return json(current().history);
     if (path === '/api/chat') return json(state.chat);
     if (path === '/api/reports/latest') return json(current().report);
+    if (path === '/api/reports') return json([...state.reports].reverse().slice(0, 20));
     if (path === '/api/alerts') return json(state.alerts);
   }
   if (method === 'POST' && path === '/api/chat') {
@@ -120,7 +127,10 @@ export async function fakeTransport(path: string, init?: RequestInit): Promise<R
     });
     const script = scripts.find((s) => s.match.test(text));
     const before = current();
-    if (script?.next) state.versions.push(script.next(before));
+    if (script?.next) {
+      state.versions.push(script.next(before));
+      logReport(current().report);
+    }
     const after = current();
     const reply: ChatMessage = {
       id: `a${state.chat.length}`,
@@ -156,6 +166,7 @@ export async function fakeTransport(path: string, init?: RequestInit): Promise<R
   if (method === 'POST' && path === '/api/reports/run') {
     const v = current();
     v.report = { ...v.report, id: `${v.report.id}-run${Date.now()}`, created_at: now() };
+    logReport(v.report);
     return json(v.report);
   }
   return json(
