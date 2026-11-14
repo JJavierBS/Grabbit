@@ -77,7 +77,9 @@ describe('App', () => {
     });
   });
 
-  it('confirms the report by telling the agent', async () => {
+  it('confirms the report by telling the agent and asking for notifications', async () => {
+    const requestPermission = vi.fn(async () => 'granted');
+    vi.stubGlobal('Notification', { permission: 'default', requestPermission });
     const calls = mockApi({
       ...base,
       'GET /api/reports/latest': () => reportV1,
@@ -89,6 +91,32 @@ describe('App', () => {
     );
     expect(calls.find((c) => c.key === 'POST /api/chat')?.body).toEqual({ text: CONFIRM_MESSAGE });
     expect(await screen.findByRole('button', { name: 'Watching your shortlist' })).toBeDisabled();
+    expect(requestPermission).toHaveBeenCalledOnce();
+    vi.unstubAllGlobals();
+  });
+
+  it('opens an alert from the event stream in the chat, labelled as simulated', async () => {
+    const calls = mockApi({ ...base, 'GET /api/reports/latest': () => reportV1 });
+    renderWithClient(<App />);
+    await screen.findByRole('heading', { name: 'Slush 2026 prep report' });
+    calls.streams[0].open();
+    calls.streams[0].push('alert', {
+      id: 'al-7',
+      created_at: '2026-11-14T10:00:00Z',
+      entity_id: 'c-northwind',
+      entity_name: 'Northwind Labs',
+      kind: 'new_round',
+      title: 'Northwind Labs is raising a Series A',
+      why_it_matters: 'Aurora Ventures leads it.',
+      importance: 0.9,
+      facts: [],
+      simulated: true,
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Open in chat' }));
+    const card = screen.getByRole('article', { name: 'Northwind Labs is raising a Series A' });
+    expect(within(card).getByText('Simulated event')).toBeInTheDocument();
+    expect(within(card).getByText('Aurora Ventures leads it.')).toBeInTheDocument();
+    expect(screen.getByText('Live')).toBeInTheDocument();
   });
 
   it('opens the profile history with the reason for each change', async () => {

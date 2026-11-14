@@ -58,3 +58,20 @@ export const api = {
       body: data === undefined ? undefined : JSON.stringify(data),
     }),
 };
+
+/** The subset of EventSource the app uses, so tests and the fake API can stand in for it. */
+export interface EventStream {
+  readonly readyState: number;
+  onopen: ((ev: Event) => unknown) | null;
+  onerror: ((ev: Event) => unknown) | null;
+  addEventListener(type: string, listener: (ev: MessageEvent) => void): void;
+  close(): void;
+}
+
+let streamFactory: (url: string) => EventStream = (url) => new EventSource(url);
+
+export function setEventStreamFactory(next: (url: string) => EventStream) {
+  streamFactory = next;
+}
+
+export const openEventStream = (url: string) => streamFactory(url);

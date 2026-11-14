@@ -150,6 +150,9 @@ export async function fakeTransport(path: string, init?: RequestInit): Promise<R
     });
     return json(current().profile);
   }
+  if (method === 'POST' && path === '/api/demo/simulate-event') {
+    return json(simulateAlert(String(body?.fixture ?? 'new_round')));
+  }
   if (method === 'POST' && path === '/api/reports/run') {
     const v = current();
     v.report = { ...v.report, id: `${v.report.id}-run${Date.now()}`, created_at: now() };
@@ -159,4 +162,77 @@ export async function fakeTransport(path: string, init?: RequestInit): Promise<R
     { error: { code: 'not_found', message: `${method} ${path} is not in the fake API.` } },
     404,
   );
+}
+
+// ---- Event stream (/api/events) ------------------------------------------------------
+
+type Listener = (ev: MessageEvent) => void;
+const streams = new Set<FakeEventStream>();
+
+/** Stands in for EventSource; the fake API pushes events to every open stream. */
+export class FakeEventStream {
+  readyState = 0;
+  onopen: ((ev: Event) => unknown) | null = null;
+  onerror: ((ev: Event) => unknown) | null = null;
+  private listeners = new Map<string, Listener[]>();
+
+  constructor(readonly url: string) {
+    streams.add(this);
+    setTimeout(() => {
+      this.readyState = 1;
+      this.onopen?.(new Event('open'));
+    }, 50);
+  }
+
+  addEventListener(type: string, listener: Listener) {
+    this.listeners.set(type, [...(this.listeners.get(type) ?? []), listener]);
+  }
+
+  emit(type: string, data: unknown) {
+    const ev = new MessageEvent(type, { data: JSON.stringify(data) });
+    for (const l of this.listeners.get(type) ?? []) l(ev);
+  }
+
+  close() {
+    this.readyState = 2;
+    streams.delete(this);
+  }
+}
+
+const broadcast = (type: string, data: unknown) => {
+  for (const s of streams) s.emit(type, data);
+};
+
+/** Synthetic simulated alert on Northwind Labs, delivered like the real watcher would. */
+// The fixture name only selects a scripted change in the real backend; the fake has one.
+export function simulateAlert(_fixture: string): Alert {
+  const alert: Alert = {
+    id: `al-${Date.now()}`,
+    created_at: now(),
+    entity_id: 'c-northwind',
+    entity_name: 'Northwind Labs',
+    kind: 'new_round',
+    title: 'Northwind Labs is raising a Series A',
+    why_it_matters: `Aurora Ventures, one of your reference investors, leads it, and Northwind Labs is on your shortlist. It may close before you meet them at Slush.`,
+    importance: 0.9,
+    facts: [
+      {
+        value: 8_000_000,
+        unit: 'EUR',
+        trust: 'press',
+        sources: [
+          { name: 'Arctic Startup Daily', url: 'https://example.com/press', rank: 'press' },
+        ],
+      },
+      {
+        value: '2026-11-14',
+        trust: 'press',
+        sources: [{ name: 'Arctic Startup Daily', date_precision: 'day', rank: 'press' }],
+      },
+    ],
+    simulated: true,
+  };
+  state.alerts.unshift(alert);
+  setTimeout(() => broadcast('alert', alert), 1500);
+  return alert;
 }

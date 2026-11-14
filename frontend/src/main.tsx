@@ -3,13 +3,14 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './styles/base.css';
 import { App } from './App';
-import { setTransport } from './api/client';
+import { setEventStreamFactory, setTransport } from './api/client';
 import { ToastProvider } from './components/Toast';
 import { Gallery } from './design/Gallery';
 
 if (import.meta.env.VITE_FAKE_API === '1') {
-  const { fakeTransport } = await import('./dev/fakeApi');
+  const { FakeEventStream, fakeTransport } = await import('./dev/fakeApi');
   setTransport(fakeTransport);
+  setEventStreamFactory((url) => new FakeEventStream(url));
 }
 
 const queryClient = new QueryClient({

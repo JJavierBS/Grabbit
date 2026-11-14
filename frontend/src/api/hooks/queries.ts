@@ -76,3 +76,10 @@ export function useRunReport() {
     onSuccess: (report) => client.setQueryData(keys.report, report),
   });
 }
+
+/** Demo trigger: a scripted change through the real watcher path (api.md, DEMO_MODE=1 only). */
+export function useSimulateEvent() {
+  return useMutation({
+    mutationFn: (fixture: string) => api.post<Alert>('/api/demo/simulate-event', { fixture }),
+  });
+}

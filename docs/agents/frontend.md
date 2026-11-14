@@ -9,6 +9,8 @@
   synthetic fixtures (`src/dev/fakeApi.ts`, `src/dev/fixtures.ts`) and shows a "Demo data"
   badge. Dev only; tests use `src/test/renderApp.tsx` (`mockApi`) instead.
 - Design system reference: open `/?gallery`.
+- Demo trigger: a "Simulate event" button shows with the fake API, or with `?demo` (fixture
+  `new_round`) or `?demo=<fixture>` against the real backend (`DEMO_MODE=1`).
 
 ## Structure
 - `src/api/`: generated `schema.ts` (api.md), the single client `client.ts`, query hooks in

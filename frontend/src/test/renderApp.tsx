@@ -3,6 +3,7 @@ import { render } from '@testing-library/react';
 import type { ReactElement } from 'react';
 import { setTransport } from '../api/client';
 import { ToastProvider } from '../components/Toast';
+import { installTestStreams } from './fakeEvents';
 
 export type Route = (body: unknown) => unknown;
 export type Routes = Record<string, Route | { status: number; body: unknown }>;
@@ -10,6 +11,7 @@ export type Routes = Record<string, Route | { status: number; body: unknown }>;
 /** Serves `routes` keyed by "METHOD /path" instead of the network. */
 export function mockApi(routes: Routes) {
   const calls: { key: string; body: unknown }[] = [];
+  const streams = installTestStreams();
   setTransport(async (path, init) => {
     const key = `${init?.method ?? 'GET'} ${path}`;
     const body = init?.body ? JSON.parse(String(init.body)) : undefined;
@@ -23,7 +25,7 @@ export function mockApi(routes: Routes) {
       return new Response(JSON.stringify(route(body)), { status: 200 });
     return new Response(JSON.stringify(route.body), { status: route.status });
   });
-  return calls;
+  return Object.assign(calls, { streams });
 }
 
 export function renderWithClient(ui: ReactElement) {
