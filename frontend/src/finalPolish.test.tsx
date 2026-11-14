@@ -1,4 +1,4 @@
-import { act, render, screen, within } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App } from "./App";
 import type { ChatMessage } from "./api/types";
@@ -65,10 +65,13 @@ describe("panel focus", () => {
     api.streams.at(-1)?.push("report", {});
     await screen.findByText(/Rewritten for you/);
     const panel = document.getElementById("report-panel");
-    const panelCalls = focus.mock.contexts
-      .map((ctx, i) => [ctx, focus.mock.calls[i][0]] as const)
-      .filter(([ctx]) => ctx === panel);
-    expect(panelCalls.at(-1)?.[1]).toEqual({ focusVisible: false });
+    // The effect that moves focus can run a tick after the new text is on screen.
+    await waitFor(() => {
+      const panelCalls = focus.mock.contexts
+        .map((ctx, i) => [ctx, focus.mock.calls[i][0]] as const)
+        .filter(([ctx]) => ctx === panel);
+      expect(panelCalls.at(-1)?.[1]).toEqual({ focusVisible: false });
+    });
   });
 
   it("leaves focus in the message box when the app opens the panel (#188)", async () => {
