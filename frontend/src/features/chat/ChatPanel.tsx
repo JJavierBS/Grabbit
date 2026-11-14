@@ -197,7 +197,7 @@ function Message({ message, canUndo, undoing, onUndo }: MessageProps) {
       {/* A visual answer opens with its own sentence; the text stays as the model's history. */}
       {message.ui ? (
         <div className={styles.visual}>
-          <VisualAnswer ui={message.ui} />
+          <VisualAnswer ui={message.ui} graph={message.graph} />
         </div>
       ) : (
         rest && <div className={styles.bubble}>{isAgent ? <Markdown source={rest} /> : rest}</div>

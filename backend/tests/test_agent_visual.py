@@ -24,9 +24,12 @@ async def test_the_visual_answer_lists_report_ids_and_strips_a_code_fence():
         'g = CompanyGraph("cand-mossa")\n```'
     )
 
-    ui = await visual_answer(llm, "Why Mossa?", PROFILE, fixture_candidates())
+    visual = await visual_answer(llm, "Why Mossa?", PROFILE, fixture_candidates())
 
-    assert ui == 'root = Answer([t, g])\nt = Text("Aurora led it.")\ng = CompanyGraph("cand-mossa")'
+    assert visual.ui == (
+        'root = Answer([t, g])\nt = Text("Aurora led it.")\ng = CompanyGraph("cand-mossa")'
+    )
+    assert visual.graph is None
     assert '"id": "cand-mossa"' in llm.system and "CompanyGraph(entityId: string)" in llm.system
 
 

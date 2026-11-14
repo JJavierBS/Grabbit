@@ -69,6 +69,7 @@ export function useSendMessage() {
         role: "user",
         report_id: null,
         ui: null,
+        graph: null,
         text,
         created_at: new Date().toISOString(),
         profile_changes: [],
