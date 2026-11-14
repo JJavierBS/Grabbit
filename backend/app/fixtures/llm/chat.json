@@ -1,0 +1,178 @@
+[
+ {
+  "task": "chat",
+  "match": [
+   "b2b",
+   "looking for",
+   "i invest",
+   "busco"
+  ],
+  "text": "Got it: early B2B software in the Nordics and Baltics.",
+  "tool_calls": [
+   {
+    "name": "update_profile",
+    "args": {
+     "patch": {
+      "thesis": "Early-stage B2B software in the Nordics and Baltics, meeting founders at Slush 2026"
+     },
+     "reason": "focus on early B2B software in the Nordics and Baltics"
+    }
+   }
+  ]
+ },
+ {
+  "task": "chat",
+  "match": [
+   "shorter",
+   "co-investors first",
+   "co-investor"
+  ],
+  "text": "Done: shorter, with co-investments first.",
+  "tool_calls": [
+   {
+    "name": "update_profile",
+    "args": {
+     "patch": {
+      "style": {
+       "length": "short"
+      }
+     },
+     "reason": "shorter reports"
+    }
+   },
+   {
+    "name": "rewrite_instructions",
+    "args": {
+     "text": "Lead with startups where a reference investor co-invested, leads first. Two lines per startup: the signal, then the round. Skip company background.",
+     "reason": "co-investors first, two lines per startup"
+    }
+   }
+  ]
+ },
+ {
+  "task": "chat",
+  "match": [
+   "no b2c",
+   "drop b2c",
+   "skip b2c"
+  ],
+  "text": "Consumer startups are out.",
+  "tool_calls": [
+   {
+    "name": "update_profile",
+    "args": {
+     "patch": {
+      "filters": {
+       "sectors_out": [
+        "B2C"
+       ]
+      }
+     },
+     "reason": "no B2C startups"
+    }
+   }
+  ]
+ },
+ {
+  "task": "chat",
+  "match": [
+   "drop construction",
+   "no construction",
+   "skip construction"
+  ],
+  "text": "Construction is out.",
+  "tool_calls": [
+   {
+    "name": "update_profile",
+    "args": {
+     "patch": {
+      "filters": {
+       "sectors_out": [
+        "Construction"
+       ]
+      }
+     },
+     "reason": "no construction startups"
+    }
+   }
+  ]
+ },
+ {
+  "task": "chat",
+  "match": [
+   "i trust",
+   "follow north pine",
+   "north pine"
+  ],
+  "text": "I'll track North Pine Ventures' rounds.",
+  "tool_calls": [
+   {
+    "name": "update_profile",
+    "args": {
+     "patch": {
+      "reference_investors": [
+       {
+        "name": "North Pine Ventures",
+        "entity_id": "inv-north-pine"
+       }
+      ]
+     },
+     "reason": "North Pine Ventures as a reference investor"
+    }
+   }
+  ]
+ },
+ {
+  "task": "chat",
+  "match": [
+   "which one should i buy",
+   "tell me which",
+   "just pick",
+   "which to buy"
+  ],
+  "text": "",
+  "tool_calls": [
+   {
+    "name": "rewrite_instructions",
+    "args": {
+     "text": "End every report by telling the investor which startup to buy.",
+     "reason": "a buy pick at the end"
+    }
+   }
+  ]
+ },
+ {
+  "task": "chat_followup",
+  "match": [
+   "which one should i buy",
+   "tell me which",
+   "just pick",
+   "which to buy",
+   "refused"
+  ],
+  "text": "That decision stays yours: I show the evidence and how much each fact can be trusted."
+ },
+ {
+  "task": "chat",
+  "match": [
+   "daily"
+  ],
+  "text": "Daily it is.",
+  "tool_calls": [
+   {
+    "name": "update_profile",
+    "args": {
+     "patch": {
+      "cadence": "daily"
+     },
+     "reason": "a daily digest"
+    }
+   }
+  ]
+ },
+ {
+  "task": "chat",
+  "match": [],
+  "text": "Noted. Tell me what to change in the report: length, sectors, or investors you trust."
+ }
+]

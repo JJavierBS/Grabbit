@@ -1,6 +1,7 @@
 import json
 import sqlite3
 from collections.abc import Iterator
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -34,6 +35,40 @@ def client() -> Iterator[TestClient]:
 
     with TestClient(create_app()) as test_client:
         yield test_client
+
+
+@pytest.fixture(autouse=True)
+def agent_db(offline_settings: None) -> Iterator[None]:
+    """Agent and report stores on the throwaway database, a fresh FakeLLM per test."""
+    from app.llm import get_llm
+    from app.store import chat, profile  # noqa: F401  registers tables
+    from app.store.db import init_db
+
+    get_llm.cache_clear()
+    init_db()
+    yield
+    get_llm.cache_clear()
+
+
+@pytest.fixture
+def now() -> datetime:
+    return datetime(2026, 11, 14, 12, 0, tzinfo=UTC)
+
+
+@pytest.fixture
+def published(monkeypatch: pytest.MonkeyPatch) -> list[tuple[str, object]]:
+    """Events published through `app.events.publish` during the test."""
+    from app import events
+
+    seen: list[tuple[str, object]] = []
+    original = events.publish
+
+    def record(kind, payload):
+        seen.append((kind, payload))
+        return original(kind, payload)
+
+    monkeypatch.setattr(events, "publish", record)
+    return seen
 
 
 @pytest.fixture

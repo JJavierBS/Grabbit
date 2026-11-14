@@ -9,25 +9,21 @@ def test_profile_endpoints(client):
     history = [
         ProfileChange.model_validate(item) for item in client.get("/api/profile/history").json()
     ]
-    undone = client.post("/api/profile/undo")
 
-    assert profile.reference_investors
-    assert history
-    assert undone.status_code == 200
-    Profile.model_validate(undone.json())
+    assert profile.version == 1
+    assert history == []
+    # Real since #25: a fresh profile has nothing to undo.
+    assert client.post("/api/profile/undo").status_code == 409
 
 
 def test_chat_endpoints(client):
-    conversation = client.get("/api/chat").json()
     reply = client.post("/api/chat", json={"text": "Skip hardware"})
+    conversation = client.get("/api/chat").json()
 
-    assert [ChatMessage.model_validate(item).role for item in conversation][:2] == [
-        "agent",
-        "user",
-    ]
     assert reply.status_code == 200
     message = ChatMessage.model_validate(reply.json())
     assert message.role == "agent"
+    assert [ChatMessage.model_validate(item).role for item in conversation] == ["user", "agent"]
 
 
 def test_reports_endpoints(client):

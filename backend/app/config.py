@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     context_dev_api_key: str = ""
     gemini_api_key: str = ""
     gemini_model: str = ""
+    gemini_timeout_s: float = 30.0
     cala_mode: CalaMode = "live"
     llm_mode: LLMMode = "gemini"
     demo_mode: bool = False
