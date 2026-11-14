@@ -82,6 +82,43 @@ def test_co_invest_no_overlap_is_empty_not_null():
     assert signal.value == []
 
 
+def test_co_invest_matches_a_fund_listed_under_another_cala_entity():
+    """#196: one fund is several Cala entities and the profile holds the id of one."""
+    company = ReferenceInvestor(entity_id="yc-company", name="Y Combinator")
+    candidate = make_candidate(
+        [make_round("r1", "2024-01-01", [lead("yc-organization", "Y Combinator")])]
+    )
+    signal = co_invest(candidate, [company])
+    assert signal.value == ["Y Combinator"]
+    assert signal.explanation == "Y Combinator led its Seed."
+
+
+def test_co_invest_matches_a_vehicle_of_the_fund_and_names_the_reference():
+    reference = ReferenceInvestor(entity_id="500", name="500 Global")
+    vehicle = member("500-europe", "500 Global (500 Emerging Europe)")
+    signal = co_invest(make_candidate([make_round("r1", "2024-01-01", [vehicle])]), [reference])
+    assert signal.value == ["500 Global"]
+    assert signal.explanation == "500 Global joined its Seed."
+
+
+def test_co_invest_one_word_reference_does_not_match_a_longer_name():
+    reference = ReferenceInvestor(entity_id="unresolved:Ugly", name="Ugly")
+    backer = lead("udv", "Ugly Duckling Ventures")
+    signal = co_invest(make_candidate([make_round("r1", "2024-01-01", [backer])]), [reference])
+    assert signal.value == []
+
+
+def test_co_invest_counts_a_fund_once_per_round_whatever_its_entities():
+    reference = ReferenceInvestor(entity_id="yc-company", name="Y Combinator")
+    round_ = make_round(
+        "r1",
+        "2024-01-01",
+        [member("yc-group", "Y Combinator"), lead("yc-organization", "Y Combinator")],
+    )
+    signal = co_invest(make_candidate([round_]), [reference])
+    assert signal.explanation == "Y Combinator led its Seed."
+
+
 # lead_follow_on
 
 PORTFOLIO = {
