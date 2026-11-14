@@ -28,7 +28,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** Get Profile */
+    /**
+     * Get Profile
+     * @description With names typed in chat linked to Cala ids, so the page can mark investors you trust.
+     */
     get: operations["get_profile_api_profile_get"];
     put?: never;
     post?: never;
@@ -282,6 +285,11 @@ export interface components {
       profile_changes: components["schemas"]["ProfileChange"][];
       /** Report Id */
       report_id: string | null;
+      /**
+       * Ui
+       * @description OpenUI Lang drawn with Cala components under the text
+       */
+      ui: string | null;
     };
     /** ChatRequest */
     ChatRequest: {

@@ -68,6 +68,7 @@ export function useSendMessage() {
         id: `pending-${Date.now()}`,
         role: "user",
         report_id: null,
+        ui: null,
         text,
         created_at: new Date().toISOString(),
         profile_changes: [],

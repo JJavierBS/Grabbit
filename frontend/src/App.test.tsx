@@ -69,6 +69,7 @@ describe("App", () => {
       created_at: "2026-11-14T09:00:00Z",
       profile_changes: [],
       report_id: null,
+      ui: null,
     };
     mockApi({ ...base, "GET /api/chat": () => [reply], "GET /api/reports/latest": () => reportV1 });
     renderWithClient(<App />);
@@ -97,6 +98,7 @@ describe("App", () => {
       id: "m9",
       role: "agent",
       report_id: null,
+      ui: null,
       text: "From now on: shorter reports, co-investors first. I rewrote your report.",
       created_at: "2026-11-14T09:34:00Z",
       profile_changes: [],
