@@ -15,6 +15,7 @@ import { DEFAULT_DEMO_FIXTURE, DemoAlertButton } from "./features/alerts/DemoAle
 import { askNotificationPermission } from "./features/alerts/notify";
 import { useAlertDelivery } from "./features/alerts/useAlertDelivery";
 import { ChatPanel } from "./features/chat/ChatPanel";
+import { focusComposer } from "./features/chat/useComposerFocus";
 import { CoachCard } from "./features/demo/CoachCard";
 import { DemoLauncher } from "./features/demo/DemoLauncher";
 import { useDemo, useGuideLocked } from "./features/demo/DemoRoot";
@@ -61,6 +62,7 @@ const STATUS_TEXT: Record<StreamStatus, string> = {
 
 // Below this width the panel covers the chat and the sidebar becomes a drawer.
 const NARROW = "(max-width: 63.99rem)";
+const isNarrow = () => window.matchMedia?.(NARROW).matches ?? false;
 
 // The demo trigger shows with the fake API, or with ?demo (fixture name: ?demo=<name>).
 function demoFixture(): string | null {
@@ -124,10 +126,10 @@ export function App() {
   // The panel slides out before it unmounts; `shownPanel` holds what it showed meanwhile.
   const { shown: shownPanel, leaving: panelLeaving } = usePresence(panel, panelRef);
   const returnFocus = useRef<HTMLElement | null>(null);
+  const composer = useRef<HTMLTextAreaElement>(null);
   // Wide screens: the sidebar sits beside the chat and can collapse. Narrow: it is a drawer.
   const [sidebarOpen, setSidebarOpen] = useState(readSidebarOpen);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const isNarrow = () => window.matchMedia?.(NARROW).matches ?? false;
   const research = useResearches();
 
   // A research from before the list existed takes its name from its first message.
@@ -143,8 +145,14 @@ export function App() {
     setDrawerOpen(false);
     if (workspaceId() !== before) client.clear();
   };
-  const newResearch = () => leave(startResearch);
+  // A fresh research remounts the chat, which focuses its box; an unused one is reused as is.
+  const newResearch = () => {
+    leave(startResearch);
+    focusComposer(composer.current);
+  };
   const openResearch = (id: string) => leave(() => switchResearch(id));
+  const newResearchRef = useRef(newResearch);
+  newResearchRef.current = newResearch;
 
   const openSidebar = () => {
     if (isNarrow()) return setDrawerOpen(true);
@@ -165,7 +173,11 @@ export function App() {
 
   const closePanel = useCallback(() => {
     setPanel(null);
-    returnFocus.current?.focus();
+    // Opened by the app, or from a control that is gone since: the message box takes over.
+    const back = returnFocus.current;
+    returnFocus.current = null;
+    if (back?.isConnected) back.focus();
+    else focusComposer(composer.current);
   }, []);
 
   const showAlert = useCallback(
@@ -189,6 +201,8 @@ export function App() {
 
   // Opened by the app, not by the reader: focus moves without a focus frame around it.
   const openedByApp = useRef(false);
+  // Opened from the sidebar's reports: the reader keeps working in the message box.
+  const openedFromSidebar = useRef(false);
 
   // A rewrite is the moment to watch: open the report on the change.
   useEffect(() => {
@@ -206,17 +220,34 @@ export function App() {
 
   useEffect(() => {
     if (!panel) return;
+    // A rewrite opening the report never takes the message box from someone typing in it.
+    const typing = openedByApp.current && document.activeElement === composer.current;
     // `focusVisible: false` keeps the ring for keyboard opens only (supported in Chromium).
-    panelRef.current?.focus(
-      openedByApp.current ? ({ focusVisible: false } as FocusOptions) : undefined,
-    );
+    if (!typing && !openedFromSidebar.current)
+      panelRef.current?.focus(
+        openedByApp.current ? ({ focusVisible: false } as FocusOptions) : undefined,
+      );
     openedByApp.current = false;
+    openedFromSidebar.current = false;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") closePanel();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [panel, closePanel]);
+
+  // Ctrl/Cmd+Shift+O starts a new research, as in other chat apps.
+  useEffect(() => {
+    if (guided) return;
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === "o") {
+        e.preventDefault();
+        newResearchRef.current();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [guided]);
 
   useEffect(() => {
     if (!drawerOpen) return;
@@ -228,7 +259,16 @@ export function App() {
   }, [drawerOpen]);
 
   const openReport = (r: Report, latest: boolean) => {
-    if (document.activeElement instanceof HTMLElement) returnFocus.current = document.activeElement;
+    // On narrow screens the panel covers the chat, so it takes focus as usual. Wide, the
+    // message box keeps it, and closing the panel comes back to it.
+    if (isNarrow()) {
+      if (document.activeElement instanceof HTMLElement)
+        returnFocus.current = document.activeElement;
+    } else {
+      returnFocus.current = null;
+      openedFromSidebar.current = panel !== "report";
+      focusComposer(composer.current);
+    }
     // The latest entry is the live report, with its confirm and run actions.
     setPastReport(latest ? null : r);
     setPanel("report");
@@ -385,6 +425,8 @@ export function App() {
                 variant="ghost"
                 size="sm"
                 className={styles.newResearch}
+                aria-keyshortcuts="Control+Shift+O Meta+Shift+O"
+                title="New research (Ctrl+Shift+O)"
                 icon={<SquarePen aria-hidden="true" />}
                 onClick={newResearch}
               >
@@ -421,6 +463,7 @@ export function App() {
               }
               followKey={`${report.data?.id}|${reportAnchor}|${openAlert?.alert.id}|${rewriting}`}
               coach={guided ? coach : undefined}
+              composerRef={composer}
             />
           </div>
           {shownPanel && (
