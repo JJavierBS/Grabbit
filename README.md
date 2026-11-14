@@ -72,9 +72,10 @@ One-time setup (needs `DEPLOY_HOST` and `SSH_KEY`, the AWS `.pem`, in `.env`):
 make warm          # fill data/grabbit.db so the server starts with the Cala cache
 make server-init   # uploads the server .env and the cache, installs a deploy key
 ```
-`server-init` prints the `gh secret set` / `gh variable set` commands for
-`DEPLOY_SSH_KEY`, `DEPLOY_KNOWN_HOSTS`, `DEPLOY_HOST` and `DEPLOY_USER`; repo secrets need
-the repo owner. The security group must allow inbound TCP 80. Until `DEPLOY_HOST` is set
+The workflow needs secrets `DEPLOY_SSH_KEY` and `DEPLOY_KNOWN_HOSTS` and variables
+`DEPLOY_HOST` and `DEPLOY_USER`; repo secrets need the repo owner. Either the owner makes
+the key pair, sets them and you pass the public key as `DEPLOY_PUBKEY='ssh-ed25519 ...'`,
+or `server-init` makes the pair and prints the `gh secret set` commands to run. The security group must allow inbound TCP 80. Until `DEPLOY_HOST` is set
 the workflow builds the image and skips the deploy.
 
 App secrets live only in `/opt/junction/.env` on the host (`server-init` writes it once

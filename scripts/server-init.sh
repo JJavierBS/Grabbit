@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # One-time setup of the EC2 host for the deploy workflow: make server-init
-# Uploads the app secrets and the warmed SQLite cache, installs a dedicated deploy key and
-# prints the GitHub settings the workflow needs. Safe to rerun: it never overwrites the
+# Uploads the app secrets and the warmed SQLite cache and installs the deploy key: the
+# public key in DEPLOY_PUBKEY when the repo owner made the pair, otherwise a new pair here
+# and the GitHub settings to set. Safe to rerun: it never overwrites the
 # server's .env or database unless SYNC_ENV=1 or SYNC_DB=1.
 # Needs in the environment or .env: DEPLOY_HOST, SSH_KEY (the AWS .pem for this host).
 set -euo pipefail
@@ -56,10 +57,24 @@ fi
 
 # A dedicated key for GitHub, so the AWS .pem never leaves this laptop and can stay valid
 # if the deploy key is revoked.
-[ -f "$deploy_key" ] || ssh-keygen -q -t ed25519 -N '' -C grabbit-deploy -f "$deploy_key"
-pub="$(cat "$deploy_key.pub")"
-"${ssh_cmd[@]}" "grep -qxF '$pub' ~/.ssh/authorized_keys || echo '$pub' >> ~/.ssh/authorized_keys"
+pub="${DEPLOY_PUBKEY:-}"
+if [ -z "$pub" ]; then
+  [ -f "$deploy_key" ] || ssh-keygen -q -t ed25519 -N '' -C grabbit-deploy -f "$deploy_key"
+  pub="$(cat "$deploy_key.pub")"
+fi
+case "$pub" in
+  ssh-ed25519\ * | ssh-rsa\ * | ecdsa-sha2-*) ;;
+  *) echo "server-init: DEPLOY_PUBKEY is not an SSH public key" >&2; exit 1 ;;
+esac
+# shellcheck disable=SC2016 # $key expands on the server
+printf '%s\n' "$pub" | "${ssh_cmd[@]}" 'touch ~/.ssh/authorized_keys && read -r key &&
+  { grep -qxF "$key" ~/.ssh/authorized_keys || printf "%s\n" "$key" >> ~/.ssh/authorized_keys; }'
+echo "Deploy key installed: ${pub##* }"
 
+if [ -n "${DEPLOY_PUBKEY:-}" ]; then
+  echo "Server ready. Deploy with: make deploy"
+  exit 0
+fi
 cat <<EOF
 
 Server ready. The repo owner (secrets need admin) sets, once:
