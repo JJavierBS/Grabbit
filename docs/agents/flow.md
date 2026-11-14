@@ -8,10 +8,11 @@ Keep this file under 100 lines.
 ## 1. Onboarding (first launch, text or voice)
 A conversation, not a form. The user can end it at any moment; every unanswered field takes
 a default, so the first report can always run. Ask in this order (most needed first):
-1. Mode: watch my portfolio, explore sectors, or both.
-2. Holdings: listed shares and startup stakes. Resolve each name to a Cala entity and
-   confirm it with the user ("X Ltd, London?"). Unresolved names stay as web-only.
-3. Sectors of interest.
+1. Thesis: what they look for, in their own words, however vague (sector, stage, ticket).
+   The thesis flow narrows it later (section 3).
+2. Companies they already know or hold, optional, as context and seeds. Resolve each name
+   to a Cala entity and confirm it ("X Ltd, London?"). Unresolved names stay as web-only.
+3. Sectors to include or exclude.
 4. Preferred sources: commentators, media or influencers. They form the allow-list read
    through Context.dev, labelled "web, unverified" (research.md finding 10).
 5. Investment profile: one question, used as context. Not a feature (finding 3).
@@ -21,22 +22,22 @@ Corrections ("no, I sold that", "less technical") update the profile immediately
 Voice input: browser speech-to-text into the same chat; nice to have.
 
 ## 2. First report (validation)
-- Runs as soon as onboarding ends, on real data, in the final format.
+- Runs as soon as onboarding ends, on real data, in the final format: a first shortlist.
 - The user reacts ("shorter", "drop construction"); each reaction edits the profile and the
   report is regenerated. Loop until the user confirms.
 - Confirmation schedules the recurring digest and starts the watcher. The browser asks for
   notification permission here, so alerts can reach the user later.
 
 ## 3. Steady state
-- Scheduled digest, at the chosen frequency: what changed in the holdings and why (link a
-  move to news or the market, not only what moved), sector news, soft signals apart. Facts
-  are labelled "verified by Cala", web items "web, unverified", inline. Nothing new: a
-  one-line message or none.
+- Scheduled digest, at the chosen frequency: what changed in the shortlisted companies and
+  why (a new round, who led it, news), new candidates that match the thesis, soft signals
+  apart. Facts are labelled "verified by Cala", web items "web, unverified", inline.
+  Nothing new: a one-line message or none. It runs until the investor finds the company.
 - Urgent alert, outside the schedule: see section 4. Arrives as a desktop notification;
   clicking it opens the chat with the detail and its sources.
-- Chat at any time: follow-up questions and tuning, which update the profile. In explore
-  mode the chat runs the thesis flow (vague thesis, data-backed questions, shortlist, memo;
-  challenge.md "Scope"). The agent never recommends what to buy.
+- Chat at any time: follow-up questions and tuning, which update the profile. The chat runs
+  the thesis flow (vague thesis, data-backed questions, shortlist, memo; challenge.md
+  "Scope"). The agent never recommends what to buy.
 
 ## 4. Proactive architecture
 Modelled on OpenMausBot's "routines" (github.com/milind-soni/OpenMausBot): scheduled runs,
@@ -45,7 +46,7 @@ reuse the concepts, not the code.
 
 | Part | Role |
 | --- | --- |
-| Profile store | Onboarding answers, holdings as Cala entity ids, format, threshold |
+| Profile store | Onboarding answers, thesis, shortlist as Cala entity ids, format, threshold |
 | Scheduler | Two routines per user: `digest` (cron from the profile) and `watcher` (every ~15 min). A run is skipped while the previous one is still active |
 | Snapshot store | Last known state per watched entity and the last report sent. Each run receives them, so it reports only what is new and can explain the change |
 | Watcher | Cala has no push or webhooks: poll the watched entities, diff against the snapshot |
@@ -54,8 +55,9 @@ reuse the concepts, not the code.
 
 What the watcher can diff in Cala (cala.md): new `PARTICIPATES_IN_CORPORATE_EVENT` edges
 (funding rounds, with `event_date`), ownership edges with `valid_since`/`valid_until`
-(UK), new filed accounts and metric values. From the web: adverse news about a holding, a
-followed fund buying or selling (finding 11, unverified unless Cala confirms it).
+(UK), new filed accounts and metric values. From the web: adverse news about a shortlisted
+company, a followed fund investing (finding 11, unverified unless Cala confirms it). Which
+triggers the demo uses is chosen when recording (decisions.md).
 Alert hygiene: dedupe per entity and event, cap alerts per day, queue them while the user
 is mid-conversation.
 
@@ -66,6 +68,6 @@ is mid-conversation.
   diff, importance check and delivery path the real watcher uses. The scripted change lives
   in its own fixture loaded by a "simulate event" action, never in the Cala response cache,
   so staged data stays separate from real data and can be shown if a judge asks.
-- The demo portfolio uses an existing company (team picks it).
+- The demo shortlist uses existing startups with rounds in Cala (team picks them, D2).
 - Responses for the demo path pre-warmed in the cache (architecture.md "Constraints").
 - The Grabbit tab stays open in the browser so desktop notifications fire.

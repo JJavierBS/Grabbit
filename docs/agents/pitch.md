@@ -15,7 +15,8 @@ The video script lives in challenge.md "Demo script".
 
 ## Problem (sourced)
 - User: an investor who decides alone and has neither the time nor the means to build
-  automated research systems (challenge.md "Who the user is").
+  automated research systems, from small private equity down (challenge.md "Who the user
+  is"). The demo follows a business angel looking for a startup round to join.
 - Small private equity: a sourcing process can take a deal team three months; an external
   due diligence costs around EUR 150k, so better pre-screening means more due diligences end
   in an acquisition (Investor B, research.md).
@@ -25,7 +26,9 @@ The video script lives in challenge.md "Demo script".
 
 ## Solution (draft, follows the MVP in challenge.md)
 An agent that starts from a vague thesis, asks data-backed questions, narrows it to a
-shortlist and a memo, and then watches those companies. Every fact is labelled "verified by
+shortlist and a memo, and then watches those companies and sends new candidates until the
+investor finds the one. The investor configures it and it adapts to them. Every fact is
+labelled "verified by
 Cala" with its source; web signals are labelled "web, unverified". It never tells you what
 to buy.
 
@@ -33,6 +36,9 @@ to buy.
 - Every fact on screen comes from Cala's raw entity graph with source and date (cala.md).
 - The agent reads each entity's introspection, so its questions grow with Cala's coverage
   (decisions.md).
+- Headline signal only the graph gives: who led and co-invested in the rounds of similar
+  companies, and when (cala.md funding rounds, `is_lead`). Draft until D2 confirms the
+  demo companies have rounds in Cala (open-questions.md R8).
 - The watcher diffs Cala's dated edges (rounds, ownership, filings) to detect change.
 - Pitch line: the web finds candidates; Cala decides what is true.
 
@@ -40,6 +46,8 @@ to buy.
 - An agent that asks the investor questions instead of only answering them (Investor B's
   "plan mode" analogy).
 - Verification as the product: every claim carries "verified by Cala" or "web, unverified".
+- It adapts to you and you configure it (criteria, sources, format, alert threshold), where
+  databases offer fixed screens and alerts (decisions.md).
 - To research before claiming anything (R6 in open-questions.md): investment databases with
   alerts, generic AI chatbots, broker robo-advisors and risk classifiers (already common,
   Investor A). State the difference, not "nothing like it exists".
