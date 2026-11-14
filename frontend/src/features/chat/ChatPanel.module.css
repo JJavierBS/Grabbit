@@ -35,9 +35,19 @@
   padding: var(--space-8) var(--space-6) var(--space-6);
 }
 
+/* The stored conversation fades in where the skeleton was. */
+.column[data-loaded] {
+  animation: appear var(--duration-base) var(--ease-out);
+}
+
 .message {
   display: grid;
   gap: var(--space-2);
+}
+
+/* A message that arrives during the visit rises into place; history loads still. */
+.message[data-enter] {
+  animation: enter var(--duration-base) var(--ease-out) both;
 }
 
 .agent {
@@ -68,14 +78,37 @@
   color: var(--color-ink);
 }
 
-.thinking {
-  font-size: var(--text-md);
-  color: var(--color-text-muted);
+/* First run: the mark, then one clear first step. */
+.welcome {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  margin: auto;
+  text-align: center;
 }
 
-.welcome {
-  margin: auto;
+.welcomeLogo {
+  margin-bottom: var(--space-3);
   font-size: var(--text-2xl);
+}
+
+.welcomeLead {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-medium);
+  color: var(--color-ink);
+  text-wrap: balance;
+}
+
+/* Two deliberate lines on wide screens; narrow ones wrap the halves on their own. */
+.welcomeHint span {
+  display: inline-block;
+}
+
+.welcomeHint {
+  max-width: 44ch;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  text-wrap: balance;
 }
 
 .error {
@@ -90,12 +123,24 @@
 }
 
 .composer {
+  position: relative;
   display: grid;
   gap: var(--space-3);
   width: 100%;
   max-width: var(--chat-width);
   margin: 0 auto;
   padding: var(--space-2) var(--space-6) var(--space-6);
+}
+
+/* Offered when a reply lands while the reader is scrolled up; it floats over the log's edge. */
+.jump {
+  position: absolute;
+  bottom: calc(100% + var(--space-2));
+  left: 50%;
+  z-index: 1;
+  box-shadow: var(--shadow-md);
+  translate: -50% 0;
+  animation: enter var(--duration-base) var(--ease-out) both;
 }
 
 .suggestions {
@@ -107,7 +152,7 @@
 /* The composer is the lamp: violet light falls below it, and it breathes while the agent works. */
 .inputRow {
   display: grid;
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   gap: var(--space-1);
   align-items: end;
   padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
@@ -147,10 +192,10 @@
   background: var(--color-violet);
 }
 
-.send,
-.talk {
-  width: 2.5rem;
-  height: 2.5rem;
+.inputRow .send,
+.inputRow .talk {
+  width: var(--touch-target);
+  height: var(--touch-target);
   padding: 0;
 }
 
@@ -158,6 +203,19 @@
   font-size: var(--text-xs);
   color: var(--color-danger);
   font-weight: var(--weight-medium);
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-1));
+  }
 }
 
 @keyframes breathe {
@@ -170,6 +228,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .message[data-enter],
+  .jump {
+    animation: none;
+  }
+
   .panel[data-working] .inputRow,
   .panel[data-listening] .inputRow {
     animation: none;
@@ -179,11 +242,39 @@
 
 @media (max-width: 40rem) {
   .column {
-    padding: var(--space-6) var(--space-4) var(--space-4);
+    gap: var(--space-5);
+    padding: var(--space-5) var(--space-4);
   }
 
   .composer {
-    padding: var(--space-2) var(--space-4) var(--space-4);
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3) max(var(--space-3), env(safe-area-inset-bottom));
+  }
+
+  .welcomeLogo {
+    font-size: var(--text-xl);
+    margin-bottom: var(--space-2);
+  }
+
+  .inputRow {
+    padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3);
+  }
+
+  .suggestions button {
+    min-height: var(--touch-target);
+  }
+
+  /* One row that scrolls sideways, so chips never push the composer up the screen. */
+  .suggestions {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin-inline: calc(-1 * var(--space-3));
+    padding-inline: var(--space-3);
+  }
+
+  .suggestions > * {
+    flex: none;
   }
 }
 

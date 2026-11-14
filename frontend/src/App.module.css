@@ -41,9 +41,13 @@
   transition: visibility 0s linear var(--duration-slow);
 }
 
+.topLogo {
+  flex: none;
+}
+
 .openSidebar {
-  width: 2rem;
-  height: 2rem;
+  width: var(--control-size);
+  height: var(--control-size);
   padding: 0;
   color: var(--color-text-muted);
 }
@@ -65,7 +69,7 @@
   z-index: calc(var(--z-drawer) - 1);
   padding: 0;
   border: 0;
-  background: rgb(20 21 28 / 0.28);
+  background: var(--color-scrim);
   animation: fade var(--duration-base) var(--ease-out);
 }
 
@@ -73,11 +77,12 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  min-height: 3.5rem;
-  padding: var(--space-2) var(--space-5);
+  min-height: var(--header-height);
+  padding: var(--space-2) var(--space-6);
 }
 
 .status {
+  flex: none;
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
@@ -144,6 +149,18 @@
   animation: slide-in var(--duration-slow) var(--ease-out);
 }
 
+/* Closing: it slides back out the way it came, a touch faster than it arrived. */
+.panel[data-state="leaving"] {
+  pointer-events: none;
+  animation: slide-out var(--duration-base) var(--ease-standard) forwards;
+}
+
+/* Switching between the report and What changed: the new content fades in under the bar. */
+.panelContent {
+  min-width: 0;
+  animation: fade var(--duration-base) var(--ease-out);
+}
+
 .panel:focus-visible {
   box-shadow: inset 0 0 0 2px var(--color-focus);
   border-radius: var(--radius-lg) 0 0 0;
@@ -193,6 +210,13 @@
 
 @keyframes slide-in {
   from {
+    opacity: 0;
+    transform: translateX(2rem);
+  }
+}
+
+@keyframes slide-out {
+  to {
     opacity: 0;
     transform: translateX(2rem);
   }
@@ -252,14 +276,64 @@
   }
 }
 
+/* Phones: one top bar row. The actions keep their icons and say their names to screen
+   readers only; the labels sit in `.actionLabel`. */
 @media (max-width: 40rem) {
   .topbar {
-    flex-wrap: wrap;
-    padding: var(--space-3) var(--space-4);
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    padding-top: max(var(--space-2), env(safe-area-inset-top));
   }
 
   .actions {
-    width: 100%;
-    margin-left: 0;
+    gap: var(--space-1);
+  }
+
+  .actionLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .topLogo > span {
+    font-size: var(--text-lg);
+  }
+
+  .statusLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .topbar .openSidebar,
+  .actions button {
+    width: var(--touch-target);
+    height: var(--touch-target);
+    padding: 0;
+  }
+
+  .panelBar {
+    padding-inline: var(--space-4) var(--space-2);
+    padding-top: max(var(--space-2), env(safe-area-inset-top));
+  }
+
+  .panelBar button {
+    min-width: var(--touch-target);
+    min-height: var(--touch-target);
+  }
+}
+
+/* "New research" sits at the top of the open sidebar on wide screens; the top bar keeps it
+   for the closed sidebar and for phones, where the sidebar is a drawer (#145). */
+@media (min-width: 64rem) {
+  .app[data-sidebar="open"] .newResearch {
+    display: none;
   }
 }

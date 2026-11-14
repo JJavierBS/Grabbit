@@ -2,6 +2,7 @@ import { Renderer } from "@openuidev/react-lang";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { exploredAnswerUi, exploredAurora, reportV1 } from "../../../dev/fixtures";
+import { cssFile, declarations } from "../../../test/css";
 import { AnswerContext, answerLibrary } from "./library";
 
 function draw(ui: string) {
@@ -39,7 +40,7 @@ describe("visual answer", () => {
     expect(
       screen.getByRole("img", { name: /walked in Cala's graph from Aurora/ }),
     ).toBeInTheDocument();
-    expect(screen.getAllByText("ISSUER")).toHaveLength(2);
+    expect(screen.getAllByText("raised")).toHaveLength(2);
     const trusted = screen.getByRole("button", { name: /North Star Capital/ });
     expect(trusted).toHaveAttribute("data-trusted", "true");
     // EntityFacts: the round's amount and date, each with a trust badge.
@@ -61,5 +62,29 @@ describe("visual answer", () => {
   it("says an id is not in the report instead of drawing it", () => {
     draw(`root = Answer([g])\ng = FactGrid("made-up-id", ["hq"])`);
     expect(screen.getByText(/Not in this report/)).toBeInTheDocument();
+  });
+});
+
+describe("visual answer reveal", () => {
+  const css = cssFile("features/chat/openui/library.module.css");
+  const tokens = cssFile("styles/tokens.css");
+
+  it("brings text, graph and facts in one after another, inside 300ms", () => {
+    expect(declarations(css, ".answer > *").animation).toMatch(/var\(--duration-fast\)/);
+    expect(declarations(css, ".answer > :nth-child(2)")["animation-delay"]).toBe(
+      "var(--reveal-step)",
+    );
+    expect(declarations(css, ".answer > :nth-child(n + 3)")["animation-delay"]).toBe(
+      "calc(2 * var(--reveal-step))",
+    );
+    const step = Number(/--reveal-step:\s*(\d+)ms/.exec(tokens)?.[1]);
+    const fade = Number(/--duration-fast:\s*(\d+)ms/.exec(tokens)?.[1]);
+    expect(step).toBe(60);
+    expect(2 * step + fade).toBeLessThan(300);
+  });
+
+  it("skips the reveal under reduced motion", () => {
+    const reduced = css.slice(css.indexOf("prefers-reduced-motion"));
+    expect(reduced).toMatch(/\.answer > \*\s*\{\s*animation: none;/);
   });
 });

@@ -1,12 +1,15 @@
-import { History, PanelLeftOpen, RefreshCw, X } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { PanelLeft, RefreshCw, SlidersHorizontal, SquarePen, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./App.module.css";
-import { useLatestReport, useSendMessage } from "./api/hooks/queries";
+import { keys, useChat, useLatestReport, useProfile, useSendMessage } from "./api/hooks/queries";
 import { type StreamStatus, useEvents } from "./api/hooks/useEvents";
-import type { Alert, Report } from "./api/types";
+import type { Alert, ChatMessage, Report } from "./api/types";
+import { nameResearch, startResearch, switchResearch, workspaceId } from "./api/workspace";
 import { Button } from "./components/Button";
-import { FullscreenButton } from "./components/FullscreenButton";
 import { Logo } from "./components/Logo";
+import { Skeleton } from "./components/Skeleton";
+import { usePresence } from "./components/usePresence";
 import { AlertCard } from "./features/alerts/AlertCard";
 import { DEFAULT_DEMO_FIXTURE, DemoAlertButton } from "./features/alerts/DemoAlertButton";
 import { askNotificationPermission } from "./features/alerts/notify";
@@ -17,6 +20,9 @@ import { ReportOutline } from "./features/report/ReportOutline";
 import { ReportSidebar, reportKey } from "./features/report/ReportSidebar";
 import { ReportView } from "./features/report/ReportView";
 import { useReportChanges } from "./features/report/useReportChanges";
+import { useReportRewriting } from "./features/report/useReportRewriting";
+import { ResearchList } from "./features/research/ResearchList";
+import { useResearches } from "./features/research/useResearches";
 
 type Panel = "report" | "history";
 
@@ -59,22 +65,56 @@ function demoFixture(): string | null {
   return import.meta.env.VITE_FAKE_API === "1" ? DEFAULT_DEMO_FIXTURE : null;
 }
 
+/**
+ * The app for the current research. Switching research remounts it with an empty query
+ * cache, so nothing of the previous one (panel, alert, live walk, chat) carries over (#145).
+ */
+export function Grabbit() {
+  const { current } = useResearches();
+  return <App key={current} />;
+}
+
 export function App() {
   const [panel, setPanel] = useState<Panel | null>(null);
   const [demo] = useState(demoFixture);
   const [confirmed, setConfirmed] = useState(false);
   const report = useLatestReport();
   const diff = useReportChanges(report.data ?? undefined);
+  const profile = useProfile();
+  // The turn ends before the background rebuild lands; until then the report says so.
+  const rewriting = useReportRewriting(profile.data, report.data);
   const send = useSendMessage();
-  const [openAlert, setOpenAlert] = useState<Alert | null>(null);
+  const client = useQueryClient();
+  const chat = useChat();
+  // An opened alert stays where it was opened: after the last message at that moment.
+  const [openAlert, setOpenAlert] = useState<{ alert: Alert; after: string | null } | null>(null);
   // A past report opened from the sidebar; null shows the latest one.
   const [pastReport, setPastReport] = useState<Report | null>(null);
   const panelRef = useRef<HTMLElement>(null);
+  // The panel slides out before it unmounts; `shownPanel` holds what it showed meanwhile.
+  const { shown: shownPanel, leaving: panelLeaving } = usePresence(panel, panelRef);
   const returnFocus = useRef<HTMLElement | null>(null);
   // Wide screens: the sidebar sits beside the chat and can collapse. Narrow: it is a drawer.
   const [sidebarOpen, setSidebarOpen] = useState(readSidebarOpen);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const isNarrow = () => window.matchMedia?.(NARROW).matches ?? false;
+  const research = useResearches();
+
+  // A research from before the list existed takes its name from its first message.
+  const firstAsk = chat.data?.find((m) => m.role === "user")?.text;
+  useEffect(() => {
+    if (firstAsk) nameResearch(firstAsk);
+  }, [firstAsk]);
+
+  /** Leaves this research: every cached query belongs to it, so none may survive. */
+  const leave = (go: () => void) => {
+    const before = workspaceId();
+    go();
+    setDrawerOpen(false);
+    if (workspaceId() !== before) client.clear();
+  };
+  const newResearch = () => leave(startResearch);
+  const openResearch = (id: string) => leave(() => switchResearch(id));
 
   const openSidebar = () => {
     if (isNarrow()) return setDrawerOpen(true);
@@ -98,24 +138,36 @@ export function App() {
     returnFocus.current?.focus();
   }, []);
 
-  const showAlert = useCallback((alert: Alert) => {
-    setOpenAlert(alert);
-    // The alert opens in the chat; on narrow screens the panel would hide it.
-    if (window.matchMedia?.(NARROW).matches) setPanel(null);
-  }, []);
+  const showAlert = useCallback(
+    (alert: Alert) => {
+      const shown = client.getQueryData<ChatMessage[]>(keys.chat) ?? [];
+      setOpenAlert({ alert, after: shown.at(-1)?.id ?? null });
+      // The alert opens in the chat; on narrow screens the panel would hide it.
+      if (window.matchMedia?.(NARROW).matches) setPanel(null);
+    },
+    [client],
+  );
   const deliver = useAlertDelivery(showAlert);
   const stream = useEvents(deliver);
+
+  // Opened by the app, not by the reader: focus moves without a focus frame around it.
+  const openedByApp = useRef(false);
 
   // A rewrite is the moment to watch: open the report on the change.
   useEffect(() => {
     if (!diff) return;
     setPastReport(null);
+    openedByApp.current = true;
     setPanel("report");
   }, [diff]);
 
   useEffect(() => {
     if (!panel) return;
-    panelRef.current?.focus();
+    // `focusVisible: false` keeps the ring for keyboard opens only (supported in Chromium).
+    panelRef.current?.focus(
+      openedByApp.current ? ({ focusVisible: false } as FocusOptions) : undefined,
+    );
+    openedByApp.current = false;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") closePanel();
     };
@@ -155,11 +207,14 @@ export function App() {
     send.mutate(CONFIRM_MESSAGE);
   };
 
-  const reportInChat = report.data ? (
+  const reportInChat = report.isPending ? (
+    <Skeleton block="card" label="Loading the report" />
+  ) : report.data ? (
     <ReportOutline
       key={report.data.id}
       report={report.data}
       open={panel === "report" && pastReport === null}
+      rewriting={rewriting}
       rewritten={diff !== null}
       onOpen={() => openPanel("report")}
     />
@@ -178,6 +233,21 @@ export function App() {
     </div>
   ) : null;
 
+  // The outline follows the agent turn that wrote this report; a report from elsewhere
+  // (Run now, the schedule) has no such turn and goes after the conversation.
+  const messages = chat.data ?? [];
+  // While it rewrites, the outline waits under the turn that asked for the new report.
+  const lastLinked = messages.findLast((m) => m.role === "agent" && m.report_id);
+  const reportAnchor =
+    (rewriting && lastLinked && lastLinked.report_id !== report.data?.id && lastLinked.id) ||
+    (report.data &&
+      messages.findLast((m) => m.role === "agent" && m.report_id === report.data?.id)?.id) ||
+    null;
+  const alertAnchored = Boolean(openAlert?.after && messages.some((m) => m.id === openAlert.after));
+  const alertInChat = openAlert && (
+    <AlertCard alert={openAlert.alert} onClose={() => setOpenAlert(null)} />
+  );
+
   return (
     <div
       className={styles.app}
@@ -191,6 +261,14 @@ export function App() {
         onOpen={openReport}
         onClose={closeSidebar}
         brand={<Logo />}
+        top={
+          <ResearchList
+            current={research.current}
+            list={research.list}
+            onNew={newResearch}
+            onOpen={openResearch}
+          />
+        }
       />
       {drawerOpen && (
         <button
@@ -213,44 +291,61 @@ export function App() {
             aria-label="Open sidebar"
             aria-controls="report-sidebar"
             aria-expanded={drawerOpen}
-            icon={<PanelLeftOpen aria-hidden="true" />}
+            icon={<PanelLeft aria-hidden="true" />}
             onClick={openSidebar}
           />
           <span className={styles.topLogo} aria-hidden="true">
             <Logo />
           </span>
           <span className={styles.status} data-status={stream} role="status">
-            {STATUS_TEXT[stream]}
+            <span className={styles.statusLabel}>{STATUS_TEXT[stream]}</span>
           </span>
           <div className={styles.actions}>
-            {demo && <DemoAlertButton fixture={demo} />}
+            {demo && <DemoAlertButton fixture={demo} labelClassName={styles.actionLabel} />}
             <Button
               variant="ghost"
               size="sm"
-              icon={<History aria-hidden="true" />}
+              className={styles.newResearch}
+              icon={<SquarePen aria-hidden="true" />}
+              onClick={newResearch}
+            >
+              <span className={styles.actionLabel}>New research</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              icon={<SlidersHorizontal aria-hidden="true" />}
               aria-pressed={panel === "history"}
               onClick={() => (panel === "history" ? closePanel() : openPanel("history"))}
             >
-              What changed
+              <span className={styles.actionLabel}>What changed</span>
             </Button>
-            <FullscreenButton />
           </div>
         </header>
 
-        <main className={styles.main} data-panel={panel ?? undefined}>
+        <main className={styles.main} data-panel={shownPanel ?? undefined}>
           <div className={styles.chat}>
             <ChatPanel
+              renderAfter={(m) => (
+                <>
+                  {m.id === reportAnchor && reportInChat}
+                  {alertAnchored && m.id === openAlert?.after && alertInChat}
+                </>
+              )}
               footer={
                 <>
-                  {reportInChat}
-                  {openAlert && <AlertCard alert={openAlert} onClose={() => setOpenAlert(null)} />}
+                  {!reportAnchor && reportInChat}
+                  {!alertAnchored && alertInChat}
                 </>
               }
+              followKey={`${report.data?.id}|${reportAnchor}|${openAlert?.alert.id}|${rewriting}`}
             />
           </div>
-          {panel && (
+          {shownPanel && (
             <section
               ref={panelRef}
+              data-state={panelLeaving ? "leaving" : undefined}
+              aria-hidden={panelLeaving || undefined}
               id="report-panel"
               className={styles.panel}
               aria-labelledby="panel-title"
@@ -259,7 +354,7 @@ export function App() {
             >
               <div className={styles.panelBar}>
                 <h2 id="panel-title" className={styles.panelTitle}>
-                  {pastReport ? "Past report" : PANEL_TITLE[panel]}
+                  {pastReport ? "Past report" : PANEL_TITLE[shownPanel]}
                 </h2>
                 <Button
                   variant="ghost"
@@ -269,28 +364,34 @@ export function App() {
                   onClick={closePanel}
                 />
               </div>
-              {panel === "history" ? (
-                <ProfileHistory />
-              ) : pastReport ? (
-                <ReportView
-                  report={pastReport}
-                  isPending={false}
-                  error={null}
-                  onRetry={() => undefined}
-                  diff={null}
-                  archived
-                />
-              ) : (
-                <ReportView
-                  report={report.data ?? undefined}
-                  isPending={report.isPending}
-                  error={report.error}
-                  onRetry={() => report.refetch()}
-                  diff={diff}
-                  onConfirm={confirm}
-                  confirmed={confirmed}
-                />
-              )}
+              <div
+                key={pastReport ? `past-${reportKey(pastReport)}` : shownPanel}
+                className={styles.panelContent}
+              >
+                {shownPanel === "history" ? (
+                  <ProfileHistory />
+                ) : pastReport ? (
+                  <ReportView
+                    report={pastReport}
+                    isPending={false}
+                    error={null}
+                    onRetry={() => undefined}
+                    diff={null}
+                    archived
+                  />
+                ) : (
+                  <ReportView
+                    report={report.data ?? undefined}
+                    isPending={report.isPending}
+                    error={report.error}
+                    onRetry={() => report.refetch()}
+                    diff={diff}
+                    onConfirm={confirm}
+                    confirmed={confirmed}
+                    rewriting={rewriting}
+                  />
+                )}
+              </div>
             </section>
           )}
         </main>

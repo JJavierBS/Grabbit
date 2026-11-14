@@ -130,6 +130,6 @@
   font-size: var(--text-sm);
 }
 
-.card[data-changed] {
+.card[data-changed]:not([data-settled]) {
   background: var(--color-marker-soft);
 }

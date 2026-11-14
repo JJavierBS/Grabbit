@@ -4,6 +4,7 @@ from app.agent.sources import fixture_candidates
 from app.llm.fake import FakeLLM, Script
 from app.models import ReferenceInvestor
 from app.reports.build import build
+from app.reports.facts import placeholders
 from app.store.profile import default_profile
 
 
@@ -26,15 +27,61 @@ def _body(report):
     return "\n".join(s.body_md for s in report.sections)
 
 
-async def test_prep_report_renders_values_from_facts(now):
+async def test_prep_report_explains_fit_and_leaves_facts_to_the_cards(now):
     report = await _build("prep", _profile(now), now=now)
     assert report.summary == "6 Slush attendees match your thesis."
     assert report.profile_version == 1
     body = _body(report)
-    assert "Its Seed of EUR 2M closed in May 2024, led by North Pine Ventures." in body
-    assert "Last round: Seed, EUR 2M (Press), May 2024 (Official filing)" in body
-    assert "Team size is not published" in body
+    assert "**Kiln Analytics**: Energy analytics for industrial kilns" in body
     assert len(report.candidates) == 6
+
+
+async def test_a_section_states_no_fact_its_cards_already_show(now):
+    """#118: prose, a "Last round" line and the fact grid used to repeat the same round."""
+    profile = _profile(
+        now, reference_investors=[ReferenceInvestor(entity_id="inv-fjord", name="Fjord Capital")]
+    )
+    report = await _build("prep", profile, now=now)
+    for section in report.sections:
+        assert "Last round:" not in section.body_md
+        assert "Co-invest:" not in section.body_md
+        assert "Stage:" not in section.body_md
+        assert not re.search(r"\d", section.body_md)
+        for cid in section.candidate_ids:
+            c = next(c for c in report.candidates if c.entity_id == cid)
+            for value in placeholders(c, badge=False).values():
+                if value not in {"not published", "none published"}:
+                    assert value not in section.body_md, value
+
+
+async def test_a_paragraph_that_cites_values_is_rejected(now):
+    cites = Script(
+        task="report_write",
+        output={
+            "summary": "{count} startups.",
+            "paragraphs": [{"candidate_id": "cand-kiln", "text": "It raised {last_round_amount}."}],
+        },
+    )
+    llm = FakeLLM(scripts=[cites])
+    report = await _build("prep", _profile(now), llm=llm, now=now)
+    assert [task for task, _ in llm.calls] == ["report_write", "report_write"]
+    assert "do not cite" in llm.calls[1][1]
+    assert "It raised" not in _body(report)
+
+
+async def test_the_writer_is_told_what_the_cards_show_and_whom_you_trust(now):
+    llm = FakeLLM()
+    profile = _profile(
+        now, reference_investors=[ReferenceInvestor(entity_id="inv-fjord", name="Fjord Capital")]
+    )
+    await _build("prep", profile, llm=llm, now=now)
+    [(_, prompt)] = llm.calls
+    assert "Investors you trust among them: Fjord Capital" in prompt
+    assert "{last_round_amount}" not in prompt
+    from app.reports.write import SYSTEM
+
+    assert "Do not repeat any of them" in SYSTEM
+    assert "[Database]" in SYSTEM
 
 
 async def test_new_instructions_change_the_report(now):
@@ -60,12 +107,13 @@ async def test_filters_change_the_report(now):
     }
 
 
-async def test_short_style_limits_and_trims_facts(now):
+async def test_short_style_limits_startups_and_sentences(now):
     profile = _profile(now)
     profile.style.length = "short"
-    report = await _build("prep", profile, now=now)
+    llm = FakeLLM()
+    report = await _build("prep", profile, llm=llm, now=now)
     assert len(report.candidates) == 5
-    assert "Stage:" not in _body(report) and "Last round:" in _body(report)
+    assert "one sentence per startup" in llm.calls[0][1]
 
 
 async def test_reference_investors_get_their_own_section(now):
@@ -76,7 +124,8 @@ async def test_reference_investors_get_their_own_section(now):
     first = report.sections[0]
     assert first.title == "Co-invest with investors you trust"
     assert first.candidate_ids == ["cand-ledgerly", "cand-brikk"]
-    assert "Co-invest: Fjord Capital (lead, Series A)" in first.body_md
+    # Who you trust shows in the card's co-invest signal, not again in the prose.
+    assert "Co-invest:" not in first.body_md
 
 
 async def test_numbers_written_by_the_model_are_rejected_then_replaced(now):
@@ -94,8 +143,9 @@ async def test_numbers_written_by_the_model_are_rejected_then_replaced(now):
     assert report.summary == "6 startups match your thesis."
     body = _body(report)
     assert "2 million" not in body and "40M" not in body
+    # No valid paragraph: the card under the section carries Kiln's description and facts.
     kiln = next(s for s in report.sections if "cand-kiln" in s.candidate_ids)
-    assert "**Kiln Analytics**: Energy analytics" in kiln.body_md
+    assert "**Kiln Analytics**" not in kiln.body_md
 
 
 async def test_unknown_placeholder_is_rejected(now):
@@ -113,7 +163,10 @@ async def test_unknown_placeholder_is_rejected(now):
 async def test_model_down_still_produces_a_report_from_facts(now):
     report = await _build("prep", _profile(now), llm=FakeLLM(scripts=[]), now=now)
     assert report.summary == "6 startups match your thesis."
-    assert "Last round:" in _body(report)
+    assert len(report.candidates) == 6
+    assert sorted(i for s in report.sections for i in s.candidate_ids) == sorted(
+        c.entity_id for c in report.candidates
+    )
 
 
 async def test_digest_with_nothing_new(now):
@@ -137,8 +190,10 @@ async def test_digest_keeps_only_new_rounds_and_new_startups(now):
 async def test_memo_is_long_whatever_the_style(now):
     profile = _profile(now)
     profile.style.length = "short"
-    memo = await _build("memo", profile, now=now)
-    assert len(memo.candidates) == 6 and "Stage:" in _body(memo)
+    llm = FakeLLM()
+    memo = await _build("memo", profile, llm=llm, now=now)
+    assert len(memo.candidates) == 6
+    assert "a short paragraph per startup" in llm.calls[0][1]
 
 
 async def test_no_digit_in_prose_comes_from_the_model(now):
@@ -170,9 +225,8 @@ async def test_prose_has_no_badges_and_no_doubled_round(now):
             "paragraphs": [
                 {
                     "candidate_id": "cand-kiln",
-                    "text": "Based in {hq} (Official filing) and led by {last_round_lead}, "
-                    "with {last_round_co_investors} joining; raised {last_round_amount} [Press] "
-                    "in its {last_round} round.",
+                    "text": "Climate software (Official filing) backed by North Pine Ventures "
+                    "[Press], ahead of its next Equity round round.",
                 }
             ],
         },
@@ -180,9 +234,10 @@ async def test_prose_has_no_badges_and_no_doubled_round(now):
     report = await _build("prep", _profile(now), llm=FakeLLM(scripts=[echo]), now=now)
     kiln = next(s for s in report.sections if "cand-kiln" in s.candidate_ids).body_md
     [prose] = [p for p in kiln.split("\n\n") if p.startswith("**Kiln")]
-    assert "Based in Finland and led by North Pine Ventures, with Aurora Angels" in prose
-    assert "raised EUR 2M in its Seed round." in prose
-    assert "(Press)" in kiln  # the facts line under the prose keeps the badges
+    assert prose == (
+        "**Kiln Analytics**: Climate software backed by North Pine Ventures, "
+        "ahead of its next Equity round."
+    )
 
 
 def test_shown_since_prep_merges_candidates_and_rounds():

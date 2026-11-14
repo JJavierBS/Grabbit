@@ -33,9 +33,13 @@ class FiltersPatch(_Strict):
     countries: list[str] | None = None
     headcount_max: int | None = Field(default=None, gt=0)
     ticket: TicketPatch | None = None
+    fundraising: Literal["any", "recent", "likely_to_raise"] | None = None
+    raised_within_months: int | None = Field(default=None, ge=1, le=120)
+    required_backers: list[str] | None = None
 
 
 class StylePatch(_Strict):
+    max_candidates: int | None = Field(default=None, ge=1, le=20)
     length: Literal["short", "medium", "long"] | None = None
     detail: Literal["plain", "technical"] | None = None
     language: str | None = Field(default=None, min_length=2, max_length=5)
@@ -109,6 +113,31 @@ TOOL_SPECS = [
                                     "based in, e.g. ['Finland'] or ['Europe'] or ['Nordics']. "
                                     "Set it whenever the investor names a place.",
                                 },
+                                "fundraising": {
+                                    "type": "string",
+                                    "enum": ["any", "recent", "likely_to_raise"],
+                                    "description": (
+                                        "Required: use recent for raised recently, "
+                                        "likely_to_raise for may"
+                                        "raise soon, any for both/no preference. Never store "
+                                        "selection"
+                                        "constraints only in prose instructions."
+                                    ),
+                                },
+                                "raised_within_months": {
+                                    "type": "integer",
+                                    "description": "Recent funding window in months, default 12.",
+                                },
+                                "required_backers": {
+                                    **_STRINGS,
+                                    "description": (
+                                        "Must be backed by at least one of these investor "
+                                        "names. Only for"
+                                        "an explicit requirement (backed by X), not merely I "
+                                        "trust X."
+                                        "Empty list clears it."
+                                    ),
+                                },
                                 "headcount_max": {"type": "integer"},
                                 "ticket": {
                                     "type": "object",
@@ -131,6 +160,14 @@ TOOL_SPECS = [
                         "style": {
                             "type": "object",
                             "properties": {
+                                "max_candidates": {
+                                    "type": ["integer", "null"],
+                                    "description": (
+                                        "Explicit maximum startup count (e.g. at most three "
+                                        "-> 3). Set"
+                                        "alongside length; null clears the maximum."
+                                    ),
+                                },
                                 "length": {"type": "string", "enum": ["short", "medium", "long"]},
                                 "detail": {"type": "string", "enum": ["plain", "technical"]},
                                 "language": {"type": "string", "description": "ISO 639-1"},

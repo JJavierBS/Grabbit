@@ -1,13 +1,17 @@
 """The only door to Cala: one queue, timeout, retry on 429, and a response cache.
 
 Cala's rate limit is undocumented and has no Retry-After header (docs/agents/cala.md
-"Rate limits and latency"), so calls are serial by default and back off exponentially.
+"Rate limits and latency"). Every client in the process shares one `CalaLimiter`: calls are
+serial, spaced, and all of them pause after a 429, so a burst from the chat walk, a report
+rebuild and the background jobs together stays under the limit instead of retrying 429s
+(#119). Cached reads never wait.
 """
 
 from __future__ import annotations
 
 import asyncio
 import logging
+import time
 from collections.abc import Awaitable, Callable
 from typing import Any, Literal
 
@@ -19,7 +23,83 @@ log = logging.getLogger(__name__)
 
 BASE_URL = "https://api.cala.ai"
 RETRY_STATUSES = {429, 500, 502, 503, 504}
+# A 404 is cached as this marker, so a warmed demo never asks Cala about it again (#149).
+MISSING = "__cala_status__"
 Mode = Literal["live", "replay"]
+
+
+class CalaLimiter:
+    """At most `max_concurrency` Cala requests in flight, starts at least `min_interval`
+    seconds apart, and a shared pause after a 429. One per process (`shared_limiter`).
+
+    The semaphore is rebuilt per event loop: asyncio primitives bind to the loop that first
+    uses them, and tests or scripts may run several loops in one process.
+    """
+
+    def __init__(
+        self,
+        max_concurrency: int = 1,
+        min_interval: float = 0.0,
+        clock: Callable[[], float] = time.monotonic,
+        sleep: Callable[[float], Awaitable[None]] = asyncio.sleep,
+    ):
+        self.max_concurrency = max(1, max_concurrency)
+        self.min_interval = max(0.0, min_interval)
+        self._clock = clock
+        self._sleep = sleep
+        self._loop: asyncio.AbstractEventLoop | None = None
+        self._sem: asyncio.Semaphore | None = None
+        self._gate: asyncio.Lock | None = None
+        self._next_start = 0.0
+        self.in_flight = 0
+        self.peak = 0
+
+    def _primitives(self) -> tuple[asyncio.Semaphore, asyncio.Lock]:
+        loop = asyncio.get_running_loop()
+        if self._loop is not loop or self._sem is None or self._gate is None:
+            self._loop = loop
+            self._sem = asyncio.Semaphore(self.max_concurrency)
+            self._gate = asyncio.Lock()
+        return self._sem, self._gate
+
+    async def __aenter__(self) -> CalaLimiter:
+        sem, gate = self._primitives()
+        await sem.acquire()
+        try:
+            async with gate:  # one caller at a time claims the next start slot
+                wait = self._next_start - self._clock()
+                if wait > 0:
+                    await self._sleep(wait)
+                self._next_start = max(self._next_start, self._clock()) + self.min_interval
+        except BaseException:
+            sem.release()
+            raise
+        self.in_flight += 1
+        self.peak = max(self.peak, self.in_flight)
+        return self
+
+    async def __aexit__(self, *exc: object) -> None:
+        self.in_flight -= 1
+        sem, _ = self._primitives()
+        sem.release()
+
+    def cool_down(self, seconds: float) -> None:
+        """After a 429, nobody starts a new request for `seconds`."""
+        self._next_start = max(self._next_start, self._clock() + seconds)
+
+
+_shared: CalaLimiter | None = None
+
+
+def shared_limiter() -> CalaLimiter:
+    """The process-wide limiter, sized from `CALA_MAX_CONCURRENCY` and `CALA_MIN_INTERVAL_MS`."""
+    global _shared
+    if _shared is None:
+        from app.config import get_settings
+
+        settings = get_settings()
+        _shared = CalaLimiter(settings.cala_max_concurrency, settings.cala_min_interval_ms / 1000)
+    return _shared
 
 
 class CalaError(Exception):
@@ -51,7 +131,7 @@ class CalaClient:
         mode: Mode = "live",
         base_url: str = BASE_URL,
         timeout: float = 60.0,
-        max_concurrency: int = 1,
+        limiter: CalaLimiter | None = None,
         max_retries: int = 5,
         backoff_base: float = 1.0,
         sleep: Callable[[float], Awaitable[None]] = asyncio.sleep,
@@ -61,7 +141,7 @@ class CalaClient:
             raise CalaKeyMissing()
         self.mode = mode
         self._cache = cache
-        self._sem = asyncio.Semaphore(max_concurrency)
+        self._limiter = limiter or shared_limiter()
         self._max_retries = max_retries
         self._backoff_base = backoff_base
         self._sleep = sleep
@@ -72,6 +152,8 @@ class CalaClient:
         )
         self.calls_made = 0
         self.cache_hits = 0
+        # Calls the cache could not answer: live requests, or CalaCacheMiss in replay.
+        self.cache_misses = 0
 
     async def aclose(self) -> None:
         await self._http.aclose()
@@ -147,12 +229,21 @@ class CalaClient:
             cached = self._cache.get(key)
             if cached is not None:
                 self.cache_hits += 1
+                if isinstance(cached, dict) and cached.get(MISSING) == 404:
+                    raise CalaError(404, cached.get("message", "not found (cached)"))
                 return cached
+        self.cache_misses += 1
         if self.mode == "replay" or cache_only:
             raise CalaCacheMiss(f"{method} {path} is not in the cache")
-        async with self._sem:
+        request = {"params": params, "body": body}
+        try:
             data = await self._send(method, path, params, body, http_timeout, max_retries)
-        self._cache.put(key, method, path, {"params": params, "body": body}, data)
+        except CalaError as err:
+            if err.status == 404:
+                message = str(err).removeprefix("Cala 404: ")
+                self._cache.put(key, method, path, request, {MISSING: 404, "message": message})
+            raise
+        self._cache.put(key, method, path, request, data)
         return data
 
     async def _send(
@@ -170,7 +261,8 @@ class CalaClient:
         while True:
             self.calls_made += 1
             try:
-                resp = await self._http.request(method, path, params=params, json=body, **extra)
+                async with self._limiter:
+                    resp = await self._http.request(method, path, params=params, json=body, **extra)
             except httpx.TransportError as exc:
                 # Timeouts, refused connections, dropped reads: retried, then a CalaError,
                 # so every caller's Cala fallback also covers a dead network.
@@ -185,5 +277,7 @@ class CalaClient:
                     raise CalaError(status, resp.text[:300])
             delay = self._backoff_base * (2**attempt)
             log.warning("cala %s %s -> %s, retry in %.1fs", method, path, status, delay)
+            if status == 429:
+                self._limiter.cool_down(delay)
             await self._sleep(delay)
             attempt += 1

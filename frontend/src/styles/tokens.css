@@ -9,6 +9,7 @@
   --color-violet: #6139f8;
   --color-violet-light: #5530e8; /* violet as small text or a thin line */
   --color-glow: rgb(97 57 248 / 0.32);
+  --color-scrim: rgb(20 21 28 / 0.28); /* dims the chat behind the phone drawer */
 
   /* Ground and surfaces. */
   --color-ground: #f7f7fa;
@@ -126,8 +127,16 @@
   --duration-base: 200ms;
   --duration-slow: 280ms;
   --duration-glow: 1600ms; /* the working light breathes; it is a state, not a decoration */
+  --duration-spin: 900ms; /* one turn of a loading spinner */
+  --press-scale: 0.98; /* a pressed button gives a little */
 
   --chat-width: 44rem;
+  --icon-size: 1.125rem;
+  --icon-stroke: 1.75;
+  --control-size: 2.25rem;
+  --touch-target: 2.75rem;
+  --header-height: 4rem;
+
   --sidebar-width: 17rem;
   --z-panel: 40;
   --z-drawer: 45;
@@ -140,5 +149,20 @@
     --duration-base: 0ms;
     --duration-slow: 0ms;
     --duration-glow: 0ms;
+    --press-scale: 1;
+  }
+}
+
+/* Report surfaces (#117): kept apart from the main block so parallel work does not collide. */
+:root {
+  --reveal-step: 60ms; /* text, graph, facts: 0, 60, 120ms + a 150ms fade < 300ms */
+  --reveal-rise: 0.25rem;
+  --lift-hover: -2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --reveal-step: 0ms;
+    --lift-hover: 0px;
   }
 }

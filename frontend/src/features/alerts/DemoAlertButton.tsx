@@ -1,4 +1,4 @@
-import { Bell } from "lucide-react";
+import { BellDot } from "lucide-react";
 import { type CSSProperties, useEffect, useState } from "react";
 import { useSimulateEvent } from "../../api/hooks/queries";
 import { Button } from "../../components/Button";
@@ -13,13 +13,15 @@ export const DEFAULT_DEMO_FIXTURE = "grei_seed_round";
 
 interface DemoAlertButtonProps {
   fixture: string;
+  /** Lets the top bar hide the words on phones; the button keeps them as its name. */
+  labelClassName?: string;
 }
 
 /**
  * Queues the staged alert. While it waits, a ring drains around the bell and the button
  * says how many seconds are left; a simulation that fails says why instead of going quiet.
  */
-export function DemoAlertButton({ fixture }: DemoAlertButtonProps) {
+export function DemoAlertButton({ fixture, labelClassName }: DemoAlertButtonProps) {
   const simulate = useSimulateEvent();
   const { toast } = useToast();
   const [endsAt, setEndsAt] = useState<number | null>(null);
@@ -80,11 +82,11 @@ export function DemoAlertButton({ fixture }: DemoAlertButtonProps) {
               <circle cx="12" cy="12" r="10.5" pathLength={100} />
             </svg>
           )}
-          <Bell />
+          <BellDot />
         </span>
       }
     >
-      {label}
+      <span className={labelClassName}>{label}</span>
     </Button>
   );
 }

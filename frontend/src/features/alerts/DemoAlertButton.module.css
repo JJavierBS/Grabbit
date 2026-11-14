@@ -10,8 +10,8 @@
   position: relative;
   display: inline-grid;
   place-items: center;
-  width: 1.5em;
-  height: 1.5em;
+  width: var(--space-6);
+  height: var(--space-6);
 }
 
 /* The ring drains over the whole delay: a state, like the composer's glow, not a transition. */

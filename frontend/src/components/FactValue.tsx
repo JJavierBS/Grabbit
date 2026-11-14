@@ -1,4 +1,5 @@
 import type { Fact, FactScalar, Source } from "../api/types";
+import { humanizeEnum } from "../lib/humanize";
 import styles from "./FactValue.module.css";
 import { TrustBadge } from "./TrustBadge";
 
@@ -22,7 +23,8 @@ export function formatDate(iso: string, precision: Source["date_precision"] = "d
   return `${Number(day)} ${monthName} ${year}`;
 }
 
-function formatNumber(value: number, unit?: string | null): string {
+/** A number with its unit; currencies read compact from 10,000 on ("€650K"). */
+export function formatNumber(value: number, unit?: string | null): string {
   if (unit && /^[A-Z]{3}$/.test(unit)) {
     return new Intl.NumberFormat("en", {
       style: "currency",
@@ -43,9 +45,15 @@ function formatScalar(
 ): string {
   if (typeof value === "boolean") return value ? "Yes" : "No";
   if (typeof value === "number") return formatNumber(value, unit);
-  if (kind === "date") return formatDate(value, strongestSource(fact)?.date_precision ?? "day");
-  return unit ? `${value} ${unit}` : value;
+  // A date is a date whoever renders it: callers need not guess the kind (#146).
+  if (kind === "date" || ISO_DATE.test(value)) {
+    return formatDate(value, strongestSource(fact)?.date_precision ?? "day");
+  }
+  const text = humanizeEnum(value);
+  return unit ? `${text} ${unit}` : text;
 }
+
+const ISO_DATE = /^\d{4}-\d{2}(?:-\d{2})?(?:T[\d:.]+Z?)?$/;
 
 /** Text for a fact, or null when Cala has no value (shown as "Not published", never 0). */
 export function formatFact(fact: Fact, kind: FactKind = "auto"): string | null {
@@ -63,22 +71,34 @@ interface FactValueProps {
   kind?: FactKind;
   /** Inline form for sentences and table cells: value then a compact badge. */
   inline?: boolean;
+  /** Spell out the badge's label even inline, where a bare icon would need a tooltip. */
+  labelled?: boolean;
 }
 
-export function FactValue({ fact, label, kind = "auto", inline = false }: FactValueProps) {
+export function FactValue({
+  fact,
+  label,
+  kind = "auto",
+  inline = false,
+  labelled = false,
+}: FactValueProps) {
   const text = formatFact(fact, kind);
   const source = strongestSource(fact);
-  const level = text === null ? "not_published" : fact.trust;
+  // An absent value is its own badge: "Not published" once, never text plus an empty pill.
   const value =
     text === null ? (
-      <span className={styles.absent}>Not published</span>
+      <TrustBadge level="not_published" />
     ) : (
       <span className={styles.value}>{text}</span>
     );
-  // The absent text already says "Not published"; a second badge would repeat it.
   const badge =
     text === null ? null : (
-      <TrustBadge level={level} sourceName={source?.name} href={source?.url} compact={inline} />
+      <TrustBadge
+        level={fact.trust}
+        sourceName={source?.name}
+        href={source?.url}
+        compact={inline && !labelled}
+      />
     );
 
   if (inline) {
@@ -94,7 +114,7 @@ export function FactValue({ fact, label, kind = "auto", inline = false }: FactVa
       {label && <dt className={styles.label}>{label}</dt>}
       <dd className={styles.body}>
         {value}
-        {badge ?? <TrustBadge level="not_published" compact />}
+        {badge}
       </dd>
     </div>
   );

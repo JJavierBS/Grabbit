@@ -11,6 +11,13 @@ const src = (date_precision: "day" | "month" | "year" | null = null) => ({
 });
 
 describe("formatFact", () => {
+  it("writes an ISO date out even when the caller did not say it is a date", () => {
+    const fact: Fact = { value: "2023-06-01", unit: null, trust: "primary", sources: [] };
+    expect(formatFact(fact)).toBe("1 Jun 2023");
+    expect(formatFact({ ...fact, value: "2023-06" })).toBe("Jun 2023");
+    expect(formatFact({ ...fact, value: "Helsinki" })).toBe("Helsinki");
+  });
+
   it("shows a year-precision date as the year only", () => {
     const fact: Fact = { value: "2019-01-01", unit: null, trust: "filing", sources: [src("year")] };
     expect(formatFact(fact, "date")).toBe("2019");
@@ -74,6 +81,19 @@ describe("FactValue", () => {
     );
     expect(screen.getAllByText("Not published").length).toBeGreaterThan(0);
     expect(screen.queryByText(/0/)).not.toBeInTheDocument();
+  });
+
+  it("says Not published once, as its badge, with no empty pill beside it", () => {
+    const { container } = render(
+      <FactValue
+        label="Stage"
+        fact={{ value: null, unit: null, trust: "aggregator", sources: [] }}
+      />,
+    );
+    const badges = container.querySelectorAll("[data-trust]");
+    expect(badges).toHaveLength(1);
+    expect(badges[0]).toHaveAttribute("data-trust", "not_published");
+    expect(screen.getByText("Not published")).not.toHaveClass("visually-hidden");
   });
 
   it("treats a null value as not published even with another trust level", () => {

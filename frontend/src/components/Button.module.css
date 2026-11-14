@@ -12,13 +12,25 @@
   transition:
     background-color var(--duration-fast) var(--ease-standard),
     border-color var(--duration-fast) var(--ease-standard),
-    color var(--duration-fast) var(--ease-standard);
+    color var(--duration-fast) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+/* Pressed: the button gives a little under the finger, then springs back. */
+.button:active:not(:disabled) {
+  transform: scale(var(--press-scale));
 }
 
 .button svg {
-  width: 1em;
-  height: 1em;
+  width: var(--icon-size);
+  height: var(--icon-size);
   flex: none;
+}
+
+.button[data-icon-only] {
+  width: var(--control-size);
+  height: var(--control-size);
+  padding: 0;
 }
 
 .md {
@@ -27,6 +39,7 @@
 }
 
 .sm {
+  min-height: var(--control-size);
   padding: var(--space-1) var(--space-3);
   font-size: var(--text-xs);
 }
@@ -72,7 +85,7 @@
 }
 
 .spin {
-  animation: spin 900ms linear infinite;
+  animation: spin var(--duration-spin) linear infinite;
 }
 
 @keyframes spin {
@@ -84,5 +97,15 @@
 @media (prefers-reduced-motion: reduce) {
   .spin {
     animation: none;
+  }
+}
+
+@media (pointer: coarse) {
+  .button {
+    min-height: var(--touch-target);
+  }
+
+  .button[data-icon-only] {
+    min-width: var(--touch-target);
   }
 }

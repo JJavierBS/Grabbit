@@ -5,6 +5,9 @@ import { readFileSync } from "node:fs";
 const read = (path: string) => readFileSync(new URL(path, import.meta.url), "utf8");
 const appCss = read("./App.module.css");
 const chatCss = read("./features/chat/ChatPanel.module.css");
+const tokensCss = read("./styles/tokens.css");
+const buttonCss = read("./components/Button.module.css");
+const skeletonCss = read("./components/Skeleton.module.css");
 
 // jsdom does not lay out CSS (vite.config `css: false`), so these tests pin the layout rules
 // that broke in the browser: a collapsed sidebar squeezing the chat into ~700px, and visually
@@ -56,5 +59,29 @@ describe("app layout", () => {
     expect(log["overflow-y"]).toBe("auto");
     expect(log["max-width"]).toBeUndefined();
     expect(declarations(chatCss, ".column")["max-width"]).toBe("var(--chat-width)");
+  });
+});
+
+describe("motion and finish", () => {
+  it("keeps every timing and colour of the finish in tokens", () => {
+    expect(tokensCss).toMatch(/--color-scrim:/);
+    expect(tokensCss).toMatch(/--duration-spin:/);
+    expect(tokensCss).toMatch(/--press-scale:/);
+    expect(declarations(appCss, ".scrim").background).toBe("var(--color-scrim)");
+    expect(declarations(buttonCss, ".spin").animation).toContain("var(--duration-spin)");
+    expect(declarations(skeletonCss, ".bone").animation).toContain("var(--duration-glow)");
+  });
+
+  it("gives buttons a press, which reduced motion turns off", () => {
+    expect(declarations(buttonCss, ".button:active:not(:disabled)").transform).toBe(
+      "scale(var(--press-scale))",
+    );
+    const reduced = tokensCss.slice(tokensCss.indexOf("prefers-reduced-motion"));
+    expect(reduced).toMatch(/--press-scale: 1;/);
+  });
+
+  it("animates the panel's exit and its content switch", () => {
+    expect(declarations(appCss, '.panel[data-state="leaving"]').animation).toContain("slide-out");
+    expect(declarations(appCss, ".panelContent").animation).toContain("fade");
   });
 });

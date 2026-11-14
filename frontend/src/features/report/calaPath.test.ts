@@ -20,10 +20,10 @@ describe("layoutPath", () => {
     ],
   };
 
-  it("walks event, startup, round and investors with Cala's edge names", () => {
+  it("walks event, startup, round and investors with readable edge names", () => {
     const { edges } = layoutPath(candidate, new Set(), "Slush 2026");
     expect(edges.map((e) => e.label)).toEqual(
-      expect.arrayContaining(["ATTENDEE", "ISSUER", "is_lead", "INVESTOR"]),
+      expect.arrayContaining(["attends", "raised", "led", "invested"]),
     );
   });
 
@@ -32,6 +32,7 @@ describe("layoutPath", () => {
     const investors = nodes.filter((n) => n.kind === "investor");
     expect(investors.map((n) => n.label)).toEqual(["trusted", "lead", "a"]);
     expect(investors[0].sub).toBe("you trust");
+    expect(investors[1].sub).toMatch(/^lead investor/);
     expect(nodes.find((n) => n.kind === "more")?.label).toBe("+2 more");
   });
 });
@@ -42,8 +43,10 @@ describe("toTall", () => {
     const tall = toTall(layoutPath(c, new Set(), "Slush 2026"), 320);
     const [event, startup, round, first] = tall.nodes;
     expect([event.kind, startup.kind, round.kind]).toEqual(["event", "startup", "round"]);
-    expect(startup.sub).toBe("ATTENDEE");
-    expect(round.sub).toMatch(/^ISSUER/);
+    expect(startup.sub).toBe("attends");
+    expect(round.sub).toMatch(/^raised/);
+    expect(round.sub).not.toMatch(/\d{4}-\d{2}/);
+    expect(round.sub).toMatch(/[A-Z][a-z]{2} \d{4}$/);
     expect(first.x).toBeGreaterThan(round.x);
     expect(tall.nodes.every((n) => n.x + (n.w ?? 0) === 320)).toBe(true);
     expect(tall.nodes.map((n) => n.y)).toEqual(tall.nodes.map((_, i) => i * 46));

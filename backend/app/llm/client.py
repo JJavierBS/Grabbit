@@ -7,16 +7,24 @@ from google import genai
 from google.genai import errors, types
 from pydantic import ValidationError
 
-from app.llm.types import ChatResult, LLMError, Message, T, ToolCall, ToolSpec
+from app.llm.types import ChatResult, LLMError, Message, OnText, T, ToolCall, ToolSpec
 
 log = logging.getLogger(__name__)
 
+TRANSCRIBE_SYSTEM = (
+    "Transcribe the speech in this recording word for word, in the language it is spoken in. "
+    "Return only the transcript: no notes, labels or quotes. If nobody speaks, return nothing."
+)
+
 
 class GeminiLLM:
-    def __init__(self, *, api_key: str, model: str, timeout_s: float = 30.0) -> None:
+    def __init__(
+        self, *, api_key: str, model: str, timeout_s: float = 30.0, thoughts: bool = False
+    ) -> None:
         if not api_key or not model:
             raise LLMError("GEMINI_API_KEY and GEMINI_MODEL are required with LLM_MODE=gemini")
         self.model = model
+        self.thoughts = thoughts
         self._client = genai.Client(
             api_key=api_key,
             http_options=types.HttpOptions(
@@ -28,9 +36,16 @@ class GeminiLLM:
         )
 
     async def chat(
-        self, *, system: str, messages: list[Message], tools: list[ToolSpec] | None = None
+        self,
+        *,
+        system: str,
+        messages: list[Message],
+        tools: list[ToolSpec] | None = None,
+        on_text: OnText | None = None,
     ) -> ChatResult:
         config = types.GenerateContentConfig(system_instruction=system, temperature=0.3)
+        if self.thoughts:
+            config.thinking_config = types.ThinkingConfig(include_thoughts=True)
         if tools:
             config.tools = [
                 types.Tool(
@@ -45,8 +60,11 @@ class GeminiLLM:
                 )
             ]
             config.automatic_function_calling = types.AutomaticFunctionCallingConfig(disable=True)
-        response = await self._call("chat", _contents(messages), config)
-        parts = response.candidates[0].content.parts if response.candidates else None
+        if on_text:
+            parts = await self._stream("chat", _contents(messages), config, on_text)
+        else:
+            response = await self._call("chat", _contents(messages), config)
+            parts = response.candidates[0].content.parts if response.candidates else None
         calls = [
             ToolCall(
                 name=p.function_call.name or "",
@@ -57,20 +75,58 @@ class GeminiLLM:
             for p in parts or []
             if p.function_call
         ]
-        return ChatResult(text=_text(response), tool_calls=calls)
+        return ChatResult(text=_text(parts), tool_calls=calls, thoughts=_thoughts(parts))
 
-    async def generate(self, *, task: str, system: str, prompt: str, schema: type[T]) -> T:
+    async def generate(
+        self, *, task: str, system: str, prompt: str, schema: type[T], quick: bool = False
+    ) -> T:
         config = types.GenerateContentConfig(
             system_instruction=system,
             temperature=0.2,
             response_mime_type="application/json",
             response_json_schema=schema.model_json_schema(),
         )
+        if quick:
+            # Picking and wording a few lines needs no deep reasoning: ~2 s instead of ~13 s.
+            config.thinking_config = types.ThinkingConfig(thinking_level="minimal")
         response = await self._call(task, _contents([Message(role="user", text=prompt)]), config)
         try:
-            return schema.model_validate_json(_text(response))
+            return schema.model_validate_json(_text(_parts_of(response)))
         except ValidationError as exc:
             raise LLMError(f"{task}: structured output did not validate") from exc
+
+    async def transcribe(self, *, audio: bytes, mime_type: str) -> str:
+        config = types.GenerateContentConfig(system_instruction=TRANSCRIBE_SYSTEM, temperature=0.0)
+        contents = [
+            types.Content(
+                role="user", parts=[types.Part.from_bytes(data=audio, mime_type=mime_type)]
+            )
+        ]
+        return _text(_parts_of(await self._call("transcribe", contents, config)))
+
+    async def _stream(self, task: str, contents, config, on_text: OnText) -> list[types.Part]:
+        """Stream the reply, telling `on_text` the answer so far; returns every part seen."""
+        started = time.monotonic()
+        parts: list[types.Part] = []
+        text = ""
+        try:
+            stream = await self._client.aio.models.generate_content_stream(
+                model=self.model, contents=contents, config=config
+            )
+            async for chunk in stream:
+                for part in _parts_of(chunk):
+                    parts.append(part)
+                    if part.text and not part.thought:
+                        text += part.text
+                        on_text(text)
+        except errors.APIError as exc:
+            log.warning("gemini %s stream failed: %s %s", task, exc.code, exc.status)
+            raise LLMError(f"{task}: Gemini returned {exc.code}") from exc
+        except Exception as exc:
+            log.warning("gemini %s stream failed: %s", task, type(exc).__name__)
+            raise LLMError(f"{task}: Gemini unreachable") from exc
+        log.info("gemini %s streamed in %.2fs", task, time.monotonic() - started)
+        return parts
 
     async def _call(self, task: str, contents, config):
         started = time.monotonic()
@@ -86,6 +142,10 @@ class GeminiLLM:
             raise LLMError(f"{task}: Gemini unreachable") from exc
         log.info("gemini %s took %.2fs", task, time.monotonic() - started)
         return response
+
+
+def _parts_of(response) -> list[types.Part]:
+    return (response.candidates[0].content.parts if response.candidates else None) or []
 
 
 def _contents(messages: list[Message]) -> list[types.Content]:
@@ -113,7 +173,10 @@ def _parts(m: Message) -> list[types.Part]:
     return parts
 
 
-def _text(response) -> str:
+def _text(parts: list[types.Part] | None) -> str:
     # response.text warns and returns None when the reply holds only function calls.
-    parts = response.candidates[0].content.parts if response.candidates else None
     return "".join(p.text for p in parts or [] if p.text and not p.thought).strip()
+
+
+def _thoughts(parts: list[types.Part] | None) -> str:
+    return "".join(p.text for p in parts or [] if p.text and p.thought).strip()

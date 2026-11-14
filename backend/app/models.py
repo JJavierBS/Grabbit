@@ -162,6 +162,9 @@ class ProfileFilters(ApiModel):
     countries: list[str]
     headcount_max: int | None = None
     ticket: Fact | None = None
+    fundraising: Literal["any", "recent", "likely_to_raise"] = "any"
+    raised_within_months: int = Field(default=12, ge=1, le=120)
+    required_backers: list[str] = Field(default_factory=list)
 
 
 class ReferenceInvestor(ApiModel):
@@ -170,6 +173,7 @@ class ReferenceInvestor(ApiModel):
 
 
 class ProfileStyle(ApiModel):
+    max_candidates: int | None = Field(default=None, ge=1, le=20)
     length: StyleLength
     detail: StyleDetail
     language: str
@@ -233,6 +237,48 @@ class ExploredGraph(ApiModel):
     edges: list[GraphEdge]
 
 
+WalkStepKind = Literal["search", "expand", "thought", "rewrite"]
+
+
+class WalkStep(ApiModel):
+    """One thing the agent did while walking Cala, in a plain sentence."""
+
+    id: int
+    kind: WalkStepKind
+    text: str
+    result: str | None = Field(default=None, description="What came back, once done")
+    done: bool = False
+
+
+class WalkSummary(ApiModel):
+    """How the agent found an answer in Cala, kept on the chat message (#138)."""
+
+    steps: list[WalkStep] = Field(description="The walk's steps, without the model's reasoning")
+    checked: int = Field(description="Cala entities the walk reached")
+    seconds: float
+
+
+class ReplySource(ApiModel):
+    """Where the facts about one startup named in a chat reply come from (#141)."""
+
+    entity_id: str
+    name: str
+    sources: list[Source] = Field(description="Each source once, strongest trust level first")
+
+
+class QuestionOption(ApiModel):
+    label: str = Field(description="Short text on the button")
+    answer: str = Field(description="The sentence sent to the agent when chosen")
+
+
+class AgentQuestion(ApiModel):
+    """A question the agent asks with clickable answers (#153)."""
+
+    key: str
+    text: str
+    options: list[QuestionOption]
+
+
 class ChatMessage(ApiModel):
     id: str
     role: ChatRole
@@ -245,6 +291,16 @@ class ChatMessage(ApiModel):
     )
     graph: ExploredGraph | None = Field(
         default=None, description="Cala entities and edges the agent walked for this answer"
+    )
+    walk: WalkSummary | None = Field(
+        default=None, description="How the agent walked Cala for this answer, step by step"
+    )
+    sources: list[ReplySource] = Field(
+        default_factory=list,
+        description="Sources of the facts about each startup the reply text names",
+    )
+    questions: list[AgentQuestion] = Field(
+        default_factory=list, description="Questions the reply asks, each with clickable answers"
     )
 
 
@@ -288,6 +344,12 @@ class ChatRequest(ApiModel):
     text: str = Field(min_length=1, max_length=4000)
 
 
+class Transcript(ApiModel):
+    """What the user said in a Talk recording; empty when nobody spoke."""
+
+    text: str
+
+
 class ReportRunRequest(ApiModel):
     kind: ReportKind
 
@@ -298,6 +360,35 @@ class SimulateEventRequest(ApiModel):
 
 class ReportRef(ApiModel):
     id: str
+
+
+TurnPhase = Literal["cala", "llm", "report", "graph"]
+
+
+class TurnProgress(ApiModel):
+    """What a chat turn is doing right now, sent as a `progress` event on /api/events."""
+
+    phase: TurnPhase
+    label: str
+    done: int | None = Field(default=None, description="Items finished so far, when counted")
+    total: int | None = Field(default=None, description="Items in this phase, when counted")
+
+
+class WalkTrace(ApiModel):
+    """The running chat turn's Cala walk, sent whole as a `trace` event after every change
+    (#134), so a client that missed one still draws the latest state."""
+
+    turn: str = Field(description="Random id of the walk; a new id means a new walk")
+    round: int
+    max_rounds: int
+    nodes: int
+    max_nodes: int
+    steps: list[WalkStep]
+    graph: ExploredGraph | None = None
+    root_id: str | None = Field(default=None, description="Entity the live graph grows from")
+    answer: str | None = Field(default=None, description="OpenUI Lang streamed so far")
+    streaming: bool = False
+    done: bool = False
 
 
 class ErrorDetail(ApiModel):

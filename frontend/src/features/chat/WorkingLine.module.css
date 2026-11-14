@@ -1,0 +1,94 @@
+/* The agent at work: the logo's two violet speed lines run, and light sweeps the sentence.
+   Both loop for as long as the turn lasts; they are a state, like the composer's breathing. */
+.line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  font-size: var(--text-md);
+  color: var(--color-text-muted);
+}
+
+.speed {
+  display: grid;
+  gap: var(--space-1);
+  flex: none;
+}
+
+.speed span {
+  display: block;
+  height: 3px;
+  border-radius: var(--radius-pill);
+  background: var(--color-violet);
+  transform-origin: right center;
+  animation: run var(--duration-glow) var(--ease-standard) infinite;
+}
+
+.speed span:first-child {
+  width: 1rem;
+}
+
+.speed span:last-child {
+  width: 0.625rem;
+  margin-left: 0.375rem;
+  animation-delay: calc(var(--duration-glow) / -2);
+}
+
+/* The sweep reads as the text itself catching the light, not as a coloured word. */
+.text {
+  background:
+    linear-gradient(
+      100deg,
+      var(--color-text-muted) 0%,
+      var(--color-text-muted) 40%,
+      var(--color-violet) 50%,
+      var(--color-text-muted) 60%,
+      var(--color-text-muted) 100%
+    )
+    0 0 / 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: sweep var(--duration-glow) linear infinite;
+}
+
+.elapsed {
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes run {
+  0%,
+  100% {
+    transform: scaleX(0.5);
+    opacity: 0.45;
+  }
+  50% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+@keyframes sweep {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -150% 0;
+  }
+}
+
+/* Reduced motion: still lines and plain text; the words and the count say it is working. */
+@media (prefers-reduced-motion: reduce) {
+  .speed span {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .text {
+    animation: none;
+    background: none;
+    color: var(--color-text-muted);
+  }
+}

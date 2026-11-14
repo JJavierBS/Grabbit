@@ -8,6 +8,7 @@ follow-on signal). Every call goes through `CalaClient`, so a second run is all 
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime
 from typing import Any, Protocol
@@ -130,8 +131,12 @@ async def get_candidates(
     profile: Profile,
     today: date | None = None,
     limits: Limits | None = None,
+    on_progress: Callable[[int, int, int], None] | None = None,
 ) -> DiscoveryResult:
-    """Startups attending the profile's event (default Slush 2026), filtered and scored."""
+    """Startups attending the profile's event (default Slush 2026), filtered and scored.
+
+    `on_progress(checked, attendees, startups)` hears each attendee as it is checked.
+    """
     today = today or date.today()
     limits = limits or Limits()
     stats = DiscoveryStats()
@@ -141,7 +146,9 @@ async def get_candidates(
     stats.attendees = len(stubs)
     seen_names: set[str] = set()
     built: list[tuple[Candidate, dict[str, Any]]] = []
-    for stub in stubs:
+    for checked, stub in enumerate(stubs, start=1):
+        if on_progress:
+            on_progress(checked, len(stubs), stats.startups)
         if stub.get("entity_type") not in (None, "Company"):
             continue
         key = normalise_name(stub.get("name")) or stub["id"]
@@ -167,7 +174,10 @@ async def get_candidates(
 
     candidates: list[Candidate] = []
     for candidate, company in built:
-        if not matches_profile(candidate, profile):
+        structural = profile.model_copy(
+            update={"filters": profile.filters.model_copy(update={"fundraising": "any"})}
+        )
+        if not matches_profile(candidate, structural, today=today):
             continue
         inputs = SignalInputs(
             reference_investors=profile.reference_investors,
@@ -179,6 +189,7 @@ async def get_candidates(
         )
     graph = await walk_investors(client, candidates, raw, limits.links, INVESTOR_BODY, ROUND_BODY)
     candidates = attach_links(candidates, graph, profile.reference_investors)
+    candidates = [c for c in candidates if matches_profile(c, profile, today=today)]
     stats.candidates = len(candidates)
     investors = {
         normalise_name(i.name): i.entity_id

@@ -15,7 +15,13 @@ export function mockApi(routes: Routes) {
   setTransport(async (request) => {
     const key = `${request.method} ${new URL(request.url).pathname}`;
     const text = await request.text();
-    const body = text ? JSON.parse(text) : undefined;
+    // Talk sends audio, every other call JSON.
+    const body =
+      text && request.headers.get("content-type")?.startsWith("audio/")
+        ? text
+        : text
+          ? JSON.parse(text)
+          : undefined;
     calls.push({ key, body });
     const route = routes[key];
     if (!route)

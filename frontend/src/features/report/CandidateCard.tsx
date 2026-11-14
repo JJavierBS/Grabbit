@@ -2,6 +2,8 @@ import { ExternalLink } from "lucide-react";
 import type { Candidate, Round, Signal } from "../../api/types";
 import { Badge } from "../../components/Badge";
 import { FactValue } from "../../components/FactValue";
+import { humanize } from "../../lib/humanize";
+import { websiteUrl } from "../../lib/website";
 import { CalaNews } from "./CalaNews";
 import { CalaPath } from "./CalaPath";
 import styles from "./CandidateCard.module.css";
@@ -18,31 +20,41 @@ interface CandidateCardProps {
   candidate: Candidate;
   trusted: Set<string>;
   mark?: ChangeMark;
+  /** The change highlight has had its moment: the mark badge stays, the tint fades. */
+  settled?: boolean;
 }
 
-export function CandidateCard({ candidate, trusted, mark }: CandidateCardProps) {
+export function CandidateCard({ candidate, trusted, mark, settled }: CandidateCardProps) {
   const c = candidate;
+  // Cala can list one industry twice in different spellings ("fintech", "FINTECH").
+  const industries = [...new Set(c.industries.map(humanize))];
   return (
     <article
       id={`candidate-${c.entity_id}`}
       className={styles.card}
       data-changed={mark ?? undefined}
+      data-settled={(mark && settled) || undefined}
     >
       <header className={styles.header}>
         <div className={styles.titleRow}>
           <h4 className={styles.name}>{c.name}</h4>
           {mark && <Badge tone="warning">{MARK_LABEL[mark]}</Badge>}
           {c.website && (
-            <a className={styles.site} href={c.website} target="_blank" rel="noopener noreferrer">
+            <a
+              className={styles.site}
+              href={websiteUrl(c.website)}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               Website
               <ExternalLink aria-hidden="true" />
             </a>
           )}
         </div>
         {c.description && <p className={styles.description}>{c.description}</p>}
-        {c.industries.length > 0 && (
+        {industries.length > 0 && (
           <ul className={styles.tags} aria-label="Industries">
-            {c.industries.map((i) => (
+            {industries.map((i) => (
               <li key={i}>
                 <Badge>{i}</Badge>
               </li>
@@ -108,7 +120,7 @@ function RoundRow({ round, trusted }: { round: Round; trusted: Set<string> }) {
   return (
     <li className={styles.round}>
       <div className={styles.roundHead}>
-        <span className={styles.roundLabel}>{round.label ?? round.name}</span>
+        <span className={styles.roundLabel}>{humanize(round.label ?? round.name)}</span>
         <FactValue inline kind="date" fact={round.date} />
         <FactValue inline fact={round.amount} />
       </div>

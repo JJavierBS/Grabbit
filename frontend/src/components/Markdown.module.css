@@ -16,3 +16,10 @@
   color: var(--color-ink);
   font-weight: var(--weight-semibold);
 }
+
+/* Inline trust badges keep their hidden label inside the badge, so it cannot
+   stretch a scroll container. */
+.prose [data-trust] {
+  position: relative;
+  margin-inline: 1px;
+}

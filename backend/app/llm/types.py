@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from typing import Any, Literal, Protocol, TypeVar
 
 from pydantic import BaseModel, Field
@@ -43,11 +44,26 @@ class Message(BaseModel):
 class ChatResult(BaseModel):
     text: str = ""
     tool_calls: list[ToolCall] = Field(default_factory=list)
+    # The model's own summary of its reasoning, only when the settings ask for it.
+    thoughts: str = ""
+
+
+# Called with the whole answer text received so far, each time more of it streams in.
+OnText = Callable[[str], None]
 
 
 class LLM(Protocol):
     async def chat(
-        self, *, system: str, messages: list[Message], tools: list[ToolSpec] | None = None
+        self,
+        *,
+        system: str,
+        messages: list[Message],
+        tools: list[ToolSpec] | None = None,
+        on_text: OnText | None = None,
     ) -> ChatResult: ...
 
-    async def generate(self, *, task: str, system: str, prompt: str, schema: type[T]) -> T: ...
+    async def generate(
+        self, *, task: str, system: str, prompt: str, schema: type[T], quick: bool = False
+    ) -> T: ...
+
+    async def transcribe(self, *, audio: bytes, mime_type: str) -> str: ...

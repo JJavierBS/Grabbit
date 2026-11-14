@@ -6,7 +6,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from app.llm.types import ChatResult, LLMError, Message, T, ToolCall, ToolSpec
+from app.llm.types import ChatResult, LLMError, Message, OnText, T, ToolCall, ToolSpec
 
 SCRIPTS_DIR = Path(__file__).resolve().parent.parent / "fixtures" / "llm"
 
@@ -29,7 +29,12 @@ class FakeLLM:
         self.calls: list[tuple[str, str]] = []
 
     async def chat(
-        self, *, system: str, messages: list[Message], tools: list[ToolSpec] | None = None
+        self,
+        *,
+        system: str,
+        messages: list[Message],
+        tools: list[ToolSpec] | None = None,
+        on_text: OnText | None = None,
     ) -> ChatResult:
         last_user = next(
             (
@@ -47,14 +52,26 @@ class FakeLLM:
         script = self._find(task, last_user) or self._find("chat", last_user)
         if script is None:
             return ChatResult(text="Noted.")
+        if on_text and script.text:
+            # Line by line, the way an answer streams in.
+            lines = script.text.splitlines(keepends=True)
+            for i in range(1, len(lines) + 1):
+                on_text("".join(lines[:i]))
         return ChatResult(text=script.text, tool_calls=script.tool_calls if tools else [])
 
-    async def generate(self, *, task: str, system: str, prompt: str, schema: type[T]) -> T:
+    async def generate(
+        self, *, task: str, system: str, prompt: str, schema: type[T], quick: bool = False
+    ) -> T:
         self.calls.append((task, prompt))
         script = self._find(task, prompt)
         if script is None or script.output is None:
             raise LLMError(f"FakeLLM has no script for task {task!r}")
         return schema.model_validate(script.output)
+
+    async def transcribe(self, *, audio: bytes, mime_type: str) -> str:
+        self.calls.append(("transcribe", mime_type))
+        script = self._find("transcribe", "")
+        return script.text if script else ""
 
     def _find(self, task: str, text: str) -> Script | None:
         lowered = text.lower()

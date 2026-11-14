@@ -3,7 +3,9 @@ import userEvent from "@testing-library/user-event";
 import { ALERT_DELAY_MS, App, CONFIRM_MESSAGE } from "./App";
 import type { ChatMessage } from "./api/types";
 import { chatV2, historyV2, profileV2, reportV1, reportV2 } from "./dev/fixtures";
+import { MIC_BLOCKED, NOT_TRANSCRIBED, NOTHING_HEARD } from "./features/chat/useDictation";
 import { formatChangeValue } from "./features/profile/ProfileHistory";
+import { shortTitle } from "./features/report/ReportSidebar";
 import { mockApi, renderWithClient } from "./test/renderApp";
 
 const base = {
@@ -15,6 +17,20 @@ const base = {
 };
 
 describe("App", () => {
+  it("omits the fullscreen action even when the browser supports it", async () => {
+    const descriptor = Object.getOwnPropertyDescriptor(document, "fullscreenEnabled");
+    Object.defineProperty(document, "fullscreenEnabled", { configurable: true, value: true });
+    try {
+      mockApi({ ...base, "GET /api/reports/latest": () => reportV1 });
+      renderWithClient(<App />);
+      expect(await screen.findByRole("button", { name: "What changed" })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: /full screen/i })).not.toBeInTheDocument();
+    } finally {
+      if (descriptor) Object.defineProperty(document, "fullscreenEnabled", descriptor);
+      else Reflect.deleteProperty(document, "fullscreenEnabled");
+    }
+  });
+
   it("shows the report as an outline in the chat, then opens it in the side panel", async () => {
     mockApi({ ...base, "GET /api/reports/latest": () => reportV1 });
     renderWithClient(<App />);
@@ -84,6 +100,9 @@ describe("App", () => {
       report_id: null,
       ui: null,
       graph: null,
+      walk: null,
+      sources: [],
+      questions: [],
     };
     mockApi({ ...base, "GET /api/chat": () => [reply], "GET /api/reports/latest": () => reportV1 });
     renderWithClient(<App />);
@@ -114,6 +133,9 @@ describe("App", () => {
       report_id: null,
       ui: null,
       graph: null,
+      walk: null,
+      sources: [],
+      questions: [],
       text: "From now on: shorter reports, co-investors first. I rewrote your report.",
       created_at: "2026-11-14T09:34:00Z",
       profile_changes: [],
@@ -198,14 +220,16 @@ describe("App", () => {
     const nav = screen.getByRole("navigation", { name: "Reports" });
     const items = await within(nav).findAllByRole("button");
     expect(items).toHaveLength(2);
-    expect(items[0]).toHaveTextContent(reportV2.summary);
+    expect(items[0]).toHaveTextContent(shortTitle(reportV2));
+    expect(items[0]).toHaveAttribute("title", reportV2.summary);
     expect(items[0]).toHaveTextContent("Latest");
+    // The time follows the browser locale: "09:34" or "09:34 AM".
+    expect(items[0]).toHaveTextContent(/ startups · \d{1,2}[:.]\d{2}/);
+    expect(items[0].textContent).not.toMatch(/\bv\d/);
 
     await userEvent.click(items[1]);
     const past = screen.getByRole("region", { name: "Past report" });
-    expect(
-      within(past).getByText(`Profile version ${reportV1.profile_version}`),
-    ).toBeInTheDocument();
+    expect(within(past).getByText(reportV1.summary)).toBeInTheDocument();
     expect(within(past).queryByRole("button", { name: "Run now" })).not.toBeInTheDocument();
     expect(items[1]).toHaveAttribute("aria-current", "true");
 
@@ -260,39 +284,105 @@ describe("App", () => {
     vi.useRealTimers();
   });
 
-  it("puts speech into the message box while Talk is on", async () => {
-    const instances: Record<string, unknown>[] = [];
-    class FakeRecognition {
-      onresult: ((e: unknown) => void) | null = null;
-      onend: (() => void) | null = null;
-      start = vi.fn();
-      stop = vi.fn(() => this.onend?.());
-      abort = vi.fn();
+  /** A microphone and recorder that hand over `audio` when stopped. */
+  function stubRecorder({ denied = false } = {}) {
+    const track = { stop: vi.fn() };
+    const stream = { getTracks: () => [track] };
+    const recorders: FakeRecorder[] = [];
+    class FakeRecorder {
+      state = "inactive";
+      mimeType = "audio/webm;codecs=opus";
+      stream = stream;
+      ondataavailable: ((e: { data: Blob }) => void) | null = null;
+      onstop: (() => void) | null = null;
       constructor() {
-        instances.push(this as unknown as Record<string, unknown>);
+        recorders.push(this);
+      }
+      start() {
+        this.state = "recording";
+      }
+      stop() {
+        this.state = "inactive";
+        this.ondataavailable?.({ data: new Blob(["opus"], { type: this.mimeType }) });
+        this.onstop?.();
       }
     }
-    vi.stubGlobal("webkitSpeechRecognition", FakeRecognition);
+    vi.stubGlobal("MediaRecorder", FakeRecorder);
+    Object.defineProperty(navigator, "mediaDevices", {
+      configurable: true,
+      value: {
+        getUserMedia: vi.fn(() =>
+          denied
+            ? Promise.reject(new DOMException("denied", "NotAllowedError"))
+            : Promise.resolve(stream),
+        ),
+      },
+    });
+    return { recorders, track };
+  }
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    Reflect.deleteProperty(navigator, "mediaDevices");
+  });
+
+  it("records while Talk is on and adds what was said after the typed text", async () => {
+    const { track } = stubRecorder();
+    const calls = mockApi({
+      ...base,
+      "GET /api/reports/latest": () => reportV1,
+      "POST /api/transcribe": () => ({ text: "drop consumer health" }),
+    });
+    renderWithClient(<App />);
+    const box = await screen.findByRole("textbox", { name: "Message Grabbit" });
+    await userEvent.type(box, "Shorter,");
+    await userEvent.click(screen.getByRole("button", { name: "Talk" }));
+    expect(await screen.findByRole("button", { name: "Stop talking" })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "Stop talking" }));
+    await waitFor(() => expect(box).toHaveValue("Shorter, drop consumer health"));
+    expect(track.stop).toHaveBeenCalled();
+    expect(calls.some((c) => c.key === "POST /api/transcribe")).toBe(true);
+    expect(screen.getByRole("button", { name: "Talk" })).toBeEnabled();
+  });
+
+  it("asks to allow the microphone when the browser blocks it", async () => {
+    stubRecorder({ denied: true });
     mockApi({ ...base, "GET /api/reports/latest": () => reportV1 });
     renderWithClient(<App />);
     await userEvent.click(await screen.findByRole("button", { name: "Talk" }));
-    const rec = instances[0] as unknown as FakeRecognition;
-    expect(rec.start).toHaveBeenCalledOnce();
-
-    act(() =>
-      rec.onresult?.({ results: [[{ transcript: "Drop consumer" }], [{ transcript: " health" }]] }),
-    );
-    expect(screen.getByRole("textbox", { name: "Message Grabbit" })).toHaveValue(
-      "Drop consumer health",
-    );
-
-    await userEvent.click(screen.getByRole("button", { name: "Stop talking" }));
-    expect(rec.stop).toHaveBeenCalledOnce();
-    expect(screen.getByRole("button", { name: "Talk" })).toBeInTheDocument();
-    vi.unstubAllGlobals();
+    expect(await screen.findByText(MIC_BLOCKED)).toBeInTheDocument();
   });
 
-  it("hides Talk when the browser has no speech recognition", async () => {
+  it("says so when nothing was heard or the transcription fails", async () => {
+    stubRecorder();
+    let reply: unknown = { text: "" };
+    mockApi({
+      ...base,
+      "GET /api/reports/latest": () => reportV1,
+      "POST /api/transcribe": () => reply,
+    });
+    renderWithClient(<App />);
+    await userEvent.click(await screen.findByRole("button", { name: "Talk" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Stop talking" }));
+    expect(await screen.findByText(NOTHING_HEARD)).toBeInTheDocument();
+
+    reply = undefined;
+    mockApi({
+      ...base,
+      "GET /api/reports/latest": () => reportV1,
+      "POST /api/transcribe": {
+        status: 502,
+        body: { error: { code: "transcription_failed", message: "x" } },
+      },
+    });
+    await userEvent.click(screen.getByRole("button", { name: "Talk" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Stop talking" }));
+    expect(await screen.findByText(NOT_TRANSCRIBED)).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "Message Grabbit" })).toHaveValue("");
+  });
+
+  it("hides Talk when the browser cannot record", async () => {
     mockApi({ ...base, "GET /api/reports/latest": () => reportV1 });
     renderWithClient(<App />);
     await screen.findByRole("button", { name: "Open report" });
@@ -316,7 +406,7 @@ describe("formatChangeValue", () => {
   it("reads empty, lists, objects and enum values in plain words", () => {
     expect(formatChangeValue(null)).toBe("nothing");
     expect(formatChangeValue([])).toBe("nothing");
-    expect(formatChangeValue(["pre_seed", "seed"])).toBe("pre seed, seed");
+    expect(formatChangeValue(["pre_seed", "seed"])).toBe("Pre-seed, Seed");
     expect(formatChangeValue([{ entity_id: "x", name: "Aurora Ventures" }])).toBe(
       "Aurora Ventures",
     );

@@ -7,17 +7,21 @@ cannot carry an invented fact. The component library and its prompt live in
 test fails when they drift).
 """
 
+import asyncio
 import logging
 import re
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from pathlib import Path
 
 from app.agent.explore import MAX_NODES, MAX_ROUNDS, ClientFactory, walk
+from app.agent.trace import Tracer
 from app.cala.client import CalaClient
+from app.config import get_settings
 from app.llm import LLM, LLMError
-from app.models import Candidate, ExploredGraph, Profile
+from app.models import Candidate, ExploredGraph, Profile, WalkSummary
+from app.references import resolve_references
 
 log = logging.getLogger(__name__)
 
@@ -31,6 +35,7 @@ _TEXT = re.compile(r'Text\("((?:[^"\\]|\\.)*)"\)')
 class Visual:
     ui: str
     graph: ExploredGraph | None = None
+    walk: WalkSummary | None = None
 
 
 @asynccontextmanager
@@ -80,8 +85,9 @@ async def visual_answer(
     open_client: ClientFactory = _shared_cala,
 ) -> Visual | None:
     """OpenUI Lang for the reply plus the Cala subgraph it draws, or None when nothing fits."""
-    if not candidates:
-        return None
+    # Investors typed in chat are stored by name; the walk compares Cala ids (as the profile
+    # endpoint does), or it never marks them as trusted.
+    profile = resolve_references(profile, candidates)
     trusted = {r.entity_id for r in profile.reference_investors}
 
     def problem(text: str, graph: ExploredGraph | None) -> str | None:
@@ -93,6 +99,11 @@ async def visual_answer(
             return "A Text holds a number or date; show values only with components."
         return None
 
+    tracer = Tracer(
+        max_rounds=MAX_ROUNDS,
+        max_nodes=MAX_NODES,
+        min_step_s=get_settings().walk_step_min_s,
+    )
     try:
         text, graph = await walk(
             llm,
@@ -101,11 +112,28 @@ async def visual_answer(
             open_client=open_client,
             trusted=trusted,
             check=problem,
+            tracer=tracer,
+            names={c.entity_id: c.name for c in candidates}
+            | {r.entity_id: r.name for r in profile.reference_investors},
         )
     except LLMError as exc:
         log.info("no visual answer: %s", exc)
+        tracer.close(None)
         return None
-    ui = _strip_fence(text)
+    except asyncio.CancelledError:
+        # The turn was a correction: the report changes instead, so the walk ends unshown.
+        tracer.close(None)
+        raise
+    visual = _checked(_strip_fence(text), graph, problem)
+    if visual:
+        visual.walk = tracer.summary()
+    tracer.close(visual and visual.ui)
+    return visual
+
+
+def _checked(
+    ui: str, graph: ExploredGraph | None, problem: Callable[[str, ExploredGraph | None], str | None]
+) -> Visual | None:
     # The chat shows the visual instead of the text, so it must carry its own sentence.
     if not (ui.startswith("root = Answer(") and "Text(" in ui):
         log.debug("no visual answer: %r", ui[:300])

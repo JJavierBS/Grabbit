@@ -1,52 +1,80 @@
-import { ArrowUp, Mic, RefreshCw, Square } from "lucide-react";
+import { ArrowDown, MicVocal, RefreshCw, SendHorizontal, Square } from "lucide-react";
+import { type FormEvent, Fragment, type KeyboardEvent, type ReactNode, useState } from "react";
 import {
-  type FormEvent,
-  type KeyboardEvent,
-  type ReactNode,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
-import { useChat, useProfile, useSendMessage, useUndo } from "../../api/hooks/queries";
+  useChat,
+  useLatestReport,
+  useProfile,
+  useSendMessage,
+  useTurnProgress,
+  useUndo,
+  useWalkTrace,
+} from "../../api/hooks/queries";
 import type { ChatMessage } from "../../api/types";
 import { Button } from "../../components/Button";
 import { TextArea } from "../../components/Input";
 import { Logo } from "../../components/Logo";
 import { Markdown } from "../../components/Markdown";
 import { Skeleton } from "../../components/Skeleton";
+import { AgentQuestions } from "./AgentQuestions";
 import { ChangeNote } from "./ChangeNote";
 import styles from "./ChatPanel.module.css";
+import { HowIFound } from "./HowIFound";
+import { LiveWalk } from "./LiveWalk";
 import { changeNoteText, isUndoable } from "./noteText";
 import { VisualAnswer } from "./openui/VisualAnswer";
+import { ReplySources } from "./ReplySources";
 import { useDictation } from "./useDictation";
+import { useFollowLog } from "./useFollowLog";
+import { WorkingLine } from "./WorkingLine";
 
-const SUGGESTIONS = ["Shorter, co-investors first", "Drop consumer health"];
+/** Corrections to try once a report exists. */
+export const CORRECTIONS = ["Shorter, co-investors first", "Drop consumer health"];
+
+/** First-run examples: a thesis can be this vague, and Grabbit asks the rest. */
+export const THESIS_EXAMPLES = [
+  "AI startups at pre-seed and seed",
+  "Nordic climate tech at seed",
+  "Fintech backed by Y Combinator",
+];
+
+export const PLACEHOLDER_FIRST = "Describe your thesis: sector, stage, investors you trust";
+export const PLACEHOLDER_REPORT = "Correct the report or ask a question";
 
 interface ChatPanelProps {
-  /** Extra items rendered after the messages, e.g. an alert opened from a notification. */
+  /** Items with no place in the conversation yet, rendered after the messages. */
   footer?: ReactNode;
+  /** Items anchored to a message, e.g. the report outline after the turn that wrote it. */
+  renderAfter?: (message: ChatMessage) => ReactNode;
+  /** Changes when the anchored or footer items change, so the log can follow them. */
+  followKey?: string;
 }
 
-export function ChatPanel({ footer }: ChatPanelProps) {
+export function ChatPanel({ footer, renderAfter, followKey }: ChatPanelProps) {
   const chat = useChat();
   const profile = useProfile();
+  const report = useLatestReport();
+  const progress = useTurnProgress();
+  const trace = useWalkTrace().data;
   const send = useSendMessage();
   const undo = useUndo();
   const [draft, setDraft] = useState("");
   const dictation = useDictation(setDraft);
-  const endRef = useRef<HTMLDivElement>(null);
   const messages = chat.data ?? [];
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: scroll on every new message or footer.
-  useEffect(() => {
-    endRef.current?.scrollIntoView?.({ block: "end" });
-  }, [messages.length, send.isPending, footer]);
+  const hasReport = Boolean(report.data);
+  const firstRun = chat.isSuccess && messages.length === 0;
+  // Corrections need a report; examples help only before the first message.
+  const suggestions = hasReport ? CORRECTIONS : firstRun ? THESIS_EXAMPLES : [];
+  // The live walk grows under the working line; follow it like a new message.
+  const growth = trace ? `${trace.steps.length}|${trace.nodes}|${trace.answer?.length ?? 0}` : "";
+  const follow = useFollowLog(messages, chat.isSuccess, `${followKey}|${send.isPending}|${growth}`);
 
   const submit = (text: string) => {
     const value = text.trim();
     if (!value || send.isPending) return;
-    if (dictation.listening) dictation.toggle("");
-    send.mutate(value, { onSuccess: () => setDraft("") });
+    dictation.cancel();
+    // The message leaves the composer at once; if it is not sent, it comes back to edit.
+    setDraft("");
+    send.mutate(value, { onError: () => setDraft((current) => current || value) });
   };
 
   const onSubmit = (e: FormEvent) => {
@@ -71,8 +99,15 @@ export function ChatPanel({ footer }: ChatPanelProps) {
       <h2 id="chat-title" className="visually-hidden">
         Chat with Grabbit
       </h2>
-      <div className={styles.log} role="log" aria-live="polite" aria-busy={chat.isPending}>
-        <div className={styles.column}>
+      <div
+        ref={follow.logRef}
+        className={styles.log}
+        role="log"
+        aria-live="polite"
+        aria-busy={chat.isPending}
+        onScroll={follow.onScroll}
+      >
+        <div className={styles.column} data-loaded={chat.isSuccess || undefined}>
           {chat.isPending && <Skeleton lines={4} label="Loading the conversation" />}
           {chat.isError && (
             <div className={styles.error} role="alert">
@@ -87,27 +122,49 @@ export function ChatPanel({ footer }: ChatPanelProps) {
               </Button>
             </div>
           )}
-          {chat.isSuccess && messages.length === 0 && <Logo stacked className={styles.welcome} />}
-          {messages.map((m) => (
-            <Message
-              key={m.id}
-              message={m}
-              canUndo={isUndoable(m.profile_changes, profile.data?.version)}
-              undoing={undo.isPending}
-              onUndo={() => undo.mutate()}
-            />
-          ))}
-          {send.isPending && (
-            <p className={styles.thinking} role="status">
-              Grabbit is reading your message and checking the report…
-            </p>
+          {firstRun && (
+            <div className={styles.welcome}>
+              <Logo stacked className={styles.welcomeLogo} />
+              <p className={styles.welcomeLead}>Tell me what you look for at Slush 2026.</p>
+              <p className={styles.welcomeHint}>
+                <span>A sector, a stage, investors you trust:</span>{" "}
+                <span>however vague, I ask the rest.</span>
+              </p>
+            </div>
           )}
+          {messages.map((m) => (
+            <Fragment key={m.id}>
+              <Message
+                message={m}
+                entering={follow.isNew(m)}
+                canUndo={isUndoable(m.profile_changes, profile.data?.version)}
+                undoing={undo.isPending}
+                onUndo={() => undo.mutate()}
+                onAnswer={m.id === messages.at(-1)?.id ? submit : undefined}
+                busy={send.isPending}
+              />
+              {renderAfter?.(m)}
+            </Fragment>
+          ))}
           {footer}
-          <div ref={endRef} />
+          {/* The working line is always the last thing in the log, under any card. */}
+          {send.isPending && <WorkingLine hasReport={hasReport} phase={progress.data?.label} />}
+          {send.isPending && trace && trace.steps.length > 0 && <LiveWalk trace={trace} />}
         </div>
       </div>
 
       <form className={styles.composer} onSubmit={onSubmit}>
+        {follow.behind && (
+          <Button
+            variant="secondary"
+            size="sm"
+            className={styles.jump}
+            icon={<ArrowDown aria-hidden="true" />}
+            onClick={follow.jumpToLatest}
+          >
+            Jump to latest
+          </Button>
+        )}
         {send.isError && (
           <p className={styles.sendError} role="alert">
             Your message was not sent: {send.error.message}
@@ -123,19 +180,21 @@ export function ChatPanel({ footer }: ChatPanelProps) {
             {dictation.error}
           </p>
         )}
-        <div className={styles.suggestions}>
-          {SUGGESTIONS.map((s) => (
-            <Button
-              key={s}
-              variant="secondary"
-              size="sm"
-              disabled={send.isPending}
-              onClick={() => submit(s)}
-            >
-              {s}
-            </Button>
-          ))}
-        </div>
+        {suggestions.length > 0 && (
+          <div className={styles.suggestions}>
+            {suggestions.map((s) => (
+              <Button
+                key={s}
+                variant="secondary"
+                size="sm"
+                disabled={send.isPending}
+                onClick={() => submit(s)}
+              >
+                {s}
+              </Button>
+            ))}
+          </div>
+        )}
         <div className={styles.inputRow}>
           <TextArea
             label="Message Grabbit"
@@ -143,7 +202,11 @@ export function ChatPanel({ footer }: ChatPanelProps) {
             placeholder={
               dictation.listening
                 ? "Listening… press Stop when you are done"
-                : "Correct the report or ask a question"
+                : dictation.transcribing
+                  ? "Writing down what you said…"
+                  : hasReport
+                    ? PLACEHOLDER_REPORT
+                    : PLACEHOLDER_FIRST
             }
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
@@ -156,9 +219,14 @@ export function ChatPanel({ footer }: ChatPanelProps) {
               aria-label={dictation.listening ? "Stop talking" : "Talk"}
               aria-pressed={dictation.listening}
               className={styles.talk}
-              onClick={() => dictation.toggle(draft)}
+              loading={dictation.transcribing}
+              onClick={dictation.toggle}
               icon={
-                dictation.listening ? <Square aria-hidden="true" /> : <Mic aria-hidden="true" />
+                dictation.listening ? (
+                  <Square aria-hidden="true" />
+                ) : (
+                  <MicVocal aria-hidden="true" />
+                )
               }
             />
           )}
@@ -168,7 +236,7 @@ export function ChatPanel({ footer }: ChatPanelProps) {
             className={styles.send}
             loading={send.isPending}
             disabled={!draft.trim()}
-            icon={<ArrowUp aria-hidden="true" />}
+            icon={<SendHorizontal aria-hidden="true" />}
           />
         </div>
       </form>
@@ -178,27 +246,45 @@ export function ChatPanel({ footer }: ChatPanelProps) {
 
 interface MessageProps {
   message: ChatMessage;
+  /** Arrived during this visit: it enters with a short fade instead of popping in. */
+  entering: boolean;
   canUndo: boolean;
   undoing: boolean;
   onUndo: () => void;
+  /** Answers its questions with a click; only the latest reply's are still open (#153). */
+  onAnswer?: (text: string) => void;
+  busy: boolean;
 }
 
-function Message({ message, canUndo, undoing, onUndo }: MessageProps) {
+function Message({ message, entering, canUndo, undoing, onUndo, onAnswer, busy }: MessageProps) {
   const isAgent = message.role === "agent";
   const { note, rest } = isAgent
     ? changeNoteText(message.text, message.profile_changes)
     : { note: null, rest: message.text };
   return (
-    <article className={`${styles.message} ${isAgent ? styles.agent : styles.user}`}>
+    <article
+      className={`${styles.message} ${isAgent ? styles.agent : styles.user}`}
+      data-message-id={message.id}
+      data-enter={entering || undefined}
+    >
       <p className="visually-hidden">{isAgent ? "Grabbit said:" : "You said:"}</p>
       {note && <ChangeNote note={note} canUndo={canUndo} undoing={undoing} onUndo={onUndo} />}
       {/* A visual answer opens with its own sentence; the text stays as the model's history. */}
       {message.ui ? (
         <div className={styles.visual}>
           <VisualAnswer ui={message.ui} graph={message.graph} />
+          {message.walk && <HowIFound walk={message.walk} />}
         </div>
       ) : (
-        rest && <div className={styles.bubble}>{isAgent ? <Markdown source={rest} /> : rest}</div>
+        rest && (
+          <div className={styles.bubble}>
+            {isAgent ? <Markdown source={rest} /> : rest}
+            {isAgent && message.sources.length > 0 && <ReplySources cited={message.sources} />}
+          </div>
+        )
+      )}
+      {isAgent && message.questions.length > 0 && (
+        <AgentQuestions questions={message.questions} onAnswer={onAnswer} busy={busy} />
       )}
     </article>
   );

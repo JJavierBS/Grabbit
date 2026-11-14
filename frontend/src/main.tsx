@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles/base.css";
-import { App } from "./App";
+import { Grabbit } from "./App";
 import { setEventStreamFactory, setTransport } from "./api/client";
 import { ToastProvider } from "./components/Toast";
 import { Gallery } from "./design/Gallery";
@@ -24,7 +24,7 @@ createRoot(root).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <ToastProvider>
-        {new URLSearchParams(location.search).has("gallery") ? <Gallery /> : <App />}
+        {new URLSearchParams(location.search).has("gallery") ? <Gallery /> : <Grabbit />}
       </ToastProvider>
     </QueryClientProvider>
   </StrictMode>,

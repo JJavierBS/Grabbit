@@ -20,7 +20,12 @@ class Settings(BaseSettings):
     gemini_api_key: str = ""
     gemini_model: str = ""
     gemini_timeout_s: float = 30.0
+    gemini_thoughts: bool = False
+    walk_step_min_s: float = 0.0
     cala_mode: CalaMode = "live"
+    # One Cala request at a time for the whole process, starts this far apart (#119).
+    cala_max_concurrency: int = 1
+    cala_min_interval_ms: int = 250
     llm_mode: LLMMode = "gemini"
     demo_mode: bool = False
     database_path: Path = Path("data/grabbit.db")

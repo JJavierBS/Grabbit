@@ -32,3 +32,10 @@ def test_empty_chat_message_is_rejected(client):
     response = client.post("/api/chat", json={"text": ""})
     assert response.status_code == 422
     assert response.json()["error"]["code"] == "validation_error"
+
+
+def test_a_chat_turn_starts_by_reporting_the_cala_walk(client, published):
+    client.post("/api/chat", json={"text": "hello"})
+    progress = [payload for kind, payload in published if kind == "progress"]
+    assert progress[0].phase == "cala"
+    assert progress[0].label == "Walking the Slush attendees in Cala…"
