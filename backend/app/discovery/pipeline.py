@@ -44,7 +44,12 @@ COMPANY_PROPERTIES = [
     "total_funding_units",
     "funding_stage",
 ]
-COMPANY_OUTGOING = ["PARTICIPATES_IN_FUNDING_ROUND", "OPERATES_IN_INDUSTRY", "HAS_DOMAIN_NAME"]
+COMPANY_OUTGOING = [
+    "PARTICIPATES_IN_FUNDING_ROUND",
+    "PARTICIPATES_IN_CORPORATE_EVENT",
+    "OPERATES_IN_INDUSTRY",
+    "HAS_DOMAIN_NAME",
+]
 COMPANY_INCOMING = ["FOUNDED", "IS_CEO_OF", "IS_CTO_OF", "IS_VICEPRESIDENT_OF"]
 ROUND_BODY = {
     "properties": [
@@ -67,7 +72,9 @@ INVESTOR_BODY = {
 
 class Cala(Protocol):
     async def introspect(self, entity_id: str) -> dict[str, Any]: ...
-    async def retrieve(self, entity_id: str, body: dict[str, Any] | None = None) -> dict: ...
+    async def retrieve(
+        self, entity_id: str, body: dict[str, Any] | None = None, *, fresh: bool = False
+    ) -> dict: ...
 
 
 def neutral_profile(event_id: str | None = None) -> Profile:
@@ -187,8 +194,9 @@ async def attendees(client: Cala, event_id: str, limits: Limits) -> list[dict[st
         offset += limits.page_size
 
 
-async def fetch_company(client: Cala, company_id: str) -> dict[str, Any]:
-    """Introspect, then ask only for what this company has (docs/agents/cala.md)."""
+async def fetch_company(client: Cala, company_id: str, *, fresh: bool = False) -> dict[str, Any]:
+    """Introspect, then ask only for what this company has (docs/agents/cala.md).
+    `fresh=True` re-reads the node itself, for the watcher."""
     intro = await client.introspect(company_id)
     have = set(intro.get("properties") or [])
     rels = intro.get("relationships") or {}
@@ -209,7 +217,7 @@ async def fetch_company(client: Cala, company_id: str) -> dict[str, Any]:
     ]
     if employee_ids:
         body["numerical_observations"] = {"ObservableProperty": employee_ids}
-    return await client.retrieve(company_id, body)
+    return await client.retrieve(company_id, body, fresh=fresh)
 
 
 async def lead_portfolios(

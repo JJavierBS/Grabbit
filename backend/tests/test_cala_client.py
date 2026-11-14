@@ -122,3 +122,18 @@ async def test_replay_miss_fails_clearly(cache):
 def test_live_mode_requires_a_key(cache):
     with pytest.raises(ValueError):
         CalaClient(None, cache, mode="live")
+
+
+@respx.mock
+async def test_fresh_retrieve_skips_cached_copy_and_updates_it(cache):
+    route = respx.post(f"{BASE_URL}/v1/entities/{COMPANY_ID}").mock(
+        side_effect=[
+            httpx.Response(200, json={"v": 1}),
+            httpx.Response(200, json={"v": 2}),
+        ]
+    )
+    client = make_client(cache)
+    assert await client.retrieve(COMPANY_ID, {}) == {"v": 1}
+    assert await client.retrieve(COMPANY_ID, {}, fresh=True) == {"v": 2}
+    assert await client.retrieve(COMPANY_ID, {}) == {"v": 2}
+    assert route.call_count == 2

@@ -116,7 +116,7 @@ class FakeCala:
             },
         }
 
-    async def retrieve(self, entity_id, body=None):
+    async def retrieve(self, entity_id, body=None, fresh=False):
         self.calls.append(("retrieve", entity_id))
         node = self.nodes[entity_id]
         page = (
