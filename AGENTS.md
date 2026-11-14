@@ -53,3 +53,4 @@ Read only what the current step needs. Do not preload these files.
 | make a design choice (check first, log after) | `docs/agents/decisions.md` |
 | plan or build anything not yet decided, or prepare questions for Cala | `docs/agents/open-questions.md` |
 | write the README, punchline, deck, table pitch or submission | `docs/agents/pitch.md` |
+| pick up your team's next issue or check who owns a path | `docs/plans/README.md`, then your team's plan |
