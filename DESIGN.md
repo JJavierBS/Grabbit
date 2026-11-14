@@ -288,13 +288,15 @@ tooltip). No links: Cala gives no per-item source.
 
 ### Coach Card (guided demo)
 The guided demo's narrator, docked on the composer: a white card with a soft edge,
-`rounded.lg` corners and `shadow-md`. One ink hairline per step along its top edge shows progress.
-Below them: the step title (16px semibold ink) with a ghost close button, then one or two
-lines of text, then one primary pill ("Show me", "Next", or "Try it yourself") and the muted
-line "Sample data, nothing is saved · n of 5". In the demo, "How I found this" is open under the graph. It carries no violet: the light stays with
-the agent. On narrow screens with the panel open, it floats fixed above the panel. The
-invitation "See how it works · 1 min" under the first-run welcome carries one small violet
-dot until the demo is seen or dismissed.
+`rounded.lg` corners and `shadow-md`. One ink hairline per step along its top edge shows
+progress. Below them: the step title (16px semibold ink) with a ghost close button, then
+one or two lines of text, then one primary pill ("Show me", or "Try it yourself" at the
+end) and the muted line "Sample data, nothing is saved · n of 5". In the demo, "How I
+found this" is open under the graph. There is no "Next": about a second after a step's
+result lands, the card moves on, and the next step's text says what just happened. It
+carries no violet: the light stays with the agent. On narrow screens with the panel open,
+it floats fixed above the panel. The invitation "See how it works · 1 min" under the
+first-run welcome carries one small violet dot until the demo is seen or dismissed.
 
 ### Alert Toast
 Bottom right, white, violet edge, large shadow plus the full glow, ink text, "Open in
