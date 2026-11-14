@@ -5,6 +5,7 @@ import { useLatestReport, useSendMessage, useSimulateEvent } from "./api/hooks/q
 import { type StreamStatus, useEvents } from "./api/hooks/useEvents";
 import type { Alert, Report } from "./api/types";
 import { Button } from "./components/Button";
+import { FullscreenButton } from "./components/FullscreenButton";
 import { Logo } from "./components/Logo";
 import { AlertCard } from "./features/alerts/AlertCard";
 import { askNotificationPermission } from "./features/alerts/notify";
@@ -254,6 +255,7 @@ export function App() {
             >
               What changed
             </Button>
+            <FullscreenButton />
           </div>
         </header>
 
