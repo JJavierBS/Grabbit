@@ -62,6 +62,10 @@ Read first: `docs/agents/agent.md` (all of it), `flow.md` sections 1-3, `api.md`
 Client with timeout and cache; allow-list from onboarding; `Fact`s with
 `trust=web_unverified`; their own block in the report. Read `docs/agents/context-dev.md`.
 
+## Integration
+Merge order, files touched outside our paths and what other teams adapt:
+`docs/plans/team-3-integration.md`.
+
 ## Demo responsibility
 The 20-second moment in the video: "shorter, co-investors first" -> the report rewrites
 itself -> history shows what the agent learned. Make it reliable: script it in FakeLLM
