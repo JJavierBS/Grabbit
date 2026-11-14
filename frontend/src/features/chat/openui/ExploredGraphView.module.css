@@ -135,3 +135,8 @@
   gap: var(--space-3) var(--space-4);
   margin: 0;
 }
+
+/* The root keeps its ink so its white label stays readable when you trust it. */
+.node[data-kind="root"][data-trusted] rect {
+  fill: var(--color-ink);
+}

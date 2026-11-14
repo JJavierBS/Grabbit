@@ -223,7 +223,11 @@ export function toTallWalk(wide: WalkLayout, width: number): WalkLayout {
     const n = byId.get(id);
     if (!n) return;
     const x = depth * INDENT;
-    const sub = [via?.label, n.sub].filter(Boolean).join(" · ") || undefined;
+    // "INVESTOR · Investor" says it twice: keep the edge's word.
+    const own = (n.sub ?? "")
+      .split(" · ")
+      .filter((p) => p.toLowerCase() !== via?.label.toLowerCase());
+    const sub = [via?.label, ...own].filter(Boolean).join(" · ") || undefined;
     nodes.push({ ...n, sub, x, y: nodes.length * ROW, w: width - x });
     // Kids follow the wide layout's top-to-bottom order.
     const ordered = [...(kids.get(id) ?? [])].sort(

@@ -30,8 +30,6 @@ MAX_CALLS_PER_ROUND = 3
 MAX_EXPAND = 6
 MAX_RELATIONSHIPS = 3
 EDGE_LIMIT = 6
-# A round lists every participant; the issuer may come last, so read more and trim locally.
-ROUND_EDGE_LIMIT = 12
 SEARCH_LIMIT = 5
 # Cala answers most nodes in under a second, but hub nodes can take minutes (cala.md).
 CALA_TIMEOUT_S = 15.0
@@ -233,7 +231,7 @@ class Walk:
             ]
             body = {
                 "properties": ["name", *props, *extra],
-                "relationships": _projection(chosen, self.seen_types.get(entity_id)),
+                "relationships": _projection(chosen),
             }
             data = await self._cala("retrieve", entity_id, body)
         except TimeoutError:
@@ -323,13 +321,10 @@ def _choose(listed: dict[str, list[str]], wanted: list[str]) -> list[tuple[str, 
     return list(dict.fromkeys(chosen))[:MAX_RELATIONSHIPS]
 
 
-def _projection(
-    chosen: list[tuple[str, str]], entity_type: str | None
-) -> dict[str, dict[str, Any]]:
-    limit = ROUND_EDGE_LIMIT if entity_type in ROUND_TYPES else EDGE_LIMIT
+def _projection(chosen: list[tuple[str, str]]) -> dict[str, dict[str, Any]]:
     out: dict[str, dict[str, Any]] = {}
     for direction, rel in chosen:
-        out.setdefault(direction, {})[rel] = {"limit": limit}
+        out.setdefault(direction, {})[rel] = {"limit": EDGE_LIMIT}
     return out
 
 
@@ -370,9 +365,13 @@ async def walk(
     question: str,
     open_client: ClientFactory,
     trusted: set[str],
+    check: Callable[[str, ExploredGraph | None], str | None] | None = None,
     clock: Callable[[], float] = time.monotonic,
 ) -> tuple[str, ExploredGraph | None]:
-    """Let the model call Cala tools for a few rounds, then return its answer and the walk."""
+    """Let the model call Cala tools for a few rounds, then return its answer and the walk.
+
+    `check` names a problem in the answer (e.g. a number in Text); the model gets one rewrite.
+    """
     started = clock()
     messages = [Message(role="user", text=question)]
     async with Walk(open_client, trusted) as state:
@@ -419,6 +418,16 @@ async def walk(
                     ],
                 ),
             ]
+        graph = state.graph()
+        problem = check(result.text, graph) if check else None
+        if problem:
+            # One rewrite, without tools: cheaper than losing the whole visual answer.
+            log.info("explore: asking for a rewrite: %s", problem)
+            messages += [
+                Message(role="model", text=result.text),
+                Message(role="user", text=f"{problem} Rewrite the answer in OpenUI Lang."),
+            ]
+            result = await llm.chat(system=system, messages=messages)
         log.info(
             "explore: %d tool rounds, %d cala calls, %d nodes, %d edges, %.1fs",
             rounds,
@@ -427,7 +436,7 @@ async def walk(
             len(state.edges),
             clock() - started,
         )
-        return result.text, state.graph()
+        return result.text, graph
 
 
 def _stop_reason(state: Walk, rounds: int, elapsed: float) -> str | None:

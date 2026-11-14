@@ -3,6 +3,7 @@
 import type {
   Candidate,
   ChatMessage,
+  ExploredGraph,
   Fact,
   Profile,
   ProfileChange,
@@ -370,3 +371,68 @@ export const chatV2: ChatMessage[] = [
     graph: null,
   },
 ];
+
+const edge = (
+  source: string,
+  target: string,
+  role: string,
+  is_lead = false,
+): ExploredGraph["edges"][number] => ({
+  source,
+  target,
+  relationship: "PARTICIPATES_IN_FUNDING_ROUND",
+  role,
+  is_lead,
+  facts: {},
+});
+
+/** What the agent walked in Cala for "What else has Aurora Ventures backed?" (#73). */
+export const exploredAurora: ExploredGraph = {
+  nodes: [
+    {
+      entity_id: "i-aurora",
+      name: "Aurora Ventures",
+      entity_type: "Organization",
+      facts: { website: fact("aurora.example", database) },
+    },
+    {
+      entity_id: "r-fjord-seed",
+      name: "Seed",
+      entity_type: "FundingRound",
+      facts: {
+        transaction_value: fact(1800000, press("Nordic Tech Wire", "2025-03-04"), "EUR"),
+        event_date: fact("2025-03-01", registry("2025-03-01", "month")),
+      },
+    },
+    { entity_id: "r-kelp-pre", name: "Pre-Seed", entity_type: "FundingRound", facts: {} },
+    { entity_id: "c-fjord", name: "Fjordlight Robotics", entity_type: "Company", facts: {} },
+    { entity_id: "c-kelp", name: "Kelpwise", entity_type: "Company", facts: {} },
+    { entity_id: "i-northstar", name: "North Star Capital", entity_type: "Company", facts: {} },
+    { entity_id: "i-birch", name: "Birch Angels", entity_type: "Organization", facts: {} },
+    { entity_id: "p-lina", name: "Lina Korhonen", entity_type: "Person", facts: {} },
+  ],
+  edges: [
+    edge("i-aurora", "r-fjord-seed", "INVESTOR", true),
+    edge("i-aurora", "r-kelp-pre", "INVESTOR"),
+    edge("c-fjord", "r-fjord-seed", "ISSUER"),
+    edge("i-northstar", "r-fjord-seed", "INVESTOR"),
+    edge("c-kelp", "r-kelp-pre", "ISSUER"),
+    edge("i-birch", "r-kelp-pre", "INVESTOR", true),
+    edge("i-northstar", "r-kelp-pre", "INVESTOR"),
+    {
+      source: "p-lina",
+      target: "i-aurora",
+      relationship: "FOUNDED",
+      role: null,
+      is_lead: false,
+      facts: {},
+    },
+  ],
+};
+
+export const exploredAnswerUi = [
+  "root = Answer([t, g, f])",
+  't = Text("Aurora Ventures also led the seed of Fjordlight Robotics and joined Kelpwise, both with North Star Capital.")',
+  'g = ExploredGraph("i-aurora")',
+  'f = EntityFacts("r-fjord-seed")',
+].join("\n");

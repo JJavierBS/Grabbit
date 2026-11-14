@@ -1,8 +1,24 @@
 // Dev-only stand-in for the FastAPI backend, on when VITE_FAKE_API=1. It replays the demo
 // path on synthetic fixtures: a correction rewrites the profile and the report, undo goes
 // back one version. The real backend replaces it once #21 serves the fixture endpoints.
-import type { Alert, ChatMessage, Profile, ProfileChange, Report } from "../api/types";
-import { chatV2, historyV2, profileV2, reportV1, reportV2, reportV3 } from "./fixtures";
+import type {
+  Alert,
+  ChatMessage,
+  ExploredGraph,
+  Profile,
+  ProfileChange,
+  Report,
+} from "../api/types";
+import {
+  chatV2,
+  exploredAnswerUi,
+  exploredAurora,
+  historyV2,
+  profileV2,
+  reportV1,
+  reportV2,
+  reportV3,
+} from "./fixtures";
 
 interface Version {
   profile: Profile;
@@ -14,6 +30,8 @@ interface Script {
   match: RegExp;
   reply: string;
   next?: (v: Version) => Version;
+  ui?: string;
+  graph?: ExploredGraph;
 }
 
 const now = () => new Date().toISOString();
@@ -72,6 +90,12 @@ const scripts: Script[] = [
         "You asked to drop consumer health.",
         reportV3,
       ),
+  },
+  {
+    match: /what else|backed|invested in/i,
+    reply: "Aurora Ventures also led the seed of Fjordlight Robotics.",
+    ui: exploredAnswerUi,
+    graph: exploredAurora,
   },
   {
     match: /confirm|looks right|keep me posted/i,
@@ -144,8 +168,8 @@ export async function fakeTransport(request: Request): Promise<Response> {
       created_at: now(),
       profile_changes: after === before ? [] : [after.history[0]],
       report_id: after === before ? null : after.report.id,
-      ui: null,
-      graph: null,
+      ui: script?.ui ?? null,
+      graph: script?.graph ?? null,
     };
     state.chat.push(reply);
     return json(reply);

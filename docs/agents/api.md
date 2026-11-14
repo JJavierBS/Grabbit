@@ -6,6 +6,9 @@ work in parallel against mocks.
 - Source of truth: Pydantic models in `backend/app/models.py`. FastAPI publishes them at
   `/api/openapi.json`; `npm run gen:api` (openapi-typescript) writes
   `frontend/src/api/schema.ts`, committed. Never hand-write API types in the frontend.
+  `make gen-api` reads whatever backend answers on `:8000`, which in a worktree may be
+  another checkout's: then dump `create_app().openapi()` to a file and run
+  `npx openapi-typescript <file> -o src/api/schema.ts` instead.
 - Mocks: every endpoint exists from the skeleton issue on, first returning fixture data
   (`backend/app/fixtures/`, status "mock" below). The frontend always talks to the real
   backend; offline it runs with `CALA_MODE=replay` and `LLM_MODE=fake`.
@@ -44,8 +47,14 @@ work in parallel against mocks.
   updated_at`.
 - `ProfileChange`: `version, field, before, after, reason, by (user|agent)`.
 - `ChatMessage`: `id, role (user|agent), text, created_at, profile_changes: ProfileChange[],
-  report_id?, ui?`. `ui` is OpenUI Lang drawn with the Cala components in
+  report_id?, ui?, graph?`. `ui` is OpenUI Lang drawn with the Cala components in
   `frontend/src/features/chat/openui/`; when set, the chat shows it instead of `text`.
+  `graph` is the part of Cala's graph the agent walked for that answer (`ExploredGraph`),
+  drawn by the `ExploredGraph` and `EntityFacts` components.
+- `ExploredGraph`: `nodes: GraphNode[], edges: GraphEdge[]`. `GraphNode`: `entity_id, name,
+  entity_type, facts: {property: Fact}` (only for nodes the agent expanded).
+  `GraphEdge`: `source, target, relationship (Cala name), role?, is_lead, facts: {event_date|
+  valid_since|valid_until: Fact}`; it points the way Cala stores it (investor -> round).
 - `Report`: `id, kind (prep|digest|memo), created_at, profile_version, summary,
   sections [{title, body_md, candidate_ids[]}], candidates: Candidate[]`.
 - `Alert`: `id, created_at, entity_id, entity_name, kind (new_round|executive_change|

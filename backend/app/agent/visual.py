@@ -83,6 +83,16 @@ async def visual_answer(
     if not candidates:
         return None
     trusted = {r.entity_id for r in profile.reference_investors}
+
+    def problem(text: str, graph: ExploredGraph | None) -> str | None:
+        ui = _strip_fence(text)
+        if not ui.startswith("root = Answer("):
+            return None  # NONE or prose: nothing to rewrite.
+        names = _known_names(profile, candidates, graph)
+        if any(_has_digit(t, names) for t in _TEXT.findall(ui)):
+            return "A Text holds a number or date; show values only with components."
+        return None
+
     try:
         text, graph = await walk(
             llm,
@@ -90,11 +100,12 @@ async def visual_answer(
             question=question,
             open_client=open_client,
             trusted=trusted,
+            check=problem,
         )
     except LLMError as exc:
         log.info("no visual answer: %s", exc)
         return None
-    ui = re.sub(r"^```\w*\n|\n```$", "", (text or "").strip())
+    ui = _strip_fence(text)
     # The chat shows the visual instead of the text, so it must carry its own sentence.
     if not (ui.startswith("root = Answer(") and "Text(" in ui):
         log.debug("no visual answer: %r", ui[:300])
@@ -102,11 +113,14 @@ async def visual_answer(
     if graph is None and any(c in ui for c in EXPLORED_COMPONENTS):
         log.info("no visual answer: it draws a walk that did not happen")
         return None
-    names = _known_names(profile, candidates, graph)
-    if any(_has_digit(t, names) for t in _TEXT.findall(ui)):
-        log.info("no visual answer: a number written in Text")
+    if issue := problem(ui, graph):
+        log.info("no visual answer: %s", issue)
         return None
     return Visual(ui=ui, graph=graph)
+
+
+def _strip_fence(text: str) -> str:
+    return re.sub(r"^```\w*\n|\n```$", "", (text or "").strip())
 
 
 def _known_names(
@@ -116,6 +130,8 @@ def _known_names(
     for c in candidates:
         names += [c.name, *(i.name for r in c.rounds for i in r.investors)]
     names += [n.name for n in graph.nodes] if graph else []
+    # Cala names funds by their vehicle; the model says "500 Global", not the parenthesis.
+    names += [n.split(" (")[0] for n in names if " (" in n]
     # Longest first, so "500 Global (500 Emerging Europe)" goes before "500 Global".
     return sorted({n for n in names if n}, key=len, reverse=True)
 

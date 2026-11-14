@@ -2,14 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { ExploredGraph } from "../../../api/types";
 import { FactValue } from "../../../components/FactValue";
 import styles from "./ExploredGraphView.module.css";
-import {
-  layoutWalk,
-  NODE_W,
-  ROW,
-  toTallWalk,
-  typeLabel,
-  type WalkNode,
-} from "./exploredGraph";
+import { layoutWalk, NODE_W, ROW, toTallWalk, typeLabel, type WalkNode } from "./exploredGraph";
 import { factKind, factLabel } from "./facts";
 
 const NODE_H = 34;
@@ -87,12 +80,7 @@ export function ExploredGraphView({ graph, rootId, trusted }: Props) {
                 {e.title && <title>{e.title}</title>}
                 <path d={`M${x1},${a.y} C${mx},${a.y} ${mx},${b.y} ${x2},${b.y}`} />
                 {e.label && (
-                  <text
-                    x={x2 - 6}
-                    y={b.y - 5}
-                    textAnchor="end"
-                    className={styles.edgeLabel}
-                  >
+                  <text x={x2 - 6} y={b.y - 5} textAnchor="end" className={styles.edgeLabel}>
                     {clip(e.label, 18)}
                   </text>
                 )}

@@ -184,24 +184,22 @@ const EntityFacts = defineComponent({
   component: function EntityFactsView({ props }) {
     const { node } = useExplored(props.entityId);
     if (!node) return <NotExplored id={props.entityId} />;
+    // People and unexpanded neighbours carry no facts; a block of "Not published" says nothing.
+    if (Object.keys(node.facts).length === 0) return null;
     const keys = props.fields?.length ? props.fields : Object.keys(node.facts);
     return (
       <div className={styles.block}>
         <h6 className={styles.title}>{node.name}</h6>
-        {keys.length ? (
-          <dl className={styles.facts}>
-            {keys.map((k) => (
-              <FactValue
-                key={k}
-                label={factLabel(k)}
-                kind={factKind(k)}
-                fact={node.facts[k] ?? NOT_PUBLISHED}
-              />
-            ))}
-          </dl>
-        ) : (
-          <p className={styles.missing}>Cala lists no key facts for it.</p>
-        )}
+        <dl className={styles.facts}>
+          {keys.map((k) => (
+            <FactValue
+              key={k}
+              label={factLabel(k)}
+              kind={factKind(k)}
+              fact={node.facts[k] ?? NOT_PUBLISHED}
+            />
+          ))}
+        </dl>
       </div>
     );
   },
