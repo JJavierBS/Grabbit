@@ -2,7 +2,7 @@
 
 import logging
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.agent.rules import FIXED_RULES
 from app.llm import LLM, LLMError, ToolCall
@@ -14,6 +14,11 @@ SYSTEM = f"""You maintain the report instructions of an investment research agen
 Decide whether the investor's latest reaction should change how future reports are written.
 Rewrite only for a lasting preference (length, order, what to skip, tone), not for one-off
 questions. When you rewrite, return the complete new instructions, keeping what still applies.
+Answers that keep the search open ("any country", "both", "size does not matter") change
+nothing: do not rewrite for them.
+The reason is shown to the investor as "From now on: <reason>": one short line saying what
+changes, in the language the reaction is written in, e.g. "two lines per startup".
+Never describe the investor or the request ("The investor asked…").
 
 {FIXED_RULES}"""
 
@@ -21,7 +26,9 @@ questions. When you rewrite, return the complete new instructions, keeping what 
 class LearnDecision(BaseModel):
     rewrite: bool
     text: str = ""
-    reason: str = ""
+    reason: str = Field(
+        default="", description="What changes, in the language of the reaction, e.g. 'two lines'."
+    )
 
 
 async def from_reaction(llm: LLM, profile: Profile, reaction: str) -> ToolCall | None:

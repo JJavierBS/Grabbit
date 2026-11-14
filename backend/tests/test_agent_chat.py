@@ -337,3 +337,19 @@ async def test_the_first_turn_asks_the_questions_the_model_worded(candidates, no
     assert [q.key for q in reply.questions] == ["stage"]
     assert reply.questions[0].text == worded["text"]
     assert reply.questions[0].options[2].answer == "Cualquier etapa."
+
+
+async def test_the_agent_knows_the_app_rebuilds_the_report_itself(candidates, now):
+    """#163: it asked "shall I prepare the report?" after the report was already rebuilt."""
+    prompt = chat.system_prompt(profile_store.current(now), "8 startups", candidates)
+    assert "rebuilds the report on screen by itself" in prompt
+    assert "Never offer to\nprepare, run or send a report" in prompt
+
+
+async def test_learning_writes_its_reason_for_the_investor_in_their_language():
+    """#163: the note read "From now on: The investor requested a lasting preference…"."""
+    from app.agent import learn
+
+    assert "in the language the reaction is written in" in learn.SYSTEM
+    assert "Never describe the investor or the request" in learn.SYSTEM
+    assert "keep the search open" in learn.SYSTEM
