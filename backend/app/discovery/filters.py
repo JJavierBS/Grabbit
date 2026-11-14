@@ -73,9 +73,32 @@ def headcount_upper(value: object) -> float | None:
     return float(numbers[-1]) if numbers else None
 
 
-def matches_profile(candidate: Candidate, profile: Profile) -> bool:
+def matches_profile(candidate: Candidate, profile: Profile, *, today: date | None = None) -> bool:
     """Profile filters; a filter on a field the candidate does not publish lets it pass."""
     f = profile.filters
+    if f.required_backers:
+        wanted = {" ".join(n.casefold().split()) for n in f.required_backers}
+        backers = {
+            " ".join(i.name.split(" (")[0].casefold().split())
+            for r in candidate.rounds
+            for i in r.investors
+        }
+        if not wanted & backers:
+            return False
+    if f.fundraising == "likely_to_raise" and not any(
+        s.kind == "likely_to_raise" and s.value is True for s in candidate.signals
+    ):
+        return False
+    if f.fundraising == "recent":
+        import calendar
+
+        current = today or date.today()
+        months = current.year * 12 + current.month - 1 - f.raised_within_months
+        year, month = divmod(months, 12)
+        cutoff = date(year, month + 1, min(current.day, calendar.monthrange(year, month + 1)[1]))
+        dated = [parse_date(r.date.value) for r in candidate.rounds]
+        if not any(d and cutoff <= d <= current for d in dated):
+            return False
     stage = candidate.funding_stage.value
     if f.stages and stage and normalise_stage(stage) not in wanted_stages(f.stages):
         return False

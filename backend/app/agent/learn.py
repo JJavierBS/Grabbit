@@ -13,7 +13,9 @@ log = logging.getLogger(__name__)
 SYSTEM = f"""You maintain the report instructions of an investment research agent.
 Decide whether the investor's latest reaction should change how future reports are written.
 Rewrite only for a lasting preference (length, order, what to skip, tone), not for one-off
-questions. When you rewrite, return the complete new instructions, keeping what still applies.
+questions. Questions about companies, investors or graph connections never change report
+preferences; a change of language in a question is not a lasting preference.
+When you rewrite, return the complete new instructions, keeping what still applies.
 
 {FIXED_RULES}"""
 

@@ -3,6 +3,7 @@ import type { Candidate, Round, Signal } from "../../api/types";
 import { Badge } from "../../components/Badge";
 import { FactValue } from "../../components/FactValue";
 import { humanize } from "../../lib/humanize";
+import { websiteUrl } from "../../lib/website";
 import { CalaNews } from "./CalaNews";
 import { CalaPath } from "./CalaPath";
 import styles from "./CandidateCard.module.css";
@@ -39,7 +40,12 @@ export function CandidateCard({ candidate, trusted, mark, settled }: CandidateCa
           <h4 className={styles.name}>{c.name}</h4>
           {mark && <Badge tone="warning">{MARK_LABEL[mark]}</Badge>}
           {c.website && (
-            <a className={styles.site} href={c.website} target="_blank" rel="noopener noreferrer">
+            <a
+              className={styles.site}
+              href={websiteUrl(c.website)}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               Website
               <ExternalLink aria-hidden="true" />
             </a>

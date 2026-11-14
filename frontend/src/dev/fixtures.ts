@@ -473,6 +473,9 @@ export const profileV2: Profile = {
     sectors_out: [],
     countries: ["FI", "SE", "EE", "DK", "NO"],
     headcount_max: 50,
+    fundraising: "any",
+    raised_within_months: 12,
+    required_backers: [],
     ticket: { value: 25_000, unit: "EUR", trust: "primary", sources: [] },
   },
   reference_investors: [
@@ -480,7 +483,7 @@ export const profileV2: Profile = {
     { entity_id: "i-northstar", name: "North Star Capital" },
   ],
   sources: [],
-  style: { length: "medium", detail: "plain", language: "en", sections: [] },
+  style: { max_candidates: null, length: "medium", detail: "plain", language: "en", sections: [] },
   cadence: "event",
   alert_threshold: "medium",
   instructions: "Plain language. One paragraph per startup. Lead with the round and who led it.",

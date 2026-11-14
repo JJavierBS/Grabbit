@@ -57,8 +57,9 @@ work in parallel against mocks.
 - `LinkNode`: `entity_id, name, entity_type`. `LinkEdge`: `source, target, relationship,
   role?` (Cala's direction: participant -> round).
 - `Profile`: `version, event_id?, thesis, filters {stages[], sectors_in[], sectors_out[],
-  countries[], headcount_max?, ticket?: Fact}, reference_investors [{entity_id, name}],
-  style {length (short|medium|long), detail (plain|technical), language, sections[]},
+  countries[], headcount_max?, ticket?: Fact, fundraising (any|recent|likely_to_raise),
+  raised_within_months (default 12), required_backers[] (any named backer required)}, reference_investors [{entity_id, name}],
+  style {length (short|medium|long), detail (plain|technical), language, sections[], max_candidates? (1-20)},
   cadence (event|daily|weekly), alert_threshold (low|medium|high), sources[] (publisher
   domains the angel trusts, the Context.dev allow-list; up to 3 are queried), instructions,
   updated_at`.

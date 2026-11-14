@@ -76,7 +76,7 @@ async def candidates_for(profile: Profile) -> list[Candidate]:
         candidates = [c for c in found if matches_profile(c, profile)]
     except (CalaError, CalaCacheMiss) as err:
         log.warning("discovery unavailable, using fixture candidates: %s", err)
-        candidates = fixture_candidates()
+        candidates = [c for c in fixture_candidates() if matches_profile(c, profile)]
     return _with_resolved_references(candidates, profile, graph)
 
 

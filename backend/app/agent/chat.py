@@ -4,7 +4,7 @@ import asyncio
 import json
 import logging
 from collections.abc import Awaitable, Callable
-from datetime import datetime
+from datetime import UTC, datetime
 
 from app import events
 from app.agent import learn, onboarding
@@ -33,6 +33,14 @@ Cala's company graph, show each fact with how much it can be trusted, and adapt 
 to this investor through conversation. There is no settings screen: when the investor corrects
 you or states a preference, call update_profile for structured fields and rewrite_instructions
 for how reports should read. Do not call a tool when nothing should change.
+A research question (who backed a company, explore connections, show a graph) is not a
+lasting preference. Never rewrite instructions or change language just because a question
+uses another language. Answer in that language without changing the profile.
+Use structured filters.fundraising for recent raises or may raise soon, required_backers
+for must be backed by an investor, and style.max_candidates for an explicit count.
+Do not merely promise these constraints in instructions. When changing filters, acknowledge
+the change without listing candidates from the previous selection: the rebuilt report shows matches.
+Today's date is {datetime.now(UTC).date().isoformat()}. Never call an older round recent.
 Reply in the investor's language, in at most three short sentences. Do not say "From now on":
 the app adds that line itself after a change.
 
@@ -59,6 +67,7 @@ async def handle_message(
     report_summary: str | None = None,
     on_profile_change: ReportHook | None = None,
     now: datetime | None = None,
+    load_candidates: Callable[[Profile], Awaitable[list[Candidate]]] | None = None,
 ) -> ChatMessage:
     """Store the user message, run one agent turn, store and return the agent reply."""
     chat_store.add("user", text, now=now)
@@ -108,6 +117,18 @@ async def handle_message(
             report_id = await on_profile_change(saved)
         updated = saved
 
+    if changes:
+        from app.discovery.filters import matches_profile
+
+        candidates = (
+            await load_candidates(updated)
+            if load_candidates
+            else [
+                c
+                for c in candidates
+                if matches_profile(c, updated, today=now.date() if now else None)
+            ]
+        )
     asked: list[AgentQuestion] = []
     if first_turn:
         # Asked as a form under the reply (#153), not as bullets in its text.
@@ -121,7 +142,7 @@ async def handle_message(
         ]
 
     drawn = None
-    if visual and changes:
+    if visual and any(c.field != "style.language" for c in changes):
         visual.cancel()
     elif visual:
         if not visual.done():

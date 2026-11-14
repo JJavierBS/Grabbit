@@ -24,6 +24,9 @@ def pick_questions(
     candidates: list[Candidate], profile: Profile, now: datetime | None = None, limit: int = 3
 ) -> list[Question]:
     now = now or datetime.now(UTC)
+    from app.discovery.filters import matches_profile
+
+    candidates = [c for c in candidates if matches_profile(c, profile, today=now.date())]
     builders = (_stage, _ticket, _investors, _industries, _team, _recency, _hq)
     questions = [q for build in builders if (q := build(candidates, profile, now)) and q.split > 0]
     questions.sort(key=lambda q: q.split, reverse=True)
@@ -35,6 +38,8 @@ def _balance(a: int, b: int) -> float:
 
 
 def _stage(cs: list[Candidate], _p: Profile, _n: datetime) -> Question | None:
+    if _p.filters.stages:
+        return None
     stages = [str(c.funding_stage.value).lower() for c in cs if c.funding_stage.value]
     if not stages:
         return None
@@ -156,6 +161,8 @@ def _team(cs: list[Candidate], profile: Profile, _n: datetime) -> Question | Non
 
 
 def _recency(cs: list[Candidate], _p: Profile, now: datetime) -> Question | None:
+    if _p.filters.fundraising != "any":
+        return None
     last_dates = [d for c in cs if (d := _last_round(c)) is not None]
     if not last_dates:
         return None
@@ -176,7 +183,7 @@ def _recency(cs: list[Candidate], _p: Profile, now: datetime) -> Question | None
 def _hq(cs: list[Candidate], profile: Profile, _n: datetime) -> Question | None:
     if profile.filters.countries:
         return None
-    counts = Counter(str(c.hq.value) for c in cs if c.hq.value)
+    counts = Counter(str(c.hq.value).rsplit(",", 1)[-1].strip() for c in cs if c.hq.value)
     if len(counts) < 2:
         return None
     ((top, n),) = counts.most_common(1)

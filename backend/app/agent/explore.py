@@ -10,6 +10,7 @@ model as text: `Message` carries no function parts (app/llm/types.py).
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import time
 from collections.abc import Callable
@@ -137,6 +138,7 @@ class Walk:
         self.seen_names: dict[str, str] = dict(names or {})
         self.last_hits: list[dict[str, Any]] = []
         self.unavailable = False
+        self.failure: str | None = None
         self.cala_calls = 0
 
     async def __aenter__(self) -> Walk:
@@ -169,7 +171,16 @@ class Walk:
                 return f"Cala rejected that request ({err.status}); check the id or name."
             log.info("explore: cala failed: %s", err)
             self.unavailable = True
-            return "Cala is unavailable right now."
+            self.failure = {
+                402: (
+                    "Cala has insufficient balance. Recharge the connected account to "
+                    "explore new connections."
+                ),
+                401: "Cala rejected the API credentials. Check the configured API key.",
+                403: "Cala denied access to this data. Check the account permissions.",
+                429: "Cala is rate limited. Try the research again in a moment.",
+            }.get(err.status, "Cala is unavailable right now. Try the research again later.")
+            return self.failure
 
     async def _cala(self, method: str, *args: Any, **kwargs: Any) -> Any:
         if self._client is None:
@@ -246,6 +257,10 @@ class Walk:
         except TimeoutError:
             return f"{entity_id}: Cala did not answer in time."
         facts = {p: property_fact(data, p) for p in props}
+        if "employee_count_range" in facts:
+            from app.discovery.build import headcount_fact
+
+            facts["employee_count_range"] = headcount_fact(data)
         facts = {p: f for p, f in facts.items() if f.value is not None}
         node = self._add_node(entity_id, data.get("name") or entity_id, data.get("entity_type"))
         if node is None:
@@ -461,6 +476,13 @@ async def walk(
             len(state.edges),
             clock() - started,
         )
+        if state.failure:
+            text = (
+                state.failure
+                + " No new connections could be verified beyond the data already retrieved."
+            )
+            ui = f"root = Answer([t])\nt = Text({json.dumps(text)})"
+            return ui, graph
         return result.text, graph
 
 
@@ -507,7 +529,7 @@ def _step_text(call: ToolCall, state: Walk) -> str:
 
 def _step_result(call: ToolCall, state: Walk, before: set[str], output: str) -> str:
     if state.unavailable:
-        return "Cala is not reachable right now"
+        return state.failure or "Cala is not reachable right now"
     if "did not answer in time" in output:
         return "Cala took too long, moving on"
     if call.name == "cala_search":
