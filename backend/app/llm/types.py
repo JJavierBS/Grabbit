@@ -9,11 +9,6 @@ class LLMError(RuntimeError):
     """The model could not be reached or returned something unusable."""
 
 
-class Message(BaseModel):
-    role: Literal["user", "model"]
-    text: str
-
-
 class ToolSpec(BaseModel):
     name: str
     description: str
@@ -23,6 +18,26 @@ class ToolSpec(BaseModel):
 class ToolCall(BaseModel):
     name: str
     args: dict[str, Any] = Field(default_factory=dict)
+    id: str | None = None
+    # Gemini 3 rejects a replayed function call without the signature it was sent with.
+    signature: bytes | None = None
+
+
+class ToolResult(BaseModel):
+    """What a tool returned, sent back to the model in a user turn."""
+
+    name: str
+    output: str
+    id: str | None = None
+
+
+class Message(BaseModel):
+    """A turn. A model turn may carry the tool calls it made; the next user turn their results."""
+
+    role: Literal["user", "model"]
+    text: str = ""
+    tool_calls: list[ToolCall] = Field(default_factory=list)
+    tool_results: list[ToolResult] = Field(default_factory=list)
 
 
 class ChatResult(BaseModel):

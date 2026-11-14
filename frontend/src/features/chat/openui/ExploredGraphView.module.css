@@ -1,0 +1,137 @@
+/* Same visual language as report/CalaPath.module.css: one walk in Cala's graph. */
+.figure {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.scroll {
+  overflow-x: auto;
+  padding: var(--space-2);
+  border: var(--border-width) solid var(--color-border-soft);
+  border-radius: var(--radius-md);
+  background: var(--color-panel);
+}
+
+.svg {
+  display: block;
+  width: 100%;
+  min-width: 36rem; /* legible in the chat column; the frame scrolls */
+  height: auto;
+  font-family: var(--font-ui);
+}
+
+.figure[data-tall] .svg {
+  min-width: 0;
+}
+
+.edge path {
+  fill: none;
+  stroke: var(--color-border);
+  stroke-width: 1.25;
+}
+
+.edge.strong path {
+  stroke: var(--color-violet);
+  stroke-width: 2;
+}
+
+.edge.cross path {
+  stroke-dasharray: 4 3;
+  stroke-width: 1;
+}
+
+.edgeLabel {
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  fill: var(--color-text-faint);
+}
+
+.strong .edgeLabel {
+  fill: var(--color-violet-light);
+  font-weight: 600;
+}
+
+.node {
+  cursor: pointer;
+  outline: none;
+}
+
+.node rect {
+  fill: var(--color-surface);
+  stroke: var(--color-border-soft);
+  stroke-width: 1.25;
+  transition: stroke var(--duration-fast) var(--ease-standard);
+}
+
+.node[data-kind="root"] rect {
+  fill: var(--color-ink);
+  stroke: var(--color-ink);
+}
+
+.node[data-kind="round"] rect {
+  fill: var(--color-panel-strong);
+}
+
+.node[data-kind="more"] {
+  cursor: default;
+}
+
+.node[data-kind="more"] rect {
+  fill: none;
+  stroke-dasharray: 4 3;
+}
+
+.node[data-lead] rect {
+  stroke: var(--color-border);
+}
+
+.node[data-trusted] rect {
+  fill: var(--color-marker-soft);
+  stroke: var(--color-violet);
+  stroke-width: 2;
+}
+
+.node:focus-visible rect,
+.node[data-picked] rect {
+  stroke: var(--color-focus);
+  stroke-width: 2.5;
+}
+
+.nodeLabel {
+  font-size: 12px;
+  font-weight: 600;
+  fill: var(--color-ink);
+}
+
+.nodeSub {
+  font-size: 10px;
+  fill: var(--color-text-muted);
+}
+
+.node[data-kind="root"] .nodeLabel {
+  fill: var(--color-on-ink);
+}
+
+.node[data-kind="root"] .nodeSub {
+  fill: var(--color-on-ink);
+  opacity: 0.8;
+}
+
+.caption {
+  display: grid;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.caption code {
+  font-size: var(--text-xs);
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(9rem, 100%), 1fr));
+  gap: var(--space-3) var(--space-4);
+  margin: 0;
+}

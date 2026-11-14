@@ -147,6 +147,37 @@ class ProfileChange(ApiModel):
     by: ChangeAuthor
 
 
+class GraphNode(ApiModel):
+    """A Cala entity the agent reached while answering in chat."""
+
+    entity_id: str
+    name: str
+    entity_type: str
+    facts: dict[str, Fact] = Field(
+        default_factory=dict, description="Key properties, only for nodes the agent expanded"
+    )
+
+
+class GraphEdge(ApiModel):
+    """A Cala relationship, pointing the way Cala stores it (investor -> round)."""
+
+    source: str
+    target: str
+    relationship: str = Field(description="Cala relationship name, e.g. FOUNDED")
+    role: str | None = None
+    is_lead: bool = False
+    facts: dict[str, Fact] = Field(
+        default_factory=dict, description="Dated edge attributes (event_date, valid_since...)"
+    )
+
+
+class ExploredGraph(ApiModel):
+    """The part of Cala's graph the agent walked for one chat answer."""
+
+    nodes: list[GraphNode]
+    edges: list[GraphEdge]
+
+
 class ChatMessage(ApiModel):
     id: str
     role: ChatRole
@@ -156,6 +187,9 @@ class ChatMessage(ApiModel):
     report_id: str | None = None
     ui: str | None = Field(
         default=None, description="OpenUI Lang drawn with Cala components under the text"
+    )
+    graph: ExploredGraph | None = Field(
+        default=None, description="Cala entities and edges the agent walked for this answer"
     )
 
 

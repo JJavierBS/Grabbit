@@ -125,6 +125,7 @@ export async function fakeTransport(request: Request): Promise<Response> {
       role: "user",
       report_id: null,
       ui: null,
+      graph: null,
       text,
       created_at: now(),
       profile_changes: [],
@@ -144,6 +145,7 @@ export async function fakeTransport(request: Request): Promise<Response> {
       profile_changes: after === before ? [] : [after.history[0]],
       report_id: after === before ? null : after.report.id,
       ui: null,
+      graph: null,
     };
     state.chat.push(reply);
     return json(reply);
@@ -161,6 +163,7 @@ export async function fakeTransport(request: Request): Promise<Response> {
       role: "agent",
       report_id: null,
       ui: null,
+      graph: null,
       text: "Undone. I went back to the previous version of your report.",
       created_at: now(),
       profile_changes: [],

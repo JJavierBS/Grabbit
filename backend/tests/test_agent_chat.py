@@ -2,6 +2,7 @@ import pytest
 
 from app.agent import chat
 from app.agent.sources import fixture_candidates
+from app.agent.visual import Visual
 from app.llm import ChatResult, LLMError
 from app.llm.fake import FakeLLM
 from app.store import chat as chat_store
@@ -155,7 +156,7 @@ async def test_a_question_gets_a_visual_answer_and_a_correction_does_not(
     drawn = 'root = Answer([t])\nt = Text("Aurora led it.")'
 
     async def visual(llm, question, profile, candidates):
-        return drawn
+        return Visual(ui=drawn)
 
     monkeypatch.setattr(chat, "visual_answer", visual)
     await _say("hello", candidates, now)
