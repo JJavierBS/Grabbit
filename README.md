@@ -33,13 +33,14 @@ on screen; it goes through the real diff, importance check and delivery path.
 TODO: screenshot or GIF here.
 
 ## Demo
-- Live: TODO link
+- Live: https://www.grabbit.cloud
 - Video (2 min): TODO link
 
 ## Technologies used
 Cala entity API, Gemini (`google-genai`), Context.dev, FastAPI (Python, uv), React and
 TypeScript (Vite), OpenUI (`@openuidev/react-lang`, generative UI in chat answers), SQLite,
-APScheduler, Server-Sent Events, Docker on AWS EC2 behind Caddy, deployed by GitHub Actions.
+Aiven for Valkey (shared Cala cache, `redis`), APScheduler, Server-Sent Events, Docker on
+Aiven Runtime.
 
 ## Run locally
 Needs `uv`, Node 24 and npm.
@@ -61,7 +62,23 @@ Offline (no keys): set `CALA_MODE=replay` and `LLM_MODE=fake` in `.env`.
 API docs while `make dev` runs: http://localhost:8000/api/docs
 
 ## Deploy
-The demo runs on one AWS EC2 host: a Caddy edge on port 80 proxies to one app container,
+The demo runs on Aiven, project `grabbit`, AWS `eu-central-1`:
+https://www.grabbit.cloud (Aiven host: https://cosmic-enhanced-jawfish.eur-1.aiven.app;
+`http://grabbit.cloud` redirects there from IONOS, which holds the domain and its DNS)
+- `grabbit-app` (Aiven Runtime, `startup-100-2048`) builds the root `Dockerfile` from
+  `main` and serves it on port 8000. Merging does **not** deploy: use
+  Runtime > `grabbit-app` > Actions > **Deploy latest commit** in the console. Keys and
+  modes are its environment variables (keys as secrets); `CALA_MODE=replay`.
+- `grabbit-cache` (Aiven for Valkey, Hobbyist) holds the shared Cala cache; Aiven injects its
+  URI into the app as `VALKEY_URL`. Fill it from your laptop with `VALKEY_URL` in `.env`
+  and `make warm` (plus `ARGS="--news"`); the app sees new entries without a redeploy.
+- SQLite in the app is not persistent: every deploy starts with empty profiles, chats and
+  reports. The Cala cache survives because it lives in Valkey.
+- Both are paid from Aiven's 50 USD trial credits; with no card on file, Aiven powers them
+  off when the credits run out instead of charging.
+
+### Legacy: AWS EC2
+The first deploy, no longer the demo link. It runs on one AWS EC2 host: a Caddy edge on port 80 proxies to one app container,
 and each deploy starts the new image next to the old one (blue/green), moves traffic only
 once it is healthy, then stops the old one. No downtime; a broken image never goes live.
 `.github/workflows/deploy.yml` runs on every push to `main`: `make test lint`, image to
