@@ -10,7 +10,6 @@ human confirms.
 ## Team decisions that block the build
 | Id | Question | Why it matters | Proposal |
 | --- | --- | --- | --- |
-| D2 | Demo thesis and reference investors for the Slush angel | The shortlist comes from Slush 2026 attendees (decisions.md 03:10); the thesis decides which ones and how good the demo looks | Pull the attendee list once, then pick a thesis that yields 5-10 startups with recent rounds and a known lead |
 | D5 | Discovery outside events: a free thesis with no `Event` to start from | The demo discovers from the Slush `Event` (decisions.md 03:10); outside events Cala cannot list companies by criteria (cala.md) | Team talks to Cala (C1, C3). Fallback: widen through the graph from the reference investors' rounds |
 | D6 | Compete in the Context.dev challenge too? | One submission can enter several challenges (guidebook p. 11). Its criteria are not in the repo | Read its brief (hackjunction.app challenge 332 and tech challenge 44), distil it into context-dev.md, then decide |
 
@@ -35,7 +34,7 @@ human confirms.
 | --- | --- | --- |
 | R1 | Live demo or a judge's question goes outside the cache and hits a 429 or a multi-minute call | Cala will raise the limit (decisions.md 03:10); still pre-warm the Slush attendees and the demo path, and show what is cached for an unexpected company |
 | R2 | The mocked alert is discovered by a judge and read as faked execution | Label it on screen and in the README as "simulated event" (the fixture is already separate, flow.md section 5); say it aloud in the live demo |
-| R3 | No real Cala change exists for the demo companies, so the watcher shows nothing real | Pick, during D2, at least one startup with a recent dated event (round, executive change, headcount jump) and replay it from the snapshot |
+| R3 | No real Cala change exists for the demo companies, so the watcher shows nothing real | The video uses the staged `grei_seed_round` (labelled simulated, R2). For a real one: warm the AI attendees again later and let the watcher diff them |
 | R4 | Deployed demo link: desktop notifications need a browser tab and permission; the Cala key must stay server-side | Server-side calls only; the deployed link can run in cached mode |
 | R5 | The video must show the originality: the report rewriting itself after a correction | Demo script step 4 shows it; keep the profile history one click away for Q&A |
 | R6 | Originality: no comparison with existing tools | pitch.md lists the alternatives to research; do not claim "nothing like it exists" without checking |

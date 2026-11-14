@@ -1,0 +1,47 @@
+{
+  "description": "Demo alert (decisions.md 2026-11-14 09:40): GREÏ, a real Slush 2026 AI pre-seed startup (FIRSTPICK led its pre-seed in August 2025), announces a seed led by Y Combinator. Staged: never written to the Cala cache or the snapshots. Needs `make warm` to have cached GREÏ.",
+  "entity_id": "0094ec10-bd61-4833-bf19-c2ab9d78312b",
+  "patch": {
+    "relationships": {
+      "outgoing": {
+        "PARTICIPATES_IN_FUNDING_ROUND": [
+          {
+            "id": "demo-grei-seed",
+            "name": "Seed",
+            "entity_type": "FundingRound",
+            "properties": {"role": "ISSUER", "event_date": "2026-11-14", "sources": []}
+          }
+        ]
+      }
+    }
+  },
+  "rounds": {
+    "demo-grei-seed": {
+      "id": "demo-grei-seed",
+      "name": "Seed",
+      "entity_type": "FundingRound",
+      "properties": {
+        "name": {"value": "Seed", "sources": []},
+        "round_label": {"value": "SEED", "sources": []},
+        "transaction_value": {
+          "value": 2500000,
+          "sources": [{"name": "Simulated event", "document": "https://grabbit.example/simulated", "date": "2026-11-14", "date_precision": "day", "source_rank": "PRESS"}]
+        },
+        "transaction_value_units": {"value": "EUR", "sources": []},
+        "event_date": {
+          "value": "2026-11-14",
+          "sources": [{"name": "Simulated event", "document": "https://grabbit.example/simulated", "date": "2026-11-14", "date_precision": "day", "source_rank": "PRESS"}]
+        }
+      },
+      "relationships": {
+        "incoming": {
+          "PARTICIPATES_IN_FUNDING_ROUND": [
+            {"id": "0094ec10-bd61-4833-bf19-c2ab9d78312b", "name": "GREÏ", "entity_type": "Company", "properties": {"role": "ISSUER"}},
+            {"id": "1e86655e-373d-4fe8-be13-af3713581f73", "name": "Y Combinator", "entity_type": "Company", "properties": {"role": "INVESTOR", "is_lead": true}},
+            {"id": "88b67750-caa3-40ca-bfde-8eb88aa48ae4", "name": "FIRSTPICK", "entity_type": "Company", "properties": {"role": "INVESTOR", "is_lead": false}}
+          ]
+        }
+      }
+    }
+  }
+}
