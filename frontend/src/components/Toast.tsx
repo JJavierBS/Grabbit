@@ -75,12 +75,12 @@ function ToastCard({ item, onDismiss }: { item: ToastItem; onDismiss: (id: numbe
 
   const tone = item.tone ?? 'default';
   return (
-    <li
-      className={`${styles.toast} ${styles[tone]}`}
-      role={tone === 'alert' ? 'alert' : 'status'}
-      aria-live={tone === 'alert' ? 'assertive' : 'polite'}
-    >
-      <div className={styles.body}>
+    <li className={`${styles.toast} ${styles[tone]}`}>
+      <div
+        className={styles.body}
+        role={tone === 'alert' ? 'alert' : 'status'}
+        aria-live={tone === 'alert' ? 'assertive' : 'polite'}
+      >
         {item.meta && <div className={styles.meta}>{item.meta}</div>}
         <p className={styles.title}>{item.title}</p>
         {item.description && <p className={styles.description}>{item.description}</p>}

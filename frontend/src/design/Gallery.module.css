@@ -13,11 +13,7 @@
 }
 
 .title {
-  font-family: var(--font-display);
-  font-weight: var(--weight-regular);
-  font-size: var(--text-2xl);
-  line-height: var(--leading-tight);
-  letter-spacing: var(--tracking-display);
+  composes: display from "../styles/shared.module.css";
 }
 
 .lead {
@@ -32,10 +28,7 @@
 }
 
 .h2 {
-  font-family: var(--font-display);
-  font-weight: var(--weight-regular);
-  font-size: var(--text-xl);
-  line-height: var(--leading-tight);
+  composes: title from "../styles/shared.module.css";
 }
 
 .row {

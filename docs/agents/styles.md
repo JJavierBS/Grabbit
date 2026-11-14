@@ -13,6 +13,10 @@
 - Base components in `frontend/src/components/`: `Button`, `Card`, `Badge`, `TrustBadge`,
   `Input` / `TextArea`, `Toast` (`ToastProvider`, `useToast`), `Skeleton`. Reuse them
   before you write a new one. A visual reference renders from `src/design/Gallery.tsx`.
+- Shared recipes in `src/styles/shared.module.css` (`display` and `title` serif headings, the
+  paper `sheet`); use them with `composes:` instead of copying the declarations.
+- Accessibility check: axe-core reports no violations on the report, history, alert and
+  gallery at 1920x1080 and 375px (2026-11-14). Keep it that way.
 - Light theme only: cala.ai has no dark theme.
 
 ## Rules

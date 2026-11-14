@@ -1,0 +1,42 @@
+/* Shared recipes, pulled in with `composes: <name> from "../styles/shared.module.css"`. */
+
+/* Report title, history title, design system title. */
+.display {
+  font-family: var(--font-display);
+  font-weight: var(--weight-regular);
+  font-size: var(--text-2xl);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-display);
+}
+
+/* Section titles and startup names. */
+.title {
+  font-family: var(--font-display);
+  font-weight: var(--weight-regular);
+  font-size: var(--text-xl);
+  line-height: var(--leading-tight);
+}
+
+/* The paper sheet on the cream ground: report and profile history. */
+.sheet {
+  display: grid;
+  align-content: start;
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: var(--space-10) var(--space-10) var(--space-16);
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border-soft);
+  border-radius: var(--radius-lg);
+}
+
+@media (max-width: 40rem) {
+  .sheet {
+    padding: var(--space-6) var(--space-4) var(--space-12);
+    border-radius: 0;
+    border-inline: 0;
+  }
+
+  .display {
+    font-size: var(--text-xl);
+  }
+}

@@ -71,7 +71,7 @@ export function App() {
     <div className={styles.app}>
       <header className={styles.topbar}>
         <div className={styles.brand}>
-          <span className={styles.wordmark}>Grabbit</span>
+          <h1 className={styles.wordmark}>Grabbit</h1>
           <span className={styles.tagline}>Your research agent for Slush 2026</span>
         </div>
         <nav className={styles.switch} aria-label="Views">
@@ -117,7 +117,12 @@ export function App() {
             }
           />
         </div>
-        <div className={styles.stage}>
+        <section
+          className={styles.stage}
+          aria-label={view === 'history' ? 'Profile history' : 'Report'}
+          // biome-ignore lint/a11y/noNoninteractiveTabindex: a scrollable region needs keyboard focus (axe scrollable-region-focusable).
+          tabIndex={0}
+        >
           {view === 'history' ? (
             <ProfileHistory />
           ) : (
@@ -131,7 +136,7 @@ export function App() {
               confirmed={confirmed}
             />
           )}
-        </div>
+        </section>
       </main>
     </div>
   );

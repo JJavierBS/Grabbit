@@ -1,13 +1,6 @@
 .sheet {
-  display: grid;
+  composes: sheet from "../../styles/shared.module.css";
   gap: var(--space-6);
-  align-content: start;
-  max-width: 60rem;
-  margin: 0 auto;
-  padding: var(--space-10) var(--space-10) var(--space-16);
-  background: var(--color-surface);
-  border: var(--border-width) solid var(--color-border-soft);
-  border-radius: var(--radius-lg);
 }
 
 .header {
@@ -16,11 +9,7 @@
 }
 
 .title {
-  font-family: var(--font-display);
-  font-weight: var(--weight-regular);
-  font-size: var(--text-2xl);
-  line-height: var(--leading-tight);
-  letter-spacing: var(--tracking-display);
+  composes: display from "../../styles/shared.module.css";
 }
 
 .lead {
@@ -125,16 +114,4 @@
   gap: var(--space-2);
   justify-items: start;
   color: var(--color-danger);
-}
-
-@media (max-width: 40rem) {
-  .sheet {
-    padding: var(--space-6) var(--space-4) var(--space-12);
-    border-radius: 0;
-    border-inline: 0;
-  }
-
-  .title {
-    font-size: var(--text-xl);
-  }
 }

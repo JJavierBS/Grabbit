@@ -21,11 +21,7 @@
 }
 
 .name {
-  font-family: var(--font-display);
-  font-weight: var(--weight-regular);
-  font-size: var(--text-xl);
-  line-height: var(--leading-tight);
-  letter-spacing: var(--tracking-display);
+  composes: title from "../../styles/shared.module.css";
 }
 
 .site {
