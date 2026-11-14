@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 from app.agent.rules import FIXED_RULES
 from app.llm import LLM, LLMError
 from app.models import Candidate, Profile
-from app.reports.facts import placeholders
+from app.reports.facts import BADGES, placeholders
 
 log = logging.getLogger(__name__)
 
@@ -16,8 +16,9 @@ SYSTEM = f"""You write investment research reports for a business angel.
 Write prose only. Never write a digit, not even in years or event names: cite every value
 with a placeholder from the list given
 for that startup, e.g. "raised {{last_round_amount}} in {{last_round_date}}". Never cite a
-placeholder that is not listed for that startup. Follow the investor's report instructions
-and style. Describe evidence; never say what to buy.
+placeholder that is not listed for that startup. Placeholder values already carry their trust
+badge, so never write badge names such as "(Official filing)" yourself. Follow the investor's
+report instructions and style. Describe evidence; never say what to buy.
 
 {FIXED_RULES}"""
 
@@ -27,6 +28,8 @@ LENGTH_HINT = {
     "long": "a short paragraph per startup",
 }
 _PLACEHOLDER = re.compile(r"\{([a-z_]+)\}")
+_BADGE_NAMES = "|".join(re.escape(b) for b in BADGES.values())
+_ECHOED_BADGE = re.compile(rf"(\((?:{_BADGE_NAMES})\))(?:\s*[\(\[](?:{_BADGE_NAMES})[\)\]])+")
 
 
 class Paragraph(BaseModel):
@@ -128,4 +131,6 @@ def _render(draft: Draft | None, candidates: list[Candidate]) -> tuple[str, dict
 
 
 def _fill(text: str, values: dict[str, str]) -> str:
-    return _PLACEHOLDER.sub(lambda m: values[m.group(1)], text).strip()
+    filled = _PLACEHOLDER.sub(lambda m: values[m.group(1)], text).strip()
+    # Models echo the badge they saw next to each value; keep only the rendered one.
+    return _ECHOED_BADGE.sub(r"\1", filled)

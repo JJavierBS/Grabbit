@@ -74,7 +74,8 @@ def placeholders(c: Candidate) -> dict[str, str]:
             "last_round_amount": render(r.amount),
             "last_round_date": render(r.date),
             "last_round_lead": lead or "not published",
-            "last_round_investors": ", ".join(i.name for i in r.investors) or "not published",
+            "last_round_co_investors": ", ".join(i.name for i in r.investors if not i.is_lead)
+            or "none published",
         }
     return values
 

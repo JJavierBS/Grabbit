@@ -159,3 +159,26 @@ def _rendered_values(report):
         for v in placeholders(c).values():
             values |= {t.rstrip(".,;") for t in v.split()}
     return values
+
+
+async def test_badges_echoed_by_the_model_are_removed(now):
+    echo = Script(
+        task="report_write",
+        output={
+            "summary": "{count} startups.",
+            "paragraphs": [
+                {
+                    "candidate_id": "cand-kiln",
+                    "text": "Based in {hq} (Official filing) and led by {last_round_lead}, "
+                    "with {last_round_co_investors} joining; raised {last_round_amount} [Press].",
+                }
+            ],
+        },
+    )
+    report = await _build("prep", _profile(now), llm=FakeLLM(scripts=[echo]), now=now)
+    kiln = next(s for s in report.sections if "cand-kiln" in s.candidate_ids).body_md
+    assert (
+        "Based in Finland (Official filing) and led by North Pine Ventures, with Aurora Angels"
+        in kiln
+    )
+    assert "raised EUR 2M (Press)." in kiln
