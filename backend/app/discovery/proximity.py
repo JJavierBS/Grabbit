@@ -16,9 +16,10 @@ import math
 from dataclasses import dataclass
 from datetime import date
 
-from app.cala.normalize import STRENGTH, UNRANKED, strongest
+from app.cala.normalize import STRENGTH, UNRANKED, edge_attr, strongest
 from app.discovery.build import build_round, normalise_name
 from app.discovery.links import (
+    FunderIndex,
     LinkGraph,
     Trusted,
     _edge_trust,
@@ -27,7 +28,6 @@ from app.discovery.links import (
     _participation,
     _proof_fact,
     _round_name,
-    _same,
     _sources,
     _weakest,
     co_investments,
@@ -57,6 +57,9 @@ SOURCE_WEIGHT: dict[TrustLevel, float] = {
     "aggregator": 0.6,
 }
 MAX_PATHS = 5
+# One co-investor's shared rounds are one piece of evidence seen several times: without a cap
+# a busy intermediary fills every slot and outweighs its own low selectivity.
+MAX_PATHS_PER_INTERMEDIARY = 2
 
 
 def proximity(
@@ -65,14 +68,16 @@ def proximity(
     reference: list[ReferenceInvestor],
     *,
     today: date | None = None,
+    index: FunderIndex | None = None,
 ) -> Proximity | None:
     """Score and strongest paths to the reference investors; None when there are none."""
     if not reference:
         return None
     today = today or date.today()
     trusted = Trusted(reference)
+    index = index or FunderIndex(graph)
     paths = _ring_one(candidate, graph, trusted, today) + _ring_two(
-        candidate, graph, trusted, today
+        candidate, graph, trusted, today, index
     )
     paths.sort(key=lambda p: (-p.strength, p.ring, p.explanation))
     shown = paths[:MAX_PATHS]
@@ -86,8 +91,9 @@ def attach_proximity(
     *,
     today: date | None = None,
 ) -> list[Candidate]:
+    index = FunderIndex(graph)
     return [
-        c.model_copy(update={"proximity": proximity(c, graph, reference, today=today)})
+        c.model_copy(update={"proximity": proximity(c, graph, reference, today=today, index=index)})
         for c in candidates
     ]
 
@@ -144,39 +150,67 @@ def _leg(candidate: Candidate, round_: Round, inv: Investor, graph: LinkGraph, t
 def _ring_one(
     candidate: Candidate, graph: LinkGraph, trusted: Trusted, today: date
 ) -> list[ProximityPath]:
-    paths: list[ProximityPath] = []
+    # One path per round and trusted fund: two Cala entities of one fund in the same round
+    # ("Y Combinator", "Y Combinator W24") are one investment, counted at its strongest.
+    best: dict[tuple[str, str], tuple[_Leg, ReferenceInvestor, str]] = {}
     for round_ in candidate.rounds:
-        for inv in round_.investors:
+        for inv, verb in [(i, _verb(i.is_lead)) for i in round_.investors] + _grants(round_, graph):
             ref = trusted.match(inv.entity_id, inv.name)
             if ref is None:
                 continue
             leg = _leg(candidate, round_, inv, graph, today)
-            paths.append(
-                ProximityPath(
-                    ring=1,
-                    strength=round(RING_WEIGHT[1] * leg.weight, 4),
-                    explanation=(
-                        f"{ref.name} {_verb(leg.is_lead)} {candidate.name}'s "
-                        f"{round_.name}{_when(round_.date.value)}."
-                    ),
-                    facts=[leg.fact],
-                )
-            )
-    return paths
+            key = (round_.entity_id, ref.entity_id)
+            if key not in best or leg.weight > best[key][0].weight:
+                best[key] = (leg, ref, verb)
+    return [
+        ProximityPath(
+            ring=1,
+            strength=round(RING_WEIGHT[1] * leg.weight, 4),
+            explanation=(
+                f"{ref.name} {verb} {candidate.name}'s "
+                f"{leg.round_.name}{_when(leg.round_.date.value)}."
+            ),
+            facts=[leg.fact],
+        )
+        for leg, ref, verb in best.values()
+    ]
+
+
+def _grants(round_: Round, graph: LinkGraph) -> list[tuple[Investor, str]]:
+    """Grantors of the round, read from the raw node: the reverse walk follows a trusted
+    fund's grants (FIRSTPICK), but a round's investors leave grantors out because most are
+    public agencies that would flood links and suggestions."""
+    node = graph.rounds.get(round_.entity_id)
+    if node is None:
+        return []
+    return [
+        (
+            Investor(
+                entity_id=e["id"],
+                name=e.get("name") or e["id"],
+                is_lead=bool(edge_attr(e, "is_lead")),
+                role="investor",
+            ),
+            "gave a grant in",
+        )
+        for e in _funders(node)
+        if str(edge_attr(e, "role") or "").upper() == "GRANTOR"
+    ]
 
 
 def _ring_two(
-    candidate: Candidate, graph: LinkGraph, trusted: Trusted, today: date
+    candidate: Candidate, graph: LinkGraph, trusted: Trusted, today: date, index: FunderIndex
 ) -> list[ProximityPath]:
     paths: list[ProximityPath] = []
     for inv in walk_order(candidate):
         if trusted.match(inv.entity_id, inv.name):
             continue
-        shared = co_investments(candidate, inv, graph, trusted)
+        shared = co_investments(candidate, inv, graph, trusted, index)
         if not shared:
             continue
         leg = _strongest_leg(candidate, inv, graph, today)
-        selective = selectivity(_rounds_in_graph(inv, graph))
+        selective = selectivity(len(index.rounds_of(inv.entity_id, inv.name)))
+        through: list[ProximityPath] = []
         for ref, proofs in shared:
             for proof in proofs:
                 node = graph.rounds[proof.round_id]
@@ -196,7 +230,7 @@ def _ring_two(
                 issuer = _issuer(node)
                 issuer_name = issuer.get("name") if issuer else None
                 round_name = _round_name(node)
-                paths.append(
+                through.append(
                     ProximityPath(
                         ring=2,
                         strength=round(strength, 4),
@@ -214,6 +248,8 @@ def _ring_two(
                         ],
                     )
                 )
+        through.sort(key=lambda p: -p.strength)
+        paths += through[:MAX_PATHS_PER_INTERMEDIARY]
     return paths
 
 
@@ -227,15 +263,6 @@ def _strongest_leg(candidate: Candidate, inv: Investor, graph: LinkGraph, today:
         if their.entity_id == inv.entity_id or (key and normalise_name(their.name) == key)
     ]
     return max(legs, key=lambda leg: leg.weight)
-
-
-def _rounds_in_graph(inv: Investor, graph: LinkGraph) -> int:
-    key = normalise_name(inv.name)
-    return sum(
-        1
-        for node in graph.rounds.values()
-        if any(_same(edge, inv.entity_id, key) for edge in _funders(node))
-    )
 
 
 def _verb(is_lead: bool) -> str:

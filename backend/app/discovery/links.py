@@ -162,10 +162,11 @@ def hidden_links(
     graph: LinkGraph,
     reference: list[ReferenceInvestor],
     shortlist: list[Candidate],
+    index: FunderIndex | None = None,
 ) -> list[HiddenLink]:
     trusted = Trusted(reference)
     return (
-        trusted_co_investors(candidate, graph, trusted)[:MAX_LINKS_PER_KIND]
+        trusted_co_investors(candidate, graph, trusted, index)[:MAX_LINKS_PER_KIND]
         + shared_investors(candidate, graph, trusted, shortlist)[:MAX_LINKS_PER_KIND]
     )
 
@@ -173,8 +174,9 @@ def hidden_links(
 def attach_links(
     candidates: list[Candidate], graph: LinkGraph, reference: list[ReferenceInvestor]
 ) -> list[Candidate]:
+    index = FunderIndex(graph)
     return [
-        c.model_copy(update={"links": hidden_links(c, graph, reference, candidates)})
+        c.model_copy(update={"links": hidden_links(c, graph, reference, candidates, index)})
         for c in candidates
     ]
 
@@ -188,16 +190,47 @@ class CoInvestment:
     other_edge: dict[str, Any]
 
 
+class FunderIndex:
+    """The rounds of the graph each funder appears in, by entity id and by fund name.
+
+    Built once per graph so scoring and links read an investor's rounds directly instead of
+    scanning every round for every candidate and investor.
+    """
+
+    def __init__(self, graph: LinkGraph):
+        self.order = {rid: n for n, rid in enumerate(graph.rounds)}
+        self.by_id: dict[str, set[str]] = {}
+        self.by_name: dict[str, set[str]] = {}
+        for rid, node in graph.rounds.items():
+            for edge in _funders(node):
+                self.by_id.setdefault(edge["id"], set()).add(rid)
+                key = normalise_name(edge.get("name"))
+                if key:
+                    self.by_name.setdefault(key, set()).add(rid)
+
+    def rounds_of(self, entity_id: str, name: str | None) -> list[str]:
+        """Rounds this funder took part in, under this id or another entity of the fund, in
+        graph order."""
+        found = self.by_id.get(entity_id, set()) | self.by_name.get(normalise_name(name), set())
+        return sorted(found, key=self.order.__getitem__)
+
+
 def co_investments(
-    candidate: Candidate, inv: Investor, graph: LinkGraph, trusted: Trusted
+    candidate: Candidate,
+    inv: Investor,
+    graph: LinkGraph,
+    trusted: Trusted,
+    index: FunderIndex | None = None,
 ) -> list[tuple[ReferenceInvestor, list[CoInvestment]]]:
     """Per trusted investor, the other rounds in the walk this investor shared with it."""
     own = {r.entity_id for r in candidate.rounds}
     key = normalise_name(inv.name)
     by_ref: dict[str, tuple[ReferenceInvestor, list[CoInvestment]]] = {}
-    for rid, node in graph.rounds.items():
+    index = index or FunderIndex(graph)
+    for rid in index.rounds_of(inv.entity_id, inv.name):
         if rid in own:
             continue  # a trusted investor in its own rounds is the co-invest signal
+        node = graph.rounds[rid]
         funders = _funders(node)
         via = next((e for e in funders if _same(e, inv.entity_id, key)), None)
         if via is None:
@@ -216,14 +249,15 @@ def co_investments(
 
 
 def trusted_co_investors(
-    candidate: Candidate, graph: LinkGraph, trusted: Trusted
+    candidate: Candidate, graph: LinkGraph, trusted: Trusted, index: FunderIndex | None = None
 ) -> list[HiddenLink]:
     """Rounds anywhere in the walk where one of its investors sat next to a trusted one."""
     links: list[tuple[tuple[int, bool], HiddenLink]] = []
+    index = index or FunderIndex(graph)
     for inv in walk_order(candidate):
         if trusted.match(inv.entity_id, inv.name):
             continue
-        for ref, proofs in co_investments(candidate, inv, graph, trusted):
+        for ref, proofs in co_investments(candidate, inv, graph, trusted, index):
             link = _co_investor_link(candidate, inv, ref, proofs, graph)
             links.append(((len(proofs), inv.is_lead), link))
     links.sort(key=lambda pair: pair[0], reverse=True)
