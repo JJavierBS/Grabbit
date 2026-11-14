@@ -136,6 +136,22 @@ class HiddenLink(ApiModel):
     facts: list[Fact]
 
 
+class ProximityPath(ApiModel):
+    """One path through funding rounds from the startup to an investor the angel trusts."""
+
+    ring: Literal[1, 2] = Field(description="1: trusted investor in its rounds; 2: one further")
+    strength: float
+    explanation: str
+    facts: list[Fact] = Field(description="One per round on the path, with the edges' sources")
+
+
+class Proximity(ApiModel):
+    """Closeness to the reference investors: always the sum of the paths it lists."""
+
+    score: float
+    paths: list[ProximityPath] = Field(description="Strongest first, at most 5")
+
+
 class Candidate(ApiModel):
     entity_id: str
     name: str
@@ -153,6 +169,9 @@ class Candidate(ApiModel):
         default_factory=list, description="Latest news from Cala, newest first (cala_news)"
     )
     links: list[HiddenLink] = Field(default_factory=list)
+    proximity: Proximity | None = Field(
+        default=None, description="None when the profile has no reference investors"
+    )
 
 
 class ProfileFilters(ApiModel):

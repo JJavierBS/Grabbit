@@ -263,6 +263,7 @@ export const candidates: Candidate[] = [
       newsItem("Hiring a head of sales for Germany", "Two open roles in Hamburg.", null, null, []),
     ],
     links: [fjordlineWithNorthStar, auroraAlsoBacks(northwindEnd, lumenEnd, false)],
+    proximity: null,
   },
   {
     entity_id: "c-lumen",
@@ -319,6 +320,7 @@ export const candidates: Candidate[] = [
       ),
     ],
     links: [auroraAlsoBacks(lumenEnd, northwindEnd, true)],
+    proximity: null,
   },
   {
     entity_id: "c-kettle",
@@ -355,6 +357,7 @@ export const candidates: Candidate[] = [
     ],
     news: [],
     links: [balticWithAurora],
+    proximity: null,
   },
   {
     entity_id: "c-saltmarsh",
@@ -381,6 +384,7 @@ export const candidates: Candidate[] = [
     signals: [],
     news: [],
     links: [],
+    proximity: null,
   },
 ];
 
