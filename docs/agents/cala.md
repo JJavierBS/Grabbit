@@ -155,6 +155,12 @@ round dates (still active?).
   edge to another company (only duplicates of the same one). "Repeat founder" links are not
   supported by the data yet.
 - Investors have few round edges: Pioneer Fund 1, FIRSTPICK 8, Y Combinator 100+ (hub).
+- One fund is many entities: name search for Y Combinator returns 10 (Company, Organization,
+  Group, EducationalInstitution, "Y Combinator W24", "Y Combinator Continuity Fund"), most
+  with zero round edges, 165 unique rounds together; 500 Global is 3 entities, 9 rounds
+  (2026-11-14).
+- The investor -> round edge carries no date: how recent a round is shows only after reading
+  the round itself.
 - Duplicate entities: one person appeared as three `Person` nodes, Nvidia as two companies,
   one fund as both `Organization` and `Company`. Part of it is by design (each legal entity
   and subsidiary is its own `Company`). Merge by normalised name, `website` and registry id
@@ -190,8 +196,42 @@ round dates (still active?).
   (cached reads are free; `make warm` has no budget). The walk does not depend on the
   profile; matching trusted investors (by id or fund name) is pure and reruns when the
   reference investors resolve.
+- `app/discovery/reverse.py`: the reverse walk (#191), `reverse_walk(client, references,
+  event_id)`. Per reference investor: name search (limit 50), keeping the stored id and the
+  hits under the fund's name or that name followed by more words (the `Trusted` rule of
+  `links.py`; `unresolved:<name>` references resolve the same way); each entity's outgoing
+  `PARTICIPATES_IN_FUNDING_ROUND` edges, 100 per page with `offset` (the first page is
+  `INVESTOR_BODY`, shared with the event walk's cache), roles INVESTOR, LENDER and GRANTOR
+  only; each round once with `ROUND_BODY`; its `ISSUER` crossed by entity id with the whole
+  paged attendee list. Attending issuers take the event walk's path (`fetch_company`,
+  `is_startup`, rounds, signals). Serial, 25 s timeout per call, at most 300 new Cala calls
+  per walk (`ReverseLimits`; `make warm` has no budget); a Cala error, cache miss, timeout
+  or spent budget never raises, the walk returns what it has. `agent/sources.candidates_for`
+  runs it only when the profile has reference investors, caches it per (event, set of fund
+  names) for the event walk's TTL, and merges candidates (`merge_candidates`: event walk
+  first, no repeat by entity id or normalised name) and the `LinkGraph` (`merge_graphs`).
+- Second ring of the reverse walk (#193), same module, after ring 1 has finished and inside
+  the same call budget and timeout. No extra call to choose: on the rounds ring 1 read, every
+  funding-role participant that is not an entity of a trusted fund (by id or the `Trusted`
+  name rule) is a co-investor, counted by distinct shared rounds per normalised name (a
+  round names it by one entity id; one fund is several). Per trusted investor, the
+  `co_investors` (10) with most shared rounds and at least `min_shared_rounds` (2) are
+  walked, strongest first, like a fund entity: the entity ids seen for that name (no name
+  search), their round edges paged, each round's `ISSUER` crossed with the attendees, the
+  same candidate path, no repeat with ring 1 by issuer id or name. Persons (angels) are
+  walked too. A co-investor whose entities list more than `hub_round_edges` (300) round
+  edges is a hub: paging stops at the page that passes the cap (4 calls at most), it is
+  logged and none of its rounds is read. Walked co-investors and their rounds join
+  `ReverseResult.links`; `ReverseResult.co_investors` lists the chosen ones and
+  `ReverseStats` counts those seen, walked, skipped as hubs and the startups the ring added
+  (`rounds`, `issuers`, `attending` and `startups` count both rings).
+  `ReverseLimits(second_ring=False)` turns it off.
 - Warm the cache and get the pitch counts, from `backend/`:
-  `uv run --env-file ../.env python -m scripts.warm [--limit N] [--dump DIR]`.
+  `uv run --env-file ../.env python -m scripts.warm [--limit N] [--dump DIR]`. It also runs
+  the reverse walk, second ring included, without budget for Y Combinator, 500 Global and
+  the stored profile's reference investors, prints the attending startups reached, the
+  co-investors seen, walked and skipped and the startups the second ring added, and replays
+  it from the cache to count misses (`--check` exits 1 on any, from either walk).
 
 ## Rate limits and latency
 - `429 {"error":"rate_limit_exceeded",...}` with no `Retry-After` header. Limits are not
@@ -235,6 +275,19 @@ Seeds without the LLM endpoints:
   companies: filter locally on `founding_date`, `funding_stage` and headcount.
 - Widening without filters: go through the graph itself, e.g. the investors of the seed
   companies lead to their other portfolio companies.
+- Trusted investors as seeds (reverse walk, #191): investor name -> all its entities ->
+  their funded rounds -> each round's `ISSUER`, kept when it is on the event's attendee
+  list. It reaches attendees the event walk never opens: on 2026-11-14 the first 150 of
+  2,989 Slush attendees held 5 startups backed by Y Combinator or 500 Global, the reverse
+  walk found 26 attending issuers (YC: 150 rounds read, 100 issuers, 20 at Slush; 500
+  Global: 6). They are attendees, not yet startups: `is_startup` and the profile filters
+  still apply.
+- Their co-investors as a second ring (#193): the investors that funded those rounds next
+  to a trusted one, strongest first. Measured on 2026-11-14: Y Combinator's rounds show 311
+  co-investors (Pioneer Fund 16 shared rounds, SV Angel 6, Rebel Fund 6, Andreessen
+  Horowitz 6, then 4s and 3s); 500 Global's show 34 (FIRSTPICK 2, the rest 1). Walking
+  the 11 strongest (none over the hub cap) read 107 more rounds and added 13 attending
+  startups to the 27 of ring 1, for about 200 new Cala calls.
 - Limit: no discovery by criteria ("Series A fintechs in Spain"), no server-side filters
   or sorting, many calls per question, hub nodes too slow to enumerate.
 

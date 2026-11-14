@@ -8,11 +8,13 @@ from pydantic import TypeAdapter
 from app import fixtures
 from app.agent.progress import report_attendees
 from app.cala.client import CalaCacheMiss, CalaError
+from app.discovery.build import normalise_name
 from app.discovery.filters import matches_profile
 from app.discovery.links import LinkGraph, attach_links
 from app.discovery.pipeline import SLUSH_2026, Limits, get_candidates, neutral_profile
 from app.discovery.proximity import attach_proximity
-from app.models import Candidate, Profile
+from app.discovery.reverse import ReverseResult, merge_candidates, merge_graphs, reverse_walk
+from app.models import Candidate, Profile, ReferenceInvestor
 from app.references import remember, resolve_references
 from app.runtime import open_cala
 from app.signals.core import co_invest
@@ -38,10 +40,13 @@ def fixture_candidates() -> list[Candidate]:
 # is applied on top; the TTL lets new Cala data in. The watcher re-reads its shortlist fresh.
 DISCOVERY_TTL = timedelta(minutes=15)
 _discoveries: dict[str, tuple[datetime, list[Candidate], LinkGraph]] = {}
+# The reverse walk depends on who the angel trusts: one per event and set of fund names.
+_reverse_walks: dict[tuple[str, frozenset[str]], tuple[datetime, ReverseResult]] = {}
 
 
 def clear_discovery_cache() -> None:
     _discoveries.clear()
+    _reverse_walks.clear()
 
 
 def _now() -> datetime:
@@ -64,16 +69,34 @@ async def _event_candidates(event_id: str) -> tuple[list[Candidate], LinkGraph]:
     return result.candidates, result.links
 
 
+async def _reverse_candidates(event_id: str, references: list[ReferenceInvestor]) -> ReverseResult:
+    key = (event_id, frozenset(normalise_name(r.name) or r.entity_id for r in references))
+    hit = _reverse_walks.get(key)
+    if hit and _now() - hit[0] < DISCOVERY_TTL:
+        return hit[1]
+    async with open_cala() as (client, _):
+        result = await reverse_walk(client, references, event_id)
+    remember(result.investors)
+    _reverse_walks[key] = (_now(), result)
+    return result
+
+
 async def candidates_for(profile: Profile) -> list[Candidate]:
-    """Startups at the profile's event from the Slush discovery pipeline (#23), filtered by
-    the profile, with co-invest computed against its reference investors.
+    """Startups at the profile's event from the Slush discovery pipeline (#23) plus those its
+    reference investors funded (#191), filtered by the profile, with co-invest computed
+    against its reference investors.
 
     Falls back to the fictional fixture candidates only when Cala, or its cache in replay
     mode, cannot list the event, so a cold laptop still demos instead of failing.
     """
     graph: LinkGraph | None = None
     try:
-        found, graph = await _event_candidates(profile.event_id or SLUSH_2026)
+        event_id = profile.event_id or SLUSH_2026
+        found, graph = await _event_candidates(event_id)
+        if profile.reference_investors:
+            reverse = await _reverse_candidates(event_id, profile.reference_investors)
+            found = merge_candidates(found, reverse.candidates)
+            graph = merge_graphs(graph, reverse.links)
         candidates = [c for c in found if matches_profile(c, profile)]
     except (CalaError, CalaCacheMiss) as err:
         log.warning("discovery unavailable, using fixture candidates: %s", err)
