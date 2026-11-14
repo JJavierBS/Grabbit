@@ -172,3 +172,27 @@ def test_an_older_database_drops_visitor_tables_but_keeps_the_cala_cache(tmp_pat
         assert "workspace" in columns
         assert conn.execute("SELECT COUNT(*) FROM reports").fetchone()[0] == 0
         assert conn.execute("SELECT key FROM cala_keep").fetchone()[0] == "warm"
+
+
+def test_a_visitor_cannot_change_the_shared_digest_schedule(client):
+    from app.services import on_profile_change
+
+    def digest_trigger() -> str:
+        jobs = client.app.state.scheduler.get_jobs()
+        return str(next(j for j in jobs if j.id == "digest").trigger)
+
+    with workspace.use("visitor-a"):
+        weekly = default_profile().model_copy(update={"cadence": "weekly"})
+        client.portal.call(on_profile_change, weekly)
+    client.portal.call(service.wait_idle)
+
+    assert "day_of_week" not in digest_trigger()
+
+
+def test_version_numbers_are_counted_per_workspace(client):
+    for headers in (A, A, B):
+        client.post("/api/chat", json={"text": "hello"}, headers=headers)
+    client.post("/api/chat", json={"text": "No B2C please"}, headers=A)
+    client.post("/api/chat", json={"text": "No B2C please"}, headers=B)
+
+    assert client.get("/api/profile", headers=B).json()["version"] == 2

@@ -11,6 +11,7 @@ from app import workspace
 from app.cala.client import CalaCacheMiss, CalaClient, CalaError
 from app.config import get_settings
 from app.events import publish
+from app.models import Profile
 from app.references import resolve_references
 from app.scheduler import GrabbitScheduler
 from app.store.cala_cache import CalaCache
@@ -46,11 +47,16 @@ async def _watch_current_workspace() -> None:
     from app.store.snapshots import WatchStore
     from app.watcher.run import Watcher
 
-    report = report_store.latest()
-    if report is None:
+    # Every company shown since the last prep report: a quiet digest stores no candidates,
+    # and watching only the latest report would then watch nothing.
+    candidates = {}
+    for report in report_store.since_last_prep():
+        for candidate in report.candidates:
+            candidates.setdefault(candidate.entity_id, candidate)
+    if not candidates:
         return
-    shortlist = [candidate.entity_id for candidate in report.candidates]
-    profile = resolve_references(profile_store.current(), report.candidates)
+    shortlist = list(candidates)
+    profile = resolve_references(profile_store.current(), list(candidates.values()))
     try:
         async with open_cala() as (client, conn):
             alerts = await Watcher(client, WatchStore(conn), publish=publish).run_once(
@@ -77,7 +83,23 @@ def start_scheduler() -> GrabbitScheduler:
     from app.store import profile as profile_store
 
     # One worker only: a second process would run every job twice (architecture.md).
+    global _jobs
     scheduler = GrabbitScheduler(watcher_job, digest_job, AsyncIOScheduler(timezone="UTC"))
     scheduler.apply(profile_store.current())
     scheduler.start()
+    _jobs = scheduler
     return scheduler
+
+
+_jobs: GrabbitScheduler | None = None
+
+
+def reschedule(profile: Profile) -> None:
+    """Reload the digest cadence after a profile change (chat edit or undo).
+
+    Visitors share one digest schedule, so only the default workspace sets its cadence.
+    """
+    if workspace.current() != workspace.DEFAULT:
+        return
+    if _jobs is not None and _jobs.scheduler.running:
+        _jobs.apply(profile)

@@ -12,7 +12,7 @@ from app.context_dev.signals import soft_signals
 from app.llm import LLM, get_llm
 from app.models import Profile, Report, ReportRef
 from app.references import resolve_references
-from app.reports.build import Kind, build, new_report_id, with_web_signals
+from app.reports.build import Kind, build, new_report_id, shown_since_prep, with_web_signals
 from app.store import chat as chat_store
 from app.store import profile as profile_store
 from app.store import reports as report_store
@@ -47,7 +47,7 @@ async def run(
         llm=llm or get_llm(),
         profile=profile,
         candidates=candidates,
-        previous=report_store.latest(),
+        previous=shown_since_prep(report_store.since_last_prep()),
         now=now,
         report_id=report_id,
     )

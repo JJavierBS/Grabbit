@@ -59,6 +59,28 @@ def new_report_id() -> str:
     return f"rep-{uuid.uuid4().hex[:12]}"
 
 
+def shown_since_prep(reports: list[Report]) -> Report | None:
+    """Everything the investor has seen: one report with the union of the candidates (and
+    their rounds) of `reports`, newest first, as returned by `store.reports.since_last_prep`.
+    A digest only holds what changed, so diffing against the latest one alone would bring
+    back startups already shown in the prep report as new."""
+    if not reports:
+        return None
+    merged: dict[str, Candidate] = {}
+    for report in reports:
+        for c in report.candidates:
+            if c.entity_id not in merged:
+                merged[c.entity_id] = c
+                continue
+            known = {r.entity_id for r in merged[c.entity_id].rounds}
+            extra = [r for r in c.rounds if r.entity_id not in known]
+            if extra:
+                merged[c.entity_id] = merged[c.entity_id].model_copy(
+                    update={"rounds": merged[c.entity_id].rounds + extra}
+                )
+    return reports[0].model_copy(update={"candidates": list(merged.values())})
+
+
 def _what_changed(ranked: list[Candidate], previous: Report | None) -> tuple[list[Candidate], str]:
     if previous is None:
         return ranked, "first digest: everything is new"
