@@ -20,7 +20,7 @@ human confirms.
 | K4 | Context.dev status "being evaluated, not a dependency" vs MVP using it | context-dev.md vs challenge.md Scope | Fixed in this audit: status and `.env.example` updated; role is soft signals (decisions.md 03:10) |
 
 ## Questions for Cala (workshop Sat 11:00 or mentors)
-- C1 May `knowledge/query` be used only to obtain seed ids? (cala.md)
+- C1 May `knowledge/query` be used only to obtain seed ids? (cala.md) Partly answered 14 Nov: at the workshop Cala recommended it for "latest news regarding <company>", which we use for news (#74); seeds still open.
 - C2 Exact rate limit, whether it is raised for the hackathon, and whether multi-minute latency on hub nodes is expected (cala.md "Rate limits and latency").
 - C3 A recommended way to list companies by industry or country from the graph. Partly answered by the field guide: an `Event` entity (Slush 2026) lists its attendees (cala.md "Traversal flow"); industry and country listing still open.
 - C5 Do they object to Context.dev as a discovery and soft-signal source next to Cala?
