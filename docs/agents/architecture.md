@@ -26,6 +26,7 @@ Owners are assigned on the issues; the board is the source of truth.
 | Reports | `backend/app/reports/` | Builds `Report` from candidates, signals, profile and instructions |
 | Watcher | `backend/app/watcher/` | Snapshots, diff, importance check, `Alert` |
 | Scheduler | `backend/app/scheduler.py` | APScheduler jobs: digest and watcher per profile |
+| Runtime glue | `backend/app/runtime.py` | Cala session on the shared cache; the jobs the lifespan schedules (watcher over the latest report, digest) |
 | Store | `backend/app/store/` | SQLite access: `db.py` (connection, `register_table`), one `<domain>.py` per team |
 | Web app | `frontend/src/` | Chat, report with trust badges, alerts, desktop notifications |
 

@@ -41,9 +41,9 @@ after its base branch was deleted, set the base to `main` (`gh pr edit <n> --bas
 - Deploy env (#29): `GEMINI_API_KEY`, `GEMINI_MODEL`, optional `CONTEXT_DEV_API_KEY`.
 
 **Team 2 (data)**
-- Candidates come from `app/agent/sources.py::candidates_for(profile)`, which reads the
-  fictional fixture `app/fixtures/candidates.json` (`TODO(#23)`). Replace its body with the
-  Slush discovery pipeline; nothing else in the agent or reports needs to change.
+- Candidates come from `app/agent/sources.py::candidates_for(profile)`, which runs the Slush
+  discovery pipeline on the first 150 attendees (#64). It falls back to the fictional
+  `app/fixtures/candidates.json` only when Cala or a cold replay cache cannot list the event.
 - Reference investors named in chat are stored with `entity_id = "unresolved:<name>"`. Resolve
   them to Cala entities (flow.md onboarding step 2) and rewrite the id.
 - Ranking reads `Candidate.signals` (`likely_to_raise` value `true`) when #24 fills them; until
