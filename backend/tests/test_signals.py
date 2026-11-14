@@ -138,7 +138,28 @@ def test_likely_when_all_three_checks_pass():
     candidate = make_candidate([make_round("r1", "2024-11-01", [lead()])])  # 24 months
     signal = likely_to_raise(candidate, GROWING, follow_on_signal(0.67), TODAY)
     assert signal.value is True
-    assert signal.explanation.count("yes:") == 3
+    # #159: plain sentences, one per check, no "yes:"/"no:" checklist.
+    assert signal.explanation == (
+        "Its Seed was 24 months ago, inside the usual 12 to 30 months between rounds. "
+        "The team went from 12 to 18 people in a year (+50%), above the 20% growth that often "
+        "comes before a round. "
+        "Its lead investor came back for a later round in 67% of its other startups."
+    )
+
+
+def test_failed_checks_say_why_in_plain_words():
+    candidate = make_candidate([make_round("r1", "2026-06-01", [lead()])])  # 5 months
+    signal = likely_to_raise(candidate, FLAT, follow_on_signal(0.07), TODAY)
+    assert signal.explanation == (
+        "Its Seed was 5 months ago, sooner than the usual 12 to 30 months between rounds. "
+        "The team went from 18 to 18 people in a year (+0%), under the 20% growth that often "
+        "comes before a round. "
+        "Its lead investor came back for a later round in 7% of its other startups, under 30%."
+    )
+    old = make_candidate([make_round("r1", "2023-06-01", [lead()])])
+    assert "past the usual" in likely_to_raise(old, FLAT, follow_on_signal(0.07), TODAY).explanation
+    for word in ("yes:", "no:", "no data", "ratio", "->"):
+        assert word not in signal.explanation
 
 
 def test_two_of_three_is_enough():
@@ -162,7 +183,8 @@ def test_null_with_fewer_than_two_checks_with_data():
     candidate = make_candidate([make_round("r1", "2024-11-01", [lead()])])
     signal = likely_to_raise(candidate, [], follow_on_signal(None), TODAY)
     assert signal.value is None
-    assert signal.explanation.count("no data") == 2
+    assert "Team size history covers less than a year." in signal.explanation
+    assert "Whether its lead investor follows on is not known." in signal.explanation
 
 
 def test_stale_or_short_headcount_history_counts_as_no_data():
