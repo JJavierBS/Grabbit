@@ -11,11 +11,13 @@ import { useChat, useProfile, useSendMessage, useUndo } from "../../api/hooks/qu
 import type { ChatMessage } from "../../api/types";
 import { Button } from "../../components/Button";
 import { TextArea } from "../../components/Input";
+import { Logo } from "../../components/Logo";
 import { Markdown } from "../../components/Markdown";
 import { Skeleton } from "../../components/Skeleton";
 import { ChangeNote } from "./ChangeNote";
 import styles from "./ChatPanel.module.css";
 import { changeNoteText, isUndoable } from "./noteText";
+import { VisualAnswer } from "./openui/VisualAnswer";
 import { useDictation } from "./useDictation";
 
 const SUGGESTIONS = ["Shorter, co-investors first", "Drop consumer health"];
@@ -70,42 +72,39 @@ export function ChatPanel({ footer }: ChatPanelProps) {
         Chat with Grabbit
       </h2>
       <div className={styles.log} role="log" aria-live="polite" aria-busy={chat.isPending}>
-        {chat.isPending && <Skeleton lines={4} label="Loading the conversation" />}
-        {chat.isError && (
-          <div className={styles.error} role="alert">
-            <p>{chat.error.message}</p>
-            <Button
-              variant="secondary"
-              size="sm"
-              icon={<RefreshCw aria-hidden="true" />}
-              onClick={() => chat.refetch()}
-            >
-              Try again
-            </Button>
-          </div>
-        )}
-        {chat.isSuccess && messages.length === 0 && (
-          <p className={styles.empty}>
-            Tell Grabbit what you look for at Slush 2026, however vague. It asks two or three
-            questions backed by data, then writes your prep report.
-          </p>
-        )}
-        {messages.map((m) => (
-          <Message
-            key={m.id}
-            message={m}
-            canUndo={isUndoable(m.profile_changes, profile.data?.version)}
-            undoing={undo.isPending}
-            onUndo={() => undo.mutate()}
-          />
-        ))}
-        {send.isPending && (
-          <p className={styles.thinking} role="status">
-            Grabbit is reading your message and checking the report…
-          </p>
-        )}
-        {footer}
-        <div ref={endRef} />
+        <div className={styles.column}>
+          {chat.isPending && <Skeleton lines={4} label="Loading the conversation" />}
+          {chat.isError && (
+            <div className={styles.error} role="alert">
+              <p>{chat.error.message}</p>
+              <Button
+                variant="secondary"
+                size="sm"
+                icon={<RefreshCw aria-hidden="true" />}
+                onClick={() => chat.refetch()}
+              >
+                Try again
+              </Button>
+            </div>
+          )}
+          {chat.isSuccess && messages.length === 0 && <Logo stacked className={styles.welcome} />}
+          {messages.map((m) => (
+            <Message
+              key={m.id}
+              message={m}
+              canUndo={isUndoable(m.profile_changes, profile.data?.version)}
+              undoing={undo.isPending}
+              onUndo={() => undo.mutate()}
+            />
+          ))}
+          {send.isPending && (
+            <p className={styles.thinking} role="status">
+              Grabbit is reading your message and checking the report…
+            </p>
+          )}
+          {footer}
+          <div ref={endRef} />
+        </div>
       </div>
 
       <form className={styles.composer} onSubmit={onSubmit}>
@@ -193,7 +192,14 @@ function Message({ message, canUndo, undoing, onUndo }: MessageProps) {
     <article className={`${styles.message} ${isAgent ? styles.agent : styles.user}`}>
       <p className="visually-hidden">{isAgent ? "Grabbit said:" : "You said:"}</p>
       {note && <ChangeNote note={note} canUndo={canUndo} undoing={undoing} onUndo={onUndo} />}
-      {rest && <div className={styles.bubble}>{isAgent ? <Markdown source={rest} /> : rest}</div>}
+      {/* A visual answer opens with its own sentence; the text stays as the model's history. */}
+      {message.ui ? (
+        <div className={styles.visual}>
+          <VisualAnswer ui={message.ui} graph={message.graph} />
+        </div>
+      ) : (
+        rest && <div className={styles.bubble}>{isAgent ? <Markdown source={rest} /> : rest}</div>
+      )}
     </article>
   );
 }

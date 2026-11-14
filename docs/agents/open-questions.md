@@ -20,7 +20,7 @@ human confirms.
 | K4 | Context.dev status "being evaluated, not a dependency" vs MVP using it | context-dev.md vs challenge.md Scope | Fixed in this audit: status and `.env.example` updated; role is soft signals (decisions.md 03:10) |
 
 ## Questions for Cala (workshop Sat 11:00 or mentors)
-- C1 May `knowledge/query` be used only to obtain seed ids? (cala.md)
+- C1 May `knowledge/query` be used only to obtain seed ids? (cala.md) Partly answered 14 Nov: at the workshop Cala recommended it for "latest news regarding <company>", which we use for news (#74); seeds still open.
 - C2 Exact rate limit, whether it is raised for the hackathon, and whether multi-minute latency on hub nodes is expected (cala.md "Rate limits and latency").
 - C3 A recommended way to list companies by industry or country from the graph. Partly answered by the field guide: an `Event` entity (Slush 2026) lists its attendees (cala.md "Traversal flow"); industry and country listing still open.
 - C5 Do they object to Context.dev as a discovery and soft-signal source next to Cala?
@@ -39,6 +39,23 @@ human confirms.
 | R5 | The video must show the originality: the report rewriting itself after a correction | Demo script step 4 shows it; keep the profile history one click away for Q&A |
 | R6 | Originality: no comparison with existing tools | pitch.md lists the alternatives to research; do not claim "nothing like it exists" without checking |
 | R7 | Impact and Implementation (event-wide judges) are not argued anywhere | pitch.md drafts both; needs numbers the team can defend |
+| R8 | The chat's free graph walk (#73) only replays offline for the three questions cached on 14 Nov; Gemini phrases differently or picks other entities and that part falls back to report-only | Rehearse with the exact wording: "Who led GREÏ's pre-seed, and what else have they backed?", "What else has Y Combinator invested in?", "Who founded Y Combinator, and what else are they linked to?"; or warm new questions live before recording |
+| R9 | Cala news (#74) is sparse and unstable: only Hashlist (3), whisperr (2) and Palette (1) have news; for GREÏ, Vectis.ai, People Made Machines and studio vaai Cala returned a profile row instead of news, and the cache freezes whichever answer came first | Pick demo startups that have news; re-run `python -m scripts.warm --news --retry-empty` before recording |
+| R10 | Hidden links (#75) are sparse on the demo thesis: of the AI pre-seed/seed attendees only GREÏ (FIRSTPICK co-invested 2× with 500 Global) and Pally (Pioneer Fund co-invested with Y Combinator) have one; founder-background links were dropped because Cala's Person nodes link only to the current company | Show GREÏ or Pally in the demo; Gemini does not see links yet, so the report text never mentions them |
+
+## Known issues and polish (after #73, #74 and #75, 14 Nov)
+Found while integrating and checking the three features in the browser. Not built; open an
+issue per item before working on it.
+| Id | Issue | Where | Fix |
+| --- | --- | --- | --- |
+| P1 | Fixed in #107: the shell clips (`overflow: clip`) and the chat log and side panel are positioned, so visually hidden labels no longer grow the document | `App.module.css`, `ChatPanel.module.css` | Pinned by `frontend/src/layout.test.ts` |
+| P2 | In the explored graph, Cala's two entities "500 Global" and "500 Global (500 Emerging Europe)" both show, and only the second is marked "you trust" | `frontend/src/features/chat/openui/ExploredGraphView.tsx`, trusted set | Match trusted investors by normalised fund name as `app/discovery/links.py` does, not only by entity id |
+| P3 | Edge labels show raw Cala values ("is_lead") | explored graph labels (`exploredGraph.ts`) | Map to readable words ("lead", "invested", "raised") |
+| P4 | At 1920 px, edge labels such as ISSUER and GRANTOR overlap the lines in the explored graph | `ExploredGraphView` | Give labels a background or offset them from the curve |
+| P5 | `alerts.test.tsx` fails on machines whose Node/ICU formats €8M as "€8.0M" or "8 M €" (es-ES); it was already failing before #73-#75 | `frontend/src/features/alerts/alerts.test.tsx`, money formatter | Fix the formatter's locale (or the test's), so `make test` is green on every laptop |
+| P6 | `scripts/board.sh` fails: `.github/project.env` does not exist, so the board cannot be moved from the CLI; #73, #74, #75 never moved | `.github/project.env` | Whoever set up the board adds the file, or move items by hand |
+| P7 | `make gen-api` reads whatever backend answers on :8000, which may be another checkout's | `Makefile`, api.md | Generate from `create_app().openapi()` dumped to a file (api.md describes the workaround) |
+| P8 | Agent worktrees left on the main laptop: `Grabbit/.claude/worktrees/agent-*` (branches 73-, 74-, 75-...), already merged | local only | `git worktree remove` each one once nobody needs their local databases |
 
 ## Submission status unknown
 - Was the Fri 23:59 pre-submission draft sent with the Cala challenge? Someone confirm.

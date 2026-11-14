@@ -1,0 +1,125 @@
+{
+  "id": "3dba66dc-5eec-5c0d-96cb-60e88365ef65",
+  "name": "Pre-Seed",
+  "entity_type": "FundingRound",
+  "description": null,
+  "properties": {
+    "name": {
+      "value": "Pre-Seed",
+      "sources": [
+        {
+          "name": "eu-startups.com",
+          "document": "https://www.eu-startups.com/2025/08/lithuanian-deeptech-startup-grei-raises-e650k-to-bring-ai-monitoring-to-complex-industrial-and-retail-sites/",
+          "date": "2025-08-11",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+        }
+      ]
+    },
+    "round_label": {
+      "value": "PRE_SEED",
+      "sources": [
+        {
+          "name": "eu-startups.com",
+          "document": "https://www.eu-startups.com/2025/08/lithuanian-deeptech-startup-grei-raises-e650k-to-bring-ai-monitoring-to-complex-industrial-and-retail-sites/",
+          "date": "2025-08-11",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+        }
+      ]
+    },
+    "instrument": {
+      "value": "EQUITY",
+      "sources": [
+        {
+          "name": "eu-startups.com",
+          "document": "https://www.eu-startups.com/2025/08/lithuanian-deeptech-startup-grei-raises-e650k-to-bring-ai-monitoring-to-complex-industrial-and-retail-sites/",
+          "date": "2025-08-11",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+        }
+      ]
+    },
+    "transaction_value": {
+      "value": 650000.0,
+      "sources": [
+        {
+          "name": "eu-startups.com",
+          "document": "https://www.eu-startups.com/2025/08/lithuanian-deeptech-startup-grei-raises-e650k-to-bring-ai-monitoring-to-complex-industrial-and-retail-sites/",
+          "date": "2025-08-11",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+        }
+      ]
+    },
+    "transaction_value_units": {
+      "value": "EUR",
+      "sources": [
+        {
+          "name": "eu-startups.com",
+          "document": "https://www.eu-startups.com/2025/08/lithuanian-deeptech-startup-grei-raises-e650k-to-bring-ai-monitoring-to-complex-industrial-and-retail-sites/",
+          "date": "2025-08-11",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+        }
+      ]
+    },
+    "announcement_date": {
+      "value": "2025-08-11",
+      "sources": [
+        {
+          "name": "eu-startups.com",
+          "document": "https://www.eu-startups.com/2025/08/lithuanian-deeptech-startup-grei-raises-e650k-to-bring-ai-monitoring-to-complex-industrial-and-retail-sites/",
+          "date": "2025-08-11",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+        }
+      ]
+    }
+  },
+  "relationships": {
+    "outgoing": {},
+    "incoming": {
+      "PARTICIPATES_IN_FUNDING_ROUND": [
+        {
+          "id": "0094ec10-bd61-4833-bf19-c2ab9d78312b",
+          "name": "GREÏ",
+          "entity_type": "Company",
+          "properties": {
+            "role": "ISSUER",
+            "sources": [
+              {
+                "name": "eu-startups.com",
+                "document": "https://www.eu-startups.com/2025/08/lithuanian-deeptech-startup-grei-raises-e650k-to-bring-ai-monitoring-to-complex-industrial-and-retail-sites/",
+                "date": "2025-08-11",
+                "date_precision": "day",
+                "source_rank": "PRESS"
+              }
+            ],
+            "id": "e521ccf0-f49b-52d6-b595-cbeb93457671"
+          }
+        },
+        {
+          "id": "88b67750-caa3-40ca-bfde-8eb88aa48ae4",
+          "name": "FIRSTPICK",
+          "entity_type": "Company",
+          "properties": {
+            "role": "INVESTOR",
+            "sources": [
+              {
+                "name": "startuphub.ai",
+                "document": "https://www.startuphub.ai/news/lithuanian-deeptech-grei-raises-e650k-for-ai-industrial-monitoring",
+                "date": "2025-08-11",
+                "date_precision": "day",
+                "source_rank": "PRESS"
+              }
+            ],
+            "is_lead": true,
+            "id": "c2a5885f-e8b2-5add-b83e-65e60e006481"
+          }
+        }
+      ]
+    }
+  },
+  "numerical_observations": []
+}

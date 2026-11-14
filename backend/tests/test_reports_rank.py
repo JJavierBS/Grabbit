@@ -48,3 +48,31 @@ def test_unknown_headcount_is_kept_by_headcount_filter(now):
     profile.filters.headcount_max = 20
     names = _names(profile)
     assert "Mossa Health" in names and "Ledgerly" not in names
+
+
+def _with(candidate, **update):
+    return candidate.model_copy(update=update)
+
+
+def test_rank_and_discovery_apply_the_same_filters(now):
+    from app.discovery.filters import matches_profile
+
+    profile = default_profile(now)
+    profile.filters.stages = ["early"]
+    profile.filters.sectors_in = ["AI"]
+    for c in fixture_candidates():
+        assert (c in rank([c], profile)) == matches_profile(c, profile), c.name
+
+
+def test_rank_keeps_a_startup_that_publishes_no_industries(now):
+    profile = default_profile(now)
+    profile.filters.sectors_in = ["ai"]
+    bare = _with(fixture_candidates()[0], industries=[])
+    assert rank([bare], profile) == [bare]
+
+
+def test_rank_sector_ai_never_matches_retail(now):
+    profile = default_profile(now)
+    profile.filters.sectors_in = ["AI"]
+    retail = _with(fixture_candidates()[0], industries=["retail"])
+    assert rank([retail], profile) == []

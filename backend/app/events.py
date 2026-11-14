@@ -1,7 +1,8 @@
 """In-process event bus behind `GET /api/events`.
 
 Producers call `publish("alert", alert)`; every open SSE connection gets its own
-`Subscription`. One uvicorn worker only (architecture.md), so memory is enough.
+`Subscription`, and only hears events of its own workspace (app/workspace.py).
+One uvicorn worker only (architecture.md), so memory is enough.
 """
 
 import asyncio
@@ -10,6 +11,8 @@ from dataclasses import dataclass
 from typing import Any, Literal, get_args
 
 from pydantic import BaseModel
+
+from app import workspace
 
 EventKind = Literal["alert", "report", "profile"]
 EVENT_KINDS: tuple[str, ...] = get_args(EventKind)
@@ -32,6 +35,7 @@ class Subscription:
 
     def __init__(self, bus: "EventBus", max_queue: int) -> None:
         self._bus = bus
+        self.workspace = workspace.current()
         self._queue: asyncio.Queue[Event] = asyncio.Queue(maxsize=max_queue)
 
     def _deliver(self, event: Event) -> None:
@@ -65,7 +69,7 @@ class EventBus:
         self._subscribers: set[Subscription] = set()
 
     def publish(self, kind: EventKind, payload: Any) -> int:
-        """Send `payload` (a Pydantic model or JSON-able value) to every subscriber.
+        """Send `payload` (a Pydantic model or JSON-able value) to the current workspace.
 
         Call it from code running on the event loop (handlers, scheduler jobs).
         Returns the number of subscribers reached.
@@ -73,9 +77,11 @@ class EventBus:
         if kind not in EVENT_KINDS:
             raise ValueError(f"unknown event kind: {kind}")
         event = Event(kind=kind, data=_to_json(payload))
-        for subscription in list(self._subscribers):
+        target = workspace.current()
+        reached = [s for s in list(self._subscribers) if s.workspace == target]
+        for subscription in reached:
             subscription._deliver(event)
-        return len(self._subscribers)
+        return len(reached)
 
     def subscribe(self) -> Subscription:
         subscription = Subscription(self, self._max_queue)

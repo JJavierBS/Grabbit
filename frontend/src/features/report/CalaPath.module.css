@@ -1,0 +1,136 @@
+.figure {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.scroll {
+  overflow-x: auto;
+  padding: var(--space-2);
+  border: var(--border-width) solid var(--color-border-soft);
+  border-radius: var(--radius-md);
+  background: var(--color-panel);
+}
+
+.svg {
+  display: block;
+  width: 100%;
+  min-width: 36rem; /* legible in the chat column; the frame scrolls */
+  height: auto;
+  font-family: var(--font-ui);
+}
+
+.edge path,
+.edgeStrong path {
+  fill: none;
+  stroke: var(--color-border);
+  stroke-width: 1.25;
+}
+
+.edgeStrong path {
+  stroke: var(--color-violet);
+  stroke-width: 2;
+}
+
+.edgeDashed path {
+  stroke-dasharray: 5 4;
+}
+
+.edgeLabel {
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  fill: var(--color-text-faint);
+}
+
+.edgeStrong .edgeDashed path {
+  stroke-dasharray: 5 4;
+}
+
+.edgeLabel {
+  fill: var(--color-violet-light);
+  font-weight: 600;
+}
+
+.node {
+  cursor: pointer;
+  outline: none;
+}
+
+.node rect {
+  fill: var(--color-surface);
+  stroke: var(--color-border-soft);
+  stroke-width: 1.25;
+}
+
+.node[data-kind="startup"] rect {
+  fill: var(--color-ink);
+  stroke: var(--color-ink);
+}
+
+.node[data-kind="event"] rect,
+.node[data-kind="round"] rect {
+  fill: var(--color-panel-strong);
+}
+
+.node[data-kind="more"] {
+  cursor: default;
+}
+
+.node[data-kind="more"] rect {
+  fill: none;
+  stroke-dasharray: 4 3;
+}
+
+.node[data-lead] rect {
+  stroke: var(--color-border);
+}
+
+.node[data-trusted] rect {
+  fill: var(--color-marker-soft);
+  stroke: var(--color-violet);
+  stroke-width: 2;
+}
+
+.node[data-kind="link"] rect {
+  stroke-dasharray: 5 3;
+}
+
+.node:focus-visible rect,
+.node[data-picked] rect {
+  stroke: var(--color-focus);
+  stroke-width: 2.5;
+}
+
+.nodeLabel {
+  font-size: 12px;
+  font-weight: 600;
+  fill: var(--color-ink);
+}
+
+.nodeSub {
+  font-size: 10px;
+  fill: var(--color-text-muted);
+}
+
+.caption {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.detail {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--color-text);
+}
+
+.caption code {
+  font-size: var(--text-xs);
+}
+
+.node[data-kind="startup"] .nodeLabel {
+  fill: var(--color-on-ink);
+}
+
+.figure[data-tall] .svg {
+  min-width: 0;
+}

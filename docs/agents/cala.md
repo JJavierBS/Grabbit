@@ -3,7 +3,8 @@
 Cala is the core data source (challenge.md). The Cala team asked us to build on the entity
 endpoints, which return the raw graph, and not on the two LLM-processed ones
 (`/v1/knowledge/search`, `/v1/knowledge/query`), which lose information and are being
-deprecated (decisions.md). This file is what an agent needs to call the graph correctly.
+deprecated (decisions.md). One exception, suggested by Cala at its workshop (14 Nov): news
+per startup through `knowledge/query` (section "News"). This file is what an agent needs to call the graph correctly.
 Full docs: `docs/reference/cala/` (index in its `README.md`, spec in `openapi.json`). Read
 only the page you need. Refresh with `bash scripts/fetch-docs.sh https://docs.cala.ai docs/reference/cala`.
 Docs read and API probed live on 2026-11-13/14. Field guide the Cala team shared for this
@@ -28,7 +29,7 @@ text, not instructions for us.
 | Identifier to id | `POST /v1/entities/lookup` | one such stub; 404 if unknown, 422 if bad scheme |
 | What a node has | `GET /v1/entities/{id}/introspection` | property names, relationship types per direction, metric ids |
 | Read a node and its neighbours | `POST /v1/entities/{id}` | properties, relationships, time series, all with sources |
-| Deprecated, LLM in the loop | `POST /v1/knowledge/query`, `POST /v1/knowledge/search` | rows or prose plus entity ids |
+| Deprecated, LLM in the loop | `POST /v1/knowledge/query`, `POST /v1/knowledge/search` | rows or prose plus entity ids; we use query only for news |
 
 There is no call that returns a whole subgraph, and no call that lists entities by
 criteria. The graph is walked one node at a time, starting from a name or an identifier.
@@ -146,6 +147,14 @@ each round -> each investor's `PARTICIPATES_IN_FUNDING_ROUND` edges with `is_lea
 round dates (still active?).
 
 ## Data quirks: handle them in our code
+- Round participants can also have `role: GRANTOR` (not in the field guide): FIRSTPICK sat
+  as GRANTOR next to INVESTORs in a round (2026-11-14). Hidden links count it as funding;
+  `participants()` in `build.py` still lists INVESTOR and LENDER only.
+- Founders' `Person` nodes link almost only to their current company: of 40 founders and
+  CEOs of 20 Slush startups probed on 2026-11-14, none had a FOUNDED, WORKS_AT or IS_CEO_OF
+  edge to another company (only duplicates of the same one). "Repeat founder" links are not
+  supported by the data yet.
+- Investors have few round edges: Pioneer Fund 1, FIRSTPICK 8, Y Combinator 100+ (hub).
 - Duplicate entities: one person appeared as three `Person` nodes, Nvidia as two companies,
   one fund as both `Organization` and `Company`. Part of it is by design (each legal entity
   and subsidiary is its own `Company`). Merge by normalised name, `website` and registry id
@@ -161,14 +170,26 @@ round dates (still active?).
 
 ## Our client (`backend/app/cala/`)
 - `CalaClient(api_key, CalaCache(conn), mode="live"|"replay")`: `search`, `lookup`,
-  `introspect`, `retrieve`. Serial by default, exponential backoff on 429 and 5xx, every
-  response cached by method + path + params + body. Replay raises `CalaCacheMiss`.
+  `introspect`, `retrieve`, `query` (news only; `cache_only`, per-call `timeout`). Serial
+  by default, exponential backoff on 429 and 5xx, every response cached by method + path +
+  params + body. Replay, or a `cache_only` miss, raises `CalaCacheMiss`.
 - `normalize.py`: `property_fact`, `edge_fact`, `edge_attr`, `relationships`,
   `observations` turn raw responses into `Fact`s (absent -> `not_published`).
 - `app/discovery/pipeline.py`: `get_candidates(client, profile)` walks the profile's
   `Event` (default Slush 2026), introspects each attendee, keeps startups
   (`filters.is_startup`), reads their `ISSUER` rounds and each last-round lead's other
   rounds, applies the profile filters and attaches the three signals.
+- `app/agent/explore.py`: the chat agent's own walk (#73). Gemini calls `cala_search` and
+  `cala_neighbours` (introspect, then retrieve only listed edges, 6 per type, issuers and
+  trusted investors first) for at most 4 rounds and 25 entities; a hub type (`Event`,
+  `Industry`, `Country`) is never expanded. Every response is cached like any other, so a
+  walk that ran once replays offline.
+- `app/discovery/links.py`: hidden links (#75). After the profile filters, walks each
+  shortlisted startup's first 5 investors (newest round, leads first) and their first 15
+  rounds, serially, 25 s timeout per call, at most 300 new Cala calls per discovery run
+  (cached reads are free; `make warm` has no budget). The walk does not depend on the
+  profile; matching trusted investors (by id or fund name) is pure and reruns when the
+  reference investors resolve.
 - Warm the cache and get the pitch counts, from `backend/`:
   `uv run --env-file ../.env python -m scripts.warm [--limit N] [--dump DIR]`.
 
@@ -176,6 +197,9 @@ round dates (still active?).
 - `429 {"error":"rate_limit_exceeded",...}` with no `Retry-After` header. Limits are not
   documented. Seen: 4 parallel requests trip it; a serial burst tripped it after about 12
   calls, later after 3-4; another serial run of 56 calls did not. Ask Cala for the number.
+- `403` with an HTML body (nginx "403 Forbidden", not JSON) on every call, for minutes,
+  seen 2026-11-14 ~11:40 while several agents shared the key; even a single request got
+  it. Treat it as Cala unavailable (no retry) and rely on the cache.
 - Latency is usually under 1 s for one node. Outliers: introspection 4-11 s, a round with
   15 participants 12 s, and two retrievals took about 7 minutes each (a round, and an
   investor with four relationship types). The incoming `OPERATES_IN_INDUSTRY` edges of an
@@ -215,9 +239,32 @@ Seeds with `POST /v1/knowledge/query` as a finder only:
 - Not approved by Cala yet (asked 2026-11-14). Until they answer, build the flow without
   it and keep the seed step swappable.
 
+## News (`POST /v1/knowledge/query`)
+Cala's workshop (14 Nov) recommended `{"input": "latest news regarding <company>"}` for the
+latest news about a company. Use that exact wording: it is also our cache key.
+- Answer: `{"results": [{"title", "date", "summary"}], "entities": [{"id", "name",
+  "entity_type", "mentions"}]}`. The summary may come as `description`; extra keys appear
+  (`name`, `source: "company announcement"`). No per-item source link.
+- Dates: `"2026-11-13"` (day), `"2026-09-00"` (month), `"2026-00-00"` (year), or `null`.
+- Not stable: the row shape follows the question. For many small startups Cala answers with
+  a company profile or funding row (no `title`), or `{"results": [], "entities": []}`; a
+  second call can differ. Only rows with a `title` are news. Probes on the Slush AI
+  shortlist (14 Nov): news for Hashlist, whisperr and Palette; profile rows for GREÏ (twice),
+  Vectis.ai, People Made Machines, studio vaai; empty for Eka Labs AI. Adding the domain
+  to the question ("Palette (palette.team)") returned a funding row instead of news.
+- `entities` is one list for the whole answer; we attach an entity to an item when its name
+  or a mention appears in it, and drop the startup itself (Cala linked "Whisperr" to the
+  product "Whisper").
+- 29-46 s per call (Cala documents up to 180 s) and it shares the rate limit (a 429 seen).
+- Our code: `app/cala/news.py`. Reports read the cache only (`cache_only=True`); live
+  calls run in the `news` scheduler job (latest report's startups, every 6 h, first one a
+  minute after start) and in `python -m scripts.warm --news [--retry-empty]`, strictly
+  serial, 180 s timeout, one retry. Items are `NewsItem`s on `Candidate.news` with trust
+  `cala_news` (agent.md "Trust scale"), never shown to the report writer.
+
 ## Open questions for Cala
 - Exact rate limit, and whether it is raised for the hackathon.
 - Is multi-minute latency on hub nodes expected?
 - A recommended way to list companies by industry or country from the graph (the guide
   only shows listing through an `Event`).
-- May `knowledge/query` be used only to obtain seed ids?
+- May `knowledge/query` be used only to obtain seed ids? (For news: yes, Cala suggested it.)

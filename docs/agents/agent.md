@@ -34,6 +34,7 @@ From Cala `source_rank` (cala.md). A fact with several sources shows the stronge
 | `primary` | Company or investor | The company, its investors, lenders or grant bodies |
 | `press` | Press | Independent publications |
 | `aggregator` | Database | Funding databases, data providers |
+| `cala_news` | Cala news | Cala's knowledge query summarised the item; no per-item source |
 | `web_unverified` | Web, unverified | Context.dev soft signals; never mixed with Cala facts |
 | `not_published` | Not published | Field absent in Cala; never shown as 0 |
 Dates show only their precision: a `year` date reads "2019", not "2019-01-01".

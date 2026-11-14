@@ -46,6 +46,19 @@ describe("App", () => {
     expect(screen.queryByRole("region", { name: "Report" })).not.toBeInTheDocument();
   });
 
+  it("welcomes an empty chat with the logo and wordmark, gone once there is a message", async () => {
+    mockApi({ ...base, "GET /api/chat": () => [], "GET /api/reports/latest": () => reportV1 });
+    const { unmount } = renderWithClient(<App />);
+    const log = await screen.findByRole("log");
+    expect(await within(log).findByText("Grabbit")).toBeInTheDocument();
+    unmount();
+
+    mockApi({ ...base, "GET /api/reports/latest": () => reportV1 });
+    renderWithClient(<App />);
+    expect(await screen.findByText(/Tell me what you look for/)).toBeInTheDocument();
+    expect(within(screen.getByRole("log")).queryByText("Grabbit")).not.toBeInTheDocument();
+  });
+
   it("shows no error before the first report exists", async () => {
     mockApi({
       ...base,
@@ -69,6 +82,8 @@ describe("App", () => {
       created_at: "2026-11-14T09:00:00Z",
       profile_changes: [],
       report_id: null,
+      ui: null,
+      graph: null,
     };
     mockApi({ ...base, "GET /api/chat": () => [reply], "GET /api/reports/latest": () => reportV1 });
     renderWithClient(<App />);
@@ -97,6 +112,8 @@ describe("App", () => {
       id: "m9",
       role: "agent",
       report_id: null,
+      ui: null,
+      graph: null,
       text: "From now on: shorter reports, co-investors first. I rewrote your report.",
       created_at: "2026-11-14T09:34:00Z",
       profile_changes: [],
@@ -216,7 +233,7 @@ describe("App", () => {
     localStorage.clear();
   });
 
-  it("fires the demo alert 30 s after Alerts is pressed, with no demo data label", async () => {
+  it("fires the staged GREÏ alert 30 s after Alerts is pressed, with no demo data label", async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     window.history.replaceState({}, "", "/?demo");
     const calls = mockApi({
@@ -236,7 +253,7 @@ describe("App", () => {
     act(() => vi.advanceTimersByTime(1000));
     await waitFor(() =>
       expect(calls.find((c) => c.key === "POST /api/demo/simulate-event")?.body).toEqual({
-        fixture: "new_round",
+        fixture: "grei_seed_round",
       }),
     );
     window.history.replaceState({}, "", "/");

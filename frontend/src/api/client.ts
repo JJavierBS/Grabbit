@@ -1,5 +1,6 @@
 import createClient from "openapi-fetch";
 import type { components, paths } from "./schema";
+import { withWorkspace, workspaceId } from "./workspace";
 
 type ErrorBody = components["schemas"]["ErrorResponse"];
 
@@ -30,6 +31,7 @@ export const api = createClient<paths>({
   baseUrl: globalThis.location?.origin ?? "",
   // Resolved per call so tests and the fake API can swap the transport after import.
   fetch: async (request) => {
+    request.headers.set("X-Workspace", workspaceId());
     try {
       return await transport(request);
     } catch {
@@ -69,7 +71,7 @@ export interface EventStream {
   close(): void;
 }
 
-let streamFactory: (url: string) => EventStream = (url) => new EventSource(url);
+let streamFactory: (url: string) => EventStream = (url) => new EventSource(withWorkspace(url));
 
 export function setEventStreamFactory(next: (url: string) => EventStream) {
   streamFactory = next;

@@ -1,0 +1,785 @@
+[
+ {
+  "method": "GET",
+  "path": "/v1/entities",
+  "params": {
+   "name": "FIRSTPICK",
+   "limit": 5
+  },
+  "body": null,
+  "response": {
+   "entities": [
+    {
+     "id": "88b67750-caa3-40ca-bfde-8eb88aa48ae4",
+     "name": "FIRSTPICK",
+     "entity_type": "Company",
+     "description": "Vilnius-based first-check VC fund backing Baltic founders at inception and pre-seed with €25M fund, investing €100K-500K initially."
+    },
+    {
+     "id": "9453e18c-32e3-41d3-aaf1-8b893ca25521",
+     "name": "FASTPICK UK LTD",
+     "entity_type": "Company",
+     "description": "A retail car services company incorporated in London in 2008."
+    },
+    {
+     "id": "fcfac64f-c176-4e7b-9089-85f752c8a984",
+     "name": "FIRSTLOCK LIMITED",
+     "entity_type": "Company",
+     "description": "A British consulting firm founded in 1988 and headquartered in London."
+    },
+    {
+     "id": "856f9904-9c4f-4685-810c-d68420a1af8f",
+     "name": "FINSTICK LIMITED",
+     "entity_type": "Company",
+     "description": "A UK consulting firm headquartered in Wickford, Essex, founded in 2005."
+    },
+    {
+     "id": "452d7b06-a025-4330-97fe-d94a57e87185",
+     "name": "IRSHPICK LTD",
+     "entity_type": "Company",
+     "description": "British retail company founded in 2021 and based in Sheffield, England."
+    }
+   ]
+  }
+ },
+ {
+  "method": "GET",
+  "path": "/v1/entities/88b67750-caa3-40ca-bfde-8eb88aa48ae4/introspection",
+  "params": null,
+  "body": null,
+  "response": {
+   "properties": [
+    "id",
+    "description",
+    "aliases",
+    "website",
+    "name"
+   ],
+   "relationships": {
+    "outgoing": [
+     "HAS_PRESENCE_IN",
+     "PARTICIPATES_IN_CORPORATE_EVENT",
+     "OPERATES_IN_INDUSTRY",
+     "PARTICIPATES_IN_FUNDING_ROUND",
+     "INVESTED_IN"
+    ],
+    "incoming": [
+     "INVESTED_IN"
+    ]
+   },
+   "numerical_observations": {}
+  }
+ },
+ {
+  "method": "POST",
+  "path": "/v1/entities/88b67750-caa3-40ca-bfde-8eb88aa48ae4",
+  "params": null,
+  "body": {
+   "properties": [
+    "name",
+    "website"
+   ],
+   "relationships": {
+    "outgoing": {
+     "PARTICIPATES_IN_FUNDING_ROUND": {
+      "limit": 6
+     }
+    }
+   }
+  },
+  "response": {
+   "id": "88b67750-caa3-40ca-bfde-8eb88aa48ae4",
+   "name": "FIRSTPICK",
+   "entity_type": "Company",
+   "description": "Vilnius-based first-check VC fund backing Baltic founders at inception and pre-seed with €25M fund, investing €100K-500K initially.",
+   "properties": {
+    "name": {
+     "value": "FIRSTPICK",
+     "sources": [
+      {
+       "name": "FIRSTPICK VC | High-speed VC fund",
+       "document": "https://firstpick.vc",
+       "date": "2026-06-03"
+      },
+      {
+       "name": "FIRSTPICK: €25 Million Fund Launched To Back Early-Stage Baltic Startup Founders",
+       "document": "https://pulse2.com/firstpick-e25-million-fund-launched-to-back-early-stage-baltic-startup-founders",
+       "date": "2026-03-06"
+      },
+      {
+       "name": "balsio.com",
+       "document": "https://www.balsio.com/blog/balsio-is-now-live-in-europe",
+       "date": "2026-05-05",
+       "date_precision": "day",
+       "source_rank": "PRIMARY"
+      },
+      {
+       "name": "techfundingnews.com",
+       "document": "https://techfundingnews.com/birdychat-1-7m-dig-ventures-work-personal-chat-app/",
+       "date": "2026-05-05",
+       "date_precision": "day",
+       "source_rank": "PRESS"
+      },
+      {
+       "name": "data.gov.lv",
+       "document": "https://data.gov.lv/dati/api/3/action/datastore_search?resource_id=837b451a-4833-4fd1-bfdd-b45b35a994fd&q=40203455420",
+       "date": "2025-09-30",
+       "date_precision": "day",
+       "source_rank": "FILING"
+      },
+      {
+       "name": "firstpick.vc",
+       "document": "https://firstpick.vc/blog/firstpick-ai-accelerator-2025-batch/",
+       "date": "2025-06-06",
+       "date_precision": "day",
+       "source_rank": "PRIMARY"
+      },
+      {
+       "name": "callsy.ai",
+       "document": "https://www.callsy.ai/insights/how-we-got-funded-500-global-firstpick",
+       "date": "2026-05-10",
+       "date_precision": "day",
+       "source_rank": "PRIMARY"
+      },
+      {
+       "name": "bouncewatch.com",
+       "document": "https://bouncewatch.com/company/callsy-ai",
+       "date": "2025-11-13",
+       "date_precision": "day",
+       "source_rank": "AGGREGATOR"
+      },
+      {
+       "name": "startuphub.ai",
+       "document": "https://www.startuphub.ai/news/lithuanian-deeptech-grei-raises-e650k-for-ai-industrial-monitoring",
+       "date": "2025-08-11",
+       "date_precision": "day",
+       "source_rank": "PRESS"
+      },
+      {
+       "name": "itkey.media",
+       "document": "https://itkey.media/latvian-traveltech-rebookify-secures-eur-200k-to-bring-ai-automation-to-agency-bookings/",
+       "date": "2025-11-28",
+       "date_precision": "day",
+       "source_rank": "PRESS"
+      },
+      {
+       "name": "siliconcanals.com",
+       "document": "https://siliconcanals.com/softloans-bags-1m/",
+       "date": "2024-04-19",
+       "date_precision": "day",
+       "source_rank": "PRESS"
+      },
+      {
+       "name": "kotis.kt.gov.lt",
+       "document": "https://kotis.kt.gov.lt/paraiskos/view_item/id.2337915",
+       "date": "2024-03-29",
+       "date_precision": "day",
+       "source_rank": "FILING"
+      }
+     ]
+    },
+    "website": {
+     "value": "firstpick.vc",
+     "sources": [
+      {
+       "name": "FIRSTPICK VC | High-speed VC fund",
+       "document": "https://firstpick.vc",
+       "date": "2026-06-03"
+      },
+      {
+       "name": "FIRSTPICK: €25 Million Fund Launched To Back Early-Stage Baltic Startup Founders",
+       "document": "https://pulse2.com/firstpick-e25-million-fund-launched-to-back-early-stage-baltic-startup-founders",
+       "date": "2026-03-06"
+      }
+     ]
+    }
+   },
+   "relationships": {
+    "outgoing": {
+     "PARTICIPATES_IN_FUNDING_ROUND": [
+      {
+       "id": "3dba66dc-5eec-5c0d-96cb-60e88365ef65",
+       "name": "Pre-Seed",
+       "entity_type": "FundingRound",
+       "properties": {
+        "role": "INVESTOR",
+        "sources": [
+         {
+          "name": "startuphub.ai",
+          "document": "https://www.startuphub.ai/news/lithuanian-deeptech-grei-raises-e650k-for-ai-industrial-monitoring",
+          "date": "2025-08-11",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+         }
+        ],
+        "is_lead": true,
+        "id": "c2a5885f-e8b2-5add-b83e-65e60e006481"
+       }
+      },
+      {
+       "id": "43aebe13-51d5-524f-ae33-755679f09273",
+       "name": "Seed",
+       "entity_type": "FundingRound",
+       "properties": {
+        "role": "INVESTOR",
+        "sources": [
+         {
+          "name": "tech.eu",
+          "document": "https://tech.eu/2026/10/15/vilnius-based-holo-raises-eur5m-to-bring-ai-powered-marketing-to-small-businesses/",
+          "date": "2026-10-15",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+         }
+        ],
+        "id": "ea36a65d-7112-525e-af15-97bd0f1cb376"
+       }
+      },
+      {
+       "id": "4edc832c-ca28-5c7c-871e-4be638e16f4e",
+       "name": "Pre-Seed",
+       "entity_type": "FundingRound",
+       "properties": {
+        "role": "INVESTOR",
+        "sources": [
+         {
+          "name": "firstpick.vc",
+          "document": "https://firstpick.vc/blog/firstpick-ai-accelerator-2025-batch/",
+          "date": "2025-06-06",
+          "date_precision": "day",
+          "source_rank": "PRIMARY"
+         },
+         {
+          "name": "callsy.ai",
+          "document": "https://www.callsy.ai/insights/how-we-got-funded-500-global-firstpick",
+          "date": "2026-05-10",
+          "date_precision": "day",
+          "source_rank": "PRIMARY"
+         },
+         {
+          "name": "bouncewatch.com",
+          "document": "https://bouncewatch.com/company/callsy-ai",
+          "date": "2025-11-13",
+          "date_precision": "day",
+          "source_rank": "AGGREGATOR"
+         }
+        ],
+        "is_lead": true,
+        "id": "0ce2f593-e9ce-5e1e-ad76-d6a371250be4"
+       }
+      },
+      {
+       "id": "936707a8-b422-556a-910d-487e162809ef",
+       "name": "Pre-Seed",
+       "entity_type": "FundingRound",
+       "properties": {
+        "role": "INVESTOR",
+        "sources": [
+         {
+          "name": "siliconcanals.com",
+          "document": "https://siliconcanals.com/softloans-bags-1m/",
+          "date": "2024-04-19",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+         },
+         {
+          "name": "kotis.kt.gov.lt",
+          "document": "https://kotis.kt.gov.lt/paraiskos/view_item/id.2337915",
+          "date": "2024-03-29",
+          "date_precision": "day",
+          "source_rank": "FILING"
+         }
+        ],
+        "is_lead": true,
+        "id": "172c45f5-02da-5b33-af55-b5822a7f5162"
+       }
+      },
+      {
+       "id": "a76fc375-1dc5-5148-9d1d-63d6d4b0a9f2",
+       "name": "Convertible Notes round",
+       "entity_type": "FundingRound",
+       "properties": {
+        "role": "INVESTOR",
+        "sources": [
+         {
+          "name": "kotis.kt.gov.lt",
+          "document": "https://kotis.kt.gov.lt/paraiskos/view_item/id.2508193",
+          "date": "2024-12-23",
+          "date_precision": "day",
+          "source_rank": "FILING"
+         }
+        ],
+        "is_lead": true,
+        "id": "534308b5-25c9-552b-ac92-a5363402d5ab"
+       }
+      },
+      {
+       "id": "ae44bd34-20a9-586d-8796-b12981dfcd8d",
+       "name": "Pre-Seed",
+       "entity_type": "FundingRound",
+       "properties": {
+        "role": "GRANTOR",
+        "sources": [
+         {
+          "name": "itkey.media",
+          "document": "https://itkey.media/latvian-traveltech-rebookify-secures-eur-200k-to-bring-ai-automation-to-agency-bookings/",
+          "date": "2025-11-28",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+         }
+        ],
+        "id": "ec636adf-5e26-5021-80a5-917f3dac5c8b"
+       }
+      }
+     ]
+    },
+    "incoming": {}
+   },
+   "numerical_observations": []
+  }
+ },
+ {
+  "method": "GET",
+  "path": "/v1/entities/3dba66dc-5eec-5c0d-96cb-60e88365ef65/introspection",
+  "params": null,
+  "body": null,
+  "response": {
+   "properties": [
+    "id",
+    "round_label",
+    "transaction_value_units",
+    "name",
+    "annotations",
+    "transaction_value",
+    "announcement_date",
+    "instrument"
+   ],
+   "relationships": {
+    "outgoing": [],
+    "incoming": [
+     "PARTICIPATES_IN_FUNDING_ROUND"
+    ]
+   },
+   "numerical_observations": {}
+  }
+ },
+ {
+  "method": "POST",
+  "path": "/v1/entities/3dba66dc-5eec-5c0d-96cb-60e88365ef65",
+  "params": null,
+  "body": {
+   "properties": [
+    "name",
+    "round_label",
+    "instrument",
+    "transaction_value",
+    "announcement_date",
+    "transaction_value_units"
+   ],
+   "relationships": {
+    "incoming": {
+     "PARTICIPATES_IN_FUNDING_ROUND": {
+      "limit": 6
+     }
+    }
+   }
+  },
+  "response": {
+   "id": "3dba66dc-5eec-5c0d-96cb-60e88365ef65",
+   "name": "Pre-Seed",
+   "entity_type": "FundingRound",
+   "description": null,
+   "properties": {
+    "name": {
+     "value": "Pre-Seed",
+     "sources": [
+      {
+       "name": "eu-startups.com",
+       "document": "https://www.eu-startups.com/2025/08/lithuanian-deeptech-startup-grei-raises-e650k-to-bring-ai-monitoring-to-complex-industrial-and-retail-sites/",
+       "date": "2025-08-11",
+       "date_precision": "day",
+       "source_rank": "PRESS"
+      }
+     ]
+    },
+    "round_label": {
+     "value": "PRE_SEED",
+     "sources": [
+      {
+       "name": "eu-startups.com",
+       "document": "https://www.eu-startups.com/2025/08/lithuanian-deeptech-startup-grei-raises-e650k-to-bring-ai-monitoring-to-complex-industrial-and-retail-sites/",
+       "date": "2025-08-11",
+       "date_precision": "day",
+       "source_rank": "PRESS"
+      }
+     ]
+    },
+    "instrument": {
+     "value": "EQUITY",
+     "sources": [
+      {
+       "name": "eu-startups.com",
+       "document": "https://www.eu-startups.com/2025/08/lithuanian-deeptech-startup-grei-raises-e650k-to-bring-ai-monitoring-to-complex-industrial-and-retail-sites/",
+       "date": "2025-08-11",
+       "date_precision": "day",
+       "source_rank": "PRESS"
+      }
+     ]
+    },
+    "transaction_value": {
+     "value": 650000.0,
+     "sources": [
+      {
+       "name": "eu-startups.com",
+       "document": "https://www.eu-startups.com/2025/08/lithuanian-deeptech-startup-grei-raises-e650k-to-bring-ai-monitoring-to-complex-industrial-and-retail-sites/",
+       "date": "2025-08-11",
+       "date_precision": "day",
+       "source_rank": "PRESS"
+      }
+     ]
+    },
+    "announcement_date": {
+     "value": "2025-08-11",
+     "sources": [
+      {
+       "name": "eu-startups.com",
+       "document": "https://www.eu-startups.com/2025/08/lithuanian-deeptech-startup-grei-raises-e650k-to-bring-ai-monitoring-to-complex-industrial-and-retail-sites/",
+       "date": "2025-08-11",
+       "date_precision": "day",
+       "source_rank": "PRESS"
+      }
+     ]
+    },
+    "transaction_value_units": {
+     "value": "EUR",
+     "sources": [
+      {
+       "name": "eu-startups.com",
+       "document": "https://www.eu-startups.com/2025/08/lithuanian-deeptech-startup-grei-raises-e650k-to-bring-ai-monitoring-to-complex-industrial-and-retail-sites/",
+       "date": "2025-08-11",
+       "date_precision": "day",
+       "source_rank": "PRESS"
+      }
+     ]
+    }
+   },
+   "relationships": {
+    "outgoing": {},
+    "incoming": {
+     "PARTICIPATES_IN_FUNDING_ROUND": [
+      {
+       "id": "0094ec10-bd61-4833-bf19-c2ab9d78312b",
+       "name": "GREÏ",
+       "entity_type": "Company",
+       "properties": {
+        "role": "ISSUER",
+        "sources": [
+         {
+          "name": "eu-startups.com",
+          "document": "https://www.eu-startups.com/2025/08/lithuanian-deeptech-startup-grei-raises-e650k-to-bring-ai-monitoring-to-complex-industrial-and-retail-sites/",
+          "date": "2025-08-11",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+         }
+        ],
+        "id": "e521ccf0-f49b-52d6-b595-cbeb93457671"
+       }
+      },
+      {
+       "id": "88b67750-caa3-40ca-bfde-8eb88aa48ae4",
+       "name": "FIRSTPICK",
+       "entity_type": "Company",
+       "properties": {
+        "role": "INVESTOR",
+        "sources": [
+         {
+          "name": "startuphub.ai",
+          "document": "https://www.startuphub.ai/news/lithuanian-deeptech-grei-raises-e650k-for-ai-industrial-monitoring",
+          "date": "2025-08-11",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+         }
+        ],
+        "is_lead": true,
+        "id": "c2a5885f-e8b2-5add-b83e-65e60e006481"
+       }
+      }
+     ]
+    }
+   },
+   "numerical_observations": []
+  }
+ },
+ {
+  "method": "GET",
+  "path": "/v1/entities/ae44bd34-20a9-586d-8796-b12981dfcd8d/introspection",
+  "params": null,
+  "body": null,
+  "response": {
+   "properties": [
+    "announcement_date",
+    "aliases",
+    "id",
+    "event_date__precision",
+    "annotations",
+    "transaction_value_units",
+    "instrument",
+    "event_date",
+    "transaction_value",
+    "name",
+    "round_label"
+   ],
+   "relationships": {
+    "outgoing": [],
+    "incoming": [
+     "PARTICIPATES_IN_FUNDING_ROUND"
+    ]
+   },
+   "numerical_observations": {}
+  }
+ },
+ {
+  "method": "POST",
+  "path": "/v1/entities/ae44bd34-20a9-586d-8796-b12981dfcd8d",
+  "params": null,
+  "body": {
+   "properties": [
+    "name",
+    "round_label",
+    "instrument",
+    "transaction_value",
+    "event_date",
+    "announcement_date",
+    "transaction_value_units",
+    "event_date__precision"
+   ],
+   "relationships": {
+    "incoming": {
+     "PARTICIPATES_IN_FUNDING_ROUND": {
+      "limit": 6
+     }
+    }
+   }
+  },
+  "response": {
+   "id": "ae44bd34-20a9-586d-8796-b12981dfcd8d",
+   "name": "Pre-Seed",
+   "entity_type": "FundingRound",
+   "description": null,
+   "properties": {
+    "name": {
+     "value": "Pre-Seed",
+     "sources": [
+      {
+       "name": "latban.lv",
+       "document": "https://www.latban.lv/latbanevents/tpost/yyvljjbg91-rebookify-raises-200000-in-pre-seed-fund",
+       "date": "2025-10-30",
+       "date_precision": "day",
+       "source_rank": "PRIMARY"
+      },
+      {
+       "name": "itkey.media",
+       "document": "https://itkey.media/latvian-traveltech-rebookify-secures-eur-200k-to-bring-ai-automation-to-agency-bookings/",
+       "date": "2025-11-28",
+       "date_precision": "day",
+       "source_rank": "PRESS"
+      }
+     ]
+    },
+    "round_label": {
+     "value": "PRE_SEED",
+     "sources": [
+      {
+       "name": "latban.lv",
+       "document": "https://www.latban.lv/latbanevents/tpost/yyvljjbg91-rebookify-raises-200000-in-pre-seed-fund",
+       "date": "2025-10-30",
+       "date_precision": "day",
+       "source_rank": "PRIMARY"
+      },
+      {
+       "name": "itkey.media",
+       "document": "https://itkey.media/latvian-traveltech-rebookify-secures-eur-200k-to-bring-ai-automation-to-agency-bookings/",
+       "date": "2025-11-28",
+       "date_precision": "day",
+       "source_rank": "PRESS"
+      }
+     ]
+    },
+    "instrument": {
+     "value": "GRANT",
+     "sources": [
+      {
+       "name": "itkey.media",
+       "document": "https://itkey.media/latvian-traveltech-rebookify-secures-eur-200k-to-bring-ai-automation-to-agency-bookings/",
+       "date": "2025-11-28",
+       "date_precision": "day",
+       "source_rank": "PRESS"
+      }
+     ]
+    },
+    "transaction_value": {
+     "value": 205000.0,
+     "sources": [
+      {
+       "name": "latban.lv",
+       "document": "https://www.latban.lv/latbanevents/tpost/yyvljjbg91-rebookify-raises-200000-in-pre-seed-fund",
+       "date": "2025-10-30",
+       "date_precision": "day",
+       "source_rank": "PRIMARY"
+      },
+      {
+       "name": "itkey.media",
+       "document": "https://itkey.media/latvian-traveltech-rebookify-secures-eur-200k-to-bring-ai-automation-to-agency-bookings/",
+       "date": "2025-11-28",
+       "date_precision": "day",
+       "source_rank": "PRESS"
+      }
+     ]
+    },
+    "event_date": {
+     "value": "2025-10-01",
+     "sources": [
+      {
+       "name": "itkey.media",
+       "document": "https://itkey.media/latvian-traveltech-rebookify-secures-eur-200k-to-bring-ai-automation-to-agency-bookings/",
+       "date": "2025-11-28",
+       "date_precision": "day",
+       "source_rank": "PRESS"
+      }
+     ]
+    },
+    "announcement_date": {
+     "value": "2025-10-30",
+     "sources": [
+      {
+       "name": "latban.lv",
+       "document": "https://www.latban.lv/latbanevents/tpost/yyvljjbg91-rebookify-raises-200000-in-pre-seed-fund",
+       "date": "2025-10-30",
+       "date_precision": "day",
+       "source_rank": "PRIMARY"
+      }
+     ]
+    },
+    "transaction_value_units": {
+     "value": "EUR",
+     "sources": [
+      {
+       "name": "latban.lv",
+       "document": "https://www.latban.lv/latbanevents/tpost/yyvljjbg91-rebookify-raises-200000-in-pre-seed-fund",
+       "date": "2025-10-30",
+       "date_precision": "day",
+       "source_rank": "PRIMARY"
+      },
+      {
+       "name": "itkey.media",
+       "document": "https://itkey.media/latvian-traveltech-rebookify-secures-eur-200k-to-bring-ai-automation-to-agency-bookings/",
+       "date": "2025-11-28",
+       "date_precision": "day",
+       "source_rank": "PRESS"
+      }
+     ]
+    }
+   },
+   "relationships": {
+    "outgoing": {},
+    "incoming": {
+     "PARTICIPATES_IN_FUNDING_ROUND": [
+      {
+       "id": "7e55b310-361b-4b08-952d-98fcd8f2ab49",
+       "name": "500 Global (500 Emerging Europe)",
+       "entity_type": "Organization",
+       "properties": {
+        "role": "INVESTOR",
+        "sources": [
+         {
+          "name": "latban.lv",
+          "document": "https://www.latban.lv/latbanevents/tpost/yyvljjbg91-rebookify-raises-200000-in-pre-seed-fund",
+          "date": "2025-10-30",
+          "date_precision": "day",
+          "source_rank": "PRIMARY"
+         },
+         {
+          "name": "itkey.media",
+          "document": "https://itkey.media/latvian-traveltech-rebookify-secures-eur-200k-to-bring-ai-automation-to-agency-bookings/",
+          "date": "2025-11-28",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+         }
+        ],
+        "id": "fd935939-3790-5f75-85c7-2360084b6d3e"
+       }
+      },
+      {
+       "id": "88b67750-caa3-40ca-bfde-8eb88aa48ae4",
+       "name": "FIRSTPICK",
+       "entity_type": "Company",
+       "properties": {
+        "role": "GRANTOR",
+        "sources": [
+         {
+          "name": "itkey.media",
+          "document": "https://itkey.media/latvian-traveltech-rebookify-secures-eur-200k-to-bring-ai-automation-to-agency-bookings/",
+          "date": "2025-11-28",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+         }
+        ],
+        "id": "ec636adf-5e26-5021-80a5-917f3dac5c8b"
+       }
+      },
+      {
+       "id": "9edba942-38f7-4ed6-b5c2-ae6a9b9f8c9e",
+       "name": "LatBAN",
+       "entity_type": "Company",
+       "properties": {
+        "role": "INVESTOR",
+        "sources": [
+         {
+          "name": "latban.lv",
+          "document": "https://www.latban.lv/latbanevents/tpost/yyvljjbg91-rebookify-raises-200000-in-pre-seed-fund",
+          "date": "2025-10-30",
+          "date_precision": "day",
+          "source_rank": "PRIMARY"
+         },
+         {
+          "name": "itkey.media",
+          "document": "https://itkey.media/latvian-traveltech-rebookify-secures-eur-200k-to-bring-ai-automation-to-agency-bookings/",
+          "date": "2025-11-28",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+         }
+        ],
+        "id": "99cb2b66-50ab-5432-b72b-1ba8d1b4f963"
+       }
+      },
+      {
+       "id": "d24b900d-d295-46aa-bd56-4b6b6d55fd00",
+       "name": "Rebookify",
+       "entity_type": "Company",
+       "properties": {
+        "role": "ISSUER",
+        "sources": [
+         {
+          "name": "latban.lv",
+          "document": "https://www.latban.lv/latbanevents/tpost/yyvljjbg91-rebookify-raises-200000-in-pre-seed-fund",
+          "date": "2025-10-30",
+          "date_precision": "day",
+          "source_rank": "PRIMARY"
+         },
+         {
+          "name": "itkey.media",
+          "document": "https://itkey.media/latvian-traveltech-rebookify-secures-eur-200k-to-bring-ai-automation-to-agency-bookings/",
+          "date": "2025-11-28",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+         }
+        ],
+        "id": "5ddf4db5-942b-5528-bac9-b784b04c65ee"
+       }
+      }
+     ]
+    }
+   },
+   "numerical_observations": []
+  }
+ }
+]

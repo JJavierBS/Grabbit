@@ -284,6 +284,66 @@
             }
           ]
         }
+      ],
+      "news": [
+        {
+          "title": "Kelo Health opens a clinic pilot in Tampere",
+          "summary": "The startup started a pilot of its triage assistant with a regional clinic network.",
+          "date": {
+            "value": "2026-11-03",
+            "unit": null,
+            "trust": "cala_news",
+            "sources": [
+              {
+                "name": "Cala knowledge query",
+                "url": null,
+                "date": "2026-11-03",
+                "date_precision": "day",
+                "rank": "cala_news"
+              }
+            ]
+          },
+          "entities": [
+            {
+              "entity_id": "ent-tampere-clinics",
+              "name": "Tampere Clinics",
+              "entity_type": "Company"
+            }
+          ],
+          "trust": "cala_news"
+        },
+        {
+          "title": "Hiring for the care team",
+          "summary": "Kelo Health posted open roles for nurses and product engineers.",
+          "date": {
+            "value": "2026-09",
+            "unit": null,
+            "trust": "cala_news",
+            "sources": [
+              {
+                "name": "Cala knowledge query",
+                "url": null,
+                "date": "2026-09-01",
+                "date_precision": "month",
+                "rank": "cala_news"
+              }
+            ]
+          },
+          "entities": [],
+          "trust": "cala_news"
+        },
+        {
+          "title": "Founders on a health podcast",
+          "summary": "The founders talked about patient triage on a podcast.",
+          "date": {
+            "value": null,
+            "unit": null,
+            "trust": "not_published",
+            "sources": []
+          },
+          "entities": [],
+          "trust": "cala_news"
+        }
       ]
     },
     {
@@ -470,7 +530,8 @@
             }
           ]
         }
-      ]
+      ],
+      "news": []
     },
     {
       "entity_id": "cmp-polar-ledger",
@@ -667,7 +728,8 @@
             }
           ]
         }
-      ]
+      ],
+      "news": []
     }
   ]
 }

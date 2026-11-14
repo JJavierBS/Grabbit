@@ -34,6 +34,14 @@ class CalaCacheMiss(Exception):
     """Replay mode asked for a call that was never cached; run `make warm` first."""
 
 
+class CalaKeyMissing(CalaError, ValueError):
+    """Live mode without `CALA_API_KEY`. A `CalaError`, so every caller's Cala fallback
+    (fixture candidates, skipping a watcher run) also covers a fresh checkout."""
+
+    def __init__(self) -> None:
+        super().__init__(401, "CALA_API_KEY is required when CALA_MODE=live")
+
+
 class CalaClient:
     def __init__(
         self,
@@ -50,7 +58,7 @@ class CalaClient:
         http: httpx.AsyncClient | None = None,
     ):
         if mode == "live" and not api_key:
-            raise ValueError("CALA_API_KEY is required when CALA_MODE=live")
+            raise CalaKeyMissing()
         self.mode = mode
         self._cache = cache
         self._sem = asyncio.Semaphore(max_concurrency)
@@ -95,6 +103,33 @@ class CalaClient:
         stores the new one; in replay mode the cache is still the only source."""
         return await self._call("POST", f"/v1/entities/{entity_id}", body=body or {}, fresh=fresh)
 
+    async def query(
+        self,
+        text: str,
+        *,
+        cache_only: bool = False,
+        fresh: bool = False,
+        http_timeout: float | None = None,
+        max_retries: int | None = None,
+    ) -> dict[str, Any]:
+        """`POST /v1/knowledge/query`, used only for "latest news regarding <company>"
+        (cala.md "News"). It takes about 45 s, so callers in the request path pass
+        `cache_only=True` and a background job fills the cache. `http_timeout` overrides the
+        client timeout for this call."""
+        return await self._call(
+            "POST",
+            "/v1/knowledge/query",
+            body={"input": text},
+            fresh=fresh,
+            cache_only=cache_only,
+            http_timeout=http_timeout,
+            max_retries=max_retries,
+        )
+
+    def has_cached_query(self, text: str) -> bool:
+        key = cache_key("POST", "/v1/knowledge/query", None, {"input": text})
+        return self._cache.get(key) is not None
+
     async def _call(
         self,
         method: str,
@@ -103,6 +138,9 @@ class CalaClient:
         params: dict[str, Any] | None = None,
         body: Any = None,
         fresh: bool = False,
+        cache_only: bool = False,
+        http_timeout: float | None = None,
+        max_retries: int | None = None,
     ) -> Any:
         key = cache_key(method, path, params, body)
         if not fresh or self.mode == "replay":
@@ -110,28 +148,40 @@ class CalaClient:
             if cached is not None:
                 self.cache_hits += 1
                 return cached
-        if self.mode == "replay":
+        if self.mode == "replay" or cache_only:
             raise CalaCacheMiss(f"{method} {path} is not in the cache")
         async with self._sem:
-            data = await self._send(method, path, params, body)
+            data = await self._send(method, path, params, body, http_timeout, max_retries)
         self._cache.put(key, method, path, {"params": params, "body": body}, data)
         return data
 
-    async def _send(self, method: str, path: str, params: Any, body: Any) -> Any:
+    async def _send(
+        self,
+        method: str,
+        path: str,
+        params: Any,
+        body: Any,
+        http_timeout: float | None = None,
+        max_retries: int | None = None,
+    ) -> Any:
+        retries = self._max_retries if max_retries is None else max_retries
+        extra: dict[str, Any] = {} if http_timeout is None else {"timeout": http_timeout}
         attempt = 0
         while True:
             self.calls_made += 1
             try:
-                resp = await self._http.request(method, path, params=params, json=body)
-            except httpx.TimeoutException as exc:
-                if attempt >= self._max_retries:
-                    raise CalaError(504, f"timeout on {method} {path}") from exc
-                status = 504
+                resp = await self._http.request(method, path, params=params, json=body, **extra)
+            except httpx.TransportError as exc:
+                # Timeouts, refused connections, dropped reads: retried, then a CalaError,
+                # so every caller's Cala fallback also covers a dead network.
+                status = 504 if isinstance(exc, httpx.TimeoutException) else 503
+                if attempt >= retries:
+                    raise CalaError(status, f"{type(exc).__name__} on {method} {path}") from exc
             else:
                 if resp.status_code < 400:
                     return resp.json()
                 status = resp.status_code
-                if status not in RETRY_STATUSES or attempt >= self._max_retries:
+                if status not in RETRY_STATUSES or attempt >= retries:
                     raise CalaError(status, resp.text[:300])
             delay = self._backoff_base * (2**attempt)
             log.warning("cala %s %s -> %s, retry in %.1fs", method, path, status, delay)

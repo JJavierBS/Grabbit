@@ -7,7 +7,8 @@ One FastAPI process serves the API and the built React app, and runs the schedul
 same process. The browser talks to `/api/*` and listens to `/api/events` (Server-Sent
 Events) for alerts. The backend walks Cala's graph through one cached client, scores
 signals with pure functions, and asks Gemini to chat, to rewrite its own report
-instructions (agent.md "Self-personalization") and to write reports. Single user in the MVP.
+instructions (agent.md "Self-personalization") and to write reports. No login: each browser
+is an anonymous workspace (`app/workspace.py`), so demo visitors never share state.
 
 ## Components
 Owners are assigned on the issues; the board is the source of truth.
@@ -33,6 +34,11 @@ Owners are assigned on the issues; the board is the source of truth.
 ## Data
 - Storage: one SQLite file (`DATABASE_PATH`, default `data/grabbit.db`, gitignored). Tables
   are created at startup; no migrations in the MVP. `make warm` fills the Cala cache.
+- Workspaces: the `X-Workspace` header (or `?workspace=` on SSE) picks the visitor; missing
+  means `default`. Profile, chat, reports, snapshots and alerts carry a `workspace` column and
+  stores filter by `workspace.current()`; events reach only that workspace's streams. The
+  Cala and Context.dev caches and investor names stay shared. A table registered with
+  `db.drop_if_missing` is dropped at startup when an older file lacks the column.
 - Main entities: `Profile` (filters, reference investors, style, cadence, threshold,
   `instructions` written by Gemini, `version`), `ProfileVersion` (diff, reason, author),
   `Snapshot` (entity id, hash, payload, taken_at), `Report`, `Alert`, `CalaCache` (key =
@@ -44,14 +50,15 @@ Owners are assigned on the issues; the board is the source of truth.
 | Cala API (`https://api.cala.ai`) | Discovery from `Event`, companies, rounds, investors, people | `CALA_API_KEY`, `CALA_MODE` |
 | Context.dev (`https://api.context.dev/v1`) | Soft signals only (decisions.md) | `CONTEXT_DEV_API_KEY` |
 | Gemini API (Google DeepMind), SDK `google-genai` | Chat, self-personalization, report writing, importance score | `GEMINI_API_KEY`, `GEMINI_MODEL`, `LLM_MODE` |
-| AWS Lightsail container service | Deployed demo link over HTTPS (desktop notifications need it) | set in the service, never in git |
+| AWS EC2 host + Caddy edge, GHCR image | Deployed demo link; blue/green rollout by `deploy/rollout.sh` from GitHub Actions | `/opt/junction/.env` on the host, never in git |
 
 ## Directory layout
 - `backend/`: FastAPI app (`app/`), tests (`tests/`), `pyproject.toml` managed by `uv`.
 - `frontend/`: Vite + React + TypeScript app (`src/`), tests next to components.
 - `data/`: local SQLite and cache, gitignored.
 - `docs/`: agent docs (`agents/`), raw references (`reference/`), research (`research/`).
-- `scripts/`: setup, hooks, board, docs mirror.
+- `scripts/`: setup, hooks, board, docs mirror, EC2 `server-init.sh`.
+- `deploy/`: files copied to the EC2 host: `Caddyfile`, `rollout.sh`.
 - `Dockerfile`: multi-stage, builds the frontend and serves it from FastAPI.
 
 ## Constraints
@@ -62,4 +69,7 @@ Owners are assigned on the issues; the board is the source of truth.
 - Cala must be core to the product, not an add-on (25% of the partner score).
 - All Cala calls go through one wrapper with timeout and a response cache.
 - One uvicorn worker only: the scheduler lives in the process, more workers would duplicate
-  jobs. Fine for a single-user MVP.
+  jobs. The watcher and digest loop over every workspace with a report; only the default
+  workspace sets the shared digest cadence. A deploy overlaps two containers for the
+  health check (about 10-30 s); both share the SQLite file in WAL mode, and a job that
+  fires in that window may run twice.

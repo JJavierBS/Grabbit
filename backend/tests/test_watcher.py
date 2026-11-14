@@ -252,3 +252,35 @@ def test_staged_demo_events_are_well_formed():
             round_ = build_round(event["rounds"][rid])
             assert any(i.is_lead for i in round_.investors), rid
             assert event["entity_id"] not in [i.entity_id for i in round_.investors]
+
+
+async def test_one_failing_company_does_not_stop_the_run():
+    from app.cala.client import CalaError
+
+    class Failing(FakeCala):
+        async def introspect(self, entity_id):
+            if entity_id == "broken":
+                raise CalaError(500, "boom")
+            return await super().introspect(entity_id)
+
+    store = WatchStore(sqlite3.connect(":memory:"))
+    await Watcher(Failing(), store, clock=lambda: NOW).run_once(P(), ["broken", NORTHWIND])
+    assert store.snapshot(NORTHWIND) is not None
+    assert store.snapshot("broken") is None
+
+
+async def test_alert_held_by_the_daily_cap_is_sent_on_a_later_run():
+    from datetime import timedelta
+
+    cala = FakeCala()
+    store = WatchStore(sqlite3.connect(":memory:"))
+    clock = {"now": NOW}
+    watcher = Watcher(cala, store, clock=lambda: clock["now"], max_alerts_per_day=0)
+    await watcher.run_once(P(), [NORTHWIND])
+    cala.company["properties"]["operational_status"]["value"] = "INACTIVE"
+    assert await watcher.run_once(P(), [NORTHWIND]) == []
+    watcher.max_alerts_per_day = 5
+    clock["now"] = NOW + timedelta(days=1)
+    [alert] = await watcher.run_once(P(), [NORTHWIND])
+    assert alert.kind == "status_change"
+    assert await watcher.run_once(P(), [NORTHWIND]) == []  # sent once, then the snapshot moves

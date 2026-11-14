@@ -17,7 +17,13 @@ Two kinds:
 | `company_startup.json` | Hand-written startup: every `source_rank`, both `document` shapes, a year-precision date, rounds, executives, headcount series |
 | `round_seed.json` | Hand-written `FundingRound` with its issuer and participants, one lead |
 | `real_company_rupert.json` | Recorded Slush attendee (seed startup): no founding date, no headcount series |
+| `real_investor_firstpick.json` | Recorded investor (GREÏ's lead) with its outgoing `PARTICIPATES_IN_FUNDING_ROUND` edges, one as `GRANTOR` |
+| `real_round_grei_preseed.json` | Recorded GREÏ pre-seed: issuer and FIRSTPICK as lead |
+| `real_round_callsy.json` | Recorded round where FIRSTPICK sat next to "500 Global" |
+| `real_round_rebookify.json` | Recorded round where FIRSTPICK (GRANTOR) sat next to "500 Global (500 Emerging Europe)", the same fund as another entity |
 | `real_round_rupert_seed.json` | Recorded seed round: no `event_date` (only `announcement_date`), two leads, `is_lead` absent on the others |
+| `real_news_hashlist.json` | Recorded `POST /v1/knowledge/query` "latest news regarding Hashlist": summaries under `description`, one undated item, mentioned products |
+| `real_news_whisperr.json` | Same for whisperr: summaries under `summary`, Cala links the mention "Whisperr" to the product "Whisper" |
 
 What the recordings taught us (2026-11-14): rounds may lack `event_date`; most startups
 have no `employee_count` series, so `likely_to_raise` is often null; Cala answered 429

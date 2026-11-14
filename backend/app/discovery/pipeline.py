@@ -23,6 +23,7 @@ from app.discovery.build import (
     normalise_name,
 )
 from app.discovery.filters import StartupRules, is_startup, matches_profile
+from app.discovery.links import LinkGraph, LinkLimits, attach_links, walk_investors
 from app.models import Candidate, Profile, ProfileFilters, ProfileStyle
 from app.signals.core import Portfolio, SignalInputs, compute_signals, last_round
 
@@ -100,6 +101,7 @@ class Limits:
     max_rounds_per_company: int = 10
     max_lead_rounds: int = 15
     rules: StartupRules = field(default_factory=StartupRules)
+    links: LinkLimits = field(default_factory=LinkLimits)
 
 
 @dataclass
@@ -119,6 +121,8 @@ class DiscoveryResult:
     # Normalised name -> entity id of every investor in any attending startup's rounds, before
     # the profile filters; reference investors typed in chat resolve against it.
     investors: dict[str, str] = field(default_factory=dict)
+    # Rounds walked for hidden links; links are matched again when reference investors resolve.
+    links: LinkGraph = field(default_factory=LinkGraph)
 
 
 async def get_candidates(
@@ -173,6 +177,8 @@ async def get_candidates(
         candidates.append(
             candidate.model_copy(update={"signals": compute_signals(candidate, inputs, today)})
         )
+    graph = await walk_investors(client, candidates, raw, limits.links, INVESTOR_BODY, ROUND_BODY)
+    candidates = attach_links(candidates, graph, profile.reference_investors)
     stats.candidates = len(candidates)
     investors = {
         normalise_name(i.name): i.entity_id
@@ -180,7 +186,9 @@ async def get_candidates(
         for r in candidate.rounds
         for i in r.investors
     }
-    return DiscoveryResult(candidates=candidates, stats=stats, raw=raw, investors=investors)
+    return DiscoveryResult(
+        candidates=candidates, stats=stats, raw=raw, investors=investors, links=graph
+    )
 
 
 async def attendees(client: Cala, event_id: str, limits: Limits) -> list[dict[str, Any]]:

@@ -71,3 +71,38 @@ def test_list_reports_newest_first(client):
     first = client.post("/api/reports/run", json={"kind": "prep"}).json()
     second = client.post("/api/reports/run", json={"kind": "digest"}).json()
     assert [r["id"] for r in client.get("/api/reports").json()] == [second["id"], first["id"]]
+
+
+def test_profile_links_a_chat_typed_investor_to_the_cala_id_in_the_report(client):
+    from app.models import ReferenceInvestor
+    from app.store import profile as profile_store
+
+    typed = ReferenceInvestor(entity_id="unresolved:aurora angels", name="Aurora Angels")
+    profile_store.save_version(
+        profile_store.current().model_copy(update={"reference_investors": [typed]}), []
+    )
+    client.post("/api/reports/run", json={"kind": "prep"})
+
+    refs = client.get("/api/profile").json()["reference_investors"]
+
+    assert refs == [{"entity_id": "inv-aurora", "name": "Aurora Angels"}]
+
+
+def test_second_quiet_digest_does_not_reannounce_the_prep_startups(client):
+    client.post("/api/reports/run", json={"kind": "prep"})
+    first = client.post("/api/reports/run", json={"kind": "digest"}).json()
+    second = client.post("/api/reports/run", json={"kind": "digest"}).json()
+    assert first["candidates"] == []
+    assert second["candidates"] == []
+    assert second["summary"] == "Nothing new since the last report."
+
+
+def test_undo_buttons_point_at_distinct_versions(client):
+    client.post("/api/chat", json={"text": "hello"})
+    first = client.post("/api/chat", json={"text": "No B2C please"}).json()
+    client.post("/api/profile/undo")
+    second = client.post("/api/chat", json={"text": "No B2C please"}).json()
+    settle(client)
+    v1 = {c["version"] for c in first["profile_changes"]}
+    v2 = {c["version"] for c in second["profile_changes"]}
+    assert v1 and v2 and v1.isdisjoint(v2)

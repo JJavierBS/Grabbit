@@ -1,12 +1,14 @@
-import { Bell, History, PanelLeftOpen, RefreshCw, X } from "lucide-react";
+import { History, PanelLeftOpen, RefreshCw, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./App.module.css";
-import { useLatestReport, useSendMessage, useSimulateEvent } from "./api/hooks/queries";
+import { useLatestReport, useSendMessage } from "./api/hooks/queries";
 import { type StreamStatus, useEvents } from "./api/hooks/useEvents";
 import type { Alert, Report } from "./api/types";
 import { Button } from "./components/Button";
+import { FullscreenButton } from "./components/FullscreenButton";
 import { Logo } from "./components/Logo";
 import { AlertCard } from "./features/alerts/AlertCard";
+import { DEFAULT_DEMO_FIXTURE, DemoAlertButton } from "./features/alerts/DemoAlertButton";
 import { askNotificationPermission } from "./features/alerts/notify";
 import { useAlertDelivery } from "./features/alerts/useAlertDelivery";
 import { ChatPanel } from "./features/chat/ChatPanel";
@@ -37,8 +39,7 @@ function saveSidebarOpen(open: boolean) {
   }
 }
 
-/** The demo alert arrives this long after the click, so it lands like a real one. */
-export const ALERT_DELAY_MS = 30_000;
+export { ALERT_DELAY_MS } from "./features/alerts/DemoAlertButton";
 
 export const CONFIRM_MESSAGE = "Looks right, keep me posted.";
 
@@ -54,8 +55,8 @@ const NARROW = "(max-width: 63.99rem)";
 // The demo trigger shows with the fake API, or with ?demo (fixture name: ?demo=<name>).
 function demoFixture(): string | null {
   const param = new URLSearchParams(location.search).get("demo");
-  if (param !== null) return param || "new_round";
-  return import.meta.env.VITE_FAKE_API === "1" ? "new_round" : null;
+  if (param !== null) return param || DEFAULT_DEMO_FIXTURE;
+  return import.meta.env.VITE_FAKE_API === "1" ? DEFAULT_DEMO_FIXTURE : null;
 }
 
 export function App() {
@@ -65,12 +66,9 @@ export function App() {
   const report = useLatestReport();
   const diff = useReportChanges(report.data ?? undefined);
   const send = useSendMessage();
-  const simulate = useSimulateEvent();
   const [openAlert, setOpenAlert] = useState<Alert | null>(null);
   // A past report opened from the sidebar; null shows the latest one.
   const [pastReport, setPastReport] = useState<Report | null>(null);
-  const [alertQueued, setAlertQueued] = useState(false);
-  const alertTimer = useRef<number | undefined>(undefined);
   const panelRef = useRef<HTMLElement>(null);
   const returnFocus = useRef<HTMLElement | null>(null);
   // Wide screens: the sidebar sits beside the chat and can collapse. Narrow: it is a drawer.
@@ -134,8 +132,6 @@ export function App() {
     return () => window.removeEventListener("keydown", onKey);
   }, [drawerOpen]);
 
-  useEffect(() => () => window.clearTimeout(alertTimer.current), []);
-
   const openReport = (r: Report, latest: boolean) => {
     if (document.activeElement instanceof HTMLElement) returnFocus.current = document.activeElement;
     // The latest entry is the live report, with its confirm and run actions.
@@ -152,13 +148,6 @@ export function App() {
         : report.data
           ? reportKey(report.data)
           : null;
-
-  const queueAlert = (fixture: string) => {
-    setAlertQueued(true);
-    alertTimer.current = window.setTimeout(() => {
-      simulate.mutate(fixture, { onSettled: () => setAlertQueued(false) });
-    }, ALERT_DELAY_MS);
-  };
 
   const confirm = () => {
     setConfirmed(true);
@@ -234,17 +223,7 @@ export function App() {
             {STATUS_TEXT[stream]}
           </span>
           <div className={styles.actions}>
-            {demo && (
-              <Button
-                variant="ghost"
-                size="sm"
-                icon={<Bell aria-hidden="true" />}
-                disabled={alertQueued}
-                onClick={() => queueAlert(demo)}
-              >
-                Alerts
-              </Button>
-            )}
+            {demo && <DemoAlertButton fixture={demo} />}
             <Button
               variant="ghost"
               size="sm"
@@ -254,6 +233,7 @@ export function App() {
             >
               What changed
             </Button>
+            <FullscreenButton />
           </div>
         </header>
 

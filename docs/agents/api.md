@@ -6,6 +6,9 @@ work in parallel against mocks.
 - Source of truth: Pydantic models in `backend/app/models.py`. FastAPI publishes them at
   `/api/openapi.json`; `npm run gen:api` (openapi-typescript) writes
   `frontend/src/api/schema.ts`, committed. Never hand-write API types in the frontend.
+  `make gen-api` reads whatever backend answers on `:8000`, which in a worktree may be
+  another checkout's: then dump `create_app().openapi()` to a file and run
+  `npx openapi-typescript <file> -o src/api/schema.ts` instead.
 - Mocks: every endpoint exists from the skeleton issue on, first returning fixture data
   (`backend/app/fixtures/`, status "mock" below). The frontend always talks to the real
   backend; offline it runs with `CALA_MODE=replay` and `LLM_MODE=fake`.
@@ -19,11 +22,14 @@ work in parallel against mocks.
 - Error shape for every endpoint: `{ "error": { "code": "snake_case", "message": "..." } }`
   with a matching HTTP status.
 - Names: snake_case in JSON. Dates ISO 8601. Money as number plus `unit` (currency code).
-- Single user in the MVP: no auth, one profile.
+- No auth. Every request may send `X-Workspace: <id>` (1-64 of `A-Za-z0-9_-`); the SSE
+  stream takes `?workspace=<id>` instead. Missing means `default`. Profile, chat, reports and
+  alerts belong to the workspace; a malformed id gets 400 `invalid_workspace`. The frontend
+  keeps a random id in `localStorage` (`frontend/src/api/workspace.ts`).
 
 ## Shared types
 `?` marks nullable. Enum values are lowercase strings.
-- `TrustLevel`: `filing | primary | press | aggregator | web_unverified | not_published`
+- `TrustLevel`: `filing | primary | press | aggregator | cala_news | web_unverified | not_published`
   (meaning and badges: agent.md "Trust scale").
 - `Source`: `name, url?, date?, date_precision? (day|month|year), rank: TrustLevel`.
 - `Fact`: `value? (string|number|bool|list), unit?, trust: TrustLevel, sources: Source[]`.
@@ -33,9 +39,23 @@ work in parallel against mocks.
 - `Round`: `entity_id, label?, name, amount: Fact, date: Fact, investors: Investor[]`.
 - `Signal`: `kind (co_invest|lead_follow_on|likely_to_raise), label, value?, explanation,
   facts: Fact[]`. `value=null` means not enough data, shown as such.
+- `NewsItem`: `title, summary?, date: Fact, entities [{entity_id, name, entity_type}],
+  trust (cala_news)`. From Cala's knowledge query (cala.md "News"): `date` carries its
+  precision in its source (`not_published` when Cala has none), no per-item source link.
 - `Candidate`: `entity_id, name, website?, description?, founding_date: Fact,
   funding_stage: Fact, headcount: Fact, total_funding: Fact, hq: Fact, industries: string[],
-  rounds: Round[], signals: Signal[]`.
+  rounds: Round[], signals: Signal[], news: NewsItem[], links: HiddenLink[]`. `news`: newest
+  first, at most 5, cached only.
+- `HiddenLink`: `kind (trusted_co_investor|shared_investor), label, explanation,
+  via_entity_id, target: LinkNode, count, trust: TrustLevel, nodes: LinkNode[],
+  edges: LinkEdge[], facts: Fact[]`. A second-degree relationship in Cala's graph: `via` is
+  the investor on the startup's own path it branches from, `nodes`/`edges` the path that
+  proves it (Cala ids, relationship names, `role`), `count` the rounds (co-investor) or other
+  shortlisted startups (shared investor) behind it, `trust` the weakest edge in the path,
+  `facts` one per proving round with the edges' sources. Computed in discovery
+  (`app/discovery/links.py`), never by the model.
+- `LinkNode`: `entity_id, name, entity_type`. `LinkEdge`: `source, target, relationship,
+  role?` (Cala's direction: participant -> round).
 - `Profile`: `version, event_id?, thesis, filters {stages[], sectors_in[], sectors_out[],
   countries[], headcount_max?, ticket?: Fact}, reference_investors [{entity_id, name}],
   style {length (short|medium|long), detail (plain|technical), language, sections[]},
@@ -44,7 +64,14 @@ work in parallel against mocks.
   updated_at`.
 - `ProfileChange`: `version, field, before, after, reason, by (user|agent)`.
 - `ChatMessage`: `id, role (user|agent), text, created_at, profile_changes: ProfileChange[],
-  report_id?`.
+  report_id?, ui?, graph?`. `ui` is OpenUI Lang drawn with the Cala components in
+  `frontend/src/features/chat/openui/`; when set, the chat shows it instead of `text`.
+  `graph` is the part of Cala's graph the agent walked for that answer (`ExploredGraph`),
+  drawn by the `ExploredGraph` and `EntityFacts` components.
+- `ExploredGraph`: `nodes: GraphNode[], edges: GraphEdge[]`. `GraphNode`: `entity_id, name,
+  entity_type, facts: {property: Fact}` (only for nodes the agent expanded).
+  `GraphEdge`: `source, target, relationship (Cala name), role?, is_lead, facts: {event_date|
+  valid_since|valid_until: Fact}`; it points the way Cala stores it (investor -> round).
 - `Report`: `id, kind (prep|digest|memo), created_at, profile_version, summary,
   sections [{title, body_md, candidate_ids[]}], candidates: Candidate[]`.
 - `Alert`: `id, created_at, entity_id, entity_name, kind (new_round|executive_change|
@@ -54,13 +81,14 @@ work in parallel against mocks.
 - Request bodies: `ChatRequest {text}` (1-4000 chars), `ReportRunRequest {kind}`,
   `SimulateEventRequest {fixture}` (a file name in `backend/app/fixtures/demo_events/`).
 - `ErrorResponse`: `{error: {code, message}}`. Codes so far: `not_found`,
-  `validation_error`, `internal_error`, `demo_mode_disabled`, `fixture_not_found`.
+  `validation_error`, `internal_error`, `demo_mode_disabled`, `fixture_not_found`,
+  `invalid_workspace`.
 
 ## Endpoints
 | Method | Path | Purpose | Status |
 | --- | --- | --- | --- |
 | GET | `/api/health` | Liveness and modes (`cala_mode`, `llm_mode`, `demo_mode`) | mock |
-| GET | `/api/profile` | Current `Profile` | mock |
+| GET | `/api/profile` | Current `Profile`; reference investors typed in chat come back with their Cala id once a report has seen them | mock |
 | GET | `/api/profile/history` | `ProfileChange[]`, newest first | mock |
 | POST | `/api/profile/undo` | Revert the last change, returns `Profile` | mock |
 | GET | `/api/chat` | `ChatMessage[]` of the conversation | mock |

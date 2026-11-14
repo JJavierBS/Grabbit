@@ -3,6 +3,8 @@
 FROM node:24-slim AS web
 WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json ./
+# OpenUI sends install telemetry from a postinstall script unless told not to.
+ENV DO_NOT_TRACK=1 OPENUI_TELEMETRY_DISABLED=1
 RUN npm ci --no-audit --no-fund
 COPY frontend/ ./
 RUN npm run build
@@ -30,5 +32,8 @@ RUN --mount=type=bind,target=/ctx \
     useradd --system --uid 1001 grabbit && chown -R grabbit /app/data
 USER grabbit
 EXPOSE 8000
+# deploy/rollout.sh moves traffic only once this reports healthy. The slim image has no curl.
+HEALTHCHECK --interval=10s --timeout=3s --start-period=60s --start-interval=2s --retries=3 \
+    CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=2)"]
 # One worker only: the scheduler lives in the process (architecture.md).
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "--proxy-headers", "--forwarded-allow-ips", "*"]

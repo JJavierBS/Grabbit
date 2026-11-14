@@ -28,7 +28,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** Get Profile */
+    /**
+     * Get Profile
+     * @description With names typed in chat linked to Cala ids, so the page can mark investors you trust.
+     */
     get: operations["get_profile_api_profile_get"];
     put?: never;
     post?: never;
@@ -261,6 +264,13 @@ export interface components {
       rounds: components["schemas"]["Round"][];
       /** Signals */
       signals: components["schemas"]["Signal"][];
+      /**
+       * News
+       * @description Latest news from Cala, newest first (cala_news)
+       */
+      news: components["schemas"]["NewsItem"][];
+      /** Links */
+      links: components["schemas"]["HiddenLink"][];
     };
     /** ChatMessage */
     ChatMessage: {
@@ -282,6 +292,13 @@ export interface components {
       profile_changes: components["schemas"]["ProfileChange"][];
       /** Report Id */
       report_id: string | null;
+      /**
+       * Ui
+       * @description OpenUI Lang drawn with Cala components under the text
+       */
+      ui: string | null;
+      /** @description Cala entities and edges the agent walked for this answer */
+      graph: components["schemas"]["ExploredGraph"] | null;
     };
     /** ChatRequest */
     ChatRequest: {
@@ -300,6 +317,16 @@ export interface components {
       error: components["schemas"]["ErrorDetail"];
     };
     /**
+     * ExploredGraph
+     * @description The part of Cala's graph the agent walked for one chat answer.
+     */
+    ExploredGraph: {
+      /** Nodes */
+      nodes: components["schemas"]["GraphNode"][];
+      /** Edges */
+      edges: components["schemas"]["GraphEdge"][];
+    };
+    /**
      * Fact
      * @description A value with its provenance. Absent in Cala: value=None, trust=not_published.
      */
@@ -312,9 +339,64 @@ export interface components {
        * Trust
        * @enum {string}
        */
-      trust: "filing" | "primary" | "press" | "aggregator" | "web_unverified" | "not_published";
+      trust:
+        | "filing"
+        | "primary"
+        | "press"
+        | "aggregator"
+        | "cala_news"
+        | "web_unverified"
+        | "not_published";
       /** Sources */
       sources: components["schemas"]["Source"][];
+    };
+    /**
+     * GraphEdge
+     * @description A Cala relationship, pointing the way Cala stores it (investor -> round).
+     */
+    GraphEdge: {
+      /** Source */
+      source: string;
+      /** Target */
+      target: string;
+      /**
+       * Relationship
+       * @description Cala relationship name, e.g. FOUNDED
+       */
+      relationship: string;
+      /** Role */
+      role: string | null;
+      /**
+       * Is Lead
+       * @default false
+       */
+      is_lead: boolean;
+      /**
+       * Facts
+       * @description Dated edge attributes (event_date, valid_since...)
+       */
+      facts: {
+        [key: string]: components["schemas"]["Fact"];
+      };
+    };
+    /**
+     * GraphNode
+     * @description A Cala entity the agent reached while answering in chat.
+     */
+    GraphNode: {
+      /** Entity Id */
+      entity_id: string;
+      /** Name */
+      name: string;
+      /** Entity Type */
+      entity_type: string;
+      /**
+       * Facts
+       * @description Key properties, only for nodes the agent expanded
+       */
+      facts: {
+        [key: string]: components["schemas"]["Fact"];
+      };
     };
     /** Health */
     Health: {
@@ -336,6 +418,51 @@ export interface components {
       /** Demo Mode */
       demo_mode: boolean;
     };
+    /**
+     * HiddenLink
+     * @description A second-degree relationship in Cala's graph that one company page does not show.
+     */
+    HiddenLink: {
+      /**
+       * Kind
+       * @enum {string}
+       */
+      kind: "trusted_co_investor" | "shared_investor";
+      /** Label */
+      label: string;
+      /** Explanation */
+      explanation: string;
+      /**
+       * Via Entity Id
+       * @description Investor on the candidate's own path it branches from
+       */
+      via_entity_id: string;
+      target: components["schemas"]["LinkNode"];
+      /**
+       * Count
+       * @description Rounds that prove it
+       */
+      count: number;
+      /**
+       * Trust
+       * @description Weakest edge in the path: the link holds only if all do
+       * @enum {string}
+       */
+      trust:
+        | "filing"
+        | "primary"
+        | "press"
+        | "aggregator"
+        | "cala_news"
+        | "web_unverified"
+        | "not_published";
+      /** Nodes */
+      nodes: components["schemas"]["LinkNode"][];
+      /** Edges */
+      edges: components["schemas"]["LinkEdge"][];
+      /** Facts */
+      facts: components["schemas"]["Fact"][];
+    };
     /** Investor */
     Investor: {
       /** Entity Id */
@@ -349,6 +476,71 @@ export interface components {
        * @enum {string}
        */
       role: "investor" | "lender";
+    };
+    /**
+     * LinkEdge
+     * @description A Cala relationship between two path nodes, in Cala's own direction.
+     */
+    LinkEdge: {
+      /** Source */
+      source: string;
+      /** Target */
+      target: string;
+      /** Relationship */
+      relationship: string;
+      /** Role */
+      role: string | null;
+    };
+    /**
+     * LinkNode
+     * @description A Cala entity on the path that proves a hidden link.
+     */
+    LinkNode: {
+      /** Entity Id */
+      entity_id: string;
+      /** Name */
+      name: string;
+      /** Entity Type */
+      entity_type: string;
+    };
+    /** NewsEntity */
+    NewsEntity: {
+      /** Entity Id */
+      entity_id: string;
+      /** Name */
+      name: string;
+      /** Entity Type */
+      entity_type: string;
+    };
+    /**
+     * NewsItem
+     * @description A news row from Cala's knowledge query: no per-item source, so trust is `cala_news`.
+     */
+    NewsItem: {
+      /** Title */
+      title: string;
+      /** Summary */
+      summary: string | null;
+      /** @description Read at its source's date_precision; absent when Cala has none */
+      date: components["schemas"]["Fact"];
+      /**
+       * Entities
+       * @description Mentioned in the item
+       */
+      entities: components["schemas"]["NewsEntity"][];
+      /**
+       * Trust
+       * @default cala_news
+       * @enum {string}
+       */
+      trust:
+        | "filing"
+        | "primary"
+        | "press"
+        | "aggregator"
+        | "cala_news"
+        | "web_unverified"
+        | "not_published";
     };
     /** Profile */
     Profile: {
@@ -535,7 +727,14 @@ export interface components {
        * Rank
        * @enum {string}
        */
-      rank: "filing" | "primary" | "press" | "aggregator" | "web_unverified" | "not_published";
+      rank:
+        | "filing"
+        | "primary"
+        | "press"
+        | "aggregator"
+        | "cala_news"
+        | "web_unverified"
+        | "not_published";
     };
   };
   responses: never;

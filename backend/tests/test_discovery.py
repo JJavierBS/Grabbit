@@ -118,6 +118,8 @@ class FakeCala:
 
     async def retrieve(self, entity_id, body=None, fresh=False):
         self.calls.append(("retrieve", entity_id))
+        if entity_id not in self.nodes:
+            raise CalaError(404, "not found")
         node = self.nodes[entity_id]
         page = (
             ((body or {}).get("relationships") or {})
@@ -199,6 +201,19 @@ async def test_pipeline_keeps_startups_with_rounds_and_signals(graph):
     assert signals["likely_to_raise"].value is True
 
 
+async def test_pipeline_attaches_hidden_links_between_shortlisted_startups(graph):
+    graph["rk"] = round_node("rk", "kide", "2026-03-01", [("other-vc", True), (AURORA, False)])
+    graph["rk"]["relationships"]["incoming"]["PARTICIPATES_IN_FUNDING_ROUND"][2]["name"] = (
+        "Aurora Ventures"
+    )
+    result = await get_candidates(FakeCala(graph), make_profile(), TODAY)
+    kide = next(c for c in result.candidates if c.name == "Kide Health")
+    assert [(link.kind, link.target.name) for link in kide.links] == [
+        ("shared_investor", "Northwind Robotics")
+    ]
+    assert AURORA in result.links.investors
+
+
 async def test_profile_filters_apply(graph):
     profile = make_profile(countries=["EE"])
     result = await get_candidates(FakeCala(graph), profile, TODAY)
@@ -269,3 +284,39 @@ def test_warm_dump_writes_one_file_per_node(tmp_path):
 
     assert dump_raw({"a": {"id": "a"}, "b": {"id": "b"}}, tmp_path / "out") == 2
     assert sorted(p.name for p in (tmp_path / "out").iterdir()) == ["a.json", "b.json"]
+
+
+def test_stage_filter_normalises_and_expands_early():
+    from app.discovery.build import build_candidate
+
+    seed = build_candidate(company("s", "S", stage="SEED"), [])
+    pre = build_candidate(company("p", "P", stage="PRE_SEED"), [])
+    series_a = build_candidate(company("a", "A", stage="SERIES_A"), [])
+    early = make_profile(stages=["early"])
+    assert matches_profile(seed, early) and matches_profile(pre, early)
+    assert not matches_profile(series_a, early)
+    assert matches_profile(pre, make_profile(stages=["Pre-Seed"]))
+
+
+def test_sectors_match_whole_words_not_substrings():
+    from app.discovery.build import build_candidate
+
+    def with_industries(labels):
+        return build_candidate(company("c", "C", stage="SEED"), []).model_copy(
+            update={"industries": labels}
+        )
+
+    assert not matches_profile(with_industries(["retail"]), make_profile(sectors_in=["AI"]))
+    assert matches_profile(with_industries(["ai"]), make_profile(sectors_in=["AI"]))
+    assert matches_profile(with_industries(["Climate tech"]), make_profile(sectors_in=["climate"]))
+    assert not matches_profile(with_industries(["ai"]), make_profile(sectors_out=["AI"]))
+
+
+def test_headcount_range_is_compared_by_its_upper_bound():
+    from app.discovery.build import build_candidate
+
+    big = build_candidate(company("b", "B", stage="SEED", size=[51, 200]), [])
+    small = build_candidate(company("s", "S", stage="SEED", size=[5, 10]), [])
+    assert big.headcount.value == "51-200"
+    assert not matches_profile(big, make_profile(headcount_max=20))
+    assert matches_profile(small, make_profile(headcount_max=20))
