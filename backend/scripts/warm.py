@@ -10,6 +10,10 @@ once for startups whose cached answer had no news.
 Every run ends with the first chat turn's own walk (`agent/sources.event_walk_limits`), which
 refills anything the big walk timed out on, then replays it from the cache only and prints
 the misses. `--check` does only that replay and exits 1 on any miss: run it before a demo.
+
+It also warms the reverse walk (`discovery/reverse.py`) without a call budget, for the demo's
+trusted investors and the stored profile's, and counts its misses in the same replay. That
+includes its second ring (their strongest co-investors); the startups it adds are printed.
 """
 
 from __future__ import annotations
@@ -25,13 +29,16 @@ from typing import Any
 from app.agent.sources import event_walk_limits
 from app.cala.client import CalaCacheMiss, CalaClient
 from app.cala.news import warm_news
+from app.discovery.build import normalise_name
 from app.discovery.links import LinkLimits
 from app.discovery.pipeline import SLUSH_2026, Limits, get_candidates, neutral_profile
-from app.models import Candidate
+from app.discovery.reverse import ReverseLimits, ReverseResult, reverse_walk
+from app.models import Candidate, ReferenceInvestor
 from app.store.cala_cache import CalaCache
 from app.store.valkey import valkey_from_settings
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+DEMO_REFERENCES = ("Y Combinator", "500 Global")
 
 
 def database_path() -> Path:
@@ -63,9 +70,65 @@ async def first_turn_misses(cache: CalaCache, event: str) -> tuple[int, int]:
     return client.cache_hits + client.cache_misses, client.cache_misses
 
 
+def warm_references() -> list[ReferenceInvestor]:
+    """The demo's trusted investors, then the stored profile's, one per fund name."""
+    from app.store import profile as profile_store
+    from app.store.db import init_db
+
+    init_db()
+    references = [
+        ReferenceInvestor(entity_id=f"unresolved:{name.lower()}", name=name)
+        for name in DEMO_REFERENCES
+    ]
+    seen = {normalise_name(r.name) for r in references}
+    for ref in profile_store.current().reference_investors:
+        key = normalise_name(ref.name) or ref.entity_id
+        if key not in seen:
+            seen.add(key)
+            references.append(ref)
+    return references
+
+
+async def warm_reverse_walk(
+    client: CalaClient, event: str, references: list[ReferenceInvestor]
+) -> ReverseResult:
+    """The reverse walk a chat turn makes for these investors, in full: no call budget."""
+    return await reverse_walk(client, references, event, limits=ReverseLimits(call_budget=None))
+
+
+def reverse_summary(reverse: ReverseResult, references: list[ReferenceInvestor]) -> list[str]:
+    r = reverse.stats
+    walked = ", ".join(f"{c.name} {c.shared_rounds}" for c in reverse.co_investors)
+    return [
+        f"reverse walk from {', '.join(ref.name for ref in references)}",
+        f"fund entities {r.entities}  rounds {r.rounds}  issuers {r.issuers}",
+        f"issuers attending {r.attending}  attending startups reached {r.startups}",
+        f"co-investors seen {r.co_investors}  walked {r.co_investors_walked}"
+        f"  hubs skipped {r.co_investors_skipped}",
+        f"strongest co-investors (shared rounds): {walked or 'none'}",
+        f"attending startups added by the second ring {r.second_ring_startups}",
+    ]
+
+
+async def reverse_walk_misses(
+    cache: CalaCache, event: str, references: list[ReferenceInvestor]
+) -> tuple[int, int]:
+    """(Cala calls the reverse walk would make, how many the cache cannot answer)."""
+    client = CalaClient(None, cache, mode="replay")
+    try:
+        await warm_reverse_walk(client, event, references)
+    finally:
+        await client.aclose()
+    return client.cache_hits + client.cache_misses, client.cache_misses
+
+
 async def check(args: argparse.Namespace) -> int:
-    calls, misses = await first_turn_misses(CalaCache(sqlite3.connect(database_path())), args.event)
+    cache = CalaCache(sqlite3.connect(database_path()))
+    calls, misses = await first_turn_misses(cache, args.event)
     print(f"first chat turn: {calls} Cala calls, {misses} cache misses")
+    reverse_calls, reverse_misses = await reverse_walk_misses(cache, args.event, warm_references())
+    print(f"reverse walk: {reverse_calls} Cala calls, {reverse_misses} cache misses")
+    misses += reverse_misses
     if misses:
         print("run `make warm` with live Cala before presenting")
     return 1 if misses else 0
@@ -89,6 +152,8 @@ async def main(args: argparse.Namespace) -> int:
         result = await get_candidates(client, neutral_profile(args.event), limits=limits)
         # The big walk can time out on slow nodes; the demo's own walk retries them.
         await warm_first_turn(client, args.event)
+        references = warm_references()
+        reverse = await warm_reverse_walk(client, args.event, references)
         if args.news:
             targets = await news_targets(client, limits)
             news = await warm_news(client, targets, retry_empty=args.retry_empty)
@@ -106,12 +171,16 @@ async def main(args: argparse.Namespace) -> int:
     shared = sum(1 for c in result.candidates if any(k.kind == "shared_investor" for k in c.links))
     print(f"investors walked for hidden links {len(result.links.investors)}")
     print(f"startups sharing an investor with another startup {shared}")
+    for line in reverse_summary(reverse, references):
+        print(line)
     if args.dump:
         print(f"dumped {dump_raw(result.raw, Path(args.dump))} nodes to {args.dump}")
     for name, count in news.items():
         print(f"news {count:2d}  {name}")
     calls, misses = await first_turn_misses(cache, args.event)
     print(f"first chat turn: {calls} Cala calls, {misses} cache misses")
+    calls, misses = await reverse_walk_misses(cache, args.event, references)
+    print(f"reverse walk: {calls} Cala calls, {misses} cache misses")
     return 0
 
 
