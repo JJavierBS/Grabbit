@@ -61,6 +61,8 @@ export function useEvents(onAlert: (alert: Alert) => void): StreamStatus {
       });
       stream.addEventListener("report", () => {
         client.invalidateQueries({ queryKey: keys.reportsAll });
+        // The new report may link chat-typed investor names to Cala ids.
+        client.invalidateQueries({ queryKey: keys.profile });
       });
       stream.addEventListener("profile", (ev) => {
         const profile = parse<Profile>(ev);
