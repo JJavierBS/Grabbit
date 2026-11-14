@@ -1,0 +1,339 @@
+// Synthetic demo data: every company, investor and number here is invented. It feeds the
+// dev-only fake API (VITE_FAKE_API=1) and the frontend tests, never the real backend.
+import type {
+  Candidate,
+  ChatMessage,
+  Fact,
+  Profile,
+  ProfileChange,
+  Report,
+  Source,
+} from '../api/types';
+
+const registry = (date: string, precision: Source['date_precision'] = 'year'): Source => ({
+  name: 'Finnish Trade Register',
+  url: 'https://example.com/registry',
+  date,
+  date_precision: precision,
+  rank: 'filing',
+});
+const press = (name: string, date: string): Source => ({
+  name,
+  url: 'https://example.com/press',
+  date,
+  date_precision: 'day',
+  rank: 'press',
+});
+const company: Source = { name: 'Company website', url: 'https://example.com', rank: 'primary' };
+const database: Source = { name: 'Funding database', rank: 'aggregator' };
+
+const fact = (value: Fact['value'], source: Source, unit?: string): Fact => ({
+  value,
+  unit,
+  trust: source.rank,
+  sources: [source],
+});
+const absent: Fact = { value: null, trust: 'not_published', sources: [] };
+
+export const candidates: Candidate[] = [
+  {
+    entity_id: 'c-northwind',
+    name: 'Northwind Labs',
+    website: 'https://example.com/northwind',
+    description: 'Carbon accounting for Nordic logistics fleets.',
+    founding_date: fact('2021-01-01', registry('2021-01-01')),
+    funding_stage: fact('Seed', database),
+    headcount: fact(18, company, 'people'),
+    total_funding: fact(3_100_000, press('Arctic Startup Daily', '2024-09-12'), 'EUR'),
+    hq: fact('Helsinki, Finland', registry('2021-01-01')),
+    industries: ['Climate software', 'Logistics'],
+    rounds: [
+      {
+        entity_id: 'r-northwind-seed',
+        label: 'Seed',
+        name: 'Northwind Labs seed round',
+        amount: fact(2_500_000, press('Arctic Startup Daily', '2024-09-12'), 'EUR'),
+        date: fact('2024-09-12', press('Arctic Startup Daily', '2024-09-12')),
+        investors: [
+          { entity_id: 'i-aurora', name: 'Aurora Ventures', is_lead: true, role: 'investor' },
+          { entity_id: 'i-fjordline', name: 'Fjordline Angels', is_lead: false, role: 'investor' },
+        ],
+      },
+    ],
+    signals: [
+      {
+        kind: 'co_invest',
+        label: 'Co-invest with who you trust',
+        value: [{ investor: 'Aurora Ventures', round: 'Seed', is_lead: true, date: '2024-09-12' }],
+        explanation: 'Aurora Ventures, one of your reference investors, led the seed round.',
+        facts: [],
+      },
+      {
+        kind: 'likely_to_raise',
+        label: 'Likely to raise soon',
+        value: true,
+        explanation:
+          '2 of 3 checks pass: 14 months since the seed round; headcount grew from 11 to 18 in 12 months. Lead follow-on: not enough data.',
+        facts: [fact(18, company, 'people')],
+      },
+    ],
+  },
+  {
+    entity_id: 'c-lumen',
+    name: 'Lumen Ledger',
+    website: 'https://example.com/lumen',
+    description: 'Treasury automation for small Nordic exporters.',
+    founding_date: fact('2020-03-01', registry('2020-03-01', 'month')),
+    funding_stage: fact('Series A', database),
+    headcount: fact(42, company, 'people'),
+    total_funding: fact(9_400_000, database, 'EUR'),
+    hq: fact('Stockholm, Sweden', company),
+    industries: ['Fintech', 'B2B software'],
+    rounds: [
+      {
+        entity_id: 'r-lumen-a',
+        label: 'Series A',
+        name: 'Lumen Ledger Series A',
+        amount: fact(8_000_000, press('Nordic Finance Wire', '2023-05-03'), 'EUR'),
+        date: fact('2023-05-03', press('Nordic Finance Wire', '2023-05-03')),
+        investors: [
+          { entity_id: 'i-northstar', name: 'North Star Capital', is_lead: true, role: 'investor' },
+          { entity_id: 'i-aurora', name: 'Aurora Ventures', is_lead: false, role: 'investor' },
+        ],
+      },
+    ],
+    signals: [
+      {
+        kind: 'co_invest',
+        label: 'Co-invest with who you trust',
+        value: [
+          { investor: 'North Star Capital', round: 'Series A', is_lead: true, date: '2023-05-03' },
+          { investor: 'Aurora Ventures', round: 'Series A', is_lead: false, date: '2023-05-03' },
+        ],
+        explanation:
+          'Both of your reference investors are in the Series A; North Star Capital led it.',
+        facts: [],
+      },
+      {
+        kind: 'lead_follow_on',
+        label: 'Lead follows on',
+        value: 0.4,
+        explanation:
+          'North Star Capital joined a later round in 2 of its 5 other portfolio companies.',
+        facts: [],
+      },
+    ],
+  },
+  {
+    entity_id: 'c-kettle',
+    name: 'Kettle Robotics',
+    website: 'https://example.com/kettle',
+    description: 'Autonomous picking arms for food warehouses.',
+    founding_date: fact('2023-01-01', registry('2023-01-01')),
+    funding_stage: fact('Pre-seed', database),
+    headcount: fact(9, company, 'people'),
+    total_funding: absent,
+    hq: fact('Tallinn, Estonia', company),
+    industries: ['Robotics', 'Logistics'],
+    rounds: [
+      {
+        entity_id: 'r-kettle-pre',
+        label: 'Pre-seed',
+        name: 'Kettle Robotics pre-seed',
+        amount: absent,
+        date: fact('2025-02-01', database),
+        investors: [
+          { entity_id: 'i-baltic', name: 'Baltic Seed Fund', is_lead: true, role: 'investor' },
+        ],
+      },
+    ],
+    signals: [
+      {
+        kind: 'likely_to_raise',
+        label: 'Likely to raise soon',
+        value: null,
+        explanation:
+          'Only one check has data (9 months since the pre-seed round), so there is not enough data.',
+        facts: [],
+      },
+    ],
+  },
+  {
+    entity_id: 'c-saltmarsh',
+    name: 'Saltmarsh Bio',
+    website: 'https://example.com/saltmarsh',
+    description: 'At-home gut health test kits.',
+    founding_date: fact('2022-01-01', registry('2022-01-01')),
+    funding_stage: fact('Seed', database),
+    headcount: fact(
+      14,
+      { name: 'Founder interview, unverified', rank: 'web_unverified' },
+      'people',
+    ),
+    total_funding: fact(1_200_000, database, 'EUR'),
+    hq: fact('Copenhagen, Denmark', company),
+    industries: ['Health', 'Consumer'],
+    rounds: [],
+    signals: [],
+  },
+];
+
+const ids = candidates.map((c) => c.entity_id);
+
+export const reportV1: Report = {
+  id: 'rep-1',
+  kind: 'prep',
+  created_at: '2026-11-14T09:30:00Z',
+  profile_version: 2,
+  summary:
+    'Four Slush 2026 attendees match your thesis of Nordic B2B climate and fintech software at pre-seed and seed. Northwind Labs is the strongest fit: Aurora Ventures led its seed round 14 months ago and the team is growing, so a new round may come soon. Lumen Ledger is later stage but both of your reference investors are on its cap table.',
+  sections: [
+    {
+      title: 'Shortlist',
+      body_md:
+        'These startups attend Slush 2026 and match your stage and sectors. Each fact shows where it comes from; **not published** means Cala has no value for it.',
+      candidate_ids: ids,
+    },
+    {
+      title: 'Rounds and leads',
+      body_md:
+        'Who led the last round matters more than its size at this stage.\n\n- Northwind Labs: seed, led by Aurora Ventures.\n- Lumen Ledger: Series A, led by North Star Capital.\n- Kettle Robotics: pre-seed, led by Baltic Seed Fund; the amount is not published.',
+      candidate_ids: ['c-northwind', 'c-lumen', 'c-kettle'],
+    },
+    {
+      title: 'Co-investors you trust',
+      body_md:
+        'Your reference investors appear in two rounds. Aurora Ventures led Northwind Labs and followed North Star Capital into Lumen Ledger.',
+      candidate_ids: ['c-northwind', 'c-lumen'],
+    },
+    {
+      title: 'Likely to raise soon',
+      body_md: 'A hint, not a recommendation. Northwind Labs passes 2 of 3 checks.',
+      candidate_ids: ['c-northwind'],
+    },
+  ],
+  candidates,
+};
+
+/** The same report after "shorter, co-investors first". */
+export const reportV2: Report = {
+  ...reportV1,
+  id: 'rep-2',
+  created_at: '2026-11-14T09:34:00Z',
+  profile_version: 3,
+  summary:
+    'Four matches. Aurora Ventures led Northwind Labs; both your reference investors back Lumen Ledger.',
+  sections: [
+    {
+      title: 'Co-investors you trust',
+      body_md: 'Aurora Ventures led Northwind Labs and joined North Star Capital in Lumen Ledger.',
+      candidate_ids: ['c-northwind', 'c-lumen'],
+    },
+    {
+      title: 'Shortlist',
+      body_md: 'Attending Slush 2026, matching stage and sectors.',
+      candidate_ids: ids,
+    },
+    {
+      title: 'Likely to raise soon',
+      body_md: 'Northwind Labs: 2 of 3 checks pass.',
+      candidate_ids: ['c-northwind'],
+    },
+  ],
+};
+
+/** After "drop consumer health": Saltmarsh Bio is gone. */
+export const reportV3: Report = {
+  ...reportV2,
+  id: 'rep-3',
+  created_at: '2026-11-14T09:36:00Z',
+  profile_version: 4,
+  summary:
+    'Three matches. Aurora Ventures led Northwind Labs; both your reference investors back Lumen Ledger.',
+  sections: reportV2.sections.map((s) => ({
+    ...s,
+    candidate_ids: s.candidate_ids.filter((id) => id !== 'c-saltmarsh'),
+  })),
+  candidates: candidates.filter((c) => c.entity_id !== 'c-saltmarsh'),
+};
+
+export const profileV2: Profile = {
+  version: 2,
+  event_id: 'e-slush-2026',
+  thesis: 'Nordic B2B climate and fintech software, pre-seed to seed, tickets around 25k EUR.',
+  filters: {
+    stages: ['pre_seed', 'seed'],
+    sectors_in: ['Climate software', 'Fintech'],
+    sectors_out: [],
+    countries: ['FI', 'SE', 'EE', 'DK', 'NO'],
+    headcount_max: 50,
+    ticket: { value: 25_000, unit: 'EUR', trust: 'primary', sources: [] },
+  },
+  reference_investors: [
+    { entity_id: 'i-aurora', name: 'Aurora Ventures' },
+    { entity_id: 'i-northstar', name: 'North Star Capital' },
+  ],
+  style: { length: 'medium', detail: 'plain', language: 'en', sections: [] },
+  cadence: 'event',
+  alert_threshold: 'medium',
+  instructions: 'Plain language. One paragraph per startup. Lead with the round and who led it.',
+  updated_at: '2026-11-14T09:29:00Z',
+};
+
+export const historyV2: ProfileChange[] = [
+  {
+    version: 2,
+    field: 'reference_investors',
+    before: [],
+    after: ['Aurora Ventures', 'North Star Capital'],
+    reason: 'You said you trust these two investors.',
+    by: 'agent',
+  },
+  {
+    version: 1,
+    field: 'filters.stages',
+    before: [],
+    after: ['pre_seed', 'seed'],
+    reason: 'You chose pre-seed and seed when asked about stage.',
+    by: 'agent',
+  },
+];
+
+export const chatV2: ChatMessage[] = [
+  {
+    id: 'm1',
+    role: 'agent',
+    text: 'Hi, I am Grabbit. Tell me what you look for at Slush 2026, however vague.',
+    created_at: '2026-11-14T09:20:00Z',
+    profile_changes: [],
+  },
+  {
+    id: 'm2',
+    role: 'user',
+    text: 'Nordic B2B software, climate or fintech. Small tickets, around 25k.',
+    created_at: '2026-11-14T09:21:00Z',
+    profile_changes: [],
+  },
+  {
+    id: 'm3',
+    role: 'agent',
+    text: 'Of the 64 attendees that match, 41 are pre-seed or seed and 23 are Series A or later. Which stage do you want?',
+    created_at: '2026-11-14T09:21:30Z',
+    profile_changes: [],
+  },
+  {
+    id: 'm4',
+    role: 'user',
+    text: 'Pre-seed and seed. I trust Aurora Ventures and North Star Capital.',
+    created_at: '2026-11-14T09:23:00Z',
+    profile_changes: [],
+  },
+  {
+    id: 'm5',
+    role: 'agent',
+    text: 'From now on: pre-seed and seed only, and Aurora Ventures and North Star Capital are your reference investors. Your Slush prep report is ready.',
+    created_at: '2026-11-14T09:30:00Z',
+    profile_changes: historyV2.slice().reverse(),
+    report_id: 'rep-1',
+  },
+];
