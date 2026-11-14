@@ -1,7 +1,8 @@
 # The discovery algorithm
 
 How Grabbit walks Cala's entity graph to find and order startups, what changed on
-2026-11-14/15 (#191, #192, #193, #196), why, and what was measured. Written for a reader who
+2026-11-14/15 (#191, #192, #193, #196, fixed in #205), why, what was measured, and the state of
+the data behind it ("Data audit"). Written for a reader who
 has not followed the issues. Agent-facing summaries stay in `docs/agents/cala.md` and
 `docs/agents/agent.md`; the dated log is `docs/agents/decisions.md`.
 
@@ -309,6 +310,103 @@ joined only through ring 2 start at position 27 with scores under 0.2, as the we
 - Backend: 501 tests pass on `main` after the merge (426 before the change). CI on `main` is
   green, frontend included.
 
+## Review and fixes (2026-11-15, #205)
+
+A review of the code above found six defects; #205 fixed five and logged the sixth as a
+product decision (Limitations).
+
+| Defect | Effect before | Fix |
+| --- | --- | --- |
+| Ring 1 made one path per investor entity | "Y Combinator" and "Y Combinator W24" leading one Seed scored 1.62 instead of 0.81 | One path per (round, trusted fund), at its strongest entity |
+| Trusted grants scored nothing | The reverse walk follows a trusted fund's GRANTOR edges (FIRSTPICK), but `participants()` drops grantors, so those startups scored 0 | Proximity reads a trusted grantor from the raw round ("gave a grant in") |
+| No cap per intermediary in ring 2 | One co-investor's shared rounds filled all 5 slots and cancelled its low selectivity | At most 2 paths per intermediary (`MAX_PATHS_PER_INTERMEDIARY`) |
+| A budget-cut reverse walk was cached 15 min | Later turns reused the partial result, against what this page said | Not cached when `budget_spent`; the next turn continues from the Cala response cache |
+| Legal forms stripped anywhere in a name | "Same As Ventures" became "same ventures" | Stripped only at the end ("Acme Oy Ltd" -> "acme") |
+| Proximity scanned every round per candidate and investor | About 1 s of CPU per turn, quadratic in the graph | `FunderIndex` built once per pass, memoised `normalise_name` |
+
+Tried and reverted: listing grantors as round participants everywhere. Of 70 grantors in 108
+cached rounds nearly all are public agencies (Innovate UK 20, Business Finland 11, EIC 7,
+Bpifrance 7). Listing them added 42 Cala calls to the demo's hidden-links walk and would make
+the first-turn question offer "I trust Innovate UK".
+
+### Benchmark
+
+Method: `get_candidates` + `reverse_walk` (no budget) + links + proximity + `rank`, replayed
+from one copy of the warmed cache for `main` before and after #205 (0 Cala calls; live Cala
+answered `402 Insufficient balance`). Sets: the demo pair and real co-investors whose rounds
+the second ring had cached, passed by Cala entity id.
+
+| Set | Proximity CPU per turn | Ranking change |
+| --- | --- | --- |
+| Y Combinator + 500 Global | 0.956 s -> 0.012 s | 2 scores lower (ring 2 cap), order unchanged |
+| Pioneer Fund | 0.993 s -> 0.018 s | 7 candidates had all paths from one intermediary -> 0; Brickanta 0.128 -> 0.058 (five "Y Combinator co-invested with Pioneer Fund" paths); Constrct, joined by another intermediary, enters the top 5 |
+| a16z + General Catalyst, SV Angel + Soma Capital, Rebel Fund + Gradient Ventures, Base10 + FIRSTPICK | about 0.6 s -> 0.007 s | none |
+
+Cala calls and cache misses are identical before and after. No round among the 484 cached
+rounds holds two entities of one fund, so the double count is latent in today's data; a test
+protects it.
+
+### End to end
+
+Method: the FastAPI app called over HTTP in process (`httpx.ASGITransport`),
+`POST /api/reports/run` with `kind=prep`, `CALA_MODE=replay` on the same cache,
+`LLM_MODE=fake` so only the engine differs, four angel profiles saved through the profile
+store. The prep report shows 8 startups.
+
+| Profile | Report time before -> after | Report order |
+| --- | --- | --- |
+| Y Combinator + 500 Global, neutral | 4.0 s -> 0.3 s | Same 8, same order; Pally 1.237 -> 1.214, Conductor Quantum 0.515 -> 0.471 |
+| Y Combinator + 500 Global, Pre-Seed and Seed | 2.1 s -> 0.07 s | Same 8, same order |
+| "Y Combinator Management, LLC" typed in chat | 1.8 s -> 0.09 s | Same 8, same order |
+| Pioneer Fund | 3.1 s -> 0.2 s | Same top 4; from 5th, startups joined only through Y Combinator drop (Brickanta 5th -> 6th, InLoop Robotics out), Constrct enters 5th |
+
+## Data audit (2026-11-15)
+
+What the engine reads, measured on the laptop caches with the demo pair (Y Combinator and 500
+Global, neutral profile). The deployed demo runs `CALA_MODE=replay` from its own cache, which
+this audit could not inspect.
+
+### Cache coverage
+
+| Check | Result |
+| --- | --- |
+| `make warm ARGS=--check` on `data/grabbit.db` | First chat turn: 898 calls, 0 misses. Reverse walk: 1 miss, the full attendee list |
+| Full attendee list (30 pages) in `data/grabbit.db` | 2 of 30 pages: offline, the reverse walk crosses nothing and returns no startup |
+| Same list after a live run on 2026-11-15 00:23 | 30 of 30 pages (113 calls) before Cala answered 402; these rows are only in that run's copy |
+| Reverse walk on the fuller copy | 1 fund entity walked of the 36 measured on 2026-11-14, 32 reads skipped, 11 startups reached (27 before) |
+
+So the "Results" figures above (108 candidates, 45 with a path) need the cache they were
+measured on; the laptop cache gives 81 candidates and 18 with a path.
+
+### Field coverage of the 81 candidates
+
+| Field | Missing |
+| --- | --- |
+| Funding stage | 27 (33 %) |
+| Headcount | 50 (62 %) |
+| HQ | 3 |
+| Rounds without any investor listed | 92 of 171 (54 %) |
+| Rounds without a date | 14 of 171 (counted at half weight) |
+| Rounds with a known lead | 62 of 171 |
+
+Facts behind the proximity paths: 35 primary, 18 press, 5 aggregator, none unsourced.
+
+### What reaches the list
+
+- The top 12 all hold a ring 1 path to Y Combinator or 500 Global, from 2023 to 2026 rounds.
+- Six later-stage companies pass the startup rules: D-ID (Series B, 12th), Sonofit,
+  incaseof.law, Forciot, Synhelion and Bliq; Headway Inc (201-500 people) is 15th. A stage
+  or headcount filter in the profile removes them; the neutral profile does not.
+- Undated rounds show without a year ("Y Combinator led Pally's Pre-Seed.").
+
+### Before the demo
+
+1. Top up the Cala balance, then run `make warm` on the machine whose cache the demo reads
+   (or with `VALKEY_URL` set) and `make warm ARGS=--check` until it prints 0 misses for both
+   walks.
+2. Demo with a stage filter (Pre-Seed, Seed) or tighten `is_startup` by stage.
+3. Re-run the "Results" numbers on that cache; quote only those.
+
 ## Limitations
 
 | Limitation | Effect | Possible fix |
@@ -322,6 +420,8 @@ joined only through ring 2 start at position 27 with scores under 0.2, as the we
 | Selectivity counts rounds in the walked graph | An investor walked less looks more selective than it is | Use its total round count from Cala |
 | The score is not drawn in the UI | It orders the report but the paths are only in the API | Frontend follow-up on `Candidate.proximity` |
 | The chat's own walk marks trusted investors by entity id | A trusted fund under another entity is not labelled in the live walk | Pass the matcher to `agent/explore.py` |
+| The laptop cache lacks the full attendee list | Offline, the reverse walk returns nothing (Data audit) | `make warm` with live Cala once the balance is topped up |
+| Sparse fields in Cala | A third of candidates have no stage and half of rounds no investors, so the stage filter and ring 1 miss them | None on our side; say so in the report |
 | Cala's coverage | An investor with one round in Cala (Pioneer Fund had 1 as a seed, 16 as a co-investor) yields little | None on our side |
 | One measurement | Two investors, one event, one day | Repeat with other references |
 
