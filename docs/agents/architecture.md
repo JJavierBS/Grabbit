@@ -28,12 +28,13 @@ Owners are assigned on the issues; the board is the source of truth.
 | Watcher | `backend/app/watcher/` | Snapshots, diff, importance check, `Alert` |
 | Scheduler | `backend/app/scheduler.py` | APScheduler jobs: digest and watcher per profile |
 | Runtime glue | `backend/app/runtime.py` | Cala session on the shared cache; the jobs the lifespan schedules (watcher over the latest report, digest) |
-| Store | `backend/app/store/` | SQLite access: `db.py` (connection, `register_table`), one `<domain>.py` per team |
+| Store | `backend/app/store/` | SQLite access: `db.py` (connection, `register_table`), one `<domain>.py` per team; `valkey.py` is the optional shared Cala cache |
 | Web app | `frontend/src/` | Chat, report with trust badges, alerts, desktop notifications |
 
 ## Data
 - Storage: one SQLite file (`DATABASE_PATH`, default `data/grabbit.db`, gitignored). Tables
-  are created at startup; no migrations in the MVP. `make warm` fills the Cala cache.
+  are created at startup; no migrations in the MVP. `make warm` fills the Cala cache. With
+  `VALKEY_URL` the Cala cache is also kept in Aiven for Valkey and read from it first.
 - Workspaces: the `X-Workspace` header (or `?workspace=` on SSE) picks the visitor; missing
   means `default`. Profile, chat, reports, snapshots and alerts carry a `workspace` column and
   stores filter by `workspace.current()`; events reach only that workspace's streams. The
@@ -50,7 +51,9 @@ Owners are assigned on the issues; the board is the source of truth.
 | Cala API (`https://api.cala.ai`) | Discovery from `Event`, companies, rounds, investors, people | `CALA_API_KEY`, `CALA_MODE` |
 | Context.dev (`https://api.context.dev/v1`) | Soft signals only (decisions.md) | `CONTEXT_DEV_API_KEY` |
 | Gemini API (Google DeepMind), SDK `google-genai` | Chat, self-personalization, report writing, importance score | `GEMINI_API_KEY`, `GEMINI_MODEL`, `LLM_MODE` |
-| AWS EC2 host + Caddy edge, GHCR image | Deployed demo link; blue/green rollout by `deploy/rollout.sh` from GitHub Actions | `/opt/junction/.env` on the host, never in git |
+| Aiven for Valkey (`grabbit-cache`) | Shared Cala cache across deployed instances; SQLite stays the fallback | `VALKEY_URL` |
+| Aiven Runtime (`grabbit-app`) | Deployed demo link, built from `main` with the root `Dockerfile`; redeploy by hand (README "Deploy") | App environment variables in Aiven, never in git |
+| AWS EC2 host + Caddy edge, GHCR image | Legacy deploy, not the demo link; blue/green rollout by `deploy/rollout.sh` from GitHub Actions | `/opt/junction/.env` on the host, never in git |
 
 ## Directory layout
 - `backend/`: FastAPI app (`app/`), tests (`tests/`), `pyproject.toml` managed by `uv`.
@@ -70,6 +73,6 @@ Owners are assigned on the issues; the board is the source of truth.
 - All Cala calls go through one wrapper with timeout and a response cache.
 - One uvicorn worker only: the scheduler lives in the process, more workers would duplicate
   jobs. The watcher and digest loop over every workspace with a report; only the default
-  workspace sets the shared digest cadence. A deploy overlaps two containers for the
+  workspace sets the shared digest cadence. An EC2 deploy overlaps two containers for the
   health check (about 10-30 s); both share the SQLite file in WAL mode, and a job that
   fires in that window may run twice.

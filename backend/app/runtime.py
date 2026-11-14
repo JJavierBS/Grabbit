@@ -16,6 +16,7 @@ from app.references import resolve_references
 from app.scheduler import GrabbitScheduler
 from app.store.cala_cache import CalaCache
 from app.store.db import connect
+from app.store.valkey import valkey_from_settings
 
 log = logging.getLogger(__name__)
 
@@ -25,7 +26,11 @@ async def open_cala() -> AsyncIterator[tuple[CalaClient, sqlite3.Connection]]:
     """A Cala client on the shared cache, plus the open connection for other stores."""
     settings = get_settings()
     with connect() as conn:
-        client = CalaClient(settings.cala_api_key or None, CalaCache(conn), mode=settings.cala_mode)
+        client = CalaClient(
+            settings.cala_api_key or None,
+            CalaCache(conn, valkey_from_settings()),
+            mode=settings.cala_mode,
+        )
         try:
             yield client, conn
         finally:

@@ -16,6 +16,7 @@ from app.store import reports as report_store
 from app.store.cala_cache import CalaCache
 from app.store.db import connect
 from app.store.snapshots import WatchStore
+from app.store.valkey import valkey_from_settings
 from app.watcher.run import Watcher
 
 router = APIRouter(prefix="/demo", tags=["demo"])
@@ -56,7 +57,11 @@ async def _through_watcher(name: str, event: dict[str, Any]) -> Alert:
     latest = report_store.latest()
     profile = resolve_references(profile_store.current(), latest.candidates if latest else [])
     with connect() as conn:
-        client = CalaClient(settings.cala_api_key or None, CalaCache(conn), mode=settings.cala_mode)
+        client = CalaClient(
+            settings.cala_api_key or None,
+            CalaCache(conn, valkey_from_settings()),
+            mode=settings.cala_mode,
+        )
         try:
             alerts = await Watcher(client, WatchStore(conn), publish=publish).simulate(
                 name, profile
