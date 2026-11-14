@@ -1,5 +1,6 @@
 .fact {
   display: grid;
+  align-content: start; /* a taller neighbour in the row must not spread label and value */
   gap: var(--space-1);
   min-width: 0;
 }
@@ -22,11 +23,6 @@
   color: var(--color-ink);
   font-weight: var(--weight-medium);
   font-variant-numeric: tabular-nums;
-}
-
-.absent {
-  color: var(--color-text-muted);
-  font-style: italic;
 }
 
 .inline {

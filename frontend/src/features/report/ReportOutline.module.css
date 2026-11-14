@@ -9,15 +9,20 @@
   border-radius: var(--radius-lg);
   transition:
     border-color var(--duration-fast) var(--ease-standard),
-    background-color var(--duration-fast) var(--ease-standard);
+    background-color var(--duration-fast) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
   /* The light lands once on a new report, then fades to the resting glow. */
   animation: land 1200ms var(--ease-out) both;
   box-shadow: var(--glow-rest);
 }
 
+/* It lifts a little under the pointer: the whole card opens the report. */
 .card:hover {
   border-color: var(--color-violet);
   background: var(--color-surface-raised);
+  transform: translateY(var(--lift-hover));
+  box-shadow: var(--shadow-md), var(--glow-rest);
 }
 
 .card:has(.open:focus-visible) {
@@ -99,5 +104,9 @@
 @media (prefers-reduced-motion: reduce) {
   .card {
     animation: none;
+  }
+
+  .card:hover {
+    transform: none;
   }
 }

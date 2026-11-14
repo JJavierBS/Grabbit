@@ -65,22 +65,34 @@ interface FactValueProps {
   kind?: FactKind;
   /** Inline form for sentences and table cells: value then a compact badge. */
   inline?: boolean;
+  /** Spell out the badge's label even inline, where a bare icon would need a tooltip. */
+  labelled?: boolean;
 }
 
-export function FactValue({ fact, label, kind = "auto", inline = false }: FactValueProps) {
+export function FactValue({
+  fact,
+  label,
+  kind = "auto",
+  inline = false,
+  labelled = false,
+}: FactValueProps) {
   const text = formatFact(fact, kind);
   const source = strongestSource(fact);
-  const level = text === null ? "not_published" : fact.trust;
+  // An absent value is its own badge: "Not published" once, never text plus an empty pill.
   const value =
     text === null ? (
-      <span className={styles.absent}>Not published</span>
+      <TrustBadge level="not_published" />
     ) : (
       <span className={styles.value}>{text}</span>
     );
-  // The absent text already says "Not published"; a second badge would repeat it.
   const badge =
     text === null ? null : (
-      <TrustBadge level={level} sourceName={source?.name} href={source?.url} compact={inline} />
+      <TrustBadge
+        level={fact.trust}
+        sourceName={source?.name}
+        href={source?.url}
+        compact={inline && !labelled}
+      />
     );
 
   if (inline) {
@@ -96,7 +108,7 @@ export function FactValue({ fact, label, kind = "auto", inline = false }: FactVa
       {label && <dt className={styles.label}>{label}</dt>}
       <dd className={styles.body}>
         {value}
-        {badge ?? <TrustBadge level="not_published" compact />}
+        {badge}
       </dd>
     </div>
   );
