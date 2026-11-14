@@ -68,11 +68,6 @@
   color: var(--color-ink);
 }
 
-.thinking {
-  font-size: var(--text-md);
-  color: var(--color-text-muted);
-}
-
 .welcome {
   margin: auto;
   font-size: var(--text-2xl);
