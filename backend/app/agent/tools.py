@@ -103,7 +103,12 @@ TOOL_SPECS = [
                                 "stages": _STRINGS,
                                 "sectors_in": _STRINGS,
                                 "sectors_out": _STRINGS,
-                                "countries": _STRINGS,
+                                "countries": {
+                                    **_STRINGS,
+                                    "description": "Countries or regions the startups must be "
+                                    "based in, e.g. ['Finland'] or ['Europe'] or ['Nordics']. "
+                                    "Set it whenever the investor names a place.",
+                                },
                                 "headcount_max": {"type": "integer"},
                                 "ticket": {
                                     "type": "object",

@@ -1,5 +1,6 @@
 """Filter and order candidates by the profile."""
 
+from app.geo import hq_in
 from app.models import Candidate, Profile
 from app.reports.facts import last_round
 
@@ -42,8 +43,7 @@ def _matches(c: Candidate, profile: Profile) -> bool:
         return False
     if f.sectors_in and not any(s.lower() in industries for s in f.sectors_in):
         return False
-    countries = {x.lower() for x in f.countries}
-    if countries and c.hq.value is not None and str(c.hq.value).lower() not in countries:
+    if f.countries and c.hq.value is not None and not hq_in(str(c.hq.value), f.countries):
         return False
     # An unknown headcount is kept: absent is "not published", never a reason to drop.
     headcount = c.headcount.value
