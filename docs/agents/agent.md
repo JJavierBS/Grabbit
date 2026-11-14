@@ -2,7 +2,7 @@
 
 How the Gemini agent personalizes itself, which questions it asks, how signals are computed
 and how trust is shown. Read before building the agent, reports, signals or trust badges.
-Product flow: flow.md. Types: api.md. Keep this file under 100 lines.
+Product flow: flow.md. Types: api.md. Code: `backend/app/signals/`. Keep this file under 100 lines.
 
 ## Self-personalization (the originality)
 Gemini personalizes the report itself, through the conversation. No settings screen.
@@ -59,7 +59,8 @@ best, never all of them. Numbers in the question come from Cala, not from the mo
   portfolio companies where it also joined a later round. Needs 3+ companies, else null.
 - `likely_to_raise`: up to three checks, each only if the data exists:
   1. 12 to 30 months since the last `ISSUER` round (`event_date`);
-  2. headcount grew 20% or more over the last 12 months (`employee_count` series);
+  2. headcount grew 20% or more over the last 12 months (`employee_count` series; the
+     latest point must be under 6 months old, else no data);
   3. the last lead's `lead_follow_on` is 0.3 or more.
   True if at least two checks pass; null if fewer than two checks have data. The
   explanation lists each check and its facts. It is a hint, never a recommendation.
