@@ -33,3 +33,16 @@ def test_breaking_instructions_are_caught(text, rule):
 )
 def test_allowed_instructions_pass(text):
     assert violations(text) == []
+
+
+def test_fixed_rules_ask_for_plain_prose_and_readable_dates():
+    """#118: replies carried "[Database]" 14 times and ISO dates; the UI draws badges."""
+    from app.agent.chat import system_prompt
+    from app.agent.rules import FIXED_RULES
+    from app.store.profile import default_profile
+
+    assert "never put badge names in brackets or parentheses" in FIXED_RULES
+    assert '"10 Jun 2026", never "2026-06-10"' in FIXED_RULES
+    assert "State each fact once" in FIXED_RULES
+    prompt = system_prompt(default_profile(), None, [])
+    assert FIXED_RULES in prompt
