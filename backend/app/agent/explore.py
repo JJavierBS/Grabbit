@@ -16,6 +16,7 @@ from collections.abc import Callable
 from contextlib import AbstractAsyncContextManager, AsyncExitStack
 from typing import Any
 
+from app.agent.trace import Tracer
 from app.cala.client import CalaCacheMiss, CalaClient, CalaError
 from app.cala.normalize import edge_attr, edge_fact, property_fact
 from app.llm import LLM, Message, ToolCall, ToolResult, ToolSpec
@@ -23,8 +24,8 @@ from app.models import ExploredGraph, Fact, GraphEdge, GraphNode
 
 log = logging.getLogger(__name__)
 
-MAX_ROUNDS = 4
-MAX_NODES = 25
+MAX_ROUNDS = 6
+MAX_NODES = 30
 MAX_NEW_PER_ENTITY = 8
 MAX_CALLS_PER_ROUND = 3
 MAX_EXPAND = 6
@@ -33,7 +34,7 @@ EDGE_LIMIT = 6
 SEARCH_LIMIT = 5
 # Cala answers most nodes in under a second, but hub nodes can take minutes (cala.md).
 CALA_TIMEOUT_S = 15.0
-DEADLINE_S = 35.0
+DEADLINE_S = 55.0
 
 SEARCH_TYPES = ["Company", "Organization", "Person", "FundingRound", "Event", "Industry"]
 # Listing their neighbours means thousands of edges and timeouts (cala.md "Rate limits").
@@ -130,6 +131,8 @@ class Walk:
         self.nodes: dict[str, GraphNode] = {}
         self.edges: dict[tuple[str, str, str], GraphEdge] = {}
         self.seen_types: dict[str, str] = {}
+        self.seen_names: dict[str, str] = {}
+        self.last_hits: list[dict[str, Any]] = []
         self.unavailable = False
         self.cala_calls = 0
 
@@ -178,15 +181,18 @@ class Walk:
         if not name:
             return "cala_search needs a name."
         types = [t for t in args.get("entity_types") or [] if t in SEARCH_TYPES] or None
+        self.last_hits = []
         try:
             hits = await self._cala("search", name, types, limit=SEARCH_LIMIT)
         except TimeoutError:
             return f"Cala did not answer in time for {name!r}."
         if not hits:
             return f"No Cala entity matches {name!r}."
+        self.last_hits = hits
         lines = [f"Search {name!r}:"]
         for hit in hits:
             self.seen_types[hit["id"]] = hit.get("entity_type") or ""
+            self.seen_names[hit["id"]] = hit.get("name") or hit["id"]
             description = (hit.get("description") or "")[:140]
             lines.append(f"- {_label(hit, self.trusted)}: {description}")
         return "\n".join(lines)
@@ -288,6 +294,7 @@ class Walk:
             self.nodes[entity_id] = node
         if entity_type:
             self.seen_types[entity_id] = entity_type
+        self.seen_names.setdefault(entity_id, name)
         return node
 
     def _add_edge(self, entity_id: str, direction: str, rel: str, raw: dict[str, Any]) -> bool:
@@ -367,23 +374,31 @@ async def walk(
     trusted: set[str],
     check: Callable[[str, ExploredGraph | None], str | None] | None = None,
     clock: Callable[[], float] = time.monotonic,
+    tracer: Tracer | None = None,
 ) -> tuple[str, ExploredGraph | None]:
     """Let the model call Cala tools for a few rounds, then return its answer and the walk.
 
     `check` names a problem in the answer (e.g. a number in Text); the model gets one rewrite.
+    `tracer` shows each step, the growing subgraph and the streamed answer in the chat.
     """
     started = clock()
     messages = [Message(role="user", text=question)]
+    on_text = tracer.answer if tracer else None
     async with Walk(open_client, trusted) as state:
         rounds = 0
         tools: list[ToolSpec] | None = TOOLS
         while True:
-            result = await llm.chat(system=system, messages=messages, tools=tools)
+            result = await llm.chat(system=system, messages=messages, tools=tools, on_text=on_text)
+            if tracer and result.thoughts:
+                tracer.thought(result.thoughts)
             calls = result.tool_calls
             if tools is None or not any(c.name in TOOL_NAMES for c in calls):
                 break
             rounds += 1
             round_started = clock()
+            if tracer:
+                tracer.drop_answer()
+                tracer.round(rounds)
             # Gemini expects one response per call it made, even the ones we skip.
             outputs = []
             for i, call in enumerate(calls):
@@ -391,6 +406,8 @@ async def walk(
                     outputs.append(f"Unknown tool {call.name}.")
                 elif i >= MAX_CALLS_PER_ROUND:
                     outputs.append(f"Skipped: at most {MAX_CALLS_PER_ROUND} calls per round.")
+                elif tracer:
+                    outputs.append(await _traced(state, call, tracer))
                 else:
                     outputs.append(await state.run(call))
             log.info(
@@ -427,7 +444,11 @@ async def walk(
                 Message(role="model", text=result.text),
                 Message(role="user", text=f"{problem} Rewrite the answer in OpenUI Lang."),
             ]
-            result = await llm.chat(system=system, messages=messages)
+            if tracer:
+                # The streamed draft broke a rule; say so instead of swapping it silently.
+                tracer.drop_answer()
+                tracer.note("rewrite", f"Rewriting the answer: {_plain(problem)}")
+            result = await llm.chat(system=system, messages=messages, on_text=on_text)
         log.info(
             "explore: %d tool rounds, %d cala calls, %d nodes, %d edges, %.1fs",
             rounds,
@@ -437,6 +458,58 @@ async def walk(
             clock() - started,
         )
         return result.text, graph
+
+
+async def _traced(state: Walk, call: ToolCall, tracer: Tracer) -> str:
+    before_nodes, before_edges = len(state.nodes), len(state.edges)
+    kind = "search" if call.name == "cala_search" else "expand"
+    step = tracer.start(kind, _step_text(call, state))
+    output = await state.run(call)
+    if call.name == "cala_neighbours":
+        ids = [str(i) for i in call.args.get("entity_ids") or [] if i]
+        root = next((i for i in ids if i in state.nodes), None)
+        tracer.graph(state.graph(), root)
+    await tracer.finish(step, _step_result(call, state, before_nodes, before_edges, output))
+    return output
+
+
+def _step_text(call: ToolCall, state: Walk) -> str:
+    if call.name == "cala_search":
+        name = str(call.args.get("name") or "").strip()[:100]
+        return f"Searching Cala for “{name}”"
+    ids = [str(i) for i in call.args.get("entity_ids") or [] if i][:MAX_EXPAND]
+    names = [state.seen_names.get(i) or f"entity {i[:8]}" for i in ids]
+    shown = ", ".join(names[:3]) + (f" and {len(names) - 3} more" if len(names) > 3 else "")
+    rels = [str(r).replace("_", " ").lower() for r in call.args.get("relationships") or []]
+    return f"Expanding {shown}" + (f" over {', '.join(rels)}" if rels else "")
+
+
+def _step_result(
+    call: ToolCall, state: Walk, before_nodes: int, before_edges: int, output: str
+) -> str:
+    if state.unavailable:
+        return "Cala is unavailable right now"
+    if "did not answer in time" in output:
+        return "Cala did not answer in time"
+    if call.name == "cala_search":
+        hits = state.last_hits
+        if not hits:
+            return "No match"
+        first = f"{hits[0].get('name')} ({hits[0].get('entity_type') or 'entity'})"
+        return f"{len(hits)} match{'es' if len(hits) > 1 else ''}, first {first}"
+    new_nodes = len(state.nodes) - before_nodes
+    new_edges = len(state.edges) - before_edges
+    if "hub node" in output and not new_nodes:
+        return "A hub with thousands of edges: not expanded"
+    if not new_nodes and not new_edges:
+        return "Nothing new"
+    return f"+{new_nodes} entities, +{new_edges} links"
+
+
+def _plain(problem: str) -> str:
+    """The first clause of a check problem, as the end of a sentence."""
+    first = problem.split(";")[0].rstrip(".")
+    return first[:1].lower() + first[1:]
 
 
 def _stop_reason(state: Walk, rounds: int, elapsed: float) -> str | None:

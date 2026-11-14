@@ -85,7 +85,7 @@ async def test_co_invest_signal_fires_for_a_name_typed_in_chat(monkeypatch):
         ReferenceInvestor(entity_id="unresolved:aurora angels", name="Aurora Angels")
     )
 
-    async def pipeline(client, profile, today=None, limits=None):
+    async def pipeline(client, profile, today=None, limits=None, on_progress=None):
         # What discovery computes before the name is linked: no match by id.
         found = [
             c.model_copy(update={"signals": [co_invest(c, profile.reference_investors)]})

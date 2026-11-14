@@ -23,6 +23,8 @@ export type Report = Schemas["Report"];
 export type ReportKind = Schemas["Report"]["kind"];
 export type Alert = Schemas["Alert"];
 export type TurnProgress = Schemas["TurnProgress"];
+export type WalkTrace = Schemas["WalkTrace"];
+export type WalkStep = Schemas["WalkStep"];
 export type Health = Schemas["Health"];
 export type ErrorResponse = Schemas["ErrorResponse"];
 

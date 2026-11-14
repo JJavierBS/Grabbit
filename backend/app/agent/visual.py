@@ -7,15 +7,18 @@ cannot carry an invented fact. The component library and its prompt live in
 test fails when they drift).
 """
 
+import asyncio
 import logging
 import re
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from pathlib import Path
 
 from app.agent.explore import MAX_NODES, MAX_ROUNDS, ClientFactory, walk
+from app.agent.trace import Tracer
 from app.cala.client import CalaClient
+from app.config import get_settings
 from app.llm import LLM, LLMError
 from app.models import Candidate, ExploredGraph, Profile
 
@@ -93,6 +96,11 @@ async def visual_answer(
             return "A Text holds a number or date; show values only with components."
         return None
 
+    tracer = Tracer(
+        max_rounds=MAX_ROUNDS,
+        max_nodes=MAX_NODES,
+        min_step_s=get_settings().walk_step_min_s,
+    )
     try:
         text, graph = await walk(
             llm,
@@ -101,11 +109,24 @@ async def visual_answer(
             open_client=open_client,
             trusted=trusted,
             check=problem,
+            tracer=tracer,
         )
     except LLMError as exc:
         log.info("no visual answer: %s", exc)
+        tracer.close(None)
         return None
-    ui = _strip_fence(text)
+    except asyncio.CancelledError:
+        # The turn was a correction: the report changes instead, so the walk ends unshown.
+        tracer.close(None)
+        raise
+    visual = _checked(_strip_fence(text), graph, problem)
+    tracer.close(visual and visual.ui)
+    return visual
+
+
+def _checked(
+    ui: str, graph: ExploredGraph | None, problem: Callable[[str, ExploredGraph | None], str | None]
+) -> Visual | None:
     # The chat shows the visual instead of the text, so it must carry its own sentence.
     if not (ui.startswith("root = Answer(") and "Text(" in ui):
         log.debug("no visual answer: %r", ui[:300])

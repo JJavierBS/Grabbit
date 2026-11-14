@@ -95,7 +95,7 @@ async def test_model_failure_keeps_profile_and_says_so(candidates, now):
 
 async def test_tool_only_answer_gets_a_followup_sentence(candidates, now):
     class ToolsOnly(FakeLLM):
-        async def chat(self, *, system, messages, tools=None):
+        async def chat(self, *, system, messages, tools=None, on_text=None):
             if tools:
                 return ChatResult(
                     tool_calls=[
@@ -131,7 +131,7 @@ async def test_turn_with_a_tool_call_skips_learning(candidates, now):
 
 async def test_note_joins_reasons_without_their_full_stops(candidates, now):
     class TwoChanges(FakeLLM):
-        async def chat(self, *, system, messages, tools=None):
+        async def chat(self, *, system, messages, tools=None, on_text=None):
             if tools:
                 return ChatResult(
                     tool_calls=[

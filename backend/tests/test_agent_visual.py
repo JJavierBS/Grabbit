@@ -13,7 +13,7 @@ class Stub:
         self.text = text
         self.system = ""
 
-    async def chat(self, *, system, messages, tools=None):
+    async def chat(self, *, system, messages, tools=None, on_text=None):
         self.system = system
         return ChatResult(text=self.text)
 

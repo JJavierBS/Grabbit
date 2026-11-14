@@ -24,6 +24,9 @@ def offline_settings(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Iterato
     monkeypatch.setenv("CALA_MODE", "replay")
     monkeypatch.setenv("LLM_MODE", "fake")
     monkeypatch.setenv("DEMO_MODE", "1")
+    # A developer's .env may slow walk steps for the demo or ask Gemini for its thoughts.
+    monkeypatch.setenv("WALK_STEP_MIN_S", "0")
+    monkeypatch.setenv("GEMINI_THOUGHTS", "0")
     get_settings.cache_clear()
     from app.agent.sources import clear_discovery_cache
 

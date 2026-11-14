@@ -4,7 +4,7 @@ from fastapi import APIRouter
 from sse_starlette import EventSourceResponse, ServerSentEvent
 
 from app.events import Subscription, subscribe
-from app.models import TurnProgress
+from app.models import TurnProgress, WalkTrace
 
 router = APIRouter(tags=["events"])
 
@@ -25,10 +25,11 @@ async def event_stream(
 @router.get(
     "/events",
     response_class=EventSourceResponse,
-    # `model` puts TurnProgress in the OpenAPI schema, so the frontend types come from it.
-    responses={200: {"model": TurnProgress, "content": {"text/event-stream": {}}}},
+    # `model` puts the event payloads in the OpenAPI schema, so the frontend types come from it.
+    responses={200: {"model": TurnProgress | WalkTrace, "content": {"text/event-stream": {}}}},
 )
 async def stream_events() -> EventSourceResponse:
     """Server-Sent Events: `alert` (Alert), `report` ({id}), `profile` (Profile),
-    `progress` (TurnProgress) while a chat turn runs."""
+    `progress` (TurnProgress) while a chat turn runs, `trace` (WalkTrace) while its agent
+    walks Cala."""
     return EventSourceResponse(event_stream(subscribe()), ping=PING_SECONDS)
