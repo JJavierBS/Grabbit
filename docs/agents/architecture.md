@@ -18,6 +18,8 @@ TODO: 3-5 lines. What runs where, how a request flows end to end.
 | Service | Used for | Env vars |
 | --- | --- | --- |
 | Cala API / MCP (`https://api.cala.ai`) | Companies, people, funding rounds, investors | `CALA_API_KEY` |
+| Context.dev (`https://api.context.dev/v1`) | Web signals; possibly discovery (open-questions.md D5) | `CONTEXT_DEV_API_KEY` |
+| LLM | Agent, questions, importance check (flow.md) | TODO (open-questions.md D4) |
 
 ## Directory layout
 TODO: only top two levels, one line each.
