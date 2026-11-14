@@ -297,6 +297,7 @@ export function App() {
             <Button
               variant="ghost"
               size="sm"
+              className={styles.newResearch}
               icon={<SquarePen aria-hidden="true" />}
               onClick={newResearch}
             >
