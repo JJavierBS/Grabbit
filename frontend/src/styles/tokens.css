@@ -16,6 +16,9 @@
   --color-surface-raised: #ffffff;
   --color-panel: #f7f7fa;
   --color-panel-strong: #ecebf3;
+  /* The history sidebar: one step quieter than the ground. */
+  --color-sidebar: #f0eff5;
+  --color-sidebar-hover: #e6e5ef;
 
   /* Ink: the logo's night ink, the strongest foreground. */
   --color-ink: #14151c;
@@ -122,8 +125,9 @@
   --duration-glow: 1600ms; /* the working light breathes; it is a state, not a decoration */
 
   --chat-width: 44rem;
-  --panel-width: min(52rem, 56vw);
+  --sidebar-width: 17rem;
   --z-panel: 40;
+  --z-drawer: 45;
   --z-toast: 50;
 }
 

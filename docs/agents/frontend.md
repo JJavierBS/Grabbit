@@ -23,7 +23,9 @@
   (value, date with its precision, "not published").
 - `src/App.tsx`: layout. One screen: a centred chat; the report shows in the chat as an
   outline (`features/report/ReportOutline.tsx`) and opens in a side panel, which also holds
-  "What changed". Alerts as toasts and desktop notifications.
+  "What changed". A left sidebar (`features/report/ReportSidebar.tsx`) lists every report;
+  it collapses on wide screens and is a drawer on narrow ones. Alerts as toasts and desktop
+  notifications.
 
 ## Rules
 - All server calls go through the single API client; components never call `fetch` directly.

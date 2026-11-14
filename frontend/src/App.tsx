@@ -1,4 +1,4 @@
-import { ArrowLeft, Bell, FileText, History, RefreshCw, X } from "lucide-react";
+import { Bell, History, PanelLeftOpen, RefreshCw, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./App.module.css";
 import { useLatestReport, useSendMessage, useSimulateEvent } from "./api/hooks/queries";
@@ -11,18 +11,31 @@ import { askNotificationPermission } from "./features/alerts/notify";
 import { useAlertDelivery } from "./features/alerts/useAlertDelivery";
 import { ChatPanel } from "./features/chat/ChatPanel";
 import { ProfileHistory } from "./features/profile/ProfileHistory";
-import { ReportList } from "./features/report/ReportList";
 import { ReportOutline } from "./features/report/ReportOutline";
+import { ReportSidebar, reportKey } from "./features/report/ReportSidebar";
 import { ReportView } from "./features/report/ReportView";
 import { useReportChanges } from "./features/report/useReportChanges";
 
-type Panel = "report" | "reports" | "history";
+type Panel = "report" | "history";
 
-const PANEL_TITLE: Record<Panel, string> = {
-  report: "Report",
-  reports: "Reports",
-  history: "What changed",
-};
+const PANEL_TITLE: Record<Panel, string> = { report: "Report", history: "What changed" };
+
+// The sidebar's open or closed state is a per-browser convenience; it may be unavailable.
+const SIDEBAR_KEY = "grabbit.sidebar";
+function readSidebarOpen(): boolean {
+  try {
+    return localStorage.getItem(SIDEBAR_KEY) !== "closed";
+  } catch {
+    return true;
+  }
+}
+function saveSidebarOpen(open: boolean) {
+  try {
+    localStorage.setItem(SIDEBAR_KEY, open ? "open" : "closed");
+  } catch {
+    // Private mode or blocked storage: the sidebar still works, it only forgets.
+  }
+}
 
 /** The demo alert arrives this long after the click, so it lands like a real one. */
 export const ALERT_DELAY_MS = 30_000;
@@ -35,7 +48,7 @@ const STATUS_TEXT: Record<StreamStatus, string> = {
   retrying: "Reconnecting",
 };
 
-// Below this width the panel covers the chat instead of sitting beside it.
+// Below this width the panel covers the chat and the sidebar becomes a drawer.
 const NARROW = "(max-width: 63.99rem)";
 
 // The demo trigger shows with the fake API, or with ?demo (fixture name: ?demo=<name>).
@@ -54,12 +67,27 @@ export function App() {
   const send = useSendMessage();
   const simulate = useSimulateEvent();
   const [openAlert, setOpenAlert] = useState<Alert | null>(null);
-  // A past report opened from the Reports list; null shows the latest one.
+  // A past report opened from the sidebar; null shows the latest one.
   const [pastReport, setPastReport] = useState<Report | null>(null);
   const [alertQueued, setAlertQueued] = useState(false);
   const alertTimer = useRef<number | undefined>(undefined);
   const panelRef = useRef<HTMLElement>(null);
   const returnFocus = useRef<HTMLElement | null>(null);
+  // Wide screens: the sidebar sits beside the chat and can collapse. Narrow: it is a drawer.
+  const [sidebarOpen, setSidebarOpen] = useState(readSidebarOpen);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const isNarrow = () => window.matchMedia?.(NARROW).matches ?? false;
+
+  const openSidebar = () => {
+    if (isNarrow()) return setDrawerOpen(true);
+    setSidebarOpen(true);
+    saveSidebarOpen(true);
+  };
+  const closeSidebar = () => {
+    if (isNarrow()) return setDrawerOpen(false);
+    setSidebarOpen(false);
+    saveSidebarOpen(false);
+  };
 
   const openPanel = useCallback((next: Panel) => {
     if (document.activeElement instanceof HTMLElement) returnFocus.current = document.activeElement;
@@ -97,7 +125,33 @@ export function App() {
     return () => window.removeEventListener("keydown", onKey);
   }, [panel, closePanel]);
 
+  useEffect(() => {
+    if (!drawerOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setDrawerOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [drawerOpen]);
+
   useEffect(() => () => window.clearTimeout(alertTimer.current), []);
+
+  const openReport = (r: Report, latest: boolean) => {
+    if (document.activeElement instanceof HTMLElement) returnFocus.current = document.activeElement;
+    // The latest entry is the live report, with its confirm and run actions.
+    setPastReport(latest ? null : r);
+    setPanel("report");
+    setDrawerOpen(false);
+  };
+
+  const activeKey =
+    panel !== "report"
+      ? null
+      : pastReport
+        ? reportKey(pastReport)
+        : report.data
+          ? reportKey(report.data)
+          : null;
 
   const queueAlert = (fixture: string) => {
     setAlertQueued(true);
@@ -136,122 +190,131 @@ export function App() {
   ) : null;
 
   return (
-    <div className={styles.app}>
-      <header className={styles.topbar}>
-        <h1 className={styles.brand}>
-          <Logo />
-        </h1>
-        <span className={styles.status} data-status={stream} role="status">
-          {STATUS_TEXT[stream]}
-        </span>
-        <div className={styles.actions}>
-          {demo && (
-            <Button
-              variant="ghost"
-              size="sm"
-              icon={<Bell aria-hidden="true" />}
-              disabled={alertQueued}
-              onClick={() => queueAlert(demo)}
-            >
-              Alerts
-            </Button>
-          )}
-          <Button
-            variant="ghost"
-            size="sm"
-            icon={<FileText aria-hidden="true" />}
-            aria-pressed={panel === "reports" || (panel === "report" && pastReport !== null)}
-            onClick={() => (panel === "reports" ? closePanel() : openPanel("reports"))}
-          >
-            Reports
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            icon={<History aria-hidden="true" />}
-            aria-pressed={panel === "history"}
-            onClick={() => (panel === "history" ? closePanel() : openPanel("history"))}
-          >
-            What changed
-          </Button>
-        </div>
-      </header>
+    <div
+      className={styles.app}
+      data-sidebar={sidebarOpen ? "open" : "closed"}
+      data-drawer={drawerOpen ? "open" : undefined}
+    >
+      <ReportSidebar
+        id="report-sidebar"
+        className={styles.sidebar}
+        activeKey={activeKey}
+        onOpen={openReport}
+        onClose={closeSidebar}
+        brand={<Logo />}
+      />
+      {drawerOpen && (
+        <button
+          type="button"
+          className={styles.scrim}
+          aria-label="Close sidebar"
+          tabIndex={-1}
+          onClick={() => setDrawerOpen(false)}
+        />
+      )}
 
-      <main className={styles.main} data-panel={panel ?? undefined}>
-        <div className={styles.chat}>
-          <ChatPanel
-            footer={
-              <>
-                {reportInChat}
-                {openAlert && <AlertCard alert={openAlert} onClose={() => setOpenAlert(null)} />}
-              </>
-            }
+      <div className={styles.workspace}>
+        <header className={styles.topbar}>
+          {/* One page heading whichever logo is visible. */}
+          <h1 className="visually-hidden">Grabbit</h1>
+          <Button
+            variant="ghost"
+            size="sm"
+            className={styles.openSidebar}
+            aria-label="Open sidebar"
+            aria-controls="report-sidebar"
+            aria-expanded={drawerOpen}
+            icon={<PanelLeftOpen aria-hidden="true" />}
+            onClick={openSidebar}
           />
-        </div>
-        {panel && (
-          <section
-            ref={panelRef}
-            id="report-panel"
-            className={styles.panel}
-            aria-labelledby="panel-title"
-            // biome-ignore lint/a11y/noNoninteractiveTabindex: a scrollable region needs keyboard focus (axe scrollable-region-focusable).
-            tabIndex={0}
-          >
-            <div className={styles.panelBar}>
-              {pastReport ? (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  icon={<ArrowLeft aria-hidden="true" />}
-                  onClick={() => openPanel("reports")}
-                >
-                  All reports
-                </Button>
-              ) : null}
-              <h2 id="panel-title" className={styles.panelTitle}>
-                {pastReport ? "Past report" : PANEL_TITLE[panel]}
-              </h2>
+          <span className={styles.topLogo} aria-hidden="true">
+            <Logo />
+          </span>
+          <span className={styles.status} data-status={stream} role="status">
+            {STATUS_TEXT[stream]}
+          </span>
+          <div className={styles.actions}>
+            {demo && (
               <Button
                 variant="ghost"
                 size="sm"
-                aria-label="Close panel"
-                icon={<X aria-hidden="true" />}
-                onClick={closePanel}
-              />
-            </div>
-            {panel === "history" ? (
-              <ProfileHistory />
-            ) : panel === "reports" ? (
-              <ReportList
-                onOpen={(r) => {
-                  // The newest entry is the live report, with its confirm and run actions.
-                  setPastReport(r.id === report.data?.id ? null : r);
-                  setPanel("report");
-                }}
-              />
-            ) : pastReport ? (
-              <ReportView
-                report={pastReport}
-                isPending={false}
-                error={null}
-                onRetry={() => undefined}
-                diff={null}
-                archived
-              />
-            ) : (
-              <ReportView
-                report={report.data}
-                isPending={report.isPending}
-                error={report.error}
-                onRetry={() => report.refetch()}
-                diff={diff}
-                onConfirm={confirm}
-                confirmed={confirmed}
-              />
+                icon={<Bell aria-hidden="true" />}
+                disabled={alertQueued}
+                onClick={() => queueAlert(demo)}
+              >
+                Alerts
+              </Button>
             )}
-          </section>
-        )}
-      </main>
+            <Button
+              variant="ghost"
+              size="sm"
+              icon={<History aria-hidden="true" />}
+              aria-pressed={panel === "history"}
+              onClick={() => (panel === "history" ? closePanel() : openPanel("history"))}
+            >
+              What changed
+            </Button>
+          </div>
+        </header>
+
+        <main className={styles.main} data-panel={panel ?? undefined}>
+          <div className={styles.chat}>
+            <ChatPanel
+              footer={
+                <>
+                  {reportInChat}
+                  {openAlert && <AlertCard alert={openAlert} onClose={() => setOpenAlert(null)} />}
+                </>
+              }
+            />
+          </div>
+          {panel && (
+            <section
+              ref={panelRef}
+              id="report-panel"
+              className={styles.panel}
+              aria-labelledby="panel-title"
+              // biome-ignore lint/a11y/noNoninteractiveTabindex: a scrollable region needs keyboard focus (axe scrollable-region-focusable).
+              tabIndex={0}
+            >
+              <div className={styles.panelBar}>
+                <h2 id="panel-title" className={styles.panelTitle}>
+                  {pastReport ? "Past report" : PANEL_TITLE[panel]}
+                </h2>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  aria-label="Close panel"
+                  icon={<X aria-hidden="true" />}
+                  onClick={closePanel}
+                />
+              </div>
+              {panel === "history" ? (
+                <ProfileHistory />
+              ) : pastReport ? (
+                <ReportView
+                  report={pastReport}
+                  isPending={false}
+                  error={null}
+                  onRetry={() => undefined}
+                  diff={null}
+                  archived
+                />
+              ) : (
+                <ReportView
+                  report={report.data}
+                  isPending={report.isPending}
+                  error={report.error}
+                  onRetry={() => report.refetch()}
+                  diff={diff}
+                  onConfirm={confirm}
+                  confirmed={confirmed}
+                />
+              )}
+            </section>
+          )}
+        </main>
+      </div>
     </div>
   );
 }
