@@ -285,8 +285,9 @@ Seeds without the LLM endpoints:
 - Their co-investors as a second ring (#193): the investors that funded those rounds next
   to a trusted one, strongest first. Measured on 2026-11-14: Y Combinator's rounds show 311
   co-investors (Pioneer Fund 16 shared rounds, SV Angel 6, Rebel Fund 6, Andreessen
-  Horowitz 6, then 4s and 3s); 500 Global's show 34 (FIRSTPICK 2, the rest 1). How many
-  attending startups the ring adds is not measured yet: `make warm` prints it.
+  Horowitz 6, then 4s and 3s); 500 Global's show 34 (FIRSTPICK 2, the rest 1). Walking
+  the 11 strongest (none over the hub cap) read 107 more rounds and added 13 attending
+  startups to the 27 of ring 1, for about 200 new Cala calls.
 - Limit: no discovery by criteria ("Series A fintechs in Spain"), no server-side filters
   or sorting, many calls per question, hub nodes too slow to enumerate.
 
