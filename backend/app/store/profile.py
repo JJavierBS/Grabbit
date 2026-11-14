@@ -3,7 +3,7 @@
 import json
 from datetime import UTC, datetime
 
-from app.models import Profile, ProfileChange
+from app.models import Profile, ProfileChange, ProfileFilters, ProfileStyle
 from app.store import db
 
 db.register_table(
@@ -26,30 +26,43 @@ db.register_table(
 )
 
 
-def current(now: datetime | None = None) -> Profile:
-    row = (
-        db.conn()
-        .execute("SELECT profile_json FROM profile_versions ORDER BY version DESC LIMIT 1")
-        .fetchone()
+def default_profile(now: datetime | None = None) -> Profile:
+    """Every field has a default, so the first report can run before onboarding ends."""
+    return Profile(
+        version=1,
+        event_id=None,
+        thesis="",
+        filters=ProfileFilters(stages=[], sectors_in=[], sectors_out=[], countries=[]),
+        reference_investors=[],
+        style=ProfileStyle(length="medium", detail="plain", language="en", sections=[]),
+        cadence="event",
+        alert_threshold="medium",
+        instructions="",
+        updated_at=now or datetime.now(UTC),
     )
-    if row:
-        return Profile.model_validate_json(row["profile_json"])
-    profile = Profile(version=1, updated_at=now or datetime.now(UTC))
-    _insert(profile)
-    return profile
+
+
+def current(now: datetime | None = None) -> Profile:
+    with db.connect() as conn:
+        row = conn.execute(
+            "SELECT profile_json FROM profile_versions ORDER BY version DESC LIMIT 1"
+        ).fetchone()
+        if row:
+            return Profile.model_validate_json(row["profile_json"])
+        profile = default_profile(now)
+        _insert(conn, profile)
+        return profile
 
 
 def save_version(
     profile: Profile, changes: list[ProfileChange], now: datetime | None = None
 ) -> Profile:
     """Store `profile` as the next version with the changes that produced it."""
-    version = current().version + 1
+    version = current(now).version + 1
     saved = profile.model_copy(update={"version": version, "updated_at": now or datetime.now(UTC)})
-    c = db.conn()
-    c.execute("BEGIN")
-    try:
-        _insert(saved)
-        c.executemany(
+    with db.connect() as conn:
+        _insert(conn, saved)
+        conn.executemany(
             "INSERT INTO profile_changes (version, field, before_json, after_json, reason, by)"
             " VALUES (?, ?, ?, ?, ?, ?)",
             [
@@ -57,22 +70,15 @@ def save_version(
                 for ch in changes
             ],
         )
-        c.execute("COMMIT")
-    except Exception:
-        c.execute("ROLLBACK")
-        raise
     return saved
 
 
 def history() -> list[ProfileChange]:
-    rows = (
-        db.conn()
-        .execute(
+    with db.connect() as conn:
+        rows = conn.execute(
             "SELECT version, field, before_json, after_json, reason, by FROM profile_changes"
             " ORDER BY version DESC, id DESC"
-        )
-        .fetchall()
-    )
+        ).fetchall()
     return [
         ProfileChange(
             version=r["version"],
@@ -91,16 +97,14 @@ def undo() -> Profile | None:
     latest = current()
     if latest.version <= 1:
         return None
-    c = db.conn()
-    c.execute("BEGIN")
-    c.execute("DELETE FROM profile_versions WHERE version = ?", (latest.version,))
-    c.execute("DELETE FROM profile_changes WHERE version = ?", (latest.version,))
-    c.execute("COMMIT")
+    with db.connect() as conn:
+        conn.execute("DELETE FROM profile_versions WHERE version = ?", (latest.version,))
+        conn.execute("DELETE FROM profile_changes WHERE version = ?", (latest.version,))
     return current()
 
 
-def _insert(profile: Profile) -> None:
-    db.conn().execute(
+def _insert(conn, profile: Profile) -> None:
+    conn.execute(
         "INSERT INTO profile_versions (version, profile_json, created_at) VALUES (?, ?, ?)",
         (profile.version, profile.model_dump_json(), profile.updated_at.isoformat()),
     )

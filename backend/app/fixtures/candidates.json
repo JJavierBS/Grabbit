@@ -2,7 +2,7 @@
  {
   "entity_id": "cand-kiln",
   "name": "Kiln Analytics",
-  "website": "https://example.com/kiln",
+  "website": "https://kiln.example",
   "description": "Energy analytics for industrial kilns (fixture).",
   "founding_date": {
    "value": "2021",
@@ -140,12 +140,13 @@
      }
     ]
    }
-  ]
+  ],
+  "signals": []
  },
  {
   "entity_id": "cand-ledgerly",
   "name": "Ledgerly",
-  "website": "https://example.com/ledgerly",
+  "website": "https://ledgerly.example",
   "description": "Close automation for mid-size finance teams (fixture).",
   "founding_date": {
    "value": "2019",
@@ -283,7 +284,8 @@
      }
     ]
    }
-  ]
+  ],
+  "signals": []
  },
  {
   "entity_id": "cand-mossa",
@@ -378,7 +380,9 @@
      }
     ]
    }
-  ]
+  ],
+  "signals": [],
+  "website": "https://mossa.example"
  },
  {
   "entity_id": "cand-tundra",
@@ -472,7 +476,9 @@
      }
     ]
    }
-  ]
+  ],
+  "signals": [],
+  "website": "https://tundra.example"
  },
  {
   "entity_id": "cand-brikk",
@@ -572,7 +578,9 @@
      }
     ]
    }
-  ]
+  ],
+  "signals": [],
+  "website": "https://brikk.example"
  },
  {
   "entity_id": "cand-sauna",
@@ -678,6 +686,8 @@
      }
     ]
    }
-  ]
+  ],
+  "signals": [],
+  "website": "https://sauna.example"
  }
 ]

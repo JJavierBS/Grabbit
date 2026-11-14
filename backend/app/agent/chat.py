@@ -90,7 +90,7 @@ async def handle_message(
     if changes:
         saved = profile_store.save_version(updated, changes, now)
         changes = [c.model_copy(update={"version": saved.version}) for c in changes]
-        events.publish("profile", saved.model_dump(mode="json"))
+        events.publish("profile", saved)
         if on_profile_change:
             report_id = await on_profile_change(saved)
         updated = saved

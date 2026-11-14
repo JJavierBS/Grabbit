@@ -1,20 +1,16 @@
-import json
-
 import pytest
 
-from app import events
 from app.agent import chat
-from app.agent.sources import FIXTURE
+from app.agent.sources import fixture_candidates
 from app.llm import ChatResult, LLMError
 from app.llm.fake import FakeLLM
-from app.models import Candidate
 from app.store import chat as chat_store
 from app.store import profile as profile_store
 
 
 @pytest.fixture
 def candidates():
-    return [Candidate.model_validate(c) for c in json.loads(FIXTURE.read_text())]
+    return fixture_candidates()
 
 
 async def _say(text, candidates, now, llm=None, hook=None):
@@ -23,7 +19,7 @@ async def _say(text, candidates, now, llm=None, hook=None):
     )
 
 
-async def test_correction_edits_profile_and_rewrites_instructions(candidates, now):
+async def test_correction_edits_profile_and_rewrites_instructions(candidates, now, published):
     await _say("hello", candidates, now)
     rebuilt = []
 
@@ -43,7 +39,7 @@ async def test_correction_edits_profile_and_rewrites_instructions(candidates, no
         "From now on: shorter reports; co-investors first, two lines per startup."
     )
     assert rebuilt == [2] and reply.report_id == "report-2"
-    assert events.recent()[-1][0] == "profile"
+    assert [kind for kind, _ in published] == ["profile"]
 
 
 async def test_forbidden_instruction_is_refused_and_nothing_changes(candidates, now):
