@@ -12,7 +12,8 @@
 - Demo trigger: an "Alerts" button shows with the fake API, or with `?demo` (fixture
   `grei_seed_round`) or `?demo=<fixture>` against the real backend (`DEMO_MODE=1`).
 - Guided demo (#184, `src/features/demo/`): a five-step tour on sample data for first-time
-  visitors. It starts from "See how it works" on the empty chat, "How Grabbit works" at the
+  visitors. It opens by itself on the first visit in a browser (`grabbit.demo.seen:v1`), and
+  replays from "See how it works" on the empty chat, "How Grabbit works" at the
   sidebar foot, or `?tour`. `DemoRoot` swaps in a fresh `createDemoApi()` (a
   `createFakeApi` instance from `src/dev/fakeApi.ts`) and its own `QueryClient`, then
   restores both on exit. Inside it, `useDemo()?.active` is true: never write to the

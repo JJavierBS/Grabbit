@@ -295,8 +295,8 @@ end) and the muted line "Sample data, nothing is saved · n of 5". In the demo, 
 found this" is open under the graph. There is no "Next": about a second after a step's
 result lands, the card moves on, and the next step's text says what just happened. It
 carries no violet: the light stays with the agent. On narrow screens with the panel open,
-it floats fixed above the panel. The invitation "See how it works · 1 min" under the
-first-run welcome carries one small violet dot until the demo is seen or dismissed.
+it floats fixed above the panel. It opens by itself on a first visit; "See how it works ·
+1 min" under the first-run welcome replays it.
 
 ### Alert Toast
 Bottom right, white, violet edge, large shadow plus the full glow, ink text, "Open in
