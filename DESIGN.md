@@ -286,6 +286,16 @@ the title in semibold ink, the summary on one line with "More" to expand, and me
 Cala entities as white outline chips (name, then type in muted text; the Cala id in the
 tooltip). No links: Cala gives no per-item source.
 
+### Coach Card (guided demo)
+The guided demo's narrator, docked on the composer: a white card with a soft edge,
+`rounded.lg` corners and `shadow-md`. Four ink hairlines along its top edge show progress.
+Below them: the step title (16px semibold ink) with a ghost close button, then one or two
+lines of text, then one primary pill ("Show me", "Next", or "Try it yourself") and the muted
+line "Sample data, nothing is saved · n of 4". It carries no violet: the light stays with
+the agent. On narrow screens with the panel open, it floats fixed above the panel. The
+invitation "See how it works · 1 min" under the first-run welcome carries one small violet
+dot until the demo is seen or dismissed.
+
 ### Alert Toast
 Bottom right, white, violet edge, large shadow plus the full glow, ink text, "Open in
 chat" as a small ink pill. It stays until dismissed and uses `role="alert"`. In the demo,
