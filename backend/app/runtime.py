@@ -10,6 +10,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from app.cala.client import CalaCacheMiss, CalaClient, CalaError
 from app.config import get_settings
 from app.events import publish
+from app.models import Profile
 from app.references import resolve_references
 from app.scheduler import GrabbitScheduler
 from app.store.cala_cache import CalaCache
@@ -69,7 +70,18 @@ def start_scheduler() -> GrabbitScheduler:
     from app.store import profile as profile_store
 
     # One worker only: a second process would run every job twice (architecture.md).
+    global _jobs
     scheduler = GrabbitScheduler(watcher_job, digest_job, AsyncIOScheduler(timezone="UTC"))
     scheduler.apply(profile_store.current())
     scheduler.start()
+    _jobs = scheduler
     return scheduler
+
+
+_jobs: GrabbitScheduler | None = None
+
+
+def reschedule(profile: Profile) -> None:
+    """Reload the digest cadence after a profile change (chat edit or undo)."""
+    if _jobs is not None and _jobs.scheduler.running:
+        _jobs.apply(profile)

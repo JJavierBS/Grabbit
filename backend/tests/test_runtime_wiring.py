@@ -198,3 +198,28 @@ async def test_watcher_job_skips_quietly_without_cala_key(monkeypatch):
     report_store.add(fixtures.latest_report())
     _live_without_key(monkeypatch)
     await runtime.watcher_job()
+
+
+def _digest_trigger(client) -> str:
+    return str(next(j for j in client.app.state.scheduler.get_jobs() if j.id == "digest").trigger)
+
+
+def test_cadence_change_reschedules_the_digest_and_undo_restores_it(client):
+    from app.reports import service
+    from app.services import on_profile_change
+
+    assert "day_of_week" not in _digest_trigger(client)  # default cadence: every morning
+    weekly = profile_store.save_version(
+        profile_store.current().model_copy(update={"cadence": "weekly"}), []
+    )
+    client.portal.call(on_profile_change, weekly)
+    client.portal.call(service.wait_idle)
+    assert "mon" in _digest_trigger(client)
+
+    assert client.post("/api/profile/undo").status_code == 200
+    client.portal.call(service.wait_idle)
+    assert "day_of_week" not in _digest_trigger(client)
+
+
+async def test_reschedule_without_a_running_scheduler_is_a_no_op():
+    runtime.reschedule(profile_store.current())
