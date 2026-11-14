@@ -128,4 +128,5 @@ def build_candidate(company: dict[str, Any], rounds: list[Round]) -> Candidate:
         hq=hq,
         industries=industries(company),
         rounds=sorted(rounds, key=lambda r: str(r.date.value or ""), reverse=True),
+        signals=[],
     )

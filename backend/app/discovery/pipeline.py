@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from datetime import date
+from datetime import UTC, date, datetime
 from typing import Any, Protocol
 
 from app.cala.client import CalaCacheMiss, CalaError
@@ -23,7 +23,7 @@ from app.discovery.build import (
     normalise_name,
 )
 from app.discovery.filters import StartupRules, is_startup, matches_profile
-from app.models import Candidate, Profile
+from app.models import Candidate, Profile, ProfileFilters, ProfileStyle
 from app.signals.core import Portfolio, SignalInputs, compute_signals, last_round
 
 log = logging.getLogger(__name__)
@@ -68,6 +68,22 @@ INVESTOR_BODY = {
 class Cala(Protocol):
     async def introspect(self, entity_id: str) -> dict[str, Any]: ...
     async def retrieve(self, entity_id: str, body: dict[str, Any] | None = None) -> dict: ...
+
+
+def neutral_profile(event_id: str | None = None) -> Profile:
+    """No filters, no reference investors: every startup at the event (for `make warm`)."""
+    return Profile(
+        version=0,
+        event_id=event_id,
+        thesis="",
+        filters=ProfileFilters(stages=[], sectors_in=[], sectors_out=[], countries=[]),
+        reference_investors=[],
+        style=ProfileStyle(length="medium", detail="plain", language="en", sections=[]),
+        cadence="event",
+        alert_threshold="medium",
+        instructions="",
+        updated_at=datetime.now(UTC),
+    )
 
 
 @dataclass
