@@ -31,7 +31,7 @@ def test_investor_question_counts_backed_attendees(now):
     )
     questions = pick_questions(_candidates(), profile, now, limit=10)
     text = next(q.text for q in questions if q.key == "investors")
-    assert text.startswith("4 attendees are backed by North Pine")
+    assert text.startswith("4 of 6 startups here are backed by North Pine")
 
 
 def test_answered_filters_are_not_asked_again(now):
@@ -56,7 +56,7 @@ def test_every_question_offers_short_clickable_answers(now):
     questions = pick_questions(_candidates(), default_profile(now), now, limit=10)
     assert questions
     for q in questions:
-        assert 1 <= len(q.options) <= 4, q.key
+        assert 2 <= len(q.options) <= 4, q.key
         for label, answer in q.options:
             assert 0 < len(label) <= 32 and answer.endswith("."), (q.key, label, answer)
 
@@ -150,3 +150,66 @@ async def test_unknown_keys_or_a_model_failure_fall_back_to_the_top_of_the_bank(
     assert await word_questions(_llm(made_up), "hola", bank) == bank[:3]
     assert await word_questions(FakeLLM([]), "hola", bank) == bank[:3]
     assert await word_questions(FakeLLM([]), "hola", []) == []
+
+
+def _with_refs(now, *refs):
+    return default_profile(now).model_copy(
+        update={"reference_investors": [ReferenceInvestor(entity_id=i, name=n) for i, n in refs]}
+    )
+
+
+def test_investors_typed_in_chat_are_counted_by_name(now):
+    """#181: "0 attendees are backed by Y Combinator" while the report had them first."""
+    profile = _with_refs(now, ("unresolved:north pine ventures", "North Pine Ventures"))
+    questions = pick_questions(_candidates(), profile, now, limit=None)
+    investors = next(q for q in questions if q.key == "investors")
+    assert investors.text.startswith("4 of 6 startups here are backed by North Pine Ventures")
+    assert [label for label, _ in investors.options][:2] == ["Only those", "Others too"]
+    assert investors.options[2][0].startswith("Add ")
+    assert "North Pine" not in investors.options[2][0]
+
+
+def test_an_investor_backing_none_of_them_is_not_asked_about(now):
+    profile = _with_refs(now, ("unresolved:y combinator", "Y Combinator"))
+    questions = pick_questions(_candidates(), profile, now, limit=None)
+    assert "investors" not in [q.key for q in questions]
+
+
+def test_a_question_with_a_single_answer_is_never_asked(now):
+    """#181: "Any other investors you trust?" offered only "Just these"."""
+    from app.agent import onboarding
+
+    lonely = onboarding.Question("lonely", "Sure?", 1.0, (("Yes", "Yes."),))
+    original = onboarding._stage
+    onboarding._stage = lambda *_: lonely
+    try:
+        keys = [q.key for q in pick_questions(_candidates(), default_profile(now), now, None)]
+    finally:
+        onboarding._stage = original
+    assert "lonely" not in keys
+
+
+def test_recency_offers_only_answers_that_keep_some_startups(now):
+    """#181: "may raise soon" with no startup flagged emptied the report."""
+    from app.models import Signal
+
+    def recency(cs):
+        questions = pick_questions(cs, default_profile(now), now, None)
+        return next((q for q in questions if q.key == "recency"), None)
+
+    # None of the fixtures raised in the 12 months before `now`, and none is flagged.
+    assert recency(_candidates()) is None
+
+    flagged = Signal(
+        kind="likely_to_raise", label="May raise soon", value=True, explanation="x", facts=[]
+    )
+    candidates = _candidates()
+    candidates[0] = candidates[0].model_copy(update={"signals": [flagged]})
+    q = recency(candidates)
+    assert q.text == "1 may raise soon. Only those, or any time?"
+    assert [label for label, _ in q.options] == ["May raise soon", "Any time"]
+
+    later = pick_questions(candidates, default_profile(now), now.replace(month=3), None)
+    q = next(q for q in later if q.key == "recency")
+    assert q.text.startswith("2 of 6 raised in the last 12 months and 1 may raise soon")
+    assert [label for label, _ in q.options] == ["Just raised", "May raise soon", "Both"]

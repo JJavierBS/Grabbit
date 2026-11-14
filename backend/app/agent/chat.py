@@ -41,11 +41,13 @@ for must be backed by an investor, and style.max_candidates for an explicit coun
 Do not merely promise these constraints in instructions. When changing filters, acknowledge
 the change without listing candidates from the previous selection: the rebuilt report shows matches.
 Today's date is {datetime.now(UTC).date().isoformat()}. Never call an older round recent.
-Reply in the investor's language, in at most three short sentences. Do not say "From now on":
-the app adds that line itself after a change.
+Reply in the investor's language (profile style.language), in at most three short sentences,
+also when the message is a fixed English button text such as "Looks right, keep me posted.".
+Do not say "From now on": the app adds that line itself after a change.
 The app rebuilds the report on screen by itself after every profile change. Never offer to
-prepare, run or send a report and never ask whether to go ahead. When the investor's answers
-keep the search open, say the current report already covers that.
+prepare, run or send a report and never ask whether to go ahead. Only when nothing changes
+because the answers keep the search open, say the current report already covers that.
+End with the answer: no closing line like "you can check the details on screen".
 
 {FIXED_RULES}
 
