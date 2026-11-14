@@ -270,3 +270,67 @@ async def test_cache_misses_count_live_calls_and_replay_misses(cache):
     with pytest.raises(CalaCacheMiss):
         await replay.retrieve("not-cached")
     assert (replay.cache_misses, replay.cache_hits) == (1, 1)
+
+
+# Known-missing entities (#149): a 404 used to count as a cache miss on every cold start.
+
+
+@respx.mock
+async def test_a_404_is_asked_once_then_served_from_the_cache(cache):
+    route = respx.post(f"{BASE_URL}/v1/entities/gone").mock(
+        return_value=httpx.Response(404, json={"error": "not_found"})
+    )
+    client = make_client(cache)
+    for _ in range(2):
+        with pytest.raises(CalaError) as err:
+            await client.retrieve("gone")
+        assert err.value.status == 404
+    assert route.call_count == 1
+    assert (client.cache_misses, client.cache_hits) == (1, 1)
+
+    replay = make_client(cache, mode="replay")
+    with pytest.raises(CalaError) as err:
+        await replay.retrieve("gone")
+    assert err.value.status == 404 and replay.cache_misses == 0
+
+
+@respx.mock
+async def test_lookup_reads_a_cached_404_as_none(cache):
+    route = respx.post(f"{BASE_URL}/v1/entities/lookup").mock(
+        return_value=httpx.Response(404, json={"error": "not_found"})
+    )
+    client = make_client(cache)
+    assert await client.lookup("domain", "nowhere.example") is None
+    assert await client.lookup("domain", "nowhere.example") is None
+    assert route.call_count == 1
+
+
+@respx.mock
+async def test_fresh_asks_again_after_a_cached_404(cache):
+    route = respx.post(f"{BASE_URL}/v1/entities/back").mock(
+        side_effect=[
+            httpx.Response(404, json={"error": "not_found"}),
+            httpx.Response(200, json={"id": "back"}),
+        ]
+    )
+    client = make_client(cache)
+    with pytest.raises(CalaError):
+        await client.retrieve("back")
+    assert await client.retrieve("back", fresh=True) == {"id": "back"}
+    assert await client.retrieve("back") == {"id": "back"}
+    assert route.call_count == 2
+
+
+@respx.mock
+async def test_other_errors_are_not_cached(cache):
+    route = respx.post(f"{BASE_URL}/v1/entities/flaky").mock(
+        side_effect=[
+            httpx.Response(403, text="Forbidden"),
+            httpx.Response(200, json={"id": "flaky"}),
+        ]
+    )
+    client = make_client(cache)
+    with pytest.raises(CalaError):
+        await client.retrieve("flaky")
+    assert await client.retrieve("flaky") == {"id": "flaky"}
+    assert route.call_count == 2
