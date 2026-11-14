@@ -12,7 +12,8 @@ refills anything the big walk timed out on, then replays it from the cache only 
 the misses. `--check` does only that replay and exits 1 on any miss: run it before a demo.
 
 It also warms the reverse walk (`discovery/reverse.py`) without a call budget, for the demo's
-trusted investors and the stored profile's, and counts its misses in the same replay.
+trusted investors and the stored profile's, and counts its misses in the same replay. That
+includes its second ring (their strongest co-investors); the startups it adds are printed.
 """
 
 from __future__ import annotations
@@ -95,6 +96,20 @@ async def warm_reverse_walk(
     return await reverse_walk(client, references, event, limits=ReverseLimits(call_budget=None))
 
 
+def reverse_summary(reverse: ReverseResult, references: list[ReferenceInvestor]) -> list[str]:
+    r = reverse.stats
+    walked = ", ".join(f"{c.name} {c.shared_rounds}" for c in reverse.co_investors)
+    return [
+        f"reverse walk from {', '.join(ref.name for ref in references)}",
+        f"fund entities {r.entities}  rounds {r.rounds}  issuers {r.issuers}",
+        f"issuers attending {r.attending}  attending startups reached {r.startups}",
+        f"co-investors seen {r.co_investors}  walked {r.co_investors_walked}"
+        f"  hubs skipped {r.co_investors_skipped}",
+        f"strongest co-investors (shared rounds): {walked or 'none'}",
+        f"attending startups added by the second ring {r.second_ring_startups}",
+    ]
+
+
 async def reverse_walk_misses(
     cache: CalaCache, event: str, references: list[ReferenceInvestor]
 ) -> tuple[int, int]:
@@ -156,10 +171,8 @@ async def main(args: argparse.Namespace) -> int:
     shared = sum(1 for c in result.candidates if any(k.kind == "shared_investor" for k in c.links))
     print(f"investors walked for hidden links {len(result.links.investors)}")
     print(f"startups sharing an investor with another startup {shared}")
-    r = reverse.stats
-    print(f"reverse walk from {', '.join(ref.name for ref in references)}")
-    print(f"fund entities {r.entities}  rounds {r.rounds}  issuers {r.issuers}")
-    print(f"issuers attending {r.attending}  attending startups reached {r.startups}")
+    for line in reverse_summary(reverse, references):
+        print(line)
     if args.dump:
         print(f"dumped {dump_raw(result.raw, Path(args.dump))} nodes to {args.dump}")
     for name, count in news.items():
