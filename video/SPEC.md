@@ -12,7 +12,10 @@ LOOK:    Ground #f7f7fa flat, no texture. Ink #14151c. One accent, violet #6139f
          22 px radius, shadow 0 30 px 70 px at 14%. The product is always a real capture.
 OBJECTS: The presenter at Messukeskus, the Slush venue, filmed hand-held on an iPhone 16 Pro
          (4K, 30 fps, Apple Log). The proxies in assets/footage/ are Rec.709; the look is the
-         data-color-grading on each video in index.html. The presenter faces the camera in every shot.
+         data-color-grading on each video in index.html: a startup showcase grade, preset
+         clean-studio at 0.8, contrast 0.2, whites 0.14, blacks -0.14, vibrance 0.3, and an
+         exposure for each shot (0.16-0.18 in daylight, 0.28 for the dusk closing). No wheels:
+         a warm highlight tint turns the white sign and the white jumper pink. The presenter faces the camera in every shot.
          Plates: ground colour, 2 px #e3e3ec line, 22 px radius, shadow 0 30 px 70 px at 14%.
          All text over footage sits on a plate beside the presenter, never over the presenter, and
          stays in screen space (the camera moves, so nothing is pinned to the ground).
@@ -22,6 +25,11 @@ OBJECTS: The presenter at Messukeskus, the Slush venue, filmed hand-held on an i
 MOTION:  enter power3.out 12-18 frames; move power2.inOut 15 frames; exit power2.in
          9 frames; camera punch-in power3.inOut 15 frames, then hold. Stagger 3 frames.
          Text never moves while it is read.
+         Footage to app screen: zoom-through, 12 frames. The footage pushes in (power3.in),
+         blurs and its exposure rises to the ground colour; the window grows in from 0.75 and
+         18 px blur (expo.out, 15 frames). App screen to footage: the inverse, the window
+         recedes to 0.8 and the footage arrives oversized and settles. Both sides of a cut move
+         in the same direction. Footage to footage stays a hard cut.
 SHOTS:   s01    0-315     footage 1, the entrance, wide: "Slush 2026", counter to 3,000+, "2 days"
          s02  315-573     footage 2, medium: 12 windows pile up on the right, "47 tabs. 0 decisions."
          s03  573-759     footage 3, medium: the speed lines take the pile away, "Skip the data.",

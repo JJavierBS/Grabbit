@@ -40,7 +40,7 @@ each scene file. Frames 4 to 7 and frame 9 are placeholders until the app captur
 - duration: 6.2s
 - poster: 5.5s
 - spoken: "But there's a way where you can skip the data. Meet Grabbit."
-- reads: the speed lines take the pile away (0.2-0.8s); "Skip the data." (1.8-4.4s); the phone shows the app and the Grabbit lockup lands (4.6-6.2s)
+- reads: the speed lines take the pile away (0.2-0.8s); "Skip the data." (1.8-4.4s); the phone shows the app and the Grabbit lockup lands (4.6-5.8s); the frame zooms through the phone screen into the app (5.8-6.2s)
 
 ## Frame 4: Thesis (25.3-41.3s)
 
@@ -87,7 +87,7 @@ each scene file. Frames 4 to 7 and frame 9 are placeholders until the app captur
 - duration: 4.8s
 - poster: 3.3s
 - spoken: "So, while I am away, it is ready to notify if anything changes."
-- reads: "You: away." (0.7s); "Grabbit: on watch." (1.7s); a notification beside the presenter (2.4-4.8s)
+- reads: "You: away." (0.7s); "Grabbit: on watch." (1.7s); the footage arrives from the app screen (0-0.5s); a notification beside the presenter (2.4-4.4s); the frame zooms through into the alert (4.4-4.8s)
 
 ## Frame 9: The alert (82.1-96.1s)
 

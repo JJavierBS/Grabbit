@@ -16,7 +16,7 @@
     .s05-z{font-size:38px;font-weight:700;margin-top:44px}
   </style>
   <div id="root" data-composition-id="s05" data-width="1920" data-height="1080">
-    <div class="s05-win" style="left:96px;top:70px;width:1728px;height:940px">
+    <div id="s05-win" class="s05-win" style="left:96px;top:70px;width:1728px;height:940px">
       <div class="s05-bar"><span class="s05-dots"><i></i><i></i><i></i></span><span class="s05-tab"><img src="assets/grabbit-mark.svg" alt=""><b>Grabbit</b></span></div>
       <div class="s05-body">
         <div class="s05-k">Placeholder: app capture, filmed when the app is ready</div>
@@ -27,6 +27,11 @@
     </div>
   </div>
   <script>
-    window.__timelines["s05"] = gsap.timeline({ paused: true });
+    (() => {
+      const tl = gsap.timeline({ paused: true });
+      // zoom-through: the window lands from the footage push, and leaves before the footage returns
+      tl.fromTo("#s05-win", { opacity: 0.15, scale: 0.75, filter: "blur(18px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.5, ease: "expo.out" }, 0);
+      window.__timelines["s05"] = tl;
+    })();
   </script>
 </template>
