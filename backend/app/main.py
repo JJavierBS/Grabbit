@@ -2,13 +2,13 @@ import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from app.api import api_router
 from app.api.errors import install_error_handlers
 from app.config import REPO_ROOT
+from app.runtime import start_scheduler
 from app.store.db import init_db
 
 FRONTEND_DIST = REPO_ROOT / "frontend" / "dist"
@@ -19,14 +19,12 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(messag
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     init_db()
-    # Single worker only: a second process would run every job twice (architecture.md).
-    scheduler = AsyncIOScheduler(timezone="UTC")
-    app.state.scheduler = scheduler
-    scheduler.start()
+    jobs = start_scheduler()
+    app.state.scheduler = jobs.scheduler
     try:
         yield
     finally:
-        scheduler.shutdown(wait=False)
+        jobs.shutdown()
 
 
 def create_app() -> FastAPI:

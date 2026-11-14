@@ -36,10 +36,9 @@ fmt:
 	@if [ -n "$(CHANGED_WEB)" ]; then cd frontend && npx biome check --write --no-errors-on-unmatched $(CHANGED_WEB); fi
 	@echo "fmt: $(words $(CHANGED_PY)) python, $(words $(CHANGED_WEB)) web file(s)"
 
-# Fills the Cala cache for the event and the demo path (#23).
+# Fills the Cala cache for the event and the demo path; e.g. make warm ARGS="--limit 150".
 warm:
-	@if [ -f backend/scripts/warm.py ]; then cd backend && uv run python -m scripts.warm; \
-	else echo "make warm: backend/scripts/warm.py lands with #23"; fi
+	cd backend && uv run $$([ -f ../.env ] && echo --env-file ../.env) python -m scripts.warm $(ARGS)
 
 # Regenerates frontend/src/api/schema.ts; needs the API running on :8000.
 gen-api:

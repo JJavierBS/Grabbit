@@ -11,6 +11,7 @@ from app.context_dev import ContextDevClient, get_context_dev
 from app.context_dev.signals import soft_signals
 from app.llm import LLM, get_llm
 from app.models import Profile, Report, ReportRef
+from app.references import resolve_references
 from app.reports.build import Kind, build, new_report_id, with_web_signals
 from app.store import profile as profile_store
 from app.store import reports as report_store
@@ -33,11 +34,13 @@ async def run(
 ) -> Report:
     """Build, store and announce a report. A superseded build is returned but not stored."""
     profile = profile or profile_store.current(now)
+    candidates = await candidates_for(profile)
+    profile = resolve_references(profile, candidates)
     report = await build(
         kind,
         llm=llm or get_llm(),
         profile=profile,
-        candidates=await candidates_for(profile),
+        candidates=candidates,
         previous=report_store.latest(),
         now=now,
         report_id=report_id,
