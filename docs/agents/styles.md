@@ -25,6 +25,8 @@
 - Text contrast at least WCAG AA. Interactive elements have visible focus states.
 - Layout works at 375px wide and at projector resolution (1920x1080): the demo is projected.
 - Prefer one clear primary action per screen; judges see it for seconds.
-- Motion only when it explains a state change; keep it under 300ms. Two exceptions are
-  states, not transitions: the composer glow breathes while the agent works or listens, and a new
-  report outline lands with light that fades in 1.2s. Both stop under reduced motion.
+- Motion only when it explains a state change; keep it under 300ms. Three exceptions are
+  states, not transitions: the composer glow breathes while the agent works or listens, a new
+  report outline lands with light that fades in 1.2s, and the demo Alerts button drains a ring
+  over the 30 s before the staged alert. All stop under reduced motion (the ring leaves the
+  seconds in the label).

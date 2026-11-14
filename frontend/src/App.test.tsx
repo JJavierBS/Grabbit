@@ -233,7 +233,7 @@ describe("App", () => {
     localStorage.clear();
   });
 
-  it("fires the demo alert 30 s after Alerts is pressed, with no demo data label", async () => {
+  it("fires the staged GREÏ alert 30 s after Alerts is pressed, with no demo data label", async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     window.history.replaceState({}, "", "/?demo");
     const calls = mockApi({
@@ -253,7 +253,7 @@ describe("App", () => {
     act(() => vi.advanceTimersByTime(1000));
     await waitFor(() =>
       expect(calls.find((c) => c.key === "POST /api/demo/simulate-event")?.body).toEqual({
-        fixture: "new_round",
+        fixture: "grei_seed_round",
       }),
     );
     window.history.replaceState({}, "", "/");
