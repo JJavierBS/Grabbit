@@ -72,8 +72,8 @@ never tells you what to buy.
 One voice, in English, on the real app, no slides. The reviewer plays the investor and
 drives the Grabbit laptop; we talk. Five minutes is the team's figure (the guidebook gives
 none). Event-wide criteria (challenge.md): beats 3 to 7 show Innovation, the close states
-Impact and Implementation. Timed twice on https://www.grabbit.cloud on 2026-11-15: thesis
-to questions 14-21 s, investors to the open report 31-34 s, correction to the rewritten
+Impact and Implementation. Timed four times on the deployed demo on 2026-11-15: thesis to
+questions 11-21 s, investors to the open report 25-34 s, correction to the rewritten
 report 26-37 s, bell to alert 30 s. Each wait has a line to say.
 
 ### Table setup
@@ -81,7 +81,8 @@ report 26-37 s, bell to alert 30 s. Each wait has a line to say.
   in the demo report (command below; check the names against the first report of the day).
 - Laptop B, Grabbit: https://www.grabbit.cloud/?demo (`?demo` adds the Alerts bell), zoomed
   so three people can read it standing. A browser that has never opened Grabbit starts the
-  guided demo by itself: close its card once.
+  guided demo by itself: close its card once. If that address fails, use the direct host
+  in docs/demo-rehearsal.md.
 - Lids half closed until the choice. Stand next to the reviewer; never touch the keys.
 - Between rounds: "New research" (Ctrl+Shift+O), close the side panel and the alert.
 - Before the first round: the demo checklist below, then one full pass of this script.
@@ -113,7 +114,7 @@ google-chrome --new-window "${tabs[@]}"
 | 0:00 | 1. You are the investor | listens | lids half closed |
 | 0:20 | 2. The choice | picks a laptop | A: 40 tabs. B: "Tell me what you look for at Slush 2026." |
 | 0:50 | 3. A vague thesis | taps "AI startups at pre-seed and seed" | "walking the Slush attendees in Cala...", then three questions with numbers |
-| 1:25 | 4. Who you trust | types "I trust Y Combinator and 500 Global" | "From now on: ..."; the report opens by itself |
+| 1:25 | 4. Who you trust | types "I trust Y Combinator, 500 Global and FIRSTPICK" | "From now on: ..."; the report opens by itself |
 | 2:13 | 5. Every fact has a source | scrolls to Pally | "Rewritten for you", "Co-invest with investors you trust", a badge under each value |
 | 2:50 | 6. Correct it, leave it watching | types "Shorter, one line per startup", presses Alerts | "From now on: one line per startup."; the report shrinks; "Alert in 30 s" |
 | 3:40 | 7. The alert | reads it | "GREÏ announced a Seed, led by Y Combinator", "Simulated event" |
@@ -138,22 +139,23 @@ wording changes from run to run.
    rounds, and who led each one." *The questions appear.* "It does not answer yet. It asks,
    and the numbers in each question come from the graph, not from the model. Now tell it
    what matters most: who you trust."
-4. "Type: I trust Y Combinator and 500 Global." *After Enter:* "Nobody can read 2,989
-   companies. So you do what investors really do: borrow the judgement of people you trust.
-   If a fund you respect put money into a startup, somebody already did the filtering. A
-   web search cannot answer that. The funding rounds can: who invested, who led, and when."
+4. "Type: I trust Y Combinator, 500 Global and FIRSTPICK." *After Enter:* "Nobody can read
+   2,989 companies. So you do what investors really do: borrow the judgement of people you
+   trust. If a fund you respect put money into a startup, somebody already did the
+   filtering. A web search cannot answer that. The funding rounds can: who invested, who
+   led, and when."
 5. *The report opens.* "There. It rewrote the report for you: a new section, 'Co-invest
    with investors you trust'. Y Combinator led Pally's seed; 500 Global led whisperr's
-   pre-seed. Scroll to Pally. Under every value, a badge says where the fact comes from: a
-   filing, the company, the press, a database. No data? It says 'Not published'. Never a
-   zero, never a guess."
+   pre-seed; FIRSTPICK backed GREÏ. Remember GREÏ. Scroll to Pally. Under every value, a
+   badge says where the fact comes from: a filing, the company, the press, a database. No
+   data? It says 'Not published'. Never a zero, never a guess."
 6. "Too long? There is no settings page. Tell it: type 'Shorter, one line per startup'."
    *After Enter:* "Now press the bell, top right. We cannot make a startup raise money on
    cue, so it stages one market event thirty seconds from now." *The note appears.* "'From
    now on: one line per startup.' That is not a filter. It rewrote its own instructions,
    and the next report will come this way." *The report shrinks.* "Look: shorter, and the
    startups it dropped are struck through."
-7. *The alert lands.* "There. Grabbit just interrupted my pitch. A startup at Slush
+7. *The alert lands.* "There. Grabbit just interrupted my pitch. GREÏ, from your list,
    announced a seed round, led by Y Combinator: an investor you trust. It says why it
    matters. And it says 'Simulated event', because we staged this one; the check and the
    delivery are the real ones."
@@ -172,13 +174,13 @@ wording changes from run to run.
   instructions", the prompt Grabbit writes for itself, with the reason and an undo.
 - Type the correction. Do not tap the chip "Shorter, co-investors first": in one run the
   new summary said the instruction was not applied.
-- Thesis and investors go in two messages. In one message the report came back with two
-  startups under "Other matches" and a reply saying that nothing met the criteria.
-- Replay mode has only Y Combinator and 500 Global warmed: another investor can leave the
-  co-invest section and the alert empty.
+- Say "I trust", never "backed by": "backed by Y Combinator" became a filter, and the
+  report came back with two startups and a reply saying that nothing met the criteria.
+- Replay mode has Y Combinator, 500 Global and FIRSTPICK warmed: another investor can
+  leave the co-invest section and the alert empty.
 - A question can arrive in another language (seen once): skip it and go on.
-- GREÏ is not one of the eight startups in the report: say "a startup at Slush", never "on
-  your shortlist".
+- Before the bell, check that GREÏ is in the report: it is when FIRSTPICK is trusted
+  (docs/demo-rehearsal.md). If it is not, say "a startup at Slush", not "from your list".
 - Gemini or the server is down: do not reload. "How Grabbit works", at the foot of the
   sidebar, runs the same loop on sample data inside the browser, with no server (start it
   once before the first round so it is loaded). Say that it is sample data.
@@ -199,15 +201,129 @@ wording changes from run to run.
 - "Does it pick for me? How do you earn?" It never says what to buy; the investor decides.
   A subscription per seat or per watched company ("Business model" above).
 
-## Deck outline (PDF, about 8 slides)
-1. Name, punchline, team.
-2. Problem and user, with the two interview quotes (pseudonymised).
-3. Solution: the flow in one picture.
-4. Demo screenshots: thesis -> questions -> shortlist -> memo -> alert.
-5. Why Cala: discovery from the Slush event, round leads, trust level per fact.
-6. Validation: interviews with two investors.
-7. Business model and what is next.
-8. Technologies and links (demo, repo, video).
+## Final pitch on stage (draft)
+Only if we reach the top 5 (guidebook p. 12-13): exactly 3 minutes, then the microphone is
+cut; 3 minutes of questions from 7 judges; one hand-held microphone; a LED wall behind us;
+the demo runs from our own laptop, which the organisers check beforehand. One voice at the
+microphone, one operator at the laptop. The core is three minutes; add the blocks of "To
+five minutes" only if the organisers confirm five. The words never depend on the screen:
+the screen only adds proof, so one script covers every situation.
+
+### Situations
+| Situation | We control | On the LED wall | What changes |
+| --- | --- | --- | --- |
+| 1. Our laptop is on the wall | everything | the pile, then the real app with a research prepared before; the alert lands live | nothing |
+| 2. The organisers show our deck | "next", at most | the 12 slides ("Deck" below) | beat 3 starts "This is Grabbit, on real data"; beat 5 starts "This is what lands on my screen" |
+| 3. Microphone only | nothing | nothing of ours | beat 1 says "Picture forty browser tabs"; nobody points at a screen |
+| 4. Something fails halfway | nothing, suddenly | the deck PDF at the matching slide | the voice does not stop and does not comment on it |
+
+### Before going on stage
+- With the organisers, when they check the laptop: mirror the display, zoom the browser
+  until the report reads from the back of the room, sound and notifications off, charger
+  in, a phone hotspot ready as a second network.
+- Three windows, in this order: the pile (40 tabs, command in "Table setup"), Grabbit, the
+  deck PDF in full screen.
+- Prepare the research, about 2 minutes: demo link with `?demo`, "New research", tap "AI
+  startups at pre-seed and seed", type "I trust Y Combinator, 500 Global and FIRSTPICK",
+  wait for the report, type "Shorter, one line per startup", wait, check that GREÏ is in
+  "Co-invest with investors you trust", scroll the report to the top. Do not press Alerts.
+- Present from the address where the research was prepared: a research belongs to the
+  browser and the address. https://www.grabbit.cloud and the direct host in
+  docs/demo-rehearsal.md both answered on 2026-11-15; open `/api/health` on the one in use.
+- The API keeps no chats or reports across deploys (README "Deploy"): nobody deploys after
+  the research is prepared. If it is gone, prepare it again or go to situation 2.
+
+### Core, three minutes
+| Start | Beat | LED wall (situation 1) | Operator | Deck slide (situation 2) |
+| --- | --- | --- | --- | --- |
+| 0:00 | 1. The choice | the pile, then Grabbit | switches window at "Or like this" | 1, 2 |
+| 0:33 | 2. Borrowed judgement | the report | | 3 |
+| 0:50 | 3. The shortlist | the report, then the Pally card | presses Alerts at "remember the name", then scrolls to Pally | 5, 6 |
+| 1:21 | 4. It learns | "What changed" | opens "What changed" at "no settings page" | 7, 8 |
+| 1:40 | 5. The alert | the alert over the app | "Open in chat" at "why it matters" | 9 |
+| 2:02 | 6. For whom, and why it is real | the alert in the chat | | 10, 11 |
+| 2:26 | 7. Close | Grabbit | | 12 |
+
+344 words: 2:43 at 130 words a minute, so 17 s remain before the cut. The bell is pressed
+30 s before the alert must land, at "remember the name" (about 1:11). If the alert is late,
+hold the last sentence of beat 4 and look at the wall; if it is early, finish the sentence
+first: it stays on screen.
+
+1. "Next week, Slush opens in Helsinki. Imagine you are a business angel: you invest your
+   own money, and you work alone. Cala's data lists 2,989 attendees. You have two days."
+   *The pile.* "You can prepare like this: forty tabs, and that is only eight startups."
+   *Grabbit.* "Or like this: one box, one sentence. Hands up: who opens the forty tabs
+   first?" *Two seconds.* "Nobody. That is why we built Grabbit."
+2. "Nobody can read 2,989 companies. So investors borrow the judgement of people they
+   trust: if a fund you respect put money in, somebody already did the filtering. A web
+   search cannot answer that. Cala's funding-round graph can."
+3. "This is the real app, on real data. I typed one sentence and the three investors I
+   trust. It asked me questions first, then gave me this: startups that attend Slush, and
+   first the ones my investors backed. This one is GREÏ: remember the name. Under every
+   value, a badge says where the fact comes from. No data? It says 'Not published'. Never
+   a zero, never a guess."
+4. "There is no settings page. I said 'shorter, one line per startup', and it rewrote its
+   own instructions. Here they are: written by Grabbit, with the reason and an undo. And
+   while I talk, it keeps watching."
+5. *The alert lands.* "That is Grabbit interrupting my pitch. GREÏ, from my list, just
+   announced a seed round, led by Y Combinator: an investor I trust. It says why it
+   matters. It also says 'Simulated event', because we staged this one; the check and the
+   delivery are the real ones."
+6. "It is for every investor who decides alone: angels, search funds, small funds. We
+   interviewed two; one told us: 'If a tool pre-selects and I review each pick by hand,
+   I've already won.' It runs on real data, it is deployed, it is open source, and it
+   never tells you what to buy."
+7. "Next week, other investors will be searching. You will be deciding. Grabbit finds the
+   startups backed by the investors you trust, shows the source of every fact, and alerts
+   you when one of them moves. Thank you."
+
+### To five minutes
+Only if the organisers confirm five. Do not fill the time: with the three blocks the pitch
+runs about four minutes.
+- A, after beat 2 (the operator scrolls the chat up to the questions; deck slide 4): "One
+  vague sentence is enough, because Grabbit asks before it answers. Look at this question:
+  seven of eleven raised in the last twelve months; do I want only those? The numbers come
+  from Cala's graph, not from the model. I answer with a click, or I skip it."
+- B, after beat 4 (deck slide 10): "How does it search 2,989 attendees? Not in list order.
+  It starts from the investors I trust, follows their funding rounds, and keeps the
+  companies that attend Slush. With Y Combinator and 500 Global it found twenty-seven
+  startups. Reading the list in order found five."
+- C, before beat 7 (deck slide 11): "The business is a subscription: per seat, or per
+  watched company. The investor always decides. And Slush is only the first event: the
+  same engine works for any event in Cala's graph, or for a thesis with no event at all."
+
+### Judges' questions
+The four answers of "If they ask" above, and:
+- "How fresh is the data?" Every fact shows its own date and source, and the watcher
+  compares every 15 minutes. How fast Cala itself picks up a new filing is a question we
+  put to Cala (open-questions.md C6).
+- "Who pays, and why?" An investor with no research team. A sourcing process can take a
+  deal team three months and an external due diligence costs around EUR 150k (Investor B,
+  research.md). A subscription per seat or per watched company.
+- "What was hard?" Cala answers one node per call and limits the rate, and one fund is
+  several entities. We cache every answer and walk from the trusted investors instead of
+  reading the attendee list: 27 startups against 5 (docs/algorithm.md).
+- "Is it investment advice?" No. It shows signals and sources. A fixed rule, enforced in
+  the prompt and by a guard in the code, stops it from recommending what to buy.
+- "What is next?" Any event in Cala's graph or a thesis with no event, delivery through
+  messaging apps, and deeper checks for small private equity (research.md).
+
+## Deck (12 slides, built 2026-11-15, #43)
+A Claude Slides deck owned by juanlo7, with screenshots of the real app. Its PDF export goes
+to the submission form and to the organisers. The speaker notes of each slide hold the
+line said over it in situation 2 of the final.
+1. Cover: name, punchline, challenge and team.
+2. The choice: forty tabs or one sentence.
+3. Borrow the judgement of investors you trust: investor, round, startup, event.
+4. A vague thesis is enough: the three questions with numbers.
+5. A shortlist built around who you trust: the report after "I trust...".
+6. Every fact shows where it comes from: trust badges and "Why it is here".
+7. Correct it in plain words: the rewrite, "61% shorter".
+8. It rewrites its own instructions: "What changed".
+9. You leave, it watches: the simulated alert, labelled.
+10. Why it is real: 27 startups against 5, 2,989 attendees in reach, 2 interviews.
+11. For every investor who decides alone: two quotes, business model, what is next.
+12. Close: "Others: searching. You: deciding."
 
 ## Demo checklist (before every live demo, rehearsal or recording)
 - [ ] `make warm` with live Cala on the laptop or server that will present (without
