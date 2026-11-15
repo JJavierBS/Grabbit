@@ -38,7 +38,7 @@ from app.store.cala_cache import CalaCache
 from app.store.valkey import valkey_from_settings
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEMO_REFERENCES = ("Y Combinator", "500 Global")
+DEMO_REFERENCES = ("Y Combinator", "500 Global", "FIRSTPICK")
 
 
 def database_path() -> Path:

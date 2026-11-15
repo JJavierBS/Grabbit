@@ -94,6 +94,9 @@ never tells you what to buy.
 - [ ] `make warm ARGS=--check` right before presenting: it exits 1 on any miss.
 - [ ] Start from a fresh workspace (new browser profile or cleared site data) and type the
   demo thesis (decisions.md "demo thesis").
+- [ ] Before the staged `grei_seed_round` alert, verify GREÏ is in the displayed shortlist.
+  Add FIRSTPICK to the trusted investors if needed. Close the report on narrow screens,
+  then press Alerts and check its countdown. Full rehearsal: `docs/demo-rehearsal.md`.
 
 ## Submission checklist (challenge.md "Submission form needs")
 - [ ] Punchline chosen and identical in README and form.

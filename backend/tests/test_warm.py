@@ -161,9 +161,15 @@ def test_warm_covers_the_demo_investors_and_the_stored_profile_once_each():
             "reference_investors": [
                 ReferenceInvestor(entity_id="inv-1", name="y combinator"),
                 AURORA_REF,
+                ReferenceInvestor(entity_id="inv-firstpick", name="firstpick"),
             ]
         }
     )
     profile_store.save_version(stored, [])
 
-    assert [r.name for r in warm_references()] == ["Y Combinator", "500 Global", "Aurora Ventures"]
+    assert [r.name for r in warm_references()] == [
+        "Y Combinator",
+        "500 Global",
+        "FIRSTPICK",
+        "Aurora Ventures",
+    ]
