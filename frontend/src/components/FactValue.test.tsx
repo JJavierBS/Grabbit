@@ -53,6 +53,16 @@ describe("formatFact", () => {
     );
   });
 
+  it("omits trailing decimal zeros while keeping meaningful currency decimals", () => {
+    const money = (value: number) =>
+      formatFact({ value, unit: "EUR", trust: "primary", sources: [] });
+    expect(money(650_000)).toBe("€650K");
+    expect(money(8_000_000)).toBe("€8M");
+    expect(money(5_200_000)).toBe("€5.2M");
+    expect(money(12.5)).toBe("€12.5");
+    expect(money(0)).toBe("€0");
+  });
+
   it("keeps a sourced zero as zero", () => {
     expect(formatFact({ value: 0, unit: "people", trust: "filing", sources: [src()] })).toBe(
       "0 people",

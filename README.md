@@ -38,8 +38,10 @@ on screen; it goes through the real diff, importance check and delivery path.
 TODO: screenshot or GIF here.
 
 ## Demo
-- Live: https://www.grabbit.cloud
+- Live: https://cosmic-enhanced-jawfish.eur-1.aiven.app
 - Video (2 min): TODO link
+
+Rehearsal: [complete demo flow and checks](docs/demo-rehearsal.md).
 
 ## Technologies used
 Cala entity API, Gemini (`google-genai`), Context.dev, FastAPI (Python, uv), React and

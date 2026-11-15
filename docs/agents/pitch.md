@@ -218,6 +218,9 @@ wording changes from run to run.
 - [ ] Start from a fresh research ("New research") and send the demo thesis (decisions.md
   "demo thesis"). A browser that has never opened Grabbit starts the guided demo by itself
   (#184): close its card first.
+- [ ] Before the staged `grei_seed_round` alert, verify GREÏ is in the displayed shortlist.
+  Add FIRSTPICK to the trusted investors if needed. Close the report on narrow screens,
+  then press Alerts and check its countdown. Full rehearsal: `docs/demo-rehearsal.md`.
 
 ## Submission checklist (challenge.md "Submission form needs")
 - [ ] Punchline chosen and identical in README and form.

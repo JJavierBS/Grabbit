@@ -30,6 +30,7 @@ export function formatNumber(value: number, unit?: string | null): string {
       style: "currency",
       currency: unit,
       notation: Math.abs(value) >= 10_000 ? "compact" : "standard",
+      minimumFractionDigits: 0,
       maximumFractionDigits: 1,
     }).format(value);
   }
