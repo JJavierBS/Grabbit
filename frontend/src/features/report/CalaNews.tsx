@@ -1,6 +1,7 @@
 import { useId, useState } from "react";
 import type { NewsItem } from "../../api/types";
 import { formatFact, strongestSource } from "../../components/FactValue";
+import { TranslationNote } from "../../components/TranslationNote";
 import { TrustBadge } from "../../components/TrustBadge";
 import styles from "./CalaNews.module.css";
 
@@ -39,10 +40,15 @@ export function CalaNews({ items, name, heading: Heading = "h5" }: CalaNewsProps
 
 function NewsRow({ item }: { item: NewsItem }) {
   const [open, setOpen] = useState(false);
+  const [showOriginal, setShowOriginal] = useState(false);
   const summaryId = useId();
   const date = formatFact(item.date, "date");
   const iso = strongestSource(item.date)?.date ?? undefined;
-  const folds = (item.summary?.length ?? 0) > FOLD_AT;
+  const translatedFrom = item.title_original?.language ?? item.summary_original?.language;
+  const title = (showOriginal && item.title_original) || null;
+  const summary = (showOriginal && item.summary_original) || null;
+  const summaryText = summary?.text ?? item.summary;
+  const folds = (summaryText?.length ?? 0) > FOLD_AT;
   return (
     <li className={styles.item}>
       {date ? (
@@ -52,11 +58,18 @@ function NewsRow({ item }: { item: NewsItem }) {
       ) : (
         <span className={styles.dateAbsent}>Date not published</span>
       )}
-      <p className={styles.headline}>{item.title}</p>
-      {item.summary && (
+      <p className={styles.headline} lang={title?.language}>
+        {title?.text ?? item.title}
+      </p>
+      {summaryText && (
         <div className={styles.summaryRow}>
-          <p id={summaryId} className={styles.summary} data-open={!folds || open}>
-            {item.summary}
+          <p
+            id={summaryId}
+            className={styles.summary}
+            data-open={!folds || open}
+            lang={summary?.language}
+          >
+            {summaryText}
           </p>
           {folds && (
             <button
@@ -70,6 +83,13 @@ function NewsRow({ item }: { item: NewsItem }) {
             </button>
           )}
         </div>
+      )}
+      {translatedFrom && (
+        <TranslationNote
+          language={translatedFrom}
+          showingOriginal={showOriginal}
+          onToggle={() => setShowOriginal((v) => !v)}
+        />
       )}
       {item.entities.length > 0 && (
         <ul className={styles.entities} aria-label="Mentioned in Cala">

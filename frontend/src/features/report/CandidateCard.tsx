@@ -1,7 +1,9 @@
 import { ExternalLink } from "lucide-react";
+import { useState } from "react";
 import type { Candidate, Round, Signal } from "../../api/types";
 import { Badge } from "../../components/Badge";
 import { FactValue } from "../../components/FactValue";
+import { TranslationNote } from "../../components/TranslationNote";
 import { humanize } from "../../lib/humanize";
 import { websiteUrl } from "../../lib/website";
 import { CalaNews } from "./CalaNews";
@@ -28,6 +30,8 @@ export function CandidateCard({ candidate, trusted, mark, settled }: CandidateCa
   const c = candidate;
   // Cala can list one industry twice in different spellings ("fintech", "FINTECH").
   const industries = [...new Set(c.industries.map(humanize))];
+  const [showOriginal, setShowOriginal] = useState(false);
+  const original = c.description_original;
   return (
     <article
       id={`candidate-${c.entity_id}`}
@@ -51,7 +55,18 @@ export function CandidateCard({ candidate, trusted, mark, settled }: CandidateCa
             </a>
           )}
         </div>
-        {c.description && <p className={styles.description}>{c.description}</p>}
+        {c.description && (
+          <p className={styles.description} lang={showOriginal ? original?.language : undefined}>
+            {showOriginal && original ? original.text : c.description}
+          </p>
+        )}
+        {c.description && original && (
+          <TranslationNote
+            language={original.language}
+            showingOriginal={showOriginal}
+            onToggle={() => setShowOriginal((v) => !v)}
+          />
+        )}
         {industries.length > 0 && (
           <ul className={styles.tags} aria-label="Industries">
             {industries.map((i) => (
