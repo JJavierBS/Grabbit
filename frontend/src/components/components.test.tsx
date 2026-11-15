@@ -33,7 +33,7 @@ describe("Input", () => {
   });
 });
 
-describe("TextArea height without field-sizing (iOS Safari, #218)", () => {
+describe("TextArea height follows its text (iPhone, #218)", () => {
   const LINE = 24;
   const PADDING = 16;
   const CHARS_PER_LINE = 20;
@@ -52,11 +52,8 @@ describe("TextArea height without field-sizing (iOS Safari, #218)", () => {
   });
 
   const height = (lines: number) => `${lines * LINE + PADDING}px`;
-  const supportFieldSizing = (supported: boolean) =>
-    vi.stubGlobal("CSS", { supports: () => supported });
 
   it("fits a placeholder that wraps while the field is empty", () => {
-    supportFieldSizing(false);
     const placeholder = "Describe your thesis: sector, stage, investors you trust";
     render(
       <TextArea
@@ -74,7 +71,6 @@ describe("TextArea height without field-sizing (iOS Safari, #218)", () => {
   });
 
   it("grows with a controlled value", () => {
-    supportFieldSizing(false);
     const { rerender } = render(
       <TextArea label="Message" hideLabel rows={1} value="short" onChange={() => {}} />,
     );
@@ -87,19 +83,26 @@ describe("TextArea height without field-sizing (iOS Safari, #218)", () => {
   });
 
   it("grows as an uncontrolled field is typed in", () => {
-    supportFieldSizing(false);
     render(<TextArea label="Message" hideLabel rows={1} />);
     const field = screen.getByRole("textbox", { name: "Message" });
     fireEvent.input(field, { target: { value: "y".repeat(41) } });
     expect(field.style.height).toBe(height(3));
   });
 
-  it("leaves the height to CSS where field-sizing is supported", () => {
-    supportFieldSizing(true);
+  // Safari 26.2+ reports field-sizing support yet clips a wrapped placeholder.
+  it("sizes the field even where field-sizing is supported", () => {
+    vi.stubGlobal("CSS", { supports: () => true });
     render(
-      <TextArea label="Message" hideLabel rows={1} value={"x".repeat(50)} onChange={() => {}} />,
+      <TextArea
+        label="Message"
+        hideLabel
+        rows={1}
+        value=""
+        onChange={() => {}}
+        placeholder={"p".repeat(30)}
+      />,
     );
-    expect(screen.getByRole("textbox", { name: "Message" }).style.height).toBe("");
+    expect(screen.getByRole("textbox", { name: "Message" }).style.height).toBe(height(2));
   });
 });
 
