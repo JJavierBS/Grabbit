@@ -309,9 +309,10 @@ The four answers of "If they ask" above, and:
   messaging apps, and deeper checks for small private equity (research.md).
 
 ## Deck (12 slides, built 2026-11-15, #43)
-A Claude Slides deck owned by juanlo7, with screenshots of the real app. Its PDF export goes
-to the submission form and to the organisers. The speaker notes of each slide hold the
-line said over it in situation 2 of the final.
+The PDF is `docs/grabbit-pitch-deck.pdf`: attach it to the submission form and give it to
+the organisers for the final. It uses screenshots of the real app. juanlo7 keeps the
+editable source; its speaker notes hold the line said over each slide in situation 2 of
+the final.
 1. Cover: name, punchline, challenge and team.
 2. The choice: forty tabs or one sentence.
 3. Borrow the judgement of investors you trust: investor, round, startup, event.
