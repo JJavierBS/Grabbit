@@ -11,13 +11,16 @@ each scene file. Frames 4 to 7 and frame 9 are screen recordings of the public a
 cut into assets/captures/, then cut fast by assets/captures/recut.sh into assets/captures/fast/).
 
 Voiceover over the captures: the final voice is the presenter's own recording, one file for each line
-(`voiceover to record` below). Until it exists a stand-in plays: the old ElevenLabs takes (voice Lara) at
-1.1x speed, in assets/vo/fit/ (`stand-in` below).
+(`voiceover to record` below). Until it exists a stand-in plays: the same lines from ElevenLabs
+(voice Brian), one file for each line in assets/vo/brian/. Each line is cut at its pauses and each phrase starts on its screen event.
+In frame 5 the stressed word lands on its event: "investors" on the third answer, "trust" on the message.
+The line of frame 6 plays at 1.095x.
 
-Sound: the presenter and the voiceover sit at -16.5 LUFS. The music bed plays under the whole film: 0.16
-under the presenter, 0.24 under the voiceover, 0.5 in the gaps, 0.6 on the end card. The bed
-(assets/music/bed.mp3) is a stand-in: it is flat, and the film needs a track that builds to 25.3 s, drops
-there, and lifts again at 63.7 s. Effects (assets/sfx/, ElevenLabs): a riser into an impact on the cut into
+Sound: the presenter and the voiceover sit at -16.5 LUFS. The music starts at 1.9 s and plays to the end: 0.16
+under the presenter, 0.24 under the voiceover, 0.38-0.5 in the gaps, 0.7 on the end card. The track
+(assets/music/epic.mp3) is an orchestral piece from ElevenLabs Music. Its final hit lands on the cut to the end
+card (77.9 s), and that is why it starts at 1.9 s. It has no clear drop at 25.3 s: the riser and the impact carry
+that cut. Effects (assets/sfx/, ElevenLabs): a riser into an impact on the cut into
 the app (25.3 s), a whoosh on each zoom-through (51.1, 55.9, 63.7 s), a softer impact on the mark (78.8 s).
 
 ## Frame 1: At the door (0-10.5s)
@@ -61,8 +64,7 @@ the app (25.3 s), a whoosh on each zoom-through (51.1, 55.9, 63.7 s), a softer i
 - src: compositions/s05.html
 - capture: assets/captures/fast/s05.mp4
 - duration: 6.8s
-- voiceover to record: "Type your thesis. One vague line is enough." at 25.6s, 3.0s at most
-- stand-in: "Tell Grabbit what you want. A vague thesis is enough." at 25.6s
+- voiceover to record: "Type your thesis." at 25.7s, when the typing starts; "One vague line is enough." at 27.4s, when the line is complete
 - reads: the typed thesis, after the punch-in (0.5-2.2s); the agent reads it (2.4-3.8s); its answer and three questions arrive (3.9-6.8s)
 
 ## Frame 5: It asks (32.1-38.6s)
@@ -72,9 +74,8 @@ the app (25.3 s), a whoosh on each zoom-through (51.1, 55.9, 63.7 s), a softer i
 - src: compositions/s06.html
 - capture: assets/captures/fast/s06.mp4, the same take as frame 4 with no cut between them
 - duration: 6.5s
-- voiceover to record: "Grabbit asks back, with real numbers from Cala's graph." at 28.9s (in frame 4, when the questions arrive), 4.8s at most; "Name the investors you trust." at 34.0s, 2.2s at most
-- stand-in: "Grabbit does not only answer. It asks, and each question has real numbers from Cala's graph." at 28.9s; "Then name the investors you trust." at 34.0s
-- reads: the three questions and their numbers (0-1.4s); the three answers, the last one names both investors (1.4-3.6s); the answers go (4s); the report card (5s)
+- voiceover to record: "Grabbit asks back," at 29.1s (in frame 4, when the questions arrive), 1.5s at most; "with real numbers from Cala's graph." at 31.0s, 2.1s at most; "Name the investors you trust." at 35.0s, 2.2s at most: "investors" lands on the third answer (35.57s), "trust" on the message (36.43s)
+- reads: the three questions and their numbers (0-1.2s); the answers at 1.23s, 2.03s and 3.47s, the last one names both investors; the answers go (4.33s); the report card (5.3s)
 
 ## Frame 6: Shortlist (38.6-45.1s)
 
@@ -83,8 +84,7 @@ the app (25.3 s), a whoosh on each zoom-through (51.1, 55.9, 63.7 s), a softer i
 - src: compositions/s07.html
 - capture: assets/captures/fast/s07.mp4
 - duration: 6.5s
-- voiceover to record: "Your Slush shortlist. Who led each round. Which investors you trust joined. Every fact shows its source." at 38.8s, 6.2s at most
-- stand-in: "Here is your Slush shortlist. Who led each round. Which of your trusted investors joined. Each fact shows its source." at 38.8s
+- voiceover to record: "Your Slush shortlist." at 38.8s, when the report opens; "Who led each round." at 40.7s, on the scroll; "Which investors you trust joined." at 42.2s, when the path arrives; "Every fact shows its source." at 44.0s, on the signal and its badge (it ends 0.5s into frame 7)
 - reads: the report opens (0-1.5s); the frame moves to the report and it scrolls to one startup (1.5-3.9s); the path to the trusted lead investor and the co-invest signal with its trust badge (3.9-6.5s)
 
 ## Frame 7: It rewrites itself (45.1-51.1s)
@@ -94,8 +94,7 @@ the app (25.3 s), a whoosh on each zoom-through (51.1, 55.9, 63.7 s), a softer i
 - src: compositions/s08.html
 - capture: assets/captures/fast/s08.mp4
 - duration: 6s
-- voiceover to record: "Too long? Say so. Grabbit rewrites its own instructions." at 45.5s, 5.2s at most
-- stand-in: "Too long? Say so." at 45.85s; "The agent rewrites its own instructions, and the report changes in front of you." at 47.3s
+- voiceover to record: "Too long? Say so." at 45.85s, when the correction goes; "Grabbit rewrites its own instructions." at 47.45s, when the change marks arrive
 - reads: "Shorter, co-investors first" goes (0.5s); the agent rewrites (1-2.2s); the report shows its change marks: 67% shorter, 3 startups removed (2.4-6s)
 - not shown: a source opening. A source link opens a new browser tab, which the capture window cannot show
 
@@ -117,8 +116,7 @@ the app (25.3 s), a whoosh on each zoom-through (51.1, 55.9, 63.7 s), a softer i
 - src: compositions/s10.html
 - capture: assets/captures/fast/s10.mp4
 - duration: 7.8s
-- voiceover to record: "A startup on your list raises a seed. You know why it matters before the others read the news." at 56.3s, 6.8s at most
-- stand-in: "A startup on your shortlist announces a seed round, led by an investor you trust." at 56.3s; "You know why it matters before the others read the news." at 60.5s
+- voiceover to record: "A startup on your list raises a seed." at 56.4s, when the alert arrives; "You know why it matters before the others read the news." at 60.0s, when the alert opens in the chat
 - reads: the in-app alert with its Simulated event label, after the punch-in (0.6-2.7s); the alert opens in the chat with why it matters (3.9-7.8s)
 - note: the capture shows the in-app alert, not the desktop notification of the operating system
 

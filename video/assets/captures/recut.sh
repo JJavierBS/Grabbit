@@ -19,9 +19,10 @@ cut() {
     -map "[o]" -an -c:v libx264 -crf 16 -g 15 -pix_fmt yuv420p "fast/$name.mp4"
 }
 # s05: idle, typing x2.4, send, the agent reads x5, the answer and the questions arrive
-cut s05 "1.2 1.8 1" "1.8 5.6 2.4" "5.6 6.4 1" "6.4 10.4 5" "10.4 13.4 1"
-# s06: the questions hold, the three answers x1.5, the message goes
-cut s06 "8.0 9.4 1" "9.4 13.9 1.5" "13.9 16.0 1"
+cut s05 "1.2 1.8 1" "1.8 5.6 2.4" "5.6 6.4 1" "6.4 10.4 5" "10.4 13.5 1"
+# s06: one segment for each answer, so that each click lands on the voice (STORYBOARD.md, frame 5).
+# Source clicks: 9.53, 10.83, 12.13 s; the message goes 13.73 s; the report card 14.70 s
+cut s06 "8.3 9.5 1" "9.5 10.8 1.625" "10.8 12.1 0.9" "12.1 13.7 1.88" "13.7 15.92 1"
 # s07: the report opens x1.5, scrolls x1.6, the path and the signal
 cut s07 "0.3 2.6 1.5" "2.6 6.4 1.6" "6.4 9.0 1"
 # s08: the correction goes, the agent rewrites x3.5, the change marks
