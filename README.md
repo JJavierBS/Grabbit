@@ -12,12 +12,13 @@ Grabbit finds the startups backed by the investors you trust, shows the source o
 fact, and alerts you when one of them moves.
 
 [![Live demo](https://img.shields.io/badge/demo-grabbit.cloud-6139f8)](https://www.grabbit.cloud)
+[![Pitch video](https://img.shields.io/badge/video-2%20min%20pitch-ff0000?logo=youtube&logoColor=white)](https://youtu.be/63DRjFkbU_A)
 [![Built on Cala](https://img.shields.io/badge/data-Cala%20entity%20graph-14151c)](https://www.cala.ai)
 [![Junction 2026](https://img.shields.io/badge/Junction%202026-Make%20Unicorns%20Real-6139f8)](docs/reference/cala-track-brief.md)
 [![Tests](https://img.shields.io/badge/tests-511%20backend%20%C2%B7%20298%20frontend-2ea44f)](docs/agents/testing.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-[Try it](#try-it) · [How it works](docs/how-it-works.md) · [For judges](EVALUATION.md) ·
+[Try it](#try-it) · [Pitch video](https://youtu.be/63DRjFkbU_A) · [How it works](docs/how-it-works.md) · [For judges](EVALUATION.md) ·
 [Building on Cala](docs/building-on-cala.md) · [Run locally](#run-it-locally)
 
 ![Grabbit: a report rewritten by the agent and a staged alert](docs/images/03-report-alert.png)
@@ -115,7 +116,8 @@ what we would ask Cala for: [docs/building-on-cala.md](docs/building-on-cala.md)
 
 ## Try it
 
-**Live:** https://www.grabbit.cloud (add `?demo` for the button that stages an alert).
+**Live:** https://www.grabbit.cloud (add `?demo` for the button that stages an alert).<br>
+**Pitch video (2 min):** https://youtu.be/63DRjFkbU_A
 
 1. Tap **"AI startups at pre-seed and seed"** and answer or skip the questions.
 2. Type **"I trust Y Combinator and 500 Global"**. The report opens.
@@ -221,6 +223,6 @@ on separate branches, through 100+ reviewed pull requests.
 
 <div align="center">
 
-Pitch video: TODO link · Source: MIT, see [LICENSE](LICENSE). Partner APIs and data stay under their own terms.
+[Pitch video](https://youtu.be/63DRjFkbU_A) · Source: MIT, see [LICENSE](LICENSE). Partner APIs and data stay under their own terms.
 
 </div>

@@ -1,6 +1,6 @@
 # Grabbit
 
-> A proactive research agent for investors who decide alone, built on Cala's entity graph at Junction 2026 ("Make Unicorns Real" track by Cala). Slush has 2,989 attendees and you are one person: Grabbit finds the startups backed by the investors you trust, shows the source of every fact, and alerts you when one of them moves. Live demo: https://www.grabbit.cloud. Licence: MIT.
+> A proactive research agent for investors who decide alone, built on Cala's entity graph at Junction 2026 ("Make Unicorns Real" track by Cala). Slush has 2,989 attendees and you are one person: Grabbit finds the startups backed by the investors you trust, shows the source of every fact, and alerts you when one of them moves. Live demo: https://www.grabbit.cloud. Pitch video (2 min): https://youtu.be/63DRjFkbU_A. Licence: MIT.
 
 Every claim in these documents links to the code, the document or the measurement behind it. Known limitations are listed next to the strengths. The demo alert is a staged event and is labelled as such on screen.
 

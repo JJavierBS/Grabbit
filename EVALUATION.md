@@ -33,6 +33,7 @@ believed. Limitations are listed next to the strengths, with what we did about t
 | **Why only Cala can answer it** | The answer lives in the funding-round graph: who invested, who led, when, and from which source |
 | **Track** | "Make Unicorns Real" by Cala, Junction 2026 |
 | **Live demo** | https://www.grabbit.cloud (add `?demo` to show the staged alert button) |
+| **Pitch video** | https://youtu.be/63DRjFkbU_A (2 min) |
 | **Source** | https://github.com/JJavierBS/Grabbit (MIT) |
 
 The strongest points, one line each:
