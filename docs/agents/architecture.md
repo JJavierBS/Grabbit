@@ -52,7 +52,8 @@ Owners are assigned on the issues; the board is the source of truth.
 | Context.dev (`https://api.context.dev/v1`) | Soft signals only (decisions.md) | `CONTEXT_DEV_API_KEY` |
 | Gemini API (Google DeepMind), SDK `google-genai` | Chat, self-personalization, report writing, importance score | `GEMINI_API_KEY`, `GEMINI_MODEL`, `LLM_MODE` |
 | Aiven for Valkey (`grabbit-cache`) | Shared Cala cache across deployed instances; SQLite stays the fallback | `VALKEY_URL` |
-| Aiven Runtime (`grabbit-app`) | Deployed demo link, built from `main` with the root `Dockerfile`; redeploy by hand (README "Deploy") | App environment variables in Aiven, never in git |
+| Vercel | Serves the built frontend on `www.grabbit.cloud` (certificates, apex redirect) and proxies `/api/*` to Aiven Runtime; deploys on every push to `main` (`frontend/vercel.json`) | None: the frontend has no secrets |
+| Aiven Runtime (`grabbit-app`) | Deployed API behind Vercel, built from `main` with the root `Dockerfile`; redeploy by hand (README "Deploy") | App environment variables in Aiven, never in git |
 | AWS EC2 host + Caddy edge, GHCR image | Legacy deploy, not the demo link; blue/green rollout by `deploy/rollout.sh` from GitHub Actions | `/opt/junction/.env` on the host, never in git |
 
 ## Directory layout
@@ -62,7 +63,8 @@ Owners are assigned on the issues; the board is the source of truth.
 - `docs/`: agent docs (`agents/`), raw references (`reference/`), research (`research/`).
 - `scripts/`: setup, hooks, board, docs mirror, EC2 `server-init.sh`.
 - `deploy/`: files copied to the EC2 host: `Caddyfile`, `rollout.sh`.
-- `Dockerfile`: multi-stage, builds the frontend and serves it from FastAPI.
+- `Dockerfile`: multi-stage, builds the frontend and serves it from FastAPI (Aiven Runtime
+  builds it; the public site is served by Vercel from `frontend/vercel.json`).
 
 ## Constraints
 - Demo must run from a clean clone with `make setup && make dev`.
