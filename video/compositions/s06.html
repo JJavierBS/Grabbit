@@ -1,7 +1,7 @@
 <template>
   <style>
     @font-face{font-family:"Hanken Grotesk";src:url("assets/fonts/hanken-grotesk.woff2") format("woff2");font-weight:100 900}
-    #root{position:absolute;inset:0;background:#f7f7fa;color:#14151c;font-family:"Hanken Grotesk",sans-serif;overflow:hidden}
+    #root{position:absolute;inset:0;background:#f7f7fa url("assets/footage/bg-3.jpg") center/cover;color:#14151c;font-family:"Hanken Grotesk",sans-serif;overflow:hidden}
     .s06-win{position:absolute;background:#fff;border:2px solid #e3e3ec;border-radius:22px;box-shadow:0 30px 70px rgba(20,21,28,.14);overflow:hidden}
     .s06-bar{height:68px;background:#f0eff5;border-bottom:2px solid #e3e3ec;display:flex;align-items:flex-end;gap:6px;padding:0 22px}
     .s06-dots{display:flex;gap:10px;align-self:center;margin-right:18px}
@@ -9,24 +9,24 @@
     .s06-tab{height:48px;border-radius:12px 12px 0 0;background:#fff;border:2px solid #e3e3ec;border-bottom:0;padding:0 14px;display:flex;align-items:center;gap:10px;font-size:22px;font-weight:500;color:#5c5d6e;white-space:nowrap;overflow:hidden;flex:none}
     .s06-tab img{height:28px}
     .s06-tab b{font-family:"Outfit",sans-serif;font-weight:800;font-size:26px;color:#14151c}
-    .s06-body{position:absolute;left:0;right:0;top:70px;bottom:0;background:repeating-linear-gradient(135deg,#f7f7fa 0 30px,#f0eff5 30px 60px);padding:150px 130px}
-    .s06-k{font-size:34px;font-weight:700;color:#4b25d6}
-    .s06-t{font-size:96px;font-weight:800;letter-spacing:-.035em;line-height:1.05;margin-top:26px}
-    .s06-d{font-size:42px;font-weight:500;color:#5c5d6e;line-height:1.35;margin-top:40px;max-width:1300px}
-    .s06-z{font-size:38px;font-weight:700;margin-top:44px}
+    .s06-body{position:absolute;left:0;right:0;top:70px;bottom:0;overflow:hidden;background:#f7f7fa}
+    .s06-cap{position:absolute;inset:0}
+    .s06-cap video{position:absolute;left:0;top:0;width:1724px;height:866px}
   </style>
   <div id="root" data-composition-id="s06" data-width="1920" data-height="1080">
     <div class="s06-win" style="left:96px;top:70px;width:1728px;height:940px">
       <div class="s06-bar"><span class="s06-dots"><i></i><i></i><i></i></span><span class="s06-tab"><img src="assets/grabbit-mark.svg" alt=""><b>Grabbit</b></span></div>
       <div class="s06-body">
-        <div class="s06-k">Placeholder: app capture, filmed when the app is ready</div>
-        <div class="s06-t">The agent asks</div>
-        <div class="s06-d">One question with numbers from Cala's graph. The angel answers in a few words.</div>
-        <div class="s06-z">Punch-in: the numbers in the question</div>
+        <div id="s06-cap" class="s06-cap" data-layout-allow-overflow><video id="s06-v" class="clip" src="assets/captures/fast/s06.mp4" data-start="0" data-duration="6.5" data-track-index="0" muted playsinline></video></div>
       </div>
     </div>
   </div>
   <script>
-    window.__timelines["s06"] = gsap.timeline({ paused: true });
+    (() => {
+      const tl = gsap.timeline({ paused: true });
+      // same framing as the end of s05: the two captures are one continuous take
+      tl.set("#s06-cap", { scale: 1.45, transformOrigin: "73% 54.6%" }, 0);
+      window.__timelines["s06"] = tl;
+    })();
   </script>
 </template>

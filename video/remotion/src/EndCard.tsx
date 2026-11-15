@@ -4,7 +4,7 @@ import {Blur, C, FONT, OUTFIT, mix, ramp, spring, useT} from './theme';
 
 // s12, film 110.3-115.5 s. The two speed lines bring the panel in, then they become the two
 // bars of the mark: one object changes shape, nothing fades from one picture to the next.
-const MARK = {left: 616, top: 330, height: 168}; // viewBox 115 290 410 370
+const MARK = {left: 616, top: 290, height: 168}; // viewBox 115 290 410 370
 const K = MARK.height / 370;
 const bar = (x: number, y: number, w: number, h: number) => ({left: MARK.left + (x - 115) * K, top: MARK.top + (y - 290) * K, width: w * K, height: h * K});
 const LINES = [
@@ -13,6 +13,7 @@ const LINES = [
 ];
 const NAME = 'Grabbit'.split('');
 const CALA = ['Built', 'on', 'Cala'];
+const DOMAIN = 'grabbit.cloud';
 
 const Inner: React.FC = () => {
   const t = useT();
@@ -68,7 +69,7 @@ const Inner: React.FC = () => {
           );
         })}
       </div>
-      <div style={{position: 'absolute', left: 0, right: 0, top: 560, textAlign: 'center', fontSize: 52, fontWeight: 600}}>
+      <div style={{position: 'absolute', left: 0, right: 0, top: 520, textAlign: 'center', fontSize: 52, fontWeight: 600}}>
         {CALA.map((w, i) => {
           const p = ramp(t, 1.68 + i * 0.08, 0.16, Easing.out(Easing.quad));
           return (
@@ -82,7 +83,7 @@ const Inner: React.FC = () => {
         style={{
           position: 'absolute',
           left: 630,
-          top: 690,
+          top: 650,
           width: 660,
           height: 104,
           borderRadius: 20,
@@ -99,6 +100,9 @@ const Inner: React.FC = () => {
         }}
       >
         Try the demo
+      </div>
+      <div style={{position: 'absolute', left: 0, right: 0, top: 782, textAlign: 'center', fontSize: 48, fontWeight: 700, opacity: ramp(t, 2.3, 0.16), filter: `blur(${mix(6, 0, ramp(t, 2.3, 0.16))}px)`}}>
+        {DOMAIN}
       </div>
     </AbsoluteFill>
   );

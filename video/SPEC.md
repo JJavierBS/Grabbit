@@ -1,11 +1,13 @@
-GOAL:    A judge understands in 1:56 that Grabbit gives a lone angel a sourced Slush
+GOAL:    A judge understands in 1:23 that Grabbit gives a lone angel a sourced Slush
          shortlist and watches it, and wants to open the demo.
 OUTPUT:  HyperFrames, 1920 x 1080, 30 fps. HyperFrames is the master. The fast graphics are
          Remotion clips: source in remotion/src, `npm run render` there writes transparent
          WebM to assets/overlays/, and index.html mounts each one as a muted video.
-TIME:    115.5 s x 30 = 3465 frames (hard limit 120 s). The presenter speaks in every filmed
-         shot: the presenter's voice is the clock, and each graphic lands on its word. The ElevenLabs
-         voice is only over the app captures.
+TIME:    83.1 s x 30 = 2493 frames (hard limit 120 s). The presenter speaks in every filmed
+         shot: the presenter's voice is the clock, and each graphic lands on its word. Over the app
+         captures the voice is the presenter's own recording (a stand-in plays until it exists).
+         The app captures are a fast cut: assets/captures/recut.sh cuts idle time and speeds up
+         the typing (x2.4) and the agent's wait (x3.5 to x5). Its timer stays on screen.
 LOOK:    Ground #f7f7fa flat, no texture. Ink #14151c. One accent, violet #6139f8: one
          phrase per designed shot, the logo's speed lines, the end card.
          Display: Hanken Grotesk 800, 150-430 px, tracking -0.035 to -0.045em, left aligned
@@ -21,6 +23,8 @@ OBJECTS: The presenter at Messukeskus, the Slush venue, filmed hand-held on an i
          Plates: ground colour, 2 px #e3e3ec line, 22 px radius, shadow 0 30 px 70 px at 14%.
          All text over footage sits on a plate beside the presenter, never over the presenter, and
          stays in screen space (the camera moves, so nothing is pinned to the ground).
+         Behind an app window: a blurred still of the shot before it (assets/footage/bg-3.jpg,
+         bg-5.jpg: gblur 42, 38% toward the ground colour), so the app stays at the venue.
          Browser windows (title bar, three grey dots, truncated tab titles). The speed lines
          (the two violet bars of the logo): they take the tabs away (s03) and bring the end
          card in (s12). Third-party marks: the Slush logo appears once, in the s01 title.
@@ -46,15 +50,15 @@ SHOTS:   s01    0-315     footage 1, the entrance, wide: "Slush 2026", counter t
                           No scene file: the clip pile.webm, frames 393-603, crosses the cut
          s03  573-759     footage 3, medium: the speed lines take the pile away, "Skip the data.",
                           the presenter shows the app on the phone, the Grabbit lockup lands
-         s05  759-1239    app capture (placeholder): thesis and two reference investors
-         s06 1239-1719    app capture (placeholder): the question and its numbers
-         s07 1719-2019    app capture (placeholder): the report opens, trust badges
-         s08 2019-2319    app capture (placeholder): the correction and the change marks
-         s09 2319-2463    footage 5, the presenter walks away: "You: away." "Grabbit: on watch.", a notification
-         s10 2463-2883    app capture (placeholder): the alert with "Simulated event"; why it matters
-         s11 2883-3309    footage 4, the closing: "Other investors: Searching" against "You: Deciding",
+         s05  759-963     app capture: the typed thesis, then the agent's answer and questions
+         s06  963-1158    app capture: the three questions with their numbers, the answers
+         s07 1158-1353    app capture: the report opens, one startup and its trust badges
+         s08 1353-1533    app capture: the correction and the change marks
+         s09 1533-1677    footage 5, the presenter walks away: "You: away." "Grabbit: on watch.", a notification
+         s10 1677-1911    app capture: the alert with "Simulated event"; why it matters
+         s11 1911-2337    footage 4, the closing: "Other investors: Searching" against "You: Deciding",
                           then "Skip the data. Focus on what matters."
-         s12 3309-3465    the speed lines bring the end card in; "Built on Cala"; demo link
+         s12 2337-2493    the speed lines bring the end card in; "Built on Cala"; demo button; grabbit.cloud
                           No scene file: the clip endcard.webm. The counter of s01 is count.webm
          Not mounted: cap.html and s04.html (the cap and into-the-screen shots are not in the cut).
 BANNED:  dark ground; glow; gradients; invented app UI; real product names on the tabs of
@@ -62,6 +66,6 @@ BANNED:  dark ground; glow; gradients; invented app UI; real product names on th
          a screen line that repeats the spoken sentence word for word; everything centred
          (only the end card is centred).
 QA:      6 s the number readable beside the presenter; 18.9 s 47 tabs drawn, no plate over
-         the face; 24.6 s the phone screen and the lockup both readable; 80.6 s the
-         notification readable; 104 s the two plates clear of the head; 112.5 s lockup 30%
+         the face; 24.6 s the phone screen and the lockup both readable; 54.4 s the
+         notification readable; 71.6 s the two plates clear of the head; 80.1 s lockup 30%
          of the frame width, link readable.
