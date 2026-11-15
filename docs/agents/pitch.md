@@ -215,9 +215,9 @@ wording changes from run to run.
   `first chat turn: N Cala calls, 0 cache misses`. A cold first turn took about 200 s in
   the 14 Nov audit, because Cala answered 429 about 100 times; warmed, it reads only the cache.
 - [ ] `make warm ARGS=--check` right before presenting: it exits 1 on any miss.
-- [ ] Start from a fresh workspace (new browser profile or cleared site data). A browser that
-  has never opened Grabbit starts the guided demo by itself (#184): close its card first, then
-  type the demo thesis (decisions.md "demo thesis").
+- [ ] Start from a fresh research ("New research") and send the demo thesis (decisions.md
+  "demo thesis"). A browser that has never opened Grabbit starts the guided demo by itself
+  (#184): close its card first.
 - [ ] Before the staged `grei_seed_round` alert, verify GREÏ is in the displayed shortlist.
   Add FIRSTPICK to the trusted investors if needed. Close the report on narrow screens,
   then press Alerts and check its countdown. Full rehearsal: `docs/demo-rehearsal.md`.

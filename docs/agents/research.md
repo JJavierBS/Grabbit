@@ -5,6 +5,8 @@ are pseudonymised: never add their names, employers or other identifying details
 repo (it is public). Raw recordings and transcripts stay outside the repo.
 Full meeting minutes (Spanish, pseudonymised): `docs/research/acta-2026-11-13.md`.
 Profile cards (Spanish): `docs/research/investor-a.md`, `docs/research/investor-b.md`.
+Target persona (Spanish): `docs/research/persona-business-angel.md`, the business angel
+preparing Slush 2026 that the product and the demo follow.
 Read this before deciding the target user, product behaviour, demo script or pitch.
 
 ## Interviewees
