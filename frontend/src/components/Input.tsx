@@ -60,16 +60,9 @@ function FieldFrame({
   );
 }
 
-// iOS Safari has no `field-sizing: content`, so a one-row field would scroll inside itself;
-// there the field takes its height from its text, or its placeholder while empty (#218).
-function lacksFieldSizing(): boolean {
-  return (
-    typeof CSS !== "undefined" &&
-    typeof CSS.supports === "function" &&
-    !CSS.supports("field-sizing", "content")
-  );
-}
-
+// The field takes its height from its text, or from its placeholder while empty, in JS:
+// `field-sizing: content` is missing before Safari 26.2 and from 26.2 on still clips a
+// wrapped placeholder, so the one-row composer scrolled inside itself on iPhone (#218).
 function useAutoGrow(
   forwarded: ForwardedRef<HTMLTextAreaElement>,
   value: TextAreaProps["value"],
@@ -86,7 +79,7 @@ function useAutoGrow(
   );
   const grow = useCallback(() => {
     const el = own.current;
-    if (!el || !lacksFieldSizing()) return;
+    if (!el) return;
     const empty = el.value === "";
     if (empty) el.value = el.placeholder;
     el.style.height = "auto";
@@ -97,10 +90,18 @@ function useAutoGrow(
   }, []);
   // biome-ignore lint/correctness/useExhaustiveDependencies: re-measure when the text or placeholder changes.
   useLayoutEffect(grow, [grow, value, placeholder]);
+  // A new width (web font loaded, rotation, sidebar) re-wraps the text.
   useEffect(() => {
-    if (!lacksFieldSizing()) return;
-    window.addEventListener("resize", grow);
-    return () => window.removeEventListener("resize", grow);
+    const el = own.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    let width = el.clientWidth;
+    const observer = new ResizeObserver(() => {
+      if (el.clientWidth === width) return;
+      width = el.clientWidth;
+      grow();
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
   }, [grow]);
   return { ref, grow };
 }
