@@ -214,9 +214,9 @@ API docs while `make dev` runs: http://localhost:8000/api/docs. Hosting and rede
 Built in one weekend at Junction 2026, Espoo, by four people each driving AI coding agents
 on separate branches, through 100+ reviewed pull requests.
 
-| | Main contributions (from the git history) |
+| | Main contributions |
 | --- | --- |
-| **Francisco Moreno Sánchez** ([@wall3n](https://github.com/wall3n)) | First web app, pitch video, README text |
+| **Francisco Moreno Sánchez** ([@wall3n](https://github.com/wall3n)) | First idea, investor interviews, Cala briefings, team coordination, web app, pitch video |
 | **José Javier Bravo Sarabia** ([@JJavierBS](https://github.com/JJavierBS)) | Discovery engine (reverse walk, second ring, proximity score), shared cache, PWA, deploy |
 | **Juan López Bravo** ([@juanlo7](https://github.com/juanlo7)) | Product flow and research docs, Cala client and cache, report polish, guided demo, peer review script |
 | **Rubén Moyano Palazón** ([@rubmoyanop](https://github.com/rubmoyanop)) | Agent questions and focus, live voice transcription, engine review and data audit, Cala assessment |
