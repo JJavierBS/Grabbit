@@ -109,6 +109,36 @@ async def test_a_quick_structured_call_asks_for_minimal_thinking():
     assert configs[1].thinking_config is None
 
 
+async def test_a_lite_call_uses_the_lite_model_with_minimal_thinking():
+    """#226: translating report text needs neither the main model nor its reasoning."""
+    from google.genai import types
+    from pydantic import BaseModel
+
+    from app.llm.client import GeminiLLM
+
+    class Out(BaseModel):
+        ok: bool
+
+    calls = []
+
+    async def generate_content(**kwargs):
+        calls.append(kwargs)
+        part = types.Part(text='{"ok": true}')
+        return types.GenerateContentResponse(
+            candidates=[types.Candidate(content=types.Content(role="model", parts=[part]))]
+        )
+
+    llm = GeminiLLM(api_key="k", model="main", lite_model="lite")
+    llm._client.aio.models.generate_content = generate_content
+
+    await llm.generate(task="t", system="s", prompt="p", schema=Out, lite=True)
+    await llm.generate(task="t", system="s", prompt="p", schema=Out)
+
+    assert [c["model"] for c in calls] == ["lite", "main"]
+    assert calls[0]["config"].thinking_config.thinking_level == types.ThinkingLevel.MINIMAL
+    assert GeminiLLM(api_key="k", model="main").lite_model == "main"
+
+
 async def test_a_live_token_is_single_use_and_locked_to_talk():
     """#185: the browser streams to Gemini itself; the key stays on the server."""
     from google.genai import types
