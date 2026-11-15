@@ -102,11 +102,24 @@ class LinkNode(ApiModel):
     entity_type: str
 
 
+class Original(ApiModel):
+    """Third-party text as its source wrote it, before it was translated (#226)."""
+
+    language: str = Field(description="ISO 639-1 code of the source text")
+    text: str
+
+
 class NewsItem(ApiModel):
     """A news row from Cala's knowledge query: no per-item source, so trust is `cala_news`."""
 
     title: str
     summary: str | None = None
+    title_original: Original | None = Field(
+        default=None, description="Set when `title` was translated into the profile language"
+    )
+    summary_original: Original | None = Field(
+        default=None, description="Set when `summary` was translated into the profile language"
+    )
     date: Fact = Field(description="Read at its source's date_precision; absent when Cala has none")
     entities: list[NewsEntity] = Field(default_factory=list, description="Mentioned in the item")
     trust: TrustLevel = "cala_news"
@@ -157,6 +170,10 @@ class Candidate(ApiModel):
     name: str
     website: str | None = None
     description: str | None = None
+    description_original: Original | None = Field(
+        default=None,
+        description="Set when `description` was translated into the profile language",
+    )
     founding_date: Fact
     funding_stage: Fact
     headcount: Fact
