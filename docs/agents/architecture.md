@@ -53,7 +53,7 @@ Owners are assigned on the issues; the board is the source of truth.
 | Gemini API (Google DeepMind), SDK `google-genai` | Chat, self-personalization, report writing, importance score | `GEMINI_API_KEY`, `GEMINI_MODEL`, `LLM_MODE` |
 | Aiven for Valkey (`grabbit-cache`) | Shared Cala cache across deployed instances; SQLite stays the fallback | `VALKEY_URL` |
 | Vercel | Serves the built frontend on `www.grabbit.cloud` (certificates, apex redirect) and proxies `/api/*` to Aiven Runtime; deploys on every push to `main` (`frontend/vercel.json`) | None: the frontend has no secrets |
-| Aiven Runtime (`grabbit-app`) | Deployed API behind Vercel, built from `main` with the root `Dockerfile`; redeploy by hand (README "Deploy") | App environment variables in Aiven, never in git |
+| Aiven Runtime (`grabbit-app`) | Deployed API behind Vercel, built from `main` with the root `Dockerfile`; redeploy by hand (docs/deploy.md) | App environment variables in Aiven, never in git |
 | AWS EC2 host + Caddy edge, GHCR image | Legacy deploy, not the demo link; blue/green rollout by `deploy/rollout.sh` from GitHub Actions | `/opt/junction/.env` on the host, never in git |
 
 ## Directory layout

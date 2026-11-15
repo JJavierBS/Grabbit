@@ -1,0 +1,34 @@
+# Grabbit
+
+> A proactive research agent for investors who decide alone, built on Cala's entity graph at Junction 2026 ("Make Unicorns Real" track by Cala). Slush has 2,989 attendees and you are one person: Grabbit finds the startups backed by the investors you trust, shows the source of every fact, and alerts you when one of them moves. Live demo: https://www.grabbit.cloud. Pitch video (2 min): https://youtu.be/63DRjFkbU_A. Licence: MIT.
+
+Every claim in these documents links to the code, the document or the measurement behind it. Known limitations are listed next to the strengths. The demo alert is a staged event and is labelled as such on screen.
+
+## Evaluation
+
+- [EVALUATION.md](EVALUATION.md): the project mapped to each criterion of Cala's rubric (Real need, Execution, Originality, Use of Cala, 25 % each) and to Junction's innovation, impact and implementation, with evidence, a 5-minute check and limitations
+- [docs/reference/cala-track-brief.md](docs/reference/cala-track-brief.md): the challenge brief and the rubric as published by Cala
+
+## Product and system
+
+- [README.md](README.md): problem, solution, screenshots, why Cala is core, how to run it
+- [docs/how-it-works.md](docs/how-it-works.md): architecture, chat turn, discovery, ranking, trust, self-personalization and alerts, with diagrams
+- [docs/algorithm.md](docs/algorithm.md): the discovery algorithm, measured results, code review fixes, data audit and limitations
+
+## Cala
+
+- [docs/building-on-cala.md](docs/building-on-cala.md): what Cala made possible, what got in the way, requests to Cala, and a playbook for other teams, with numbers
+- [docs/agents/cala.md](docs/agents/cala.md): endpoints, data quirks, rate limits and traversal as used in the code
+
+## Research and decisions
+
+- [docs/agents/research.md](docs/agents/research.md): two investor interviews and what Cala asked for
+- [docs/research/persona-business-angel.md](docs/research/persona-business-angel.md): the target persona (Spanish)
+- [docs/agents/decisions.md](docs/agents/decisions.md): every design decision, dated, with its reason
+
+## Optional
+
+- [docs/agents/pitch.md](docs/agents/pitch.md): table pitch script and answers to likely questions
+- [docs/research/valoracion-cala.md](docs/research/valoracion-cala.md): longer Cala assessment (Spanish)
+- [docs/deploy.md](docs/deploy.md): hosting and redeploys
+- [AGENTS.md](AGENTS.md): rules for coding agents working on this repository

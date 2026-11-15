@@ -1,142 +1,228 @@
+<div align="center">
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/grabbit-mark-dark.svg">
+  <img src="docs/images/grabbit-mark.svg" alt="Grabbit logo" width="120">
+</picture>
+
 # Grabbit
 
-Slush has 2,989 attendees and you are one person. Grabbit finds the startups backed by the investors you trust, shows the source of every fact, and alerts you when one of them moves.
+**Slush has 2,989 attendees and you are one person.**<br>
+Grabbit finds the startups backed by the investors you trust, shows the source of every
+fact, and alerts you when one of them moves.
 
-Built at Junction 2026 for the "Make Unicorns Real" challenge by Cala.
+[![Live demo](https://img.shields.io/badge/demo-grabbit.cloud-6139f8)](https://www.grabbit.cloud)
+[![Pitch video](https://img.shields.io/badge/video-2%20min%20pitch-ff0000?logo=youtube&logoColor=white)](https://youtu.be/63DRjFkbU_A)
+[![Built on Cala](https://img.shields.io/badge/data-Cala%20entity%20graph-14151c)](https://www.cala.ai)
+[![Junction 2026](https://img.shields.io/badge/Junction%202026-Make%20Unicorns%20Real-6139f8)](docs/reference/cala-track-brief.md)
+[![Tests](https://img.shields.io/badge/tests-511%20backend%20%C2%B7%20298%20frontend-2ea44f)](docs/agents/testing.md)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-## Problem
-Slush 2026 has 2,989 attendees in Cala's graph. A business angel has one calendar and no
-analyst. The angel opens tab after tab, reads databases that are months old, and arrives
-tired at the only part that matters: the decision. The same pain reaches every investor who
-decides alone and cannot build a research system: search funds, small private equity,
-individual investors.
+[Try it](#try-it) · [Pitch video](https://youtu.be/63DRjFkbU_A) · [How it works](docs/how-it-works.md) · [For judges](EVALUATION.md) ·
+[Building on Cala](docs/building-on-cala.md) · [Run locally](#run-it-locally)
 
-Two investor interviews (pseudonymised) shaped the product. One said: "I have no time to
-scout; if a tool pre-selects and I review each pick by hand, I've already won." Findings:
-[docs/agents/research.md](docs/agents/research.md).
+![Grabbit: a report rewritten by the agent and a staged alert](docs/images/03-report-alert.png)
 
-## Solution
-Grabbit is a proactive agent, not a dashboard.
-1. **You give a vague thesis.** "AI, pre-seed or seed, backed by people I trust."
-2. **It asks before it answers.** Two or three questions, each with numbers from Cala.
-3. **You get a Slush shortlist.** Who led each round and which of your trusted investors
-   joined it. Each fact shows a trust badge from Cala's `source_rank`: Official filing,
-   Company or investor, Press, Database. An absent field reads "Not published", never zero.
-4. **You correct it in plain words.** "Shorter, co-investors first." The agent rewrites its
-   own instructions and the report changes on screen. A history shows what it learned.
-5. **You leave. It watches.** A desktop notification tells you what changed on your
-   shortlist and why it matters.
+</div>
 
-How it searches Cala's graph, and what that was measured to find:
-[docs/algorithm.md](docs/algorithm.md).
-What Cala gave us as a platform, and the limits we hit, in numbers (Spanish):
-[docs/research/valoracion-cala.md](docs/research/valoracion-cala.md).
+> [!NOTE]
+> **Judging this project, or asking an agent to?** Start with [EVALUATION.md](EVALUATION.md):
+> it maps Grabbit to each criterion of the rubric with the evidence and the limits behind
+> every claim. A file index for agents is in [llms.txt](llms.txt).
 
-Grabbit never tells you what to buy. The alert in the demo is a simulated event, labelled
-on screen; it goes through the real diff, importance check and delivery path.
+## The problem
 
-TODO: screenshot or GIF here.
+A business angel preparing Slush has one calendar and no analyst. Cala lists 2,989
+attendees for Slush 2026. Preparing by hand means tabs: website, LinkedIn, a funding
+database, search, news, five per startup, about 15,000 for the event. The angel arrives
+tired at the only part that matters: the decision.
 
-## Demo
-- Live: https://cosmic-enhanced-jawfish.eur-1.aiven.app
-- Video (2 min): TODO link
+The same pain reaches every investor who decides alone and cannot build a research system:
+search funds, small private equity, individual investors. Two investor interviews shaped
+the product. One of them put it simply:
 
-Rehearsal: [complete demo flow and checks](docs/demo-rehearsal.md).
+> *"I have no time to scout; if a tool pre-selects and I review each pick by hand, I've
+> already won."* (Investor A, [research](docs/agents/research.md))
 
-## Technologies used
-Cala entity API, Gemini (`google-genai`), Context.dev, FastAPI (Python, uv), React and
-TypeScript (Vite), OpenUI (`@openuidev/react-lang`, generative UI in chat answers), SQLite,
-Aiven for Valkey (shared Cala cache, `redis`), APScheduler, Server-Sent Events, Docker on
-Aiven Runtime (API), Vercel (frontend).
+## The solution
 
-## Run locally
-Needs `uv`, Node 24 and npm.
-```sh
-make setup             # uv sync, npm ci, hooks; creates .env from .env.example
-make dev               # API on :8000, web app on http://localhost:5173
+Grabbit is a proactive research agent, not a dashboard. It borrows the one shortcut
+investors really use: **the judgement of people they trust**. If a fund you respect put
+money into a startup, somebody already did the filtering.
+
+```mermaid
+flowchart LR
+  A["1 · Vague thesis<br/><i>AI, pre-seed or seed</i>"] --> B["2 · It asks first<br/>2-3 questions,<br/>each with a number from Cala"]
+  B --> C["3 · Who you trust<br/><i>Y Combinator, 500 Global</i>"]
+  C --> D["4 · Slush shortlist<br/>ranked by paths to them,<br/>a source on every fact"]
+  D --> E["5 · Correct it in words<br/><i>shorter, one line each</i><br/>it rewrites itself"]
+  E --> F["6 · You leave, it watches<br/>alert when a startup moves"]
+  F -.-> D
 ```
-Offline (no keys): set `CALA_MODE=replay` and `LLM_MODE=fake` in `.env`.
+
+1. **You give a vague thesis.** "AI startups at pre-seed and seed."
+2. **It asks before it answers.** Two or three questions, each with numbers from the
+   candidate set: "7 out of 11 raised funding in the last 12 months. Only recent rounds?"
+3. **You name who you trust.** Grabbit walks those investors' funding rounds in Cala's graph
+   and keeps the startups that attend Slush, plus second-degree links through their usual
+   co-investors.
+4. **You get a ranked shortlist.** Who led each round and which of your trusted investors
+   joined it. Every value carries a badge from Cala's `source_rank`: **Official filing,
+   Company or investor, Press, Database**. An absent field reads "Not published", never zero.
+   "Why it is here" draws the path in the graph.
+5. **You correct it in plain words.** "Shorter, one line per startup." The agent rewrites its
+   own report instructions, says so ("From now on: one line per startup."), and the report
+   changes on screen. "What changed" keeps the history, with undo.
+6. **You leave. It watches.** Every 15 minutes it diffs your shortlist against Cala; when a
+   startup raises, loses an executive or grows, a desktop notification tells you what
+   changed and why it matters.
+
+Grabbit never tells you what to buy. The investor decides.
+
+| Start vague | It asks, with numbers |
+| --- | --- |
+| ![Start screen](docs/images/01-start.png) | ![Data-backed questions](docs/images/02-questions.png) |
+
+## Why Cala is the core
+
+Remove Cala and nothing is left. The question Grabbit answers, *which startups at Slush are
+a few funding rounds away from the investors I trust?*, lives only in Cala's funding-round
+graph: who invested, who led, when, and from which source.
+
+```mermaid
+graph LR
+  I(("Trusted<br/>investor")) -- "PARTICIPATES_IN_FUNDING_ROUND<br/>role, is_lead" --> R["FundingRound<br/>date · amount · source_rank"]
+  C(("Startup")) -- "ISSUER" --> R
+  C -- "PARTICIPATES_IN_EVENT" --> E["Slush 2026<br/>2,989 attendees"]
+  I2(("Co-investor")) -- "same rounds" --> R
+```
+
+Reading Slush in list order reaches 150 attendees before the call budget runs out. Walking
+from the investors you trust reaches all of them. Measured with Y Combinator and 500 Global
+([algorithm](docs/algorithm.md#results)):
+
+| | Event in list order | Walk from trust |
+| --- | :---: | :---: |
+| Startups with a trusted investor in their rounds | 5 | **27** |
+| Candidates with any path to a trusted investor | 5 | **45** |
+| Top 10 of the ranking that were invisible before | | **8** |
+| Cala calls to get there | about 9,000 (estimate) | about 520 |
+
+Cala features in use: entity search, introspection, retrieval with edges, events as
+entities, `source_rank` and date precision on every fact, dated edges for the watcher, and
+the graph as agent tools so the chat can walk it live. We built on the raw entity endpoints,
+as Cala asked; the LLM knowledge query is used only for news. What worked, what did not and
+what we would ask Cala for: [docs/building-on-cala.md](docs/building-on-cala.md).
+
+## Try it
+
+**Live:** https://www.grabbit.cloud (add `?demo` for the button that stages an alert).<br>
+**Pitch video (2 min):** https://youtu.be/63DRjFkbU_A
+
+1. Tap **"AI startups at pre-seed and seed"** and answer or skip the questions.
+2. Type **"I trust Y Combinator and 500 Global"**. The report opens.
+3. Scroll to a startup: a badge under every value, and **Why it is here**.
+4. Type **"Shorter, one line per startup"** and watch the report rewrite itself.
+5. Press **Alerts**: thirty seconds later an alert lands.
+
+> [!NOTE]
+> The demo alert is a staged event, labelled **Simulated event** on screen: no startup
+> raises money on cue. It still goes through the real diff, importance check and delivery
+> path. The deployed API answers from a cached copy of Cala (`CALA_MODE=replay`) so the demo
+> survives venue wifi; Y Combinator and 500 Global are the warmed pair.
+
+No server at hand? **How Grabbit works**, at the foot of the sidebar, runs the same loop on
+sample data inside the browser.
+
+## How it works
+
+```mermaid
+flowchart LR
+  UI["React app<br/>chat · report · badges · alerts"] -- "REST + SSE" --> API["FastAPI<br/>agent · discovery · reports · watcher"]
+  API --> Cala[["Cala API"]]
+  API --> Gemini[["Gemini"]]
+  API -.-> Ctx[["Context.dev<br/>web, unverified"]]
+  API <--> Cache[("SQLite + Valkey<br/>Cala cache")]
+```
+
+- **Discovery** unites an event walk with a reverse walk from the trusted investors and a
+  second ring of their co-investors, then ranks by a **proximity score**: the sum of the
+  five strongest sourced paths, weighted by distance, lead or participant, recency, source
+  strength and selectivity. Every rank can be explained.
+- **The agent** (Gemini) chats, asks data-backed questions, edits the profile and rewrites
+  its own instructions through tool calls, under fixed rules enforced in code.
+- **Reports** are ranked deterministically; Gemini writes only prose with placeholders and
+  the server fills each value from a sourced fact, so the model never invents a number.
+- **The watcher** polls the shortlist, diffs snapshots, scores importance and pushes alerts
+  over Server-Sent Events.
+
+The full tour, with diagrams of every part: [docs/how-it-works.md](docs/how-it-works.md).
+The discovery algorithm, its measurements and its limits: [docs/algorithm.md](docs/algorithm.md).
+
+## Run it locally
+
+You need [uv](https://docs.astral.sh/uv/), Node 24 and npm.
+
+```sh
+make setup    # uv sync, npm ci, git hooks; creates .env from .env.example
+make dev      # API on :8000, web app on http://localhost:5173
+```
+
+> [!TIP]
+> **No keys?** Set `CALA_MODE=replay` and `LLM_MODE=fake` in `.env`: the app runs on the
+> cache and scripted model answers. With keys, fill `CALA_API_KEY` and `GEMINI_API_KEY`
+> (see [.env.example](.env.example)) and run `make warm` once to fill the Cala cache.
 
 | Command | What it does |
 | --- | --- |
-| `make test` | Backend pytest and frontend Vitest, quiet |
+| `make test` | Backend pytest and frontend Vitest |
 | `make lint` | ruff, Biome and the TypeScript check |
 | `make fmt` | Formats only the files changed on your branch |
-| `make gen-api` | Regenerates `frontend/src/api/schema.ts` from the running API |
-| `make warm` | Fills the Cala cache for the demo and checks the first chat turn hits it; `ARGS=--check` only checks. Run it before presenting (docs/agents/pitch.md "Demo checklist") |
+| `make warm` | Fills the Cala cache for the demo; `ARGS=--check` exits 1 on any miss |
+| `make gen-api` | Regenerates the TypeScript client from the running API |
 | `make docker` | Builds the production image (frontend served by FastAPI on :8000) |
 
-API docs while `make dev` runs: http://localhost:8000/api/docs
+API docs while `make dev` runs: http://localhost:8000/api/docs. Hosting and redeploys:
+[docs/deploy.md](docs/deploy.md).
 
-## Deploy
-The demo runs at https://www.grabbit.cloud; `grabbit.cloud` redirects there. IONOS holds the
-domain and its DNS.
-- Frontend on Vercel: the project's root directory is `frontend/`, built with
-  `frontend/vercel.json`. Every push to `main` deploys to production; PRs get preview links.
-  Vercel issues the certificates for `grabbit.cloud` and `www.grabbit.cloud` and does the
-  apex redirect. `frontend/vercel.json` proxies `/api/*` (REST and the SSE stream) to the
-  Aiven host, so the browser stays on one origin and the API needs no CORS.
-- `grabbit-app` (Aiven Runtime, `startup-100-2048`, project `grabbit`, AWS `eu-central-1`,
-  https://cosmic-enhanced-jawfish.eur-1.aiven.app) serves the API: it builds the root
-  `Dockerfile` from `main` on port 8000. Merging does **not** deploy it: use
-  Runtime > `grabbit-app` > Actions > **Deploy latest commit** in the console. Keys and
-  modes are its environment variables (keys as secrets); `CALA_MODE=replay`. If the
-  Aiven host changes, update the `/api` rewrite in `frontend/vercel.json`.
-- `grabbit-cache` (Aiven for Valkey, Hobbyist) holds the shared Cala cache; Aiven injects its
-  URI into the app as `VALKEY_URL`. Fill it from your laptop with `VALKEY_URL` in `.env`
-  and `make warm` (plus `ARGS="--news"`); the app sees new entries without a redeploy.
-- SQLite in the app is not persistent: every deploy starts with empty profiles, chats and
-  reports. The Cala cache survives because it lives in Valkey.
-- Both are paid from Aiven's 50 USD trial credits; with no card on file, Aiven powers them
-  off when the credits run out instead of charging.
+## Built with
 
-### Legacy: AWS EC2
-The first deploy, no longer the demo link. It runs on one AWS EC2 host: a Caddy edge on port 80 proxies to one app container,
-and each deploy starts the new image next to the old one (blue/green), moves traffic only
-once it is healthy, then stops the old one. No downtime; a broken image never goes live.
-`.github/workflows/deploy.yml` runs on every push to `main`: `make test lint`, image to
-GHCR, then `deploy/rollout.sh` on the host over SSH. PRs run only the tests.
+| Layer | Technology |
+| --- | --- |
+| Data | [Cala](https://www.cala.ai) entity API (the core), [Context.dev](https://context.dev) for unverified web signals |
+| AI | Gemini via `google-genai`: chat with tool calls, self-rewriting instructions, report prose, importance scores, live voice transcription |
+| Backend | Python, FastAPI, uv, Pydantic, APScheduler, SQLite, Server-Sent Events |
+| Frontend | React, TypeScript, Vite, OpenUI (generative UI in chat answers), CSS Modules, PWA |
+| Infra | Vercel (frontend), Aiven Runtime (API, Docker), Aiven for Valkey (shared Cala cache) |
 
-One-time setup (needs `DEPLOY_HOST` and `SSH_KEY`, the AWS `.pem`, in `.env`):
-```sh
-make warm          # fill data/grabbit.db so the server starts with the Cala cache
-make server-init   # uploads the server .env and the cache, installs a deploy key
-```
-The workflow needs secrets `DEPLOY_SSH_KEY` and `DEPLOY_KNOWN_HOSTS` and variables
-`DEPLOY_HOST` and `DEPLOY_USER`; repo secrets need the repo owner. Either the owner makes
-the key pair, sets them and you pass the public key as `DEPLOY_PUBKEY='ssh-ed25519 ...'`,
-or `server-init` makes the pair and prints the `gh secret set` commands to run. The security group must allow inbound TCP 80. Until `DEPLOY_HOST` is set
-the workflow builds the image and skips the deploy.
+## Documentation
 
-App secrets live only in `/opt/junction/.env` on the host (`server-init` writes it once
-from your `.env`, with `CALA_MODE=replay` unless `DEPLOY_CALA_MODE` says otherwise, and
-`DEMO_MODE=1`); edit it there and redeploy to change them. SQLite lives in
-`/opt/junction/data` and survives deploys; `SYNC_DB=1 make server-init` replaces it.
-`make deploy` reruns the workflow on `main`. HTTP only for now: set `SITE_ADDRESS` to a
-domain pointed at the host in the server `.env`, open port 443 and remove the
-`grabbit-edge` container once, and the next deploy restarts it with automatic HTTPS.
-
-## Contributing
-After cloning, run `bash scripts/setup.sh` once (hooks, local exclusions, `.env`).
-Then follow `AGENTS.md`: one issue, one branch, one PR; never push to `main`.
-Raw briefs and partner docs live in `docs/reference/`; refresh a docs mirror with
-`bash scripts/fetch-docs.sh [base_url] [dest]` (default: Context.dev).
-How we manage issues, the board, labels and milestones: `docs/agents/workflow.md`.
-
-Commit messages and PR titles: `[<github-user>] [<TYPE>] (#<issue>) <Summary>`, e.g.
-`[JJavierBS] [FEATURE] (#12) Add Cala API wrapper`. TYPE is FEATURE, FIX, DOCS, CHORE...
-Leave out `(#<issue>)` only when there is no issue. Details in `docs/agents/commits.md`.
-
-**Important: no AI attribution anywhere.** Commits, PR titles and descriptions, branch
-names, issues and code comments must not mention AI tools: no `Co-Authored-By` trailers
-for assistants, no "Generated with ...". The `commit-msg` hook rejects them; configure
-your assistant so it does not add them.
+| If you want to... | Read |
+| --- | --- |
+| Score the project against the rubric | [EVALUATION.md](EVALUATION.md) |
+| Understand the system, with diagrams | [docs/how-it-works.md](docs/how-it-works.md) |
+| Dig into the search and ranking | [docs/algorithm.md](docs/algorithm.md) |
+| Build on Cala, or read our feedback to Cala | [docs/building-on-cala.md](docs/building-on-cala.md) |
+| See the user research | [docs/agents/research.md](docs/agents/research.md), [docs/research/](docs/research/) |
+| Check why something was decided | [docs/agents/decisions.md](docs/agents/decisions.md) (dated log) |
+| Rehearse or give the demo | [docs/agents/pitch.md](docs/agents/pitch.md), [docs/demo-rehearsal.md](docs/demo-rehearsal.md) |
+| Deploy it | [docs/deploy.md](docs/deploy.md) |
+| Work on the code | [docs/contributing.md](docs/contributing.md), [AGENTS.md](AGENTS.md) |
 
 ## Team
-- Francisco Moreno Sanchez: TODO role
-- José Javier Bravo Sarabia: TODO role
-- Juan López Bravo: TODO role
-- Rubén Moyano Palazón: TODO role
 
-## License
-MIT, see [LICENSE](LICENSE). Partner APIs and data are subject to their own terms.
+Built in one weekend at Junction 2026, Espoo, by four people each driving AI coding agents
+on separate branches, through 100+ reviewed pull requests.
+
+| | Main contributions (from the git history) |
+| --- | --- |
+| **Francisco Moreno Sánchez** ([@wall3n](https://github.com/wall3n)) | First web app, pitch video, README text |
+| **José Javier Bravo Sarabia** ([@JJavierBS](https://github.com/JJavierBS)) | Discovery engine (reverse walk, second ring, proximity score), shared cache, PWA, deploy |
+| **Juan López Bravo** ([@juanlo7](https://github.com/juanlo7)) | Product flow and research docs, Cala client and cache, report polish, guided demo, peer review script |
+| **Rubén Moyano Palazón** ([@rubmoyanop](https://github.com/rubmoyanop)) | Agent questions and focus, live voice transcription, engine review and data audit, Cala assessment |
+
+<div align="center">
+
+[Pitch video](https://youtu.be/63DRjFkbU_A) · Source: MIT, see [LICENSE](LICENSE). Partner APIs and data stay under their own terms.
+
+</div>

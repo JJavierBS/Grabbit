@@ -50,7 +50,7 @@ docker:
 		"import sqlite3; sqlite3.connect('../data/grabbit.db').execute('PRAGMA wal_checkpoint(TRUNCATE)')"; fi
 	docker build --platform linux/amd64 -t grabbit .
 
-# Runs the deploy workflow on main: tests, image to GHCR, blue/green rollout on EC2 (README "Deploy").
+# Runs the deploy workflow on main: tests, image to GHCR, blue/green rollout on EC2 (docs/deploy.md).
 deploy:
 	gh workflow run deploy.yml --ref main
 	@sleep 5; gh run watch "$$(gh run list --workflow deploy.yml --branch main --limit 1 --json databaseId --jq '.[0].databaseId')" --exit-status
