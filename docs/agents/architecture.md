@@ -24,7 +24,7 @@ Owners are assigned on the issues; the board is the source of truth.
 | Discovery | `backend/app/discovery/` | Event walk plus reverse walk from the trusted investors -> candidates with rounds, hidden links and a proximity score; whole algorithm and its measured results in `docs/algorithm.md` |
 | Signals | `backend/app/signals/` | Pure functions: co-invest, lead follow-on, likely to raise soon |
 | Agent | `backend/app/agent/` | Chat, question bank, tools that edit the profile and its own instructions |
-| Reports | `backend/app/reports/` | Builds `Report` from candidates, signals, profile and instructions |
+| Reports | `backend/app/reports/` | Builds `Report` from candidates, signals, profile and instructions; `translate.py` puts third-party text into the profile language |
 | Watcher | `backend/app/watcher/` | Snapshots, diff, importance check, `Alert` |
 | Scheduler | `backend/app/scheduler.py` | APScheduler jobs: digest and watcher per profile |
 | Runtime glue | `backend/app/runtime.py` | Cala session on the shared cache; the jobs the lifespan schedules (watcher over the latest report, digest) |
@@ -38,7 +38,7 @@ Owners are assigned on the issues; the board is the source of truth.
 - Workspaces: the `X-Workspace` header (or `?workspace=` on SSE) picks the visitor; missing
   means `default`. Profile, chat, reports, snapshots and alerts carry a `workspace` column and
   stores filter by `workspace.current()`; events reach only that workspace's streams. The
-  Cala and Context.dev caches and investor names stay shared. A table registered with
+  Cala and Context.dev caches, translations and investor names stay shared. A table registered with
   `db.drop_if_missing` is dropped at startup when an older file lacks the column.
 - Main entities: `Profile` (filters, reference investors, style, cadence, threshold,
   `instructions` written by Gemini, `version`), `ProfileVersion` (diff, reason, author),
@@ -50,7 +50,7 @@ Owners are assigned on the issues; the board is the source of truth.
 | --- | --- | --- |
 | Cala API (`https://api.cala.ai`) | Discovery from `Event`, companies, rounds, investors, people | `CALA_API_KEY`, `CALA_MODE` |
 | Context.dev (`https://api.context.dev/v1`) | Soft signals only (decisions.md) | `CONTEXT_DEV_API_KEY` |
-| Gemini API (Google DeepMind), SDK `google-genai` | Chat, self-personalization, report writing, importance score | `GEMINI_API_KEY`, `GEMINI_MODEL`, `LLM_MODE` |
+| Gemini API (Google DeepMind), SDK `google-genai` | Chat, self-personalization, report writing, importance score; translation on the lite model | `GEMINI_API_KEY`, `GEMINI_MODEL`, `GEMINI_LITE_MODEL`, `LLM_MODE` |
 | Aiven for Valkey (`grabbit-cache`) | Shared Cala cache across deployed instances; SQLite stays the fallback | `VALKEY_URL` |
 | Vercel | Serves the built frontend on `www.grabbit.cloud` (certificates, apex redirect) and proxies `/api/*` to Aiven Runtime; deploys on every push to `main` (`frontend/vercel.json`) | None: the frontend has no secrets |
 | Aiven Runtime (`grabbit-app`) | Deployed API behind Vercel, built from `main` with the root `Dockerfile`; redeploy by hand (docs/deploy.md) | App environment variables in Aiven, never in git |
