@@ -72,7 +72,14 @@ class LLM(Protocol):
     ) -> ChatResult: ...
 
     async def generate(
-        self, *, task: str, system: str, prompt: str, schema: type[T], quick: bool = False
+        self,
+        *,
+        task: str,
+        system: str,
+        prompt: str,
+        schema: type[T],
+        quick: bool = False,
+        lite: bool = False,
     ) -> T: ...
 
     async def transcribe(self, *, audio: bytes, mime_type: str) -> str: ...

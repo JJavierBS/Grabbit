@@ -54,4 +54,5 @@ async def test_service_adds_web_news_without_showing_it_to_the_model(now):
     assert "Kiln opens a Stockholm office" in report.sections[-1].body_md
     cala_text = "\n".join(s.body_md for s in report.sections[:-1])
     assert "Stockholm" not in cala_text
-    assert all("Stockholm" not in prompt for _, prompt in llm.calls)
+    # Only the translator (#226) may read third-party text; the prose writer never does.
+    assert all("Stockholm" not in prompt for task, prompt in llm.calls if task != "translate")

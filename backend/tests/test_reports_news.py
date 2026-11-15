@@ -38,7 +38,8 @@ async def test_cached_news_lands_on_the_candidate_but_not_in_the_prose(now):
     assert all(not items for other, items in news.items() if other != name)
     prose = "\n".join(s.body_md for s in report.sections) + report.summary
     assert "creative roles" not in prose
-    assert all("creative roles" not in prompt for _, prompt in llm.calls)
+    # Only the translator (#226) may read third-party text; the prose writer never does.
+    assert all("creative roles" not in prompt for task, prompt in llm.calls if task != "translate")
 
 
 async def test_no_cache_no_news_no_error(now):

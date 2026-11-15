@@ -304,6 +304,8 @@ export interface components {
       website: string | null;
       /** Description */
       description: string | null;
+      /** @description Set when `description` was translated into the profile language */
+      description_original: components["schemas"]["Original"] | null;
       founding_date: components["schemas"]["Fact"];
       funding_stage: components["schemas"]["Fact"];
       headcount: components["schemas"]["Fact"];
@@ -606,6 +608,10 @@ export interface components {
       title: string;
       /** Summary */
       summary: string | null;
+      /** @description Set when `title` was translated into the profile language */
+      title_original: components["schemas"]["Original"] | null;
+      /** @description Set when `summary` was translated into the profile language */
+      summary_original: components["schemas"]["Original"] | null;
       /** @description Read at its source's date_precision; absent when Cala has none */
       date: components["schemas"]["Fact"];
       /**
@@ -626,6 +632,19 @@ export interface components {
         | "cala_news"
         | "web_unverified"
         | "not_published";
+    };
+    /**
+     * Original
+     * @description Third-party text as its source wrote it, before it was translated (#226).
+     */
+    Original: {
+      /**
+       * Language
+       * @description ISO 639-1 code of the source text
+       */
+      language: string;
+      /** Text */
+      text: string;
     };
     /** Profile */
     Profile: {

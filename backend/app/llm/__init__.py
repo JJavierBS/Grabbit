@@ -42,4 +42,5 @@ def get_llm() -> LLM:
         timeout_s=settings.gemini_timeout_s,
         thoughts=settings.gemini_thoughts,
         live_transcribe_model=settings.gemini_live_transcribe_model,
+        lite_model=settings.gemini_lite_model,
     )

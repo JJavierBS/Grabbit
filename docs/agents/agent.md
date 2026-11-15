@@ -41,6 +41,11 @@ From Cala `source_rank` (cala.md). A fact with several sources shows the stronge
 | `web_unverified` | Web, unverified | Context.dev soft signals; never mixed with Cala facts |
 | `not_published` | Not published | Field absent in Cala; never shown as 0 |
 Dates show only their precision: a `year` date reads "2019", not "2019-01-01".
+Third-party text in a report (descriptions, Cala news, web headlines) reads in the
+conversation language, `style.language`, like the prose: `app/reports/translate.py` asks
+the lite model once per report for what is not cached, keeps the badge, and the card says
+"Translated from <language>" with the original one click away (#226). A translation whose
+digits differ from the source's is dropped and the original shown.
 
 ## Question bank (onboarding and thesis flow)
 Each question is backed by data from the current candidate set; ask 2-3, never all of them.

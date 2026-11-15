@@ -15,6 +15,7 @@ export type ProximityPath = Schemas["ProximityPath"];
 export type Candidate = Schemas["Candidate"];
 export type NewsItem = Schemas["NewsItem"];
 export type NewsEntity = Schemas["NewsEntity"];
+export type Original = Schemas["Original"];
 export type Profile = Schemas["Profile"];
 export type ProfileChange = Schemas["ProfileChange"];
 export type ChatMessage = Schemas["ChatMessage"];

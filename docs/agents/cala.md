@@ -325,7 +325,8 @@ latest news about a company. Use that exact wording: it is also our cache key.
   calls run in the `news` scheduler job (latest report's startups, every 6 h, first one a
   minute after start) and in `python -m scripts.warm --news [--retry-empty]`, strictly
   serial, 180 s timeout, one retry. Items are `NewsItem`s on `Candidate.news` with trust
-  `cala_news` (agent.md "Trust scale"), never shown to the report writer.
+  `cala_news` (agent.md "Trust scale"), never shown to the report writer. Titles and
+  summaries are translated into the profile language when the report is built (#226).
 
 ## Open questions for Cala
 - Exact rate limit, and whether it is raised for the hackathon.

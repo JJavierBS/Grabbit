@@ -39,10 +39,13 @@ work in parallel against mocks.
 - `Round`: `entity_id, label?, name, amount: Fact, date: Fact, investors: Investor[]`.
 - `Signal`: `kind (co_invest|lead_follow_on|likely_to_raise), label, value?, explanation,
   facts: Fact[]`. `value=null` means not enough data, shown as such.
-- `NewsItem`: `title, summary?, date: Fact, entities [{entity_id, name, entity_type}],
-  trust (cala_news)`. From Cala's knowledge query (cala.md "News"): `date` carries its
+- `Original`: `language` (ISO 639-1), `text`. Third-party text as its source wrote it, set
+  next to a field translated into `style.language` (#226, agent.md "Trust scale").
+- `NewsItem`: `title, summary?, title_original?: Original, summary_original?: Original,
+  date: Fact, entities [{entity_id, name, entity_type}], trust (cala_news)`. From Cala's knowledge query (cala.md "News"): `date` carries its
   precision in its source (`not_published` when Cala has none), no per-item source link.
-- `Candidate`: `entity_id, name, website?, description?, founding_date: Fact,
+- `Candidate`: `entity_id, name, website?, description?, description_original?: Original,
+  founding_date: Fact,
   funding_stage: Fact, headcount: Fact, total_funding: Fact, hq: Fact, industries: string[],
   rounds: Round[], signals: Signal[], news: NewsItem[], links: HiddenLink[],
   proximity?: Proximity`. `news`: newest first, at most 5, cached only.

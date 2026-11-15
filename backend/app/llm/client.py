@@ -30,12 +30,14 @@ class GeminiLLM:
         timeout_s: float = 30.0,
         thoughts: bool = False,
         live_transcribe_model: str = "",
+        lite_model: str = "",
     ) -> None:
         if not api_key or not model:
             raise LLMError("GEMINI_API_KEY and GEMINI_MODEL are required with LLM_MODE=gemini")
         self.model = model
         self.thoughts = thoughts
         self.live_transcribe_model = live_transcribe_model
+        self.lite_model = lite_model or model
         # Ephemeral tokens and the Live API exist only on v1beta.
         self._live_client = genai.Client(
             api_key=api_key,
@@ -94,7 +96,14 @@ class GeminiLLM:
         return ChatResult(text=_text(parts), tool_calls=calls, thoughts=_thoughts(parts))
 
     async def generate(
-        self, *, task: str, system: str, prompt: str, schema: type[T], quick: bool = False
+        self,
+        *,
+        task: str,
+        system: str,
+        prompt: str,
+        schema: type[T],
+        quick: bool = False,
+        lite: bool = False,
     ) -> T:
         config = types.GenerateContentConfig(
             system_instruction=system,
@@ -102,10 +111,12 @@ class GeminiLLM:
             response_mime_type="application/json",
             response_json_schema=schema.model_json_schema(),
         )
-        if quick:
+        if quick or lite:
             # Picking and wording a few lines needs no deep reasoning: ~2 s instead of ~13 s.
             config.thinking_config = types.ThinkingConfig(thinking_level="minimal")
-        response = await self._call(task, _contents([Message(role="user", text=prompt)]), config)
+        model = self.lite_model if lite else self.model
+        contents = _contents([Message(role="user", text=prompt)])
+        response = await self._call(task, contents, config, model=model)
         try:
             return schema.model_validate_json(_text(_parts_of(response)))
         except ValidationError as exc:
@@ -178,11 +189,11 @@ class GeminiLLM:
         log.info("gemini %s streamed in %.2fs", task, time.monotonic() - started)
         return parts
 
-    async def _call(self, task: str, contents, config):
+    async def _call(self, task: str, contents, config, *, model: str | None = None):
         started = time.monotonic()
         try:
             response = await self._client.aio.models.generate_content(
-                model=self.model, contents=contents, config=config
+                model=model or self.model, contents=contents, config=config
             )
         except errors.APIError as exc:
             log.warning("gemini %s failed: %s %s", task, exc.code, exc.status)

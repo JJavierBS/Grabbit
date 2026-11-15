@@ -59,7 +59,7 @@ def agent_db(offline_settings: None) -> Iterator[None]:
     from app.context_dev import client as _web  # noqa: F401  registers its cache
     from app.context_dev import get_context_dev
     from app.llm import get_llm
-    from app.store import chat, profile, reports  # noqa: F401  registers tables
+    from app.store import chat, profile, reports, translations  # noqa: F401  registers tables
     from app.store.db import init_db
 
     get_llm.cache_clear()

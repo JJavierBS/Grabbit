@@ -10,6 +10,7 @@ from app.models import Candidate, Fact, Profile, Report, ReportSection
 from app.reports import write
 from app.reports.facts import BADGES, render_date
 from app.reports.rank import co_invest, rank
+from app.store.translations import Translation
 from app.trusted import Trusted
 
 Kind = Literal["prep", "digest", "memo"]
@@ -130,24 +131,33 @@ def _sections(
 WEB_SECTION = "Web signals (unverified)"
 
 
-def with_web_signals(report: Report, signals: dict[str, list[Fact]]) -> Report:
-    """Append web news in its own section; it never enters the Cala facts or the model's prose."""
+def with_web_signals(
+    report: Report,
+    signals: dict[str, list[Fact]],
+    translations: dict[str, Translation] | None = None,
+) -> Report:
+    """Append web news in its own section; it never enters the Cala facts or the model's prose.
+
+    A translated headline says so; its link still opens the article in its own language."""
     names = {c.entity_id: c.name for c in report.candidates}
     ids = [i for i in names if signals.get(i)]
     if not ids:
         return report
     blocks = []
     for entity_id in ids:
-        items = "\n".join(f"- {_web_item(f)}" for f in signals[entity_id])
+        items = "\n".join(f"- {_web_item(f, translations or {})}" for f in signals[entity_id])
         blocks.append(f"**{names[entity_id]}**\n\n{items}")
     section = ReportSection(title=WEB_SECTION, body_md="\n\n".join(blocks), candidate_ids=ids)
     return report.model_copy(update={"sections": [*report.sections, section]})
 
 
-def _web_item(fact: Fact) -> str:
+def _web_item(fact: Fact, translations: dict[str, Translation]) -> str:
+    translation = translations.get(str(fact.value))
+    headline = translation.text if translation else str(fact.value)
     # Headlines are third-party text: keep them from breaking the Markdown link.
-    title = " ".join(re.sub(r"[\[\]()]", " ", str(fact.value)).split())
+    title = " ".join(re.sub(r"[\[\]()]", " ", headline).split())
     source = fact.sources[0] if fact.sources else None
     link = f"[{title}]({source.url})" if source and source.url else title
     where = ", ".join(x for x in (source and source.name, source and render_date(source)) if x)
-    return f"{link} ({where + ', ' if where else ''}{BADGES['web_unverified']})"
+    note = f", translated from {translation.language_name}" if translation else ""
+    return f"{link} ({where + ', ' if where else ''}{BADGES['web_unverified']}{note})"

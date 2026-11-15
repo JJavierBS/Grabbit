@@ -15,6 +15,7 @@ from app.llm import LLM, get_llm
 from app.models import Profile, Report, ReportRef
 from app.references import resolve_references
 from app.reports.build import Kind, build, new_report_id, shown_since_prep, with_web_signals
+from app.reports.translate import report_texts, translate_texts, with_translations
 from app.runtime import open_cala
 from app.store import chat as chat_store
 from app.store import profile as profile_store
@@ -45,9 +46,10 @@ async def run(
     profile = profile or profile_store.current(now)
     candidates = await candidates_for(profile)
     profile = resolve_references(profile, candidates)
+    llm = llm or get_llm()
     report = await build(
         kind,
-        llm=llm or get_llm(),
+        llm=llm,
         profile=profile,
         candidates=candidates,
         previous=shown_since_prep(report_store.since_last_prep()),
@@ -55,8 +57,10 @@ async def run(
         report_id=report_id,
     )
     signals = await soft_signals(web or get_context_dev(), report.candidates, profile, now)
-    report = with_web_signals(report, signals)
     report = await with_cala_news(report)
+    translations = await translate_texts(llm, report_texts(report, signals), profile.style.language)
+    report = with_translations(report, translations)
+    report = with_web_signals(report, signals, translations)
     if superseded():
         log.info("report %s dropped: a newer profile version is being reported", report.id)
         return report

@@ -62,6 +62,8 @@ const newsItem = (
 ): NewsItem => ({
   title,
   summary,
+  title_original: null,
+  summary_original: null,
   date: date
     ? {
         value: date,
@@ -213,6 +215,7 @@ export const candidates: Candidate[] = [
     name: "Northwind Labs",
     website: "https://example.com/northwind",
     description: "Carbon accounting for Nordic logistics fleets.",
+    description_original: null,
     founding_date: fact("2021-01-01", registry("2021-01-01")),
     funding_stage: fact("Seed", database),
     headcount: fact(18, company, "people"),
@@ -270,6 +273,7 @@ export const candidates: Candidate[] = [
     name: "Lumen Ledger",
     website: "https://example.com/lumen",
     description: "Treasury automation for small Nordic exporters.",
+    description_original: null,
     founding_date: fact("2020-03-01", registry("2020-03-01", "month")),
     funding_stage: fact("Series A", database),
     headcount: fact(42, company, "people"),
@@ -327,6 +331,7 @@ export const candidates: Candidate[] = [
     name: "Kettle Robotics",
     website: "https://example.com/kettle",
     description: "Autonomous picking arms for food warehouses.",
+    description_original: null,
     founding_date: fact("2023-01-01", registry("2023-01-01")),
     funding_stage: fact("Pre-seed", database),
     headcount: fact(9, company, "people"),
@@ -364,6 +369,7 @@ export const candidates: Candidate[] = [
     name: "Saltmarsh Bio",
     website: "https://example.com/saltmarsh",
     description: "At-home gut health test kits.",
+    description_original: null,
     founding_date: fact("2022-01-01", registry("2022-01-01")),
     funding_stage: fact("Seed", database),
     headcount: fact(
