@@ -47,7 +47,7 @@ Rehearsal: [complete demo flow and checks](docs/demo-rehearsal.md).
 Cala entity API, Gemini (`google-genai`), Context.dev, FastAPI (Python, uv), React and
 TypeScript (Vite), OpenUI (`@openuidev/react-lang`, generative UI in chat answers), SQLite,
 Aiven for Valkey (shared Cala cache, `redis`), APScheduler, Server-Sent Events, Docker on
-Aiven Runtime.
+Aiven Runtime (API), Vercel (frontend).
 
 ## Run locally
 Needs `uv`, Node 24 and npm.
@@ -69,13 +69,19 @@ Offline (no keys): set `CALA_MODE=replay` and `LLM_MODE=fake` in `.env`.
 API docs while `make dev` runs: http://localhost:8000/api/docs
 
 ## Deploy
-The demo runs on Aiven, project `grabbit`, AWS `eu-central-1`:
-https://www.grabbit.cloud (Aiven host: https://cosmic-enhanced-jawfish.eur-1.aiven.app;
-`http://grabbit.cloud` redirects there from IONOS, which holds the domain and its DNS)
-- `grabbit-app` (Aiven Runtime, `startup-100-2048`) builds the root `Dockerfile` from
-  `main` and serves it on port 8000. Merging does **not** deploy: use
+The demo runs at https://www.grabbit.cloud; `grabbit.cloud` redirects there. IONOS holds the
+domain and its DNS.
+- Frontend on Vercel: the project's root directory is `frontend/`, built with
+  `frontend/vercel.json`. Every push to `main` deploys to production; PRs get preview links.
+  Vercel issues the certificates for `grabbit.cloud` and `www.grabbit.cloud` and does the
+  apex redirect. `frontend/vercel.json` proxies `/api/*` (REST and the SSE stream) to the
+  Aiven host, so the browser stays on one origin and the API needs no CORS.
+- `grabbit-app` (Aiven Runtime, `startup-100-2048`, project `grabbit`, AWS `eu-central-1`,
+  https://cosmic-enhanced-jawfish.eur-1.aiven.app) serves the API: it builds the root
+  `Dockerfile` from `main` on port 8000. Merging does **not** deploy it: use
   Runtime > `grabbit-app` > Actions > **Deploy latest commit** in the console. Keys and
-  modes are its environment variables (keys as secrets); `CALA_MODE=replay`.
+  modes are its environment variables (keys as secrets); `CALA_MODE=replay`. If the
+  Aiven host changes, update the `/api` rewrite in `frontend/vercel.json`.
 - `grabbit-cache` (Aiven for Valkey, Hobbyist) holds the shared Cala cache; Aiven injects its
   URI into the app as `VALKEY_URL`. Fill it from your laptop with `VALKEY_URL` in `.env`
   and `make warm` (plus `ARGS="--news"`); the app sees new entries without a redeploy.
