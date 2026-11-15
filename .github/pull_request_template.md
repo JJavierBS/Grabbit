@@ -9,6 +9,6 @@ Closes #
 ## Checklist
 - [ ] `make test lint` passes
 - [ ] Contract, mocks and `.env.example` updated if affected
-- [ ] New dependency or service added to README "Technologies used"
+- [ ] New dependency or service added to README "Built with"
 - [ ] `docs/agents/` updated if something there became wrong
 - [ ] Decisions logged in `docs/agents/decisions.md`

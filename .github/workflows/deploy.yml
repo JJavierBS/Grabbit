@@ -1,4 +1,4 @@
-# Tests every PR; on main also builds the image and rolls it out to EC2 (README "Deploy").
+# Tests every PR; on main also builds the image and rolls it out to EC2 (docs/deploy.md).
 name: deploy
 
 on:
@@ -70,7 +70,7 @@ jobs:
 
   deploy:
     needs: build
-    # Skipped until the repo owner sets the DEPLOY_* variables and secrets (README "Deploy").
+    # Skipped until the repo owner sets the DEPLOY_* variables and secrets (docs/deploy.md).
     if: vars.DEPLOY_HOST != ''
     runs-on: ubuntu-24.04
     permissions:
