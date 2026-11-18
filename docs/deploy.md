@@ -23,6 +23,19 @@ domain and its DNS.
 - Both are paid from Aiven's 50 USD trial credits; with no card on file, Aiven powers them
   off when the credits run out instead of charging.
 
+## Demo snapshot of the Cala cache
+Cala is no longer called after the event, so every demo answers from a snapshot of the cache
+(`CALA_MODE=replay`). The full cache lives in Aiven Valkey; save it before the Aiven credits
+run out. With the Valkey URI from the Aiven console (`grabbit-cache` > Overview):
+```sh
+cd backend
+VALKEY_URL='rediss://...' uv run python -m scripts.export_valkey ../data/grabbit.db ../grabbit-demo.db --strip
+DATABASE_PATH=grabbit-demo.db CALA_MODE=replay make -C .. warm ARGS=--check   # 0 misses expected
+```
+The source file is never modified; `--strip` empties chats, profiles, reports, alerts and
+snapshots so the file can be shared. Upload `grabbit-demo.db` as an asset of a GitHub
+release (`demo-snapshot-2026-11`), not into git: Cala's data stays under Cala's terms.
+
 ## Legacy: AWS EC2
 The first deploy, no longer the demo link. It runs on one AWS EC2 host: a Caddy edge on port 80 proxies to one app container,
 and each deploy starts the new image next to the old one (blue/green), moves traffic only
