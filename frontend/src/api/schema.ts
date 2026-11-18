@@ -481,7 +481,9 @@ export interface components {
        * Llm Mode
        * @enum {string}
        */
-      llm_mode: "gemini" | "fake";
+      llm_mode: "auto" | "gemini" | "openai" | "scripted" | "fake";
+      /** Llm Providers */
+      llm_providers: string[];
       /** Demo Mode */
       demo_mode: boolean;
     };

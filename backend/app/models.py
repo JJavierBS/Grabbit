@@ -32,7 +32,8 @@ AlertKind = Literal[
     "web_news",
 ]
 CalaMode = Literal["live", "replay"]
-LLMMode = Literal["gemini", "fake"]
+# auto: Gemini, then an OpenAI-compatible API, then the scripted demo, from the keys present.
+LLMMode = Literal["auto", "gemini", "openai", "scripted", "fake"]
 
 FactScalar = bool | int | float | str
 FactValue = FactScalar | list[FactScalar]
@@ -374,6 +375,8 @@ class Health(ApiModel):
     status: Literal["ok"]
     cala_mode: CalaMode
     llm_mode: LLMMode
+    # Who answers, in the order they are tried; ["scripted"] means no live model.
+    llm_providers: list[str]
     demo_mode: bool
 
 
