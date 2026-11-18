@@ -15,7 +15,7 @@ fact, and alerts you when one of them moves.
 [![Pitch video](https://img.shields.io/badge/video-2%20min%20pitch-ff0000?logo=youtube&logoColor=white)](https://youtu.be/63DRjFkbU_A)
 [![Built on Cala](https://img.shields.io/badge/data-Cala%20entity%20graph-14151c)](https://www.cala.ai)
 [![Junction 2026](https://img.shields.io/badge/Junction%202026-Make%20Unicorns%20Real-6139f8)](docs/reference/cala-track-brief.md)
-[![Tests](https://img.shields.io/badge/tests-511%20backend%20%C2%B7%20298%20frontend-2ea44f)](docs/agents/testing.md)
+[![Tests](https://img.shields.io/badge/tests-545%20backend%20%C2%B7%20303%20frontend-2ea44f)](docs/agents/testing.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 [Try it](#try-it) · [Pitch video](https://youtu.be/63DRjFkbU_A) · [How it works](docs/how-it-works.md) · [For judges](EVALUATION.md) ·
