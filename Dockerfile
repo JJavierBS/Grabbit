@@ -18,17 +18,21 @@ ENV UV_COMPILE_BYTECODE=1 \
     PATH=/app/backend/.venv/bin:$PATH \
     DATABASE_PATH=/app/data/grabbit.db \
     CALA_MODE=replay \
-    LLM_MODE=gemini \
     DEMO_MODE=1
 WORKDIR /app/backend
 COPY backend/pyproject.toml backend/uv.lock ./
 RUN uv sync --frozen --no-dev --no-install-project
 COPY backend/app ./app
 COPY --from=web /app/frontend/dist /app/frontend/dist
-# Ship the warmed Cala cache when it exists, so the deployed demo works with CALA_MODE=replay.
+# Ship the Cala cache, so the deployed demo works with CALA_MODE=replay: the demo snapshot
+# from DEMO_DB_URL (a release asset; Render passes env vars as build args), else a local
+# data/grabbit.db. Without either the app still runs, on the fixture candidates.
+ARG DEMO_DB_URL=""
 RUN --mount=type=bind,target=/ctx \
     mkdir -p /app/data && \
-    if [ -f /ctx/data/grabbit.db ]; then cp /ctx/data/grabbit.db /app/data/; fi && \
+    if [ -n "$DEMO_DB_URL" ]; then \
+        python -c "import sys, urllib.request; urllib.request.urlretrieve(sys.argv[1], '/app/data/grabbit.db')" "$DEMO_DB_URL"; \
+    elif [ -f /ctx/data/grabbit.db ]; then cp /ctx/data/grabbit.db /app/data/; fi && \
     useradd --system --uid 1001 grabbit && chown -R grabbit /app/data
 USER grabbit
 EXPOSE 8000
