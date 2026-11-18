@@ -52,9 +52,9 @@ Owners are assigned on the issues; the board is the source of truth.
 | Context.dev (`https://api.context.dev/v1`) | Soft signals only (decisions.md) | `CONTEXT_DEV_API_KEY` |
 | Gemini API (Google DeepMind), SDK `google-genai` | Chat, self-personalization, report writing, importance score; translation on the lite model | `GEMINI_API_KEY`, `GEMINI_MODEL`, `GEMINI_LITE_MODEL`, `LLM_MODE` |
 | OpenAI-compatible API (Groq by default), over httpx | Free fallback after Gemini: chat with tools, JSON answers, Whisper transcription; no Live API | `OPENAI_COMPAT_API_KEY`, `OPENAI_COMPAT_BASE_URL`, `OPENAI_COMPAT_MODEL`, `OPENAI_COMPAT_LITE_MODEL`, `OPENAI_COMPAT_TRANSCRIBE_MODEL` |
-| Aiven for Valkey (`grabbit-cache`) | Shared Cala cache across deployed instances; SQLite stays the fallback | `VALKEY_URL` |
-| Vercel | Serves the built frontend on `www.grabbit.cloud` (certificates, apex redirect) and proxies `/api/*` to Aiven Runtime; deploys on every push to `main` (`frontend/vercel.json`) | None: the frontend has no secrets |
-| Aiven Runtime (`grabbit-app`) | Deployed API behind Vercel, built from `main` with the root `Dockerfile`; redeploy by hand (docs/deploy.md) | App environment variables in Aiven, never in git |
+| Render (free plan, `render.yaml`) | The demo since the event: one Docker service serving the web app and the API on `www.grabbit.cloud`, with the Cala snapshot from `DEMO_DB_URL`; deploys on every push to `main` (docs/deploy.md) | Service environment variables in Render, never in git |
+| Aiven for Valkey (`grabbit-cache`) | Legacy: shared Cala cache during the event; optional, SQLite stays the fallback | `VALKEY_URL` |
+| Vercel, Aiven Runtime (`grabbit-app`) | Legacy hosting during the event: frontend on Vercel proxying `/api/*` to Aiven (`frontend/vercel.json`) | None in git |
 | AWS EC2 host + Caddy edge, GHCR image | Legacy deploy, not the demo link; blue/green rollout by `deploy/rollout.sh` from GitHub Actions | `/opt/junction/.env` on the host, never in git |
 
 ## Directory layout
@@ -64,8 +64,8 @@ Owners are assigned on the issues; the board is the source of truth.
 - `docs/`: agent docs (`agents/`), raw references (`reference/`), research (`research/`).
 - `scripts/`: setup, hooks, board, docs mirror, EC2 `server-init.sh`.
 - `deploy/`: files copied to the EC2 host: `Caddyfile`, `rollout.sh`.
-- `Dockerfile`: multi-stage, builds the frontend and serves it from FastAPI (Aiven Runtime
-  builds it; the public site is served by Vercel from `frontend/vercel.json`).
+- `Dockerfile`: multi-stage, builds the frontend and serves it from FastAPI; Render builds
+  it from `render.yaml` and downloads the Cala snapshot from `DEMO_DB_URL`.
 
 ## Constraints
 - Demo must run from a clean clone with `make setup && make dev`.

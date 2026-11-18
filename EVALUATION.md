@@ -150,7 +150,7 @@ open report 31-34 s, correction to the rewritten report 26-37 s
 | Resilience | Every Cala response cached (SQLite + shared Valkey), `CALA_MODE=replay` for bad wifi, `make warm --check` fails on any cache miss before a demo |
 | Rate limits respected | One process-wide queue, spacing between calls, backoff on 429 ([cala/client.py](backend/app/cala/client.py)) |
 | Offline fallback | "How Grabbit works" runs the same loop on sample data inside the browser, with no server |
-| Deployed | Vercel (frontend) + Aiven Runtime (API) + Aiven for Valkey (shared cache) |
+| Deployed | During the event: Vercel (frontend) + Aiven Runtime (API) + Aiven for Valkey (shared cache). Since: one free Render service on a snapshot of the cache ([docs/deploy.md](docs/deploy.md)) |
 
 ### Craft
 
