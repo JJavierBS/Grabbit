@@ -128,8 +128,13 @@ what we would ask Cala for: [docs/building-on-cala.md](docs/building-on-cala.md)
 > [!NOTE]
 > The demo alert is a staged event, labelled **Simulated event** on screen: no startup
 > raises money on cue. It still goes through the real diff, importance check and delivery
-> path. The deployed API answers from a cached copy of Cala (`CALA_MODE=replay`) so the demo
-> survives venue wifi; Y Combinator and 500 Global are the warmed pair.
+> path.
+
+> [!IMPORTANT]
+> **Since the event, the demo runs for free on a snapshot.** It answers from a copy of Cala's
+> data taken in November 2026 (`CALA_MODE=replay`); Cala is not called live, and Y Combinator
+> and 500 Global are the warmed pair. The agent runs on free AI: Gemini, then Groq. With no
+> key set it follows a script for the path above, and the top bar says **Scripted demo**.
 
 No server at hand? **How Grabbit works**, at the foot of the sidebar, runs the same loop on
 sample data inside the browser.
@@ -139,25 +144,34 @@ sample data inside the browser.
 ```mermaid
 flowchart LR
   UI["React app<br/>chat · report · badges · alerts"] -- "REST + SSE" --> API["FastAPI<br/>agent · discovery · reports · watcher"]
-  API --> Cala[["Cala API"]]
-  API --> Gemini[["Gemini"]]
+  API -.-> Cala[["Cala API<br/>live mode only"]]
+  API --> AI[["Gemini → Groq<br/>→ scripted demo"]]
   API -.-> Ctx[["Context.dev<br/>web, unverified"]]
-  API <--> Cache[("SQLite + Valkey<br/>Cala cache")]
+  API <--> Cache[("SQLite<br/>Cala snapshot")]
 ```
 
 - **Discovery** unites an event walk with a reverse walk from the trusted investors and a
   second ring of their co-investors, then ranks by a **proximity score**: the sum of the
   five strongest sourced paths, weighted by distance, lead or participant, recency, source
   strength and selectivity. Every rank can be explained.
-- **The agent** (Gemini) chats, asks data-backed questions, edits the profile and rewrites
+- **The agent** (Gemini, or Groq as the free fallback) chats, asks data-backed questions, edits the profile and rewrites
   its own instructions through tool calls, under fixed rules enforced in code.
-- **Reports** are ranked deterministically; Gemini writes only prose with placeholders and
+- **Reports** are ranked deterministically; the model writes only prose with placeholders and
   the server fills each value from a sourced fact, so the model never invents a number.
 - **The watcher** polls the shortlist, diffs snapshots, scores importance and pushes alerts
   over Server-Sent Events.
 
 The full tour, with diagrams of every part: [docs/how-it-works.md](docs/how-it-works.md).
 The discovery algorithm, its measurements and its limits: [docs/algorithm.md](docs/algorithm.md).
+
+## Deploy your own copy (free)
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/JJavierBS/Grabbit)
+
+Fork it and deploy it on Render's free plan in one click (`render.yaml`): one Docker service
+serves the web app and the API. Give it the demo snapshot's URL (`DEMO_DB_URL`) and, if you
+like, a free Gemini or Groq key; with none, the agent follows the demo script. Custom domain,
+keep-alive and limits: [docs/deploy.md](docs/deploy.md).
 
 ## Run it locally
 
@@ -169,7 +183,7 @@ make dev      # API on :8000, web app on http://localhost:5173
 ```
 
 > [!TIP]
-> **No keys?** Set `CALA_MODE=replay` and `LLM_MODE=fake` in `.env`: the app runs on the
+> **No keys?** Set `CALA_MODE=replay` and leave `LLM_MODE=auto` in `.env`: the app runs on the
 > cache and scripted model answers. With keys, fill `CALA_API_KEY` and `GEMINI_API_KEY`
 > (see [.env.example](.env.example)) and run `make warm` once to fill the Cala cache.
 
@@ -190,10 +204,10 @@ API docs while `make dev` runs: http://localhost:8000/api/docs. Hosting and rede
 | Layer | Technology |
 | --- | --- |
 | Data | [Cala](https://www.cala.ai) entity API (the core), [Context.dev](https://context.dev) for unverified web signals |
-| AI | Gemini via `google-genai`: chat with tool calls, self-rewriting instructions, report prose, importance scores, live voice transcription |
+| AI | Gemini via `google-genai`: chat with tool calls, self-rewriting instructions, report prose, importance scores, live voice transcription; any OpenAI-compatible API (Groq by default) as the free fallback, then a scripted demo that needs no key |
 | Backend | Python, FastAPI, uv, Pydantic, APScheduler, SQLite, Server-Sent Events |
 | Frontend | React, TypeScript, Vite, OpenUI (generative UI in chat answers), CSS Modules, PWA |
-| Infra | Vercel (frontend), Aiven Runtime (API, Docker), Aiven for Valkey (shared Cala cache) |
+| Infra | Render free plan (one Docker service: web app and API), GitHub Actions; during the event Vercel, Aiven Runtime and Aiven for Valkey |
 
 ## Documentation
 
@@ -206,7 +220,7 @@ API docs while `make dev` runs: http://localhost:8000/api/docs. Hosting and rede
 | See the user research | [docs/agents/research.md](docs/agents/research.md), [docs/research/](docs/research/) |
 | Check why something was decided | [docs/agents/decisions.md](docs/agents/decisions.md) (dated log) |
 | Rehearse or give the demo | [docs/agents/pitch.md](docs/agents/pitch.md), [docs/demo-rehearsal.md](docs/demo-rehearsal.md) |
-| Deploy it | [docs/deploy.md](docs/deploy.md) |
+| Deploy it, or deploy your own copy | [docs/deploy.md](docs/deploy.md) |
 | Work on the code | [docs/contributing.md](docs/contributing.md), [AGENTS.md](AGENTS.md) |
 
 ## Team

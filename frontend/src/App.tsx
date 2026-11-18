@@ -2,10 +2,18 @@ import { useQueryClient } from "@tanstack/react-query";
 import { PanelLeft, RefreshCw, SlidersHorizontal, SquarePen, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./App.module.css";
-import { keys, useChat, useLatestReport, useProfile, useSendMessage } from "./api/hooks/queries";
+import {
+  keys,
+  useChat,
+  useHealth,
+  useLatestReport,
+  useProfile,
+  useSendMessage,
+} from "./api/hooks/queries";
 import { type StreamStatus, useEvents } from "./api/hooks/useEvents";
 import type { Alert, ChatMessage, Report } from "./api/types";
 import { nameResearch, startResearch, switchResearch, workspaceId } from "./api/workspace";
+import { Badge } from "./components/Badge";
 import { Button } from "./components/Button";
 import { Logo } from "./components/Logo";
 import { Skeleton } from "./components/Skeleton";
@@ -106,6 +114,9 @@ export function App() {
   const [demo] = useState(demoFixture);
   // Inside the guided demo (#184): sample data, nothing may touch the visitor's research.
   const guided = useDemo()?.active ?? false;
+  // No AI key on this deploy: say so, as the alert says "Simulated event".
+  const providers = useHealth().data?.llm_providers;
+  const scripted = providers?.length === 1 && providers[0] === "scripted";
   // In the guided demo the guide card makes every move; the app's own controls wait.
   const guideLocked = useGuideLocked();
   const [alertsDelivered, setAlertsDelivered] = useState(0);
@@ -416,6 +427,14 @@ export function App() {
           <span className={styles.status} data-status={stream} role="status">
             <span className={styles.statusLabel}>{STATUS_TEXT[stream]}</span>
           </span>
+          {scripted && !guided && (
+            <span
+              className={styles.scripted}
+              title="No AI key is set on this deploy: the agent follows the demo script. Every fact still comes from the Cala snapshot."
+            >
+              <Badge tone="info">Scripted demo</Badge>
+            </span>
+          )}
           <div className={styles.actions}>
             {demo && !guided && (
               <DemoAlertButton fixture={demo} labelClassName={styles.actionLabel} />

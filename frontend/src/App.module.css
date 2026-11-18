@@ -91,6 +91,11 @@
   color: var(--color-text-muted);
 }
 
+.scripted {
+  flex: none;
+  display: inline-flex;
+}
+
 .status::before {
   content: "";
   width: 0.5rem;

@@ -1,0 +1,22 @@
+# Keeps a free Render service awake so visitors skip the ~1 min cold start (docs/deploy.md).
+# Off unless the repository variable KEEPALIVE_URL is set, e.g. https://www.grabbit.cloud.
+# One service awake all month uses ~720 of Render's 750 free hours.
+name: keepalive
+
+on:
+  schedule:
+    - cron: "*/14 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping:
+    if: vars.KEEPALIVE_URL != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Ping the health check
+        env:
+          URL: ${{ vars.KEEPALIVE_URL }}
+        run: curl -fsS --max-time 120 --retry 2 "$URL/api/health"

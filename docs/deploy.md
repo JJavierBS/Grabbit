@@ -2,26 +2,37 @@
 
 How the demo is hosted and how to redeploy it. The README keeps only the links.
 
-The demo runs at https://www.grabbit.cloud; `grabbit.cloud` redirects there. IONOS holds the
-domain and its DNS.
-- Frontend on Vercel: the project's root directory is `frontend/`, built with
-  `frontend/vercel.json`. Every push to `main` deploys to production; PRs get preview links.
-  Vercel issues the certificates for `grabbit.cloud` and `www.grabbit.cloud` and does the
-  apex redirect. `frontend/vercel.json` proxies `/api/*` (REST and the SSE stream) to the
-  Aiven host, so the browser stays on one origin and the API needs no CORS.
-- `grabbit-app` (Aiven Runtime, `startup-100-2048`, project `grabbit`, AWS `eu-central-1`,
-  https://cosmic-enhanced-jawfish.eur-1.aiven.app) serves the API: it builds the root
-  `Dockerfile` from `main` on port 8000. Merging does **not** deploy it: use
-  Runtime > `grabbit-app` > Actions > **Deploy latest commit** in the console. Keys and
-  modes are its environment variables (keys as secrets); `CALA_MODE=replay`. If the
-  Aiven host changes, update the `/api` rewrite in `frontend/vercel.json`.
-- `grabbit-cache` (Aiven for Valkey, Hobbyist) holds the shared Cala cache; Aiven injects its
-  URI into the app as `VALKEY_URL`. Fill it from your laptop with `VALKEY_URL` in `.env`
-  and `make warm` (plus `ARGS="--news"`); the app sees new entries without a redeploy.
-- SQLite in the app is not persistent: every deploy starts with empty profiles, chats and
-  reports. The Cala cache survives because it lives in Valkey.
-- Both are paid from Aiven's 50 USD trial credits; with no card on file, Aiven powers them
-  off when the credits run out instead of charging.
+The demo runs at https://www.grabbit.cloud, free, on one Render web service that builds the
+root `Dockerfile` and serves the web app and the API from one process. It answers from a
+snapshot of the Cala cache (`CALA_MODE=replay`) and from whatever free AI has a key
+(`LLM_MODE=auto`: Gemini, then Groq, then the scripted demo). IONOS holds the domain and its DNS.
+
+## Deploy your own copy (free)
+1. Fork the repository. In Render: **New > Blueprint**, pick the fork. `render.yaml` creates
+   the `grabbit` web service on the free plan and asks for:
+   - `DEMO_DB_URL`: the demo snapshot's release asset URL (#231). Empty: the app runs on
+     the fixture candidates.
+   - `GEMINI_API_KEY` (aistudio.google.com) and `OPENAI_COMPAT_API_KEY`
+     (console.groq.com/keys): optional and free. With neither, the agent follows the demo
+     script and the top bar says "Scripted demo".
+2. Every push to the fork's `main` redeploys. `/api/health` lists the AI that answers.
+3. The free plan sleeps after 15 min without traffic and takes about a minute to wake. To
+   keep it awake, set the repository variable `KEEPALIVE_URL` to the service URL:
+   `.github/workflows/keepalive.yml` pings it every 14 min (~720 of the 750 free hours a
+   month). GitHub pauses scheduled workflows after 60 days without commits.
+4. SQLite is not persistent on the free plan: a restart or redeploy empties profiles, chats
+   and reports, and the snapshot comes back with the image.
+
+## Custom domain
+For grabbit.cloud (or yours), once the service is live:
+1. Render > `grabbit` > Settings > **Custom Domains**: add `grabbit.cloud` and
+   `www.grabbit.cloud`. Render shows the records to create.
+2. In the DNS provider (IONOS > Domains > grabbit.cloud > DNS): `@` **A** to the IP Render
+   shows, `www` **CNAME** to the service's `*.onrender.com` host. Delete the old records
+   (Vercel's `A 76.76.21.21` and `CNAME cname.vercel-dns.com`) and any **AAAA** record,
+   which keeps Render from verifying the domain.
+3. Render verifies the domain and issues the certificate. Then remove the domain from the
+   Vercel project and disconnect it, so pushes to `main` stop building there.
 
 ## Demo snapshot of the Cala cache
 Cala is no longer called after the event, so every demo answers from a snapshot of the cache
@@ -35,6 +46,17 @@ DATABASE_PATH=grabbit-demo.db CALA_MODE=replay make -C .. warm ARGS=--check   # 
 The source file is never modified; `--strip` empties chats, profiles, reports, alerts and
 snapshots so the file can be shared. Upload `grabbit-demo.db` as an asset of a GitHub
 release (`demo-snapshot-2026-11`), not into git: Cala's data stays under Cala's terms.
+
+## Legacy: Vercel and Aiven
+The hosting during and right after Junction, paid from Aiven's 50 USD trial credits.
+- Frontend on Vercel: the project's root directory is `frontend/`, built with
+  `frontend/vercel.json`, which proxies `/api/*` (REST and the SSE stream) to the Aiven host.
+- `grabbit-app` (Aiven Runtime, `startup-100-2048`, project `grabbit`, AWS `eu-central-1`,
+  https://cosmic-enhanced-jawfish.eur-1.aiven.app) served the API from the root
+  `Dockerfile`, deployed by hand from the console.
+- `grabbit-cache` (Aiven for Valkey, Hobbyist) held the shared Cala cache, injected as
+  `VALKEY_URL`. Export it before it powers off (#231).
+- With no card on file, Aiven powers both off when the credits run out instead of charging.
 
 ## Legacy: AWS EC2
 The first deploy, no longer the demo link. It runs on one AWS EC2 host: a Caddy edge on port 80 proxies to one app container,

@@ -1,0 +1,26 @@
+# One-click free deploy: Render > New > Blueprint, pick your fork (docs/deploy.md).
+# One Docker service serves the web app and the API; it answers from the Cala snapshot.
+services:
+  - type: web
+    name: grabbit
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    envVars:
+      - key: PORT
+        value: "8000"
+      - key: CALA_MODE
+        value: replay
+      - key: LLM_MODE
+        value: auto
+      - key: DEMO_MODE
+        value: "1"
+      # The demo snapshot (#231): a GitHub release asset URL. Empty: fixture candidates only.
+      - key: DEMO_DB_URL
+        sync: false
+      # Optional, both free: without them the agent follows the demo script.
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: OPENAI_COMPAT_API_KEY
+        sync: false

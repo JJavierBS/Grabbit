@@ -9,6 +9,8 @@ from pydantic import BaseModel, Field
 from app.llm.types import ChatResult, LiveToken, LLMError, Message, OnText, T, ToolCall, ToolSpec
 
 SCRIPTS_DIR = Path(__file__).resolve().parent.parent / "fixtures" / "llm"
+# The public demo's path (LLM_MODE=scripted, and the last step of auto); tests keep SCRIPTS_DIR.
+DEMO_SCRIPTS_DIR = SCRIPTS_DIR.parent / "llm_demo"
 
 
 class Script(BaseModel):
