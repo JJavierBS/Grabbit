@@ -20,7 +20,7 @@ Owners are assigned on the issues; the board is the source of truth.
 | API fixtures | `backend/app/fixtures/` | Mock data for the endpoints and frontend tests; `demo_events/` for the simulated alert |
 | Cala client | `backend/app/cala/` | Only door to Cala: queue, timeout, retry on 429, cache, normalise to `Fact` |
 | Context.dev client | `backend/app/context_dev/` | Soft signals only, labelled "web, unverified" |
-| LLM client | `backend/app/llm/` | Only door to Gemini; `FakeLLM` for tests and offline demo |
+| LLM client | `backend/app/llm/` | Only door to the models: Gemini, an OpenAI-compatible API (Groq) and `FakeLLM` (tests, scripted demo), chained by `LLM_MODE=auto` |
 | Discovery | `backend/app/discovery/` | Event walk plus reverse walk from the trusted investors -> candidates with rounds, hidden links and a proximity score; whole algorithm and its measured results in `docs/algorithm.md` |
 | Signals | `backend/app/signals/` | Pure functions: co-invest, lead follow-on, likely to raise soon |
 | Agent | `backend/app/agent/` | Chat, question bank, tools that edit the profile and its own instructions |
@@ -51,6 +51,7 @@ Owners are assigned on the issues; the board is the source of truth.
 | Cala API (`https://api.cala.ai`) | Discovery from `Event`, companies, rounds, investors, people | `CALA_API_KEY`, `CALA_MODE` |
 | Context.dev (`https://api.context.dev/v1`) | Soft signals only (decisions.md) | `CONTEXT_DEV_API_KEY` |
 | Gemini API (Google DeepMind), SDK `google-genai` | Chat, self-personalization, report writing, importance score; translation on the lite model | `GEMINI_API_KEY`, `GEMINI_MODEL`, `GEMINI_LITE_MODEL`, `LLM_MODE` |
+| OpenAI-compatible API (Groq by default), over httpx | Free fallback after Gemini: chat with tools, JSON answers, Whisper transcription; no Live API | `OPENAI_COMPAT_API_KEY`, `OPENAI_COMPAT_BASE_URL`, `OPENAI_COMPAT_MODEL`, `OPENAI_COMPAT_LITE_MODEL`, `OPENAI_COMPAT_TRANSCRIBE_MODEL` |
 | Aiven for Valkey (`grabbit-cache`) | Shared Cala cache across deployed instances; SQLite stays the fallback | `VALKEY_URL` |
 | Vercel | Serves the built frontend on `www.grabbit.cloud` (certificates, apex redirect) and proxies `/api/*` to Aiven Runtime; deploys on every push to `main` (`frontend/vercel.json`) | None: the frontend has no secrets |
 | Aiven Runtime (`grabbit-app`) | Deployed API behind Vercel, built from `main` with the root `Dockerfile`; redeploy by hand (docs/deploy.md) | App environment variables in Aiven, never in git |
