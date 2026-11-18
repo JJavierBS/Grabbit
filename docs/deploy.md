@@ -34,6 +34,19 @@ For grabbit.cloud (or yours), once the service is live:
 3. Render verifies the domain and issues the certificate. Then remove the domain from the
    Vercel project and disconnect it, so pushes to `main` stop building there.
 
+## Demo snapshot of the Cala cache
+Cala is no longer called after the event, so every demo answers from a snapshot of the cache
+(`CALA_MODE=replay`). The full cache lives in Aiven Valkey; save it before the Aiven credits
+run out. With the Valkey URI from the Aiven console (`grabbit-cache` > Overview):
+```sh
+cd backend
+VALKEY_URL='rediss://...' uv run python -m scripts.export_valkey ../data/grabbit.db ../grabbit-demo.db --strip
+DATABASE_PATH=grabbit-demo.db CALA_MODE=replay make -C .. warm ARGS=--check   # 0 misses expected
+```
+The source file is never modified; `--strip` empties chats, profiles, reports, alerts and
+snapshots so the file can be shared. Upload `grabbit-demo.db` as an asset of a GitHub
+release (`demo-snapshot-2026-11`), not into git: Cala's data stays under Cala's terms.
+
 ## Legacy: Vercel and Aiven
 The hosting during and right after Junction, paid from Aiven's 50 USD trial credits.
 - Frontend on Vercel: the project's root directory is `frontend/`, built with
