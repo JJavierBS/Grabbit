@@ -1,0 +1,10 @@
+[
+  {
+    "task": "report_write",
+    "match": [],
+    "output": {
+      "summary": "{count} Slush startups match your thesis. Each card shows its sourced facts; this scripted demo writes no prose per startup.",
+      "paragraphs": []
+    }
+  }
+]

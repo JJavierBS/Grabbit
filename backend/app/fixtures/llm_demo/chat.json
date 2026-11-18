@@ -1,0 +1,248 @@
+[
+  {
+    "task": "chat",
+    "match": [
+      "ai startups"
+    ],
+    "text": "AI at pre-seed and seed, among the startups attending Slush 2026.",
+    "tool_calls": [
+      {
+        "name": "update_profile",
+        "args": {
+          "patch": {
+            "thesis": "AI startups at pre-seed and seed attending Slush 2026",
+            "filters": {
+              "stages": [
+                "pre_seed",
+                "seed"
+              ],
+              "sectors_in": [
+                "AI",
+                "Artificial Intelligence",
+                "Machine Learning"
+              ]
+            }
+          },
+          "reason": "AI startups at pre-seed and seed"
+        }
+      }
+    ]
+  },
+  {
+    "task": "chat",
+    "match": [
+      "y combinator and 500 global",
+      "500 global and y combinator",
+      "yc and 500 global"
+    ],
+    "text": "I'll walk Y Combinator's and 500 Global's funding rounds and keep the Slush startups they backed, plus their usual co-investors.",
+    "tool_calls": [
+      {
+        "name": "update_profile",
+        "args": {
+          "patch": {
+            "reference_investors": [
+              {
+                "name": "Y Combinator"
+              },
+              {
+                "name": "500 Global"
+              }
+            ]
+          },
+          "reason": "Y Combinator and 500 Global as trusted investors"
+        }
+      }
+    ]
+  },
+  {
+    "task": "chat",
+    "match": [
+      "trust y combinator",
+      "trust yc"
+    ],
+    "text": "I'll walk Y Combinator's funding rounds and keep the Slush startups it backed.",
+    "tool_calls": [
+      {
+        "name": "update_profile",
+        "args": {
+          "patch": {
+            "reference_investors": [
+              {
+                "name": "Y Combinator"
+              }
+            ]
+          },
+          "reason": "Y Combinator as a trusted investor"
+        }
+      }
+    ]
+  },
+  {
+    "task": "chat",
+    "match": [
+      "trust 500 global"
+    ],
+    "text": "I'll walk 500 Global's funding rounds and keep the Slush startups it backed.",
+    "tool_calls": [
+      {
+        "name": "update_profile",
+        "args": {
+          "patch": {
+            "reference_investors": [
+              {
+                "name": "500 Global"
+              }
+            ]
+          },
+          "reason": "500 Global as a trusted investor"
+        }
+      }
+    ]
+  },
+  {
+    "task": "chat",
+    "match": [
+      "i trust",
+      "i also trust"
+    ],
+    "text": "This public demo runs on scripted answers, so it can only follow Y Combinator and 500 Global. Try \"I trust Y Combinator and 500 Global\"; with an AI key set, any investor works."
+  },
+  {
+    "task": "chat",
+    "match": [
+      "one line per startup"
+    ],
+    "text": "Done: one line per startup.",
+    "tool_calls": [
+      {
+        "name": "update_profile",
+        "args": {
+          "patch": {
+            "style": {
+              "length": "short"
+            }
+          },
+          "reason": "shorter reports"
+        }
+      },
+      {
+        "name": "rewrite_instructions",
+        "args": {
+          "text": "One line per startup: why it is here and which trusted investor backs it. Skip company background.",
+          "reason": "one line per startup"
+        }
+      }
+    ]
+  },
+  {
+    "task": "chat",
+    "match": [
+      "recent raises and startups that may raise soon"
+    ],
+    "text": "Both: recent raises and startups that may raise soon.",
+    "tool_calls": [
+      {
+        "name": "update_profile",
+        "args": {
+          "patch": {
+            "filters": {
+              "fundraising": "any",
+              "raised_within_months": 12
+            }
+          },
+          "reason": "recent raises and startups that may raise soon"
+        }
+      }
+    ]
+  },
+  {
+    "task": "chat",
+    "match": [
+      "raised in the last 12 months"
+    ],
+    "text": "Only startups that raised in the last 12 months.",
+    "tool_calls": [
+      {
+        "name": "update_profile",
+        "args": {
+          "patch": {
+            "filters": {
+              "fundraising": "recent",
+              "raised_within_months": 12
+            }
+          },
+          "reason": "only startups that raised in the last 12 months"
+        }
+      }
+    ]
+  },
+  {
+    "task": "chat",
+    "match": [
+      "may raise soon"
+    ],
+    "text": "Startups that may raise soon.",
+    "tool_calls": [
+      {
+        "name": "update_profile",
+        "args": {
+          "patch": {
+            "filters": {
+              "fundraising": "likely_to_raise"
+            }
+          },
+          "reason": "startups that may raise soon"
+        }
+      }
+    ]
+  },
+  {
+    "task": "chat",
+    "match": [
+      "does not matter to me"
+    ],
+    "text": "Any time, then.",
+    "tool_calls": [
+      {
+        "name": "update_profile",
+        "args": {
+          "patch": {
+            "filters": {
+              "fundraising": "any"
+            }
+          },
+          "reason": "any fundraising date"
+        }
+      }
+    ]
+  },
+  {
+    "task": "chat",
+    "match": [
+      "only pre-seed and seed startups"
+    ],
+    "text": "Pre-seed and seed only.",
+    "tool_calls": [
+      {
+        "name": "update_profile",
+        "args": {
+          "patch": {
+            "filters": {
+              "stages": [
+                "pre_seed",
+                "seed"
+              ]
+            }
+          },
+          "reason": "pre-seed and seed only"
+        }
+      }
+    ]
+  },
+  {
+    "task": "chat",
+    "match": [],
+    "text": "This public demo runs on scripted answers, so I understand the guided path: \"I trust Y Combinator and 500 Global\", \"Shorter, co-investors first\" or \"Shorter, one line per startup\". With an AI key set, I answer anything."
+  }
+]
