@@ -19,7 +19,11 @@
 
 ## Modes (environment)
 - `CALA_MODE=live|replay`: replay answers only from the cache and fails clearly on a miss.
-- `LLM_MODE=gemini|fake`: fake returns scripted, deterministic answers (tests, offline).
+- `LLM_MODE=auto|gemini|openai|scripted|fake`: `auto` (default) chains Gemini (if `GEMINI_API_KEY`), an
+  OpenAI-compatible API such as Groq (if `OPENAI_COMPAT_API_KEY`) and the scripted demo
+  (`app/fixtures/llm_demo/`, then the test scripts), moving on when one fails
+  (`app/llm/chain.py`); `scripted` is only the scripted demo; `fake` only the test scripts
+  (`app/fixtures/llm/`, tests and offline).
 - `DEMO_MODE=1`: enables `/api/demo/simulate-event`.
 
 ## Rules

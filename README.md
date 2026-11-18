@@ -169,7 +169,7 @@ make dev      # API on :8000, web app on http://localhost:5173
 ```
 
 > [!TIP]
-> **No keys?** Set `CALA_MODE=replay` and `LLM_MODE=fake` in `.env`: the app runs on the
+> **No keys?** Set `CALA_MODE=replay` and leave `LLM_MODE=auto` in `.env`: the app runs on the
 > cache and scripted model answers. With keys, fill `CALA_API_KEY` and `GEMINI_API_KEY`
 > (see [.env.example](.env.example)) and run `make warm` once to fill the Cala cache.
 
@@ -190,7 +190,7 @@ API docs while `make dev` runs: http://localhost:8000/api/docs. Hosting and rede
 | Layer | Technology |
 | --- | --- |
 | Data | [Cala](https://www.cala.ai) entity API (the core), [Context.dev](https://context.dev) for unverified web signals |
-| AI | Gemini via `google-genai`: chat with tool calls, self-rewriting instructions, report prose, importance scores, live voice transcription |
+| AI | Gemini via `google-genai`: chat with tool calls, self-rewriting instructions, report prose, importance scores, live voice transcription; any OpenAI-compatible API (Groq by default) as the free fallback, then a scripted demo that needs no key |
 | Backend | Python, FastAPI, uv, Pydantic, APScheduler, SQLite, Server-Sent Events |
 | Frontend | React, TypeScript, Vite, OpenUI (generative UI in chat answers), CSS Modules, PWA |
 | Infra | Vercel (frontend), Aiven Runtime (API, Docker), Aiven for Valkey (shared Cala cache) |

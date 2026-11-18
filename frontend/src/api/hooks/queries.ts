@@ -12,11 +12,20 @@ export const keys = {
   report: ["reports", "latest"] as const,
   reports: ["reports", "list"] as const,
   alerts: ["alerts"] as const,
+  health: ["health"] as const,
   /** The running chat turn's phase, pushed by `progress` events; never fetched. */
   progress: ["progress"] as const,
   /** The running chat turn's live Cala walk, pushed by `trace` events; never fetched. */
   trace: ["trace"] as const,
 };
+
+/** Who answers the chat; fetched once, it only changes with a redeploy. */
+export const useHealth = () =>
+  useQuery({
+    queryKey: keys.health,
+    queryFn: () => unwrap(api.GET("/api/health")),
+    staleTime: Number.POSITIVE_INFINITY,
+  });
 
 export const useProfile = () =>
   useQuery({ queryKey: keys.profile, queryFn: () => unwrap(api.GET("/api/profile")) });

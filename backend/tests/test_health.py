@@ -11,6 +11,7 @@ def test_health_reports_modes(client):
         "status": "ok",
         "cala_mode": "replay",
         "llm_mode": "fake",
+        "llm_providers": ["scripted"],
         "demo_mode": True,
     }
 
@@ -18,12 +19,27 @@ def test_health_reports_modes(client):
 def test_health_follows_environment(client, monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setenv("CALA_MODE", "live")
     monkeypatch.setenv("LLM_MODE", "gemini")
+    monkeypatch.setenv("GEMINI_API_KEY", "")
     monkeypatch.setenv("DEMO_MODE", "0")
     get_settings.cache_clear()
 
     body = client.get("/api/health").json()
 
     assert (body["cala_mode"], body["llm_mode"], body["demo_mode"]) == ("live", "gemini", False)
+    # Gemini without a key cannot answer; health says so instead of failing.
+    assert body["llm_providers"] == []
+
+
+def test_health_lists_the_free_ai_chain_in_order(client, monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setenv("LLM_MODE", "auto")
+    monkeypatch.setenv("GEMINI_API_KEY", "g-key")
+    monkeypatch.setenv("OPENAI_COMPAT_API_KEY", "o-key")
+    get_settings.cache_clear()
+    from app.llm import get_llm
+
+    get_llm.cache_clear()
+
+    assert client.get("/api/health").json()["llm_providers"] == ["gemini", "openai", "scripted"]
 
 
 def test_openapi_is_published_under_api(client):

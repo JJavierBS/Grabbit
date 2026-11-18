@@ -96,7 +96,7 @@ work in parallel against mocks.
 - `Alert`: `id, created_at, entity_id, entity_name, kind (new_round|executive_change|
   headcount_jump|acquisition|status_change|web_news), title, why_it_matters,
   importance (0-1), facts: Fact[], simulated: bool`. `simulated=true` is shown on screen.
-- `Health`: `status ("ok"), cala_mode (live|replay), llm_mode (gemini|fake), demo_mode: bool`.
+- `Health`: `status ("ok"), cala_mode (live|replay), llm_mode (auto|gemini|openai|scripted|fake), llm_providers: string[] (who answers, in order; ["scripted"] = no live model), demo_mode: bool`.
 - `Transcript`: `text` (empty when nobody spoke).
 - Request bodies: `ChatRequest {text}` (1-4000 chars), `ReportRunRequest {kind}`,
   `SimulateEventRequest {fixture}` (a file name in `backend/app/fixtures/demo_events/`).
@@ -108,7 +108,7 @@ work in parallel against mocks.
 ## Endpoints
 | Method | Path | Purpose | Status |
 | --- | --- | --- | --- |
-| GET | `/api/health` | Liveness and modes (`cala_mode`, `llm_mode`, `demo_mode`) | mock |
+| GET | `/api/health` | Liveness and modes (`cala_mode`, `llm_mode`, `llm_providers`, `demo_mode`) | mock |
 | GET | `/api/profile` | Current `Profile`; reference investors typed in chat come back with their Cala id once a report has seen them | mock |
 | GET | `/api/profile/history` | `ProfileChange[]`, newest first | mock |
 | POST | `/api/profile/undo` | Revert the last change, returns `Profile` | mock |

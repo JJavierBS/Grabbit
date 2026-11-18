@@ -18,17 +18,23 @@ class Settings(BaseSettings):
     cala_api_key: str = ""
     context_dev_api_key: str = ""
     gemini_api_key: str = ""
-    gemini_model: str = ""
+    gemini_model: str = "gemini-3.5-flash-lite"
     gemini_timeout_s: float = 30.0
     gemini_thoughts: bool = False
     gemini_live_transcribe_model: str = "gemini-3.5-transcribe-live"
     gemini_lite_model: str = "gemini-3.5-flash-lite"
+    # Any OpenAI-compatible API; the defaults are Groq's free Developer plan.
+    openai_compat_api_key: str = ""
+    openai_compat_base_url: str = "https://api.groq.com/openai/v1"
+    openai_compat_model: str = "openai/gpt-oss-120b"
+    openai_compat_lite_model: str = "openai/gpt-oss-20b"
+    openai_compat_transcribe_model: str = "whisper-large-v3-turbo"
     walk_step_min_s: float = 0.0
     cala_mode: CalaMode = "live"
     # One Cala request at a time for the whole process, starts this far apart (#119).
     cala_max_concurrency: int = 1
     cala_min_interval_ms: int = 250
-    llm_mode: LLMMode = "gemini"
+    llm_mode: LLMMode = "auto"
     demo_mode: bool = False
     database_path: Path = Path("data/grabbit.db")
     valkey_url: str = ""
