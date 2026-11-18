@@ -37,15 +37,53 @@ For grabbit.cloud (or yours), once the service is live:
 ## Demo snapshot of the Cala cache
 Cala is no longer called after the event, so every demo answers from a snapshot of the cache
 (`CALA_MODE=replay`). The full cache lives in Aiven Valkey; save it before the Aiven credits
-run out. With the Valkey URI from the Aiven console (`grabbit-cache` > Overview):
+run out. You need `make setup` done and the Valkey URI from the Aiven console
+(`grabbit-cache` > Overview > Service URI, it starts with `rediss://`):
 ```sh
-cd backend
-VALKEY_URL='rediss://...' uv run python -m scripts.export_valkey ../data/grabbit.db ../grabbit-demo.db --strip
-DATABASE_PATH=grabbit-demo.db CALA_MODE=replay make -C .. warm ARGS=--check   # 0 misses expected
+git pull && cd backend
+VALKEY_URL='rediss://...' uv run python -m scripts.export_valkey ../data/grabbit.db ../data/grabbit-demo.db --strip
+DATABASE_PATH=data/grabbit-demo.db CALA_MODE=replay make -C .. warm ARGS=--check
 ```
-The source file is never modified; `--strip` empties chats, profiles, reports, alerts and
-snapshots so the file can be shared. Upload `grabbit-demo.db` as an asset of a GitHub
-release (`demo-snapshot-2026-11`), not into git: Cala's data stays under Cala's terms.
+- The source is your `data/grabbit.db` from the event; it is only copied, never modified.
+  Without one, ask a teammate for theirs: the cache itself comes from Valkey.
+- The export prints how many keys it read (the event's laptop copy had 941 rows; Valkey
+  should have more). `--strip` empties chats, profiles, reports, alerts and snapshots.
+- The check should print `0 cache misses` on both lines. A few misses on the reverse walk
+  still make a useful snapshot: publish it and note the numbers in the tracking issue.
+- Both files stay in `data/`, which git ignores: never commit the snapshot, Cala's data stays
+  under Cala's terms. Publish it as a release asset instead (step 3 of "Go live").
+
+## Go live on grabbit.cloud
+Everything left needs an account, so each step says who can do it. In order:
+1. **Save the Cala cache** (anyone with the Aiven console): "Demo snapshot" above. Urgent:
+   Aiven powers Valkey off when the trial credits run out, and the trust walk cannot be
+   rebuilt without Cala.
+2. **Ask Cala** whether the snapshot may be public (whoever keeps the Cala contact), e.g.
+   *"After Junction we keep Grabbit online as a portfolio demo. It no longer calls your API:
+   it answers from a snapshot of the responses we cached during the event (about 6 MB,
+   November 2026), published as a GitHub release asset. Is that OK with you, or would you
+   rather we keep it private?"* If they say no, skip step 3 and deploy without
+   `DEMO_DB_URL`: the agent then runs on the fixture candidates.
+3. **Publish the snapshot** (anyone with write access to the repo, from the repo root):
+   ```sh
+   gh release create demo-snapshot-2026-11 data/grabbit-demo.db \
+     --title "Demo snapshot: Cala cache, November 2026" \
+     --notes "SQLite cache of Cala responses from Junction 2026, for CALA_MODE=replay. Cala's data, under Cala's terms."
+   ```
+   Its URL is `https://github.com/JJavierBS/Grabbit/releases/download/demo-snapshot-2026-11/grabbit-demo.db`.
+4. **Create the Render service** (whoever will own the demo): the Deploy to Render button in
+   the README, or Render > New > Blueprint on this repo. Fill `DEMO_DB_URL` with the URL
+   above and, optionally, `GEMINI_API_KEY` and `OPENAI_COMPAT_API_KEY`. The first build takes
+   a few minutes; then `https://<service>.onrender.com/api/health` answers `"status":"ok"`.
+5. **Point the domain** (Render owner, then whoever has the IONOS account): "Custom domain"
+   above.
+6. **Retire the old hosting**: in Vercel (project owner) remove both domains and disconnect
+   the repository, then delete `frontend/vercel.json` in a PR; Aiven powers itself off, or
+   delete `grabbit-app` and `grabbit-cache` once step 1 is done.
+7. **Keep it awake** (optional, a repo admin): GitHub > Settings > Secrets and variables >
+   Actions > Variables: `KEEPALIVE_URL` = `https://www.grabbit.cloud`.
+8. **Check it** (anyone): open https://www.grabbit.cloud and walk the five steps of the
+   README's "Try it". Expect "Scripted demo" in the top bar if no AI key was set.
 
 ## Legacy: Vercel and Aiven
 The hosting during and right after Junction, paid from Aiven's 50 USD trial credits.
