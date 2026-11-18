@@ -66,12 +66,8 @@ flowchart TB
     Mic["Talk: live transcription"]
   end
 
-  subgraph Edge["Vercel"]
-    Static["Static frontend<br/>www.grabbit.cloud"]
-    Proxy["/api/* rewrite"]
-  end
-
-  subgraph API["FastAPI process (Aiven Runtime, Docker)"]
+  subgraph API["FastAPI process (Render free plan, Docker), www.grabbit.cloud"]
+    Static["Built frontend<br/>served by FastAPI"]
     Routes["API routes<br/>/api/chat, /api/reports, /api/events ..."]
     Agent["Agent<br/>chat, tools, learn, rules"]
     Disc["Discovery<br/>event walk, reverse walk, proximity"]
@@ -80,17 +76,17 @@ flowchart TB
     Sched["APScheduler<br/>watcher 15 min, digest, news 6 h"]
     Bus["Event bus → SSE"]
     CalaC["Cala client<br/>queue, backoff, cache, normalise"]
-    LLM["LLM client<br/>Gemini or FakeLLM"]
-    Store[("SQLite<br/>profile, chat, reports,<br/>snapshots, Cala cache")]
+    LLM["LLM client<br/>Gemini → Groq → scripted demo"]
+    Store[("SQLite<br/>profile, chat, reports,<br/>snapshots, Cala snapshot")]
   end
 
-  Valkey[("Aiven for Valkey<br/>shared Cala cache")]
-  Cala[["Cala API<br/>entity graph"]]
+  Cala[["Cala API<br/>entity graph, live mode only"]]
   Gemini[["Gemini API"]]
+  Groq[["Groq<br/>OpenAI-compatible"]]
   Ctx[["Context.dev<br/>web, unverified"]]
 
   UI --> Static
-  UI -- "REST" --> Proxy --> Routes
+  UI -- "REST" --> Routes
   Bus -- "SSE: progress, trace,<br/>report, alert" --> UI
   Bus --> Notif
   Mic -- "ephemeral token" --> Gemini
@@ -102,9 +98,9 @@ flowchart TB
   Watcher --> Bus
   Reports --> Bus
   CalaC <--> Store
-  CalaC <--> Valkey
-  CalaC --> Cala
+  CalaC -.-> Cala
   LLM --> Gemini
+  LLM -.-> Groq
   Reports -.-> Ctx
 ```
 
