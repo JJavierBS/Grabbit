@@ -31,6 +31,34 @@ describe("App", () => {
     }
   });
 
+  it("says so when the agent follows the demo script, and not when a model answers", async () => {
+    const health = (providers: string[]) => () => ({
+      status: "ok",
+      cala_mode: "replay",
+      llm_mode: "auto",
+      llm_providers: providers,
+      demo_mode: true,
+    });
+    mockApi({
+      ...base,
+      "GET /api/reports/latest": () => reportV1,
+      "GET /api/health": health(["scripted"]),
+    });
+    const { unmount } = renderWithClient(<App />);
+    expect(await screen.findByText("Scripted demo")).toBeInTheDocument();
+    unmount();
+
+    const calls = mockApi({
+      ...base,
+      "GET /api/reports/latest": () => reportV1,
+      "GET /api/health": health(["gemini", "scripted"]),
+    });
+    renderWithClient(<App />);
+    await waitFor(() => expect(calls.some((c) => c.key === "GET /api/health")).toBe(true));
+    expect(await screen.findByRole("button", { name: "What changed" })).toBeInTheDocument();
+    expect(screen.queryByText("Scripted demo")).not.toBeInTheDocument();
+  });
+
   it("shows the report as an outline in the chat, then opens it in the side panel", async () => {
     mockApi({ ...base, "GET /api/reports/latest": () => reportV1 });
     renderWithClient(<App />);
