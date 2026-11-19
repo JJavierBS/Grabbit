@@ -70,7 +70,8 @@ def test_staged_change_without_cache_says_how_to_fix_it(client):
     assert "make warm" in error["message"]
 
 
-def test_alerts_fall_back_to_fixtures_until_the_watcher_stores_some(client):
-    response = client.get("/api/alerts")
+def test_a_new_workspace_has_no_alerts_not_the_fixtures(client):
+    """#254: the fixture alerts are made up; the public API never serves them as real."""
+    response = client.get("/api/alerts", headers={"X-Workspace": "brand-new-visitor"})
     assert response.status_code == 200
-    assert len(response.json()) >= 2
+    assert response.json() == []

@@ -119,6 +119,6 @@ work in parallel against mocks.
 | GET | `/api/reports/latest` | Latest `Report` | mock |
 | GET | `/api/reports` | Past `Report[]`, newest first, at most 20 (#54) | mock |
 | POST | `/api/reports/run` | `{kind}` -> new `Report` ("run now" for the demo) | mock |
-| GET | `/api/alerts` | `Alert[]`, newest first | mock |
+| GET | `/api/alerts` | `Alert[]` the watcher or the staged demo event stored for the workspace, newest first; an empty list until then, never the fixtures (#254) | live |
 | GET | `/api/events` | SSE stream: `alert` (Alert), `report` ({id}), `profile` (Profile), `progress` (TurnProgress: `phase` cala/llm/report/graph, a `label`, and `done`/`total` while the Slush attendees are counted, published as a chat turn enters each phase), `trace` (WalkTrace: the whole live Cala walk of the turn, its steps in plain words, round and entity budget, the subgraph so far and its root, the OpenUI answer as it streams; sent after every change, `done` at the end, #134); opens with a `: connected` comment | mock |
 | POST | `/api/demo/simulate-event` | `{fixture}` -> `Alert` through the real watcher path; only with `DEMO_MODE=1` | mock |

@@ -47,6 +47,14 @@ def test_reports_run_publishes_report_event(client):
 
 
 def test_alerts_endpoint_newest_first(client):
+    from app import fixtures
+    from app.store.db import connect
+    from app.store.snapshots import WatchStore
+
+    with connect() as conn:
+        store = WatchStore(conn)
+        for alert in fixtures.alerts():  # stored by the test, as the watcher would
+            store.add_alert(alert)
     alerts = [Alert.model_validate(item) for item in client.get("/api/alerts").json()]
 
     assert len(alerts) >= 2
