@@ -54,7 +54,7 @@ Owners are assigned on the issues; the board is the source of truth.
 | OpenAI-compatible API (Groq by default), over httpx | Free fallback after Gemini: chat with tools, JSON answers, Whisper transcription; no Live API | `OPENAI_COMPAT_API_KEY`, `OPENAI_COMPAT_BASE_URL`, `OPENAI_COMPAT_MODEL`, `OPENAI_COMPAT_LITE_MODEL`, `OPENAI_COMPAT_TRANSCRIBE_MODEL` |
 | Render (free plan, `render.yaml`) | The demo since the event: one Docker service serving the web app and the API on `www.grabbit.cloud`, with the Cala snapshot from `DEMO_DB_URL`; deploys on every push to `main` (docs/deploy.md) | Service environment variables in Render, never in git |
 | Aiven for Valkey (`grabbit-cache`) | Legacy: shared Cala cache during the event; optional, SQLite stays the fallback | `VALKEY_URL` |
-| Vercel, Aiven Runtime (`grabbit-app`) | Legacy hosting during the event: frontend on Vercel proxying `/api/*` to Aiven (`frontend/vercel.json`) | None in git |
+| Vercel, Aiven Runtime (`grabbit-app`) | Legacy hosting during the event: frontend on Vercel proxying `/api/*` to Aiven (`frontend/vercel.json`, removed in #256 once grabbit.cloud moved to Render) | None in git |
 | AWS EC2 host + Caddy edge, GHCR image | Legacy deploy, not the demo link; blue/green rollout by `deploy/rollout.sh` from GitHub Actions | `/opt/junction/.env` on the host, never in git |
 
 ## Directory layout

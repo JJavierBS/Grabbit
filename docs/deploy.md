@@ -15,7 +15,9 @@ snapshot of the Cala cache (`CALA_MODE=replay`) and from whatever free AI has a 
    - `GEMINI_API_KEY` (aistudio.google.com) and `OPENAI_COMPAT_API_KEY`
      (console.groq.com/keys): optional and free. With neither, the agent follows the demo
      script and the top bar says "Scripted demo".
-2. Every push to the fork's `main` redeploys. `/api/health` lists the AI that answers.
+2. Connected through GitHub, every push to the fork's `main` redeploys; created from the public
+   repository URL (no GitHub access granted to Render), redeploy by hand: Render > `grabbit` >
+   Manual Deploy > Deploy latest commit. `/api/health` lists the AI that can answer now.
 3. The free plan sleeps after 15 min without traffic and takes about a minute to wake. To
    keep it awake, set the repository variable `KEEPALIVE_URL` to the service URL:
    `.github/workflows/keepalive.yml` pings it every 14 min (~720 of the 750 free hours a
@@ -81,8 +83,10 @@ Everything left needs an account, so each step says who can do it. In order:
 5. **Point the domain** (Render owner, then whoever has the IONOS account): "Custom domain"
    above.
 6. **Retire the old hosting**: in Vercel (project owner) remove both domains and disconnect
-   the repository, then delete `frontend/vercel.json` in a PR; Aiven powers itself off, or
-   delete `grabbit-app` and `grabbit-cache` once step 1 is done.
+   the repository (`frontend/vercel.json` is gone since #256); Aiven powers itself off, or
+   delete `grabbit-app` and `grabbit-cache` once step 1 is done; the legacy AWS EC2 (below):
+   its owner stops or terminates the instance in the AWS console, and a repo admin deletes
+   the `DEPLOY_HOST` variable so `deploy.yml` stops deploying to it on every push to `main`.
 7. **Keep it awake** (optional, a repo admin): GitHub > Settings > Secrets and variables >
    Actions > Variables: `KEEPALIVE_URL` = `https://www.grabbit.cloud`.
 8. **Check it** (anyone): open https://www.grabbit.cloud and walk the five steps of the
@@ -91,7 +95,8 @@ Everything left needs an account, so each step says who can do it. In order:
 ## Legacy: Vercel and Aiven
 The hosting during and right after Junction, paid from Aiven's 50 USD trial credits.
 - Frontend on Vercel: the project's root directory is `frontend/`, built with
-  `frontend/vercel.json`, which proxies `/api/*` (REST and the SSE stream) to the Aiven host.
+  `frontend/vercel.json` (removed in #256), which proxied `/api/*` (REST and the SSE stream)
+  to the Aiven host. grabbit.cloud points at Render since 19 November.
 - `grabbit-app` (Aiven Runtime, `startup-100-2048`, project `grabbit`, AWS `eu-central-1`,
   https://cosmic-enhanced-jawfish.eur-1.aiven.app) served the API from the root
   `Dockerfile`, deployed by hand from the console.
