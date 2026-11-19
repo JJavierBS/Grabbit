@@ -57,10 +57,40 @@ def _words(text: str) -> set[str]:
     return set(re.findall(r"[a-z0-9]+", text.lower()))
 
 
+def _phrase(text: str) -> str:
+    """'SOFTWARE_AND_SERVICES', 'software-and-services', 'Software and services': one phrase."""
+    return " ".join(re.findall(r"[a-z0-9]+", text.lower()))
+
+
 def sector_matches(sector: str, industries: list[str]) -> bool:
     """A sector matches a whole industry label or one of its words ('AI' never 'retail')."""
-    target = sector.strip().lower()
-    return any(target == label.lower() or target in _words(label) for label in industries)
+    target = _phrase(sector)
+    return any(target == _phrase(label) or target in _words(label) for label in industries)
+
+
+# Cala's sector enums in words, as the web app writes them (frontend/src/lib/humanize.ts).
+_READABLE = {
+    "ai": "AI",
+    "artificial_intelligence": "Artificial intelligence",
+    "saas": "SaaS",
+}
+_ACRONYMS = {"ai", "api", "ar", "b2b", "b2c", "esg", "eu", "ev", "hr", "iot", "it", "ml", "vr"}
+
+
+def readable(label: str) -> str:
+    """A sector label as words: 'SOFTWARE_AND_SERVICES' -> 'Software and services'.
+
+    Mixed case is someone's own spelling ('FinTech', 'Climate tech') and stays as written.
+    """
+    key = re.sub(r"[\s-]+", "_", label.strip().lower())
+    if key in _READABLE:
+        return _READABLE[key]
+    spaced = re.sub(r"_+", " ", label.strip())
+    if spaced not in (spaced.upper(), spaced.lower()):
+        return spaced
+    words = [w.upper() if w in _ACRONYMS else w for w in spaced.lower().split()]
+    text = " ".join(words)
+    return text[:1].upper() + text[1:]
 
 
 def headcount_upper(value: object) -> float | None:
