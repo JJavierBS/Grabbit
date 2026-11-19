@@ -46,8 +46,8 @@ DATABASE_PATH=data/grabbit-demo.db CALA_MODE=replay make -C .. warm ARGS=--check
 ```
 - The source is your `data/grabbit.db` from the event; it is only copied, never modified.
   Without one, ask a teammate for theirs: the cache itself comes from Valkey.
-- The export prints how many keys it read (the event's laptop copy had 941 rows; Valkey
-  should have more). `--strip` empties chats, profiles, reports, alerts and snapshots.
+- The export prints how many keys it read: the full export of November 2026 read 2,809 keys
+  (a laptop copy had 941 rows) and weighs 14.5 MB, with 0 misses on both checks (#242). `--strip` empties chats, profiles, reports, alerts and snapshots.
 - The check should print `0 cache misses` on both lines. A few misses on the reverse walk
   still make a useful snapshot: publish it and note the numbers in the tracking issue.
 - Both files stay in `data/`, which git ignores: never commit the snapshot, Cala's data stays
@@ -60,7 +60,7 @@ Everything left needs an account, so each step says who can do it. In order:
    rebuilt without Cala.
 2. **Ask Cala** whether the snapshot may be public (whoever keeps the Cala contact), e.g.
    *"After Junction we keep Grabbit online as a portfolio demo. It no longer calls your API:
-   it answers from a snapshot of the responses we cached during the event (about 6 MB,
+   it answers from a snapshot of the responses we cached during the event (about 15 MB,
    November 2026), published as a GitHub release asset. Is that OK with you, or would you
    rather we keep it private?"* If they say no, skip step 3 and deploy without
    `DEMO_DB_URL`: the agent then runs on the fixture candidates.
