@@ -227,3 +227,28 @@ def test_recency_offers_only_answers_that_keep_some_startups(now):
     q = next(q for q in later if q.key == "recency")
     assert q.text.startswith("2 of 6 raised in the last 12 months and 1 may raise soon")
     assert [label for label, _ in q.options] == ["Just raised", "May raise soon", "Both"]
+
+
+def test_the_industries_question_reads_sector_names_not_cala_enums(now):
+    """#252: with no model to reword it, the question bank's text reaches the screen."""
+    candidates = []
+    for i, industries in enumerate(
+        [["ai"], ["ai"], ["ai"], ["SOFTWARE_AND_SERVICES"], ["SOFTWARE_AND_SERVICES"]]
+    ):
+        c = _candidates()[i % len(_candidates())]
+        candidates.append(c.model_copy(update={"entity_id": f"c{i}", "industries": industries}))
+
+    questions = pick_questions(candidates, default_profile(now), now, limit=10)
+    q = next(q for q in questions if q.key == "industries")
+
+    assert q.text == "Most matches are in AI (3) and Software and services (2). Keep both?"
+    assert [label for label, _ in q.options] == [
+        "Keep both",
+        "Only AI",
+        "Only Software and services",
+    ]
+    assert [answer for _, answer in q.options] == [
+        "Keep both AI and Software and services.",
+        "Only AI.",
+        "Only Software and services.",
+    ]
