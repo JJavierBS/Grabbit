@@ -46,12 +46,12 @@ def get_llm() -> LLM:
 
 
 def providers(llm: LLM) -> list[str]:
-    """Who answers, in order, for /api/health."""
+    """Who can answer now, in order, for /api/health: a provider sitting out is left out."""
     from app.llm.chain import ChainLLM
     from app.llm.fake import FakeLLM
 
     if isinstance(llm, ChainLLM):
-        return llm.names
+        return llm.available
     if isinstance(llm, FakeLLM):
         return ["scripted"]
     return [get_settings().llm_mode]

@@ -19,7 +19,7 @@ export const keys = {
   trace: ["trace"] as const,
 };
 
-/** Who answers the chat; fetched once, it only changes with a redeploy. */
+/** Who can answer the chat now; asked again after every turn. */
 export const useHealth = () =>
   useQuery({
     queryKey: keys.health,
@@ -86,6 +86,8 @@ function useRefreshAfterTurn() {
       client.invalidateQueries({ queryKey: keys.chat }),
       client.invalidateQueries({ queryKey: keys.profile }),
       client.invalidateQueries({ queryKey: keys.reportsAll }),
+      // A refused AI key leaves the turn to the script: the "Scripted demo" badge follows.
+      client.invalidateQueries({ queryKey: keys.health }),
     ]);
 }
 

@@ -162,3 +162,14 @@ async def test_live_transcription_is_not_offered():
 
 async def _no_sleep(_: float) -> None:
     return None
+
+
+@respx.mock
+@pytest.mark.parametrize(("status", "auth"), [(401, True), (403, True), (429, False)])
+async def test_a_refused_key_is_told_apart_from_a_rate_limit(status, auth):
+    respx.post(f"{BASE}/chat/completions").mock(return_value=httpx.Response(status))
+
+    with pytest.raises(LLMError) as raised:
+        await make_llm().chat(system="s", messages=[Message(role="user", text="hi")])
+
+    assert raised.value.auth is auth

@@ -22,7 +22,8 @@
 - `LLM_MODE=auto|gemini|openai|scripted|fake`: `auto` (default) chains Gemini (if `GEMINI_API_KEY`), an
   OpenAI-compatible API such as Groq (if `OPENAI_COMPAT_API_KEY`) and the scripted demo
   (`app/fixtures/llm_demo/`, then the test scripts), moving on when one fails
-  (`app/llm/chain.py`); `scripted` is only the scripted demo; `fake` only the test scripts
+  (`app/llm/chain.py`): a failing provider sits out 60 s, one whose key is refused
+  (`LLMError.auth`: 401/403, or Gemini's 400 `API_KEY_INVALID`) an hour; `scripted` is only the scripted demo; `fake` only the test scripts
   (`app/fixtures/llm/`, tests and offline).
 - `DEMO_MODE=1`: enables `/api/demo/simulate-event`.
 

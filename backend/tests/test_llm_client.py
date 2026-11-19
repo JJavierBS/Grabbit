@@ -164,3 +164,52 @@ async def test_a_live_token_is_single_use_and_locked_to_talk():
     assert locked.model == "gemini-3.5-transcribe-live"
     assert locked.config.response_modalities == [types.Modality.TEXT]
     assert locked.config.input_audio_transcription.mode == "SMART"
+
+
+async def test_an_invalid_gemini_key_is_reported_as_refused():
+    import pytest
+    from google.genai import errors
+
+    from app.llm import LLMError
+    from app.llm.client import GeminiLLM
+
+    async def refuse(**_):
+        # What Gemini answers for a revoked key: a 400, not a 401.
+        raise errors.ClientError(
+            400,
+            {
+                "error": {
+                    "code": 400,
+                    "message": "API key not valid. Please pass a valid API key.",
+                    "status": "INVALID_ARGUMENT",
+                    "details": [{"reason": "API_KEY_INVALID"}],
+                }
+            },
+        )
+
+    llm = GeminiLLM(api_key="revoked", model="m")
+    llm._client.aio.models.generate_content = refuse
+
+    with pytest.raises(LLMError) as raised:
+        await llm.chat(system="s", messages=[Message(role="user", text="q")])
+
+    assert raised.value.auth
+
+
+async def test_a_bad_request_is_not_a_refused_key():
+    import pytest
+    from google.genai import errors
+
+    from app.llm import LLMError
+    from app.llm.client import GeminiLLM
+
+    async def reject(**_):
+        raise errors.ClientError(400, {"error": {"code": 400, "message": "bad history"}})
+
+    llm = GeminiLLM(api_key="k", model="m")
+    llm._client.aio.models.generate_content = reject
+
+    with pytest.raises(LLMError) as raised:
+        await llm.chat(system="s", messages=[Message(role="user", text="q")])
+
+    assert not raised.value.auth

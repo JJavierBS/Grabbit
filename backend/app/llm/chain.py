@@ -15,6 +15,8 @@ from app.llm.types import LLM, ChatResult, LiveToken, LLMError, Message, OnText,
 log = logging.getLogger(__name__)
 
 COOLDOWN_S = 60.0
+# A refused key (invalid, revoked) will not work again by itself.
+AUTH_COOLDOWN_S = 3600.0
 
 
 class ChainLLM:
@@ -24,17 +26,25 @@ class ChainLLM:
         *,
         clock: Callable[[], float] = time.monotonic,
         cooldown_s: float = COOLDOWN_S,
+        auth_cooldown_s: float = AUTH_COOLDOWN_S,
     ) -> None:
         if not providers:
             raise LLMError("the LLM chain needs at least one provider")
         self.providers = providers
         self._clock = clock
         self._cooldown_s = cooldown_s
+        self._auth_cooldown_s = auth_cooldown_s
         self._down_until: dict[str, float] = {}
 
     @property
     def names(self) -> list[str]:
         return [name for name, _ in self.providers]
+
+    @property
+    def available(self) -> list[str]:
+        """Who can answer now: the providers not sitting out, in order."""
+        now = self._clock()
+        return [n for n in self.names if self._down_until.get(n, 0.0) <= now]
 
     async def chat(
         self,
@@ -89,7 +99,8 @@ class ChainLLM:
                 last = exc
                 # The last provider is the floor (the scripted demo): it never sits out.
                 if cool and name != self.providers[-1][0]:
-                    self._down_until[name] = self._clock() + self._cooldown_s
+                    rest = self._auth_cooldown_s if exc.auth else self._cooldown_s
+                    self._down_until[name] = self._clock() + rest
                 log.info("llm chain: %s failed %s (%s), trying the next", name, task, exc)
                 continue
             log.info("llm chain: %s answered %s", name, task)

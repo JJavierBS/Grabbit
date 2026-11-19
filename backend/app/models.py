@@ -375,7 +375,7 @@ class Health(ApiModel):
     status: Literal["ok"]
     cala_mode: CalaMode
     llm_mode: LLMMode
-    # Who answers, in the order they are tried; ["scripted"] means no live model.
+    # Who can answer now, in the order they are tried; ["scripted"]: no live model answers.
     llm_providers: list[str]
     demo_mode: bool
 
