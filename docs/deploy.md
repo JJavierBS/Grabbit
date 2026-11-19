@@ -65,12 +65,14 @@ Everything left needs an account, so each step says who can do it. In order:
    November 2026), published as a GitHub release asset. Is that OK with you, or would you
    rather we keep it private?"* If they say no, skip step 3 and deploy without
    `DEMO_DB_URL`: the agent then runs on the fixture candidates.
-3. **Publish the snapshot** (anyone with write access to the repo, from the repo root):
+3. **Publish the snapshot** (whoever has the file, with write access, from the repo root).
+   The release `demo-snapshot-2026-11` exists since 19 November, with Cala's permission;
+   upload the file to it:
    ```sh
-   gh release create demo-snapshot-2026-11 data/grabbit-demo.db \
-     --title "Demo snapshot: Cala cache, November 2026" \
-     --notes "SQLite cache of Cala responses from Junction 2026, for CALA_MODE=replay. Cala's data, under Cala's terms."
+   gh release upload demo-snapshot-2026-11 data/grabbit-demo.db
    ```
+   In a fork, create the release first with
+   `gh release create demo-snapshot-2026-11 --title "Demo snapshot: Cala cache, November 2026" --notes "..."`.
    Its URL is `https://github.com/JJavierBS/Grabbit/releases/download/demo-snapshot-2026-11/grabbit-demo.db`.
 4. **Create the Render service** (whoever will own the demo): the Deploy to Render button in
    the README, or Render > New > Blueprint on this repo. Fill `DEMO_DB_URL` with the URL
