@@ -158,14 +158,9 @@ def _render(draft: Draft | None, candidates: list[Candidate]) -> tuple[str, dict
     return summary, paragraphs
 
 
-def without_badge_names(text: str) -> str:
-    """Drop badge names written in prose ("[Database]", "(Press)"): badges live on the facts."""
-    return _WRITTEN_BADGE.sub("", text)
-
-
 def _fill(text: str, values: dict[str, str]) -> str:
     filled = _PLACEHOLDER.sub(lambda m: values[m.group(1)], text).strip()
     # Prose stays readable: badges live in the cards, not after every value.
-    filled = without_badge_names(filled)
+    filled = _WRITTEN_BADGE.sub("", filled)
     # Cala names some rounds "Equity round", and the model adds its own "round" after them.
     return _ROUND_ROUND.sub(r"\1", filled)

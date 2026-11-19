@@ -15,7 +15,6 @@ from app.agent.tools import TOOL_SPECS, ToolOutcome, apply_tool_call
 from app.agent.visual import visual_answer
 from app.llm import LLM, LLMError, Message, ToolCall
 from app.models import AgentQuestion, Candidate, ChatMessage, Profile, QuestionOption
-from app.reports.write import without_badge_names
 from app.store import chat as chat_store
 from app.store import profile as profile_store
 
@@ -224,7 +223,6 @@ async def _followup(
 
 
 def _compose(reply: str, outcomes: list[ToolOutcome]) -> str:
-    reply = without_badge_names(reply)
     lines = [reply.strip()] if reply.strip() else []
     refusals = list(dict.fromkeys(o.refusal.strip().rstrip(".") for o in outcomes if o.refusal))
     if refusals:

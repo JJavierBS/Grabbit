@@ -376,19 +376,3 @@ async def test_before_any_report_the_model_stores_the_thesis_and_never_says_it_i
     assert "already covers that" not in first
     assert "There is no report yet" not in later
     assert "say the current report already covers that" in later
-
-
-async def test_chat_replies_drop_written_badge_names(candidates, now):
-    """#260: a reply read "... as reference investors [Database]."."""
-    llm = FakeLLM(
-        [
-            Script(
-                task="chat",
-                text="I added Y Combinator [Database] and 500 Global (Press) as references.",
-            )
-        ]
-    )
-
-    reply = await _say("What did you change?", candidates, now, llm=llm)
-
-    assert reply.text.startswith("I added Y Combinator and 500 Global as references.")
