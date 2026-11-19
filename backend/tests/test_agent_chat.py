@@ -357,7 +357,38 @@ async def test_learning_writes_its_reason_for_the_investor_in_their_language():
 
 async def test_replies_stay_in_the_profile_language_after_a_button(candidates, now):
     """#181: "Looks right, keep me posted." got an English reply in a Spanish research."""
-    prompt = chat.system_prompt(profile_store.current(now), None, candidates)
+    prompt = chat.system_prompt(profile_store.current(now), "Six startups.", candidates)
     assert "Reply in the investor's language (profile style.language)" in prompt
     assert 'fixed English button text such as "Looks right, keep me posted."' in prompt
     assert "Only when nothing changes" in prompt
+
+
+async def test_before_any_report_the_model_stores_the_thesis_and_never_says_it_is_covered(
+    candidates, now
+):
+    """#260: Gemini answered the first message with "The current report already covers that."
+    because the prompt said so whenever nothing changed, before any report existed."""
+    first = chat.system_prompt(profile_store.current(now), None, candidates)
+    later = chat.system_prompt(profile_store.current(now), "Six startups.", candidates)
+
+    assert "There is no report yet" in first
+    assert "store it with update_profile" in first
+    assert "already covers that" not in first
+    assert "There is no report yet" not in later
+    assert "say the current report already covers that" in later
+
+
+async def test_chat_replies_drop_written_badge_names(candidates, now):
+    """#260: a reply read "... as reference investors [Database]."."""
+    llm = FakeLLM(
+        [
+            Script(
+                task="chat",
+                text="I added Y Combinator [Database] and 500 Global (Press) as references.",
+            )
+        ]
+    )
+
+    reply = await _say("What did you change?", candidates, now, llm=llm)
+
+    assert reply.text.startswith("I added Y Combinator and 500 Global as references.")

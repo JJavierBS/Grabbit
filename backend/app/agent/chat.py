@@ -15,12 +15,22 @@ from app.agent.tools import TOOL_SPECS, ToolOutcome, apply_tool_call
 from app.agent.visual import visual_answer
 from app.llm import LLM, LLMError, Message, ToolCall
 from app.models import AgentQuestion, Candidate, ChatMessage, Profile, QuestionOption
+from app.reports.write import without_badge_names
 from app.store import chat as chat_store
 from app.store import profile as profile_store
 
 log = logging.getLogger(__name__)
 
 HISTORY_TURNS = 12
+# What to do when a message changes nothing depends on whether a report exists yet (#260).
+_REPORT_STATE = {
+    False: "There is no report yet. A message that describes what the investor looks for, "
+    "however vague, is their thesis: store it with update_profile (thesis, plus any stage, "
+    "sector or investor it names), so the first report is built. Never say a report already "
+    "covers anything.",
+    True: "Only when nothing changes because the answers keep the search open, say the "
+    "current report already covers that.",
+}
 UNAVAILABLE = "I can't reach the model right now, so nothing changed. Try again in a moment."
 
 ReportHook = Callable[[Profile], Awaitable[str | None]]
@@ -45,8 +55,8 @@ Reply in the investor's language (profile style.language), in at most three shor
 also when the message is a fixed English button text such as "Looks right, keep me posted.".
 Do not say "From now on": the app adds that line itself after a change.
 The app rebuilds the report on screen by itself after every profile change. Never offer to
-prepare, run or send a report and never ask whether to go ahead. Only when nothing changes
-because the answers keep the search open, say the current report already covers that.
+prepare, run or send a report and never ask whether to go ahead.
+{_REPORT_STATE[report_summary is not None]}
 End with the answer: no closing line like "you can check the details on screen".
 
 {FIXED_RULES}
@@ -214,6 +224,7 @@ async def _followup(
 
 
 def _compose(reply: str, outcomes: list[ToolOutcome]) -> str:
+    reply = without_badge_names(reply)
     lines = [reply.strip()] if reply.strip() else []
     refusals = list(dict.fromkeys(o.refusal.strip().rstrip(".") for o in outcomes if o.refusal))
     if refusals:
