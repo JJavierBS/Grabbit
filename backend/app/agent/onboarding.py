@@ -247,6 +247,10 @@ def _industries(cs: list[Candidate], profile: Profile, _n: datetime) -> Question
     if len(counts) < 2:
         return None
     (first, a), (second, b) = counts.most_common(2)
+    from app.discovery.filters import readable
+
+    # Shown as built when no model rewords it (the scripted demo): words, not Cala's enums.
+    first, second = readable(first), readable(second)
     return Question(
         "industries",
         f"Most matches are in {first} ({a}) and {second} ({b}). Keep both?",

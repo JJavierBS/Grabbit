@@ -345,3 +345,27 @@ async def test_pipeline_reports_each_attendee_it_checks(graph):
     assert {total for _, total, _ in heard} == {5}
     startups = [s for _, _, s in heard]
     assert startups == sorted(startups) and startups[-1] <= 2
+
+
+def test_a_readable_sector_matches_its_raw_cala_label():
+    """#252: the questions now say "Software and services" for SOFTWARE_AND_SERVICES."""
+    from app.discovery.filters import sector_matches
+
+    assert sector_matches("Software and services", ["SOFTWARE_AND_SERVICES"])
+    assert sector_matches("software-and-services", ["Software and services"])
+    assert sector_matches("AI", ["ai"])
+    assert not sector_matches("AI", ["retail"])
+    assert not sector_matches("Software and services", ["Software"])
+
+
+def test_readable_turns_cala_enums_into_words():
+    from app.discovery.filters import readable
+
+    assert readable("ai") == "AI"
+    assert readable("SOFTWARE_AND_SERVICES") == "Software and services"
+    assert readable("saas") == "SaaS"
+    assert readable("b2b_software") == "B2B software"
+    assert readable("artificial_intelligence") == "Artificial intelligence"
+    # Someone's own spelling stays as written.
+    assert readable("Climate tech") == "Climate tech"
+    assert readable("FinTech") == "FinTech"
