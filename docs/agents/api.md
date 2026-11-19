@@ -96,7 +96,7 @@ work in parallel against mocks.
 - `Alert`: `id, created_at, entity_id, entity_name, kind (new_round|executive_change|
   headcount_jump|acquisition|status_change|web_news), title, why_it_matters,
   importance (0-1), facts: Fact[], simulated: bool`. `simulated=true` is shown on screen.
-- `Health`: `status ("ok"), cala_mode (live|replay), llm_mode (auto|gemini|openai|scripted|fake), llm_providers: string[] (who answers, in order; ["scripted"] = no live model), demo_mode: bool`.
+- `Health`: `status ("ok"), cala_mode (live|replay), llm_mode (auto|gemini|openai|scripted|fake), llm_providers: string[] (who can answer now, in order: a provider sitting out after a failure is left out; ["scripted"] = no live model answers), demo_mode: bool`.
 - `Transcript`: `text` (empty when nobody spoke).
 - Request bodies: `ChatRequest {text}` (1-4000 chars), `ReportRunRequest {kind}`,
   `SimulateEventRequest {fixture}` (a file name in `backend/app/fixtures/demo_events/`).

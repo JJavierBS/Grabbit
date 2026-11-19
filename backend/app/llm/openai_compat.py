@@ -147,7 +147,10 @@ class OpenAICompatLLM:
             break
         if response.status_code >= 400:
             log.warning("openai-compat %s failed: %s", task, response.status_code)
-            raise LLMError(f"{task}: provider returned {response.status_code}")
+            raise LLMError(
+                f"{task}: provider returned {response.status_code}",
+                auth=response.status_code in (401, 403),
+            )
         try:
             data = response.json()
         except ValueError as exc:

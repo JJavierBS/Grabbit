@@ -59,6 +59,36 @@ describe("App", () => {
     expect(screen.queryByText("Scripted demo")).not.toBeInTheDocument();
   });
 
+  it("shows Scripted demo once a refused key leaves only the script answering", async () => {
+    let providers = ["gemini", "scripted"];
+    mockApi({
+      ...base,
+      "GET /api/reports/latest": () => reportV1,
+      "GET /api/health": () => ({
+        status: "ok",
+        cala_mode: "replay",
+        llm_mode: "auto",
+        llm_providers: providers,
+        demo_mode: true,
+      }),
+      "POST /api/chat": () => {
+        // Gemini refused the key during this turn; the script answered.
+        providers = ["scripted"];
+        return { ...chatV2[0], id: "m11" };
+      },
+    });
+    renderWithClient(<App />);
+    await screen.findByRole("button", { name: "Open report" });
+    expect(screen.queryByText("Scripted demo")).not.toBeInTheDocument();
+
+    await userEvent.type(
+      screen.getByRole("textbox", { name: "Message Grabbit" }),
+      "Shorter, co-investors first{Enter}",
+    );
+
+    expect(await screen.findByText("Scripted demo")).toBeInTheDocument();
+  });
+
   it("shows the report as an outline in the chat, then opens it in the side panel", async () => {
     mockApi({ ...base, "GET /api/reports/latest": () => reportV1 });
     renderWithClient(<App />);

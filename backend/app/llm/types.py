@@ -10,6 +10,11 @@ T = TypeVar("T", bound=BaseModel)
 class LLMError(RuntimeError):
     """The model could not be reached or returned something unusable."""
 
+    def __init__(self, message: str = "", *, auth: bool = False) -> None:
+        super().__init__(message)
+        # The key itself was refused (invalid, revoked): retrying soon cannot help.
+        self.auth = auth
+
 
 class ToolSpec(BaseModel):
     name: str

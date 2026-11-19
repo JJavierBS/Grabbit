@@ -157,7 +157,7 @@ class GeminiLLM:
             )
         except errors.APIError as exc:
             log.warning("gemini live token failed: %s %s", exc.code, exc.status)
-            raise LLMError(f"live_token: Gemini returned {exc.code}") from exc
+            raise LLMError(f"live_token: Gemini returned {exc.code}", auth=_refused(exc)) from exc
         except Exception as exc:
             log.warning("gemini live token failed: %s", type(exc).__name__)
             raise LLMError("live_token: Gemini unreachable") from exc
@@ -182,7 +182,7 @@ class GeminiLLM:
                         on_text(text)
         except errors.APIError as exc:
             log.warning("gemini %s stream failed: %s %s", task, exc.code, exc.status)
-            raise LLMError(f"{task}: Gemini returned {exc.code}") from exc
+            raise LLMError(f"{task}: Gemini returned {exc.code}", auth=_refused(exc)) from exc
         except Exception as exc:
             log.warning("gemini %s stream failed: %s", task, type(exc).__name__)
             raise LLMError(f"{task}: Gemini unreachable") from exc
@@ -197,12 +197,17 @@ class GeminiLLM:
             )
         except errors.APIError as exc:
             log.warning("gemini %s failed: %s %s", task, exc.code, exc.status)
-            raise LLMError(f"{task}: Gemini returned {exc.code}") from exc
+            raise LLMError(f"{task}: Gemini returned {exc.code}", auth=_refused(exc)) from exc
         except Exception as exc:
             log.warning("gemini %s failed: %s", task, type(exc).__name__)
             raise LLMError(f"{task}: Gemini unreachable") from exc
         log.info("gemini %s took %.2fs", task, time.monotonic() - started)
         return response
+
+
+def _refused(exc: errors.APIError) -> bool:
+    """The key was refused. Gemini answers a revoked key with 400 API_KEY_INVALID, not 401."""
+    return exc.code in (401, 403) or "API_KEY_INVALID" in str(exc.details)
 
 
 def _parts_of(response) -> list[types.Part]:

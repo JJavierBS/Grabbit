@@ -135,3 +135,38 @@ def test_a_deploy_without_keys_walks_the_trust_step_through_the_api(client, monk
     assert "From now on: Y Combinator and 500 Global as trusted investors." in reply["text"]
     profile = client.get("/api/profile", headers=headers).json()
     assert [r["name"] for r in profile["reference_investors"]] == ["Y Combinator", "500 Global"]
+
+
+async def test_a_refused_key_sits_out_for_an_hour_and_leaves_what_can_answer():
+    clock = Clock()
+    gemini, scripted = Stub("gemini", fails=True), Stub("scripted")
+    gemini_error = LLMError("chat: Gemini returned 400", auth=True)
+
+    async def refuse(**_: object) -> ChatResult:
+        gemini.calls += 1
+        raise gemini_error
+
+    gemini.chat = refuse
+    chain = ChainLLM([("gemini", gemini), ("scripted", scripted)], clock=clock)
+    assert providers(chain) == ["gemini", "scripted"]
+
+    await chain.chat(system="s", messages=HI)
+    # The answers now come from the script: health says so, and the badge shows.
+    assert providers(chain) == ["scripted"]
+    clock.now = 3599
+    await chain.chat(system="s", messages=HI)
+    assert gemini.calls == 1
+    clock.now = 3601
+    assert providers(chain) == ["gemini", "scripted"]
+
+
+async def test_a_rate_limit_rests_only_a_minute():
+    clock = Clock()
+    chain = ChainLLM(
+        [("gemini", Stub("gemini", fails=True)), ("scripted", Stub("scripted"))], clock=clock
+    )
+
+    await chain.chat(system="s", messages=HI)
+    clock.now = 61
+
+    assert providers(chain) == ["gemini", "scripted"]
