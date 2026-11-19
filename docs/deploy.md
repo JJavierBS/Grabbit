@@ -15,9 +15,10 @@ snapshot of the Cala cache (`CALA_MODE=replay`) and from whatever free AI has a 
    - `GEMINI_API_KEY` (aistudio.google.com) and `OPENAI_COMPAT_API_KEY`
      (console.groq.com/keys): optional and free. With neither, the agent follows the demo
      script and the top bar says "Scripted demo".
-2. Connected through GitHub, every push to the fork's `main` redeploys; created from the public
-   repository URL (no GitHub access granted to Render), redeploy by hand: Render > `grabbit` >
-   Manual Deploy > Deploy latest commit. `/api/health` lists the AI that can answer now.
+2. Every push to `main` redeploys the service by itself (trigger "Auto-Deploy"), also when it
+   was created from the public repository URL with no GitHub access granted to Render (#258).
+   Render > `grabbit` > Manual Deploy redeploys on demand. `/api/health` lists the AI that can
+   answer now.
 3. The free plan sleeps after 15 min without traffic and takes about a minute to wake. To
    keep it awake, set the repository variable `KEEPALIVE_URL` to the service URL:
    `.github/workflows/keepalive.yml` pings it every 14 min (~720 of the 750 free hours a
