@@ -47,7 +47,8 @@ DATABASE_PATH=data/grabbit-demo.db CALA_MODE=replay make -C .. warm ARGS=--check
 - The source is your `data/grabbit.db` from the event; it is only copied, never modified.
   Without one, ask a teammate for theirs: the cache itself comes from Valkey.
 - The export prints how many keys it read: the full export of November 2026 read 2,809 keys
-  (a laptop copy had 941 rows) and weighs 14.5 MB, with 0 misses on both checks (#242). `--strip` empties chats, profiles, reports, alerts and snapshots.
+  (a laptop copy had 941 rows) and weighs 14.5 MB, with 0 misses on both checks (#242).
+  `--strip` empties chats, profiles, reports, alerts and snapshots.
 - The check should print `0 cache misses` on both lines. A few misses on the reverse walk
   still make a useful snapshot: publish it and note the numbers in the tracking issue.
 - Both files stay in `data/`, which git ignores: never commit the snapshot, Cala's data stays
