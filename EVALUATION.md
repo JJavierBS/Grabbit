@@ -40,7 +40,7 @@ The strongest points, one line each:
 
 1. **A real user with a sourced pain.** Two investor interviews, one persona, one event.
 2. **It works end to end.** Thesis, data-backed questions, ranked report, self-correction,
-   alert. 511 backend and 298 frontend tests, all green; CI runs them on every PR.
+   alert. 545 backend and 303 frontend tests, all green; CI runs them on every PR.
 3. **The agent personalizes itself.** A correction in plain words makes Gemini rewrite its
    own report instructions; the report changes on screen and the history shows why.
 4. **Cala is the engine, not a lookup.** A meet-in-the-middle walk of Cala's round graph
@@ -142,7 +142,7 @@ open report 31-34 s, correction to the rewritten report 26-37 s
 
 | Signal | Evidence |
 | --- | --- |
-| Tests | 511 backend tests (pytest) and 298 frontend tests in 51 files (Vitest), all passing on 15 November. Every feature or fix ships with a test ([testing.md](docs/agents/testing.md)) |
+| Tests | 545 backend tests (pytest) and 303 frontend tests in 52 files (Vitest), all passing on 18 November. Every feature or fix ships with a test ([testing.md](docs/agents/testing.md)) |
 | CI | `make test lint` on every PR ([.github/workflows/deploy.yml](.github/workflows/deploy.yml)) |
 | Process | 100+ merged PRs, 110+ issues on a public board, one issue = one branch = one PR |
 | Typed contract | Pydantic models generate the TypeScript client (`make gen-api`), so the frontend cannot drift from the API |
